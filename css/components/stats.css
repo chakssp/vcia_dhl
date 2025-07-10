@@ -1,0 +1,28 @@
+/* ========================================
+   STATS - Estilos do Painel de Estatísticas
+   ======================================== */
+
+/* Stub temporário - será implementado quando desenvolvermos o StatsPanel */
+
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.stat-widget {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+}
+
+.stat-value {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-color);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}

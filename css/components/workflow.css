@@ -1,0 +1,264 @@
+/* ========================================
+   WORKFLOW - Estilos dos Cards de Navegação
+   ======================================== */
+
+.workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+/* === STEP CARD === */
+.step-card {
+    background: var(--bg-primary);
+    border: 2px solid var(--border-light);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.step-card:hover:not(.disabled) {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.step-card.active {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.step-card.completed {
+    border-color: var(--success-color);
+    background: var(--success-light);
+}
+
+.step-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.step-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* === STEP NUMBER === */
+.step-number {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 32px;
+    height: 32px;
+    background: var(--gray-200);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.step-card.active .step-number {
+    background: var(--primary-color);
+    color: var(--text-inverse);
+}
+
+.step-card.completed .step-number {
+    background: var(--success-color);
+    color: var(--text-inverse);
+}
+
+/* === STEP ICON === */
+.step-icon {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--spacing-md);
+    display: block;
+}
+
+/* === STEP CONTENT === */
+.step-title {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.step-description {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+    line-height: var(--line-height-relaxed);
+}
+
+/* === STEP STATUS === */
+.step-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-tertiary);
+}
+
+.status-icon {
+    font-size: var(--font-size-base);
+}
+
+.step-card.active .step-status {
+    color: var(--primary-color);
+}
+
+.step-card.completed .step-status {
+    color: var(--success-color);
+}
+
+/* === STEP PANELS === */
+.step-panel {
+    display: none;
+    animation: fadeIn var(--transition-base);
+}
+
+.step-panel.panel-active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === PANEL CONTENT === */
+.panel-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: flex-end;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-light);
+}
+
+.form-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.form-section h3 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--text-tertiary);
+}
+
+/* === SPECIFIC COMPONENTS === */
+.input-group {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.input-group .form-control {
+    flex: 1;
+}
+
+.directory-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.directory-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.btn-remove {
+    background: none;
+    border: none;
+    font-size: var(--font-size-xl);
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.btn-remove:hover {
+    background: var(--danger-light);
+    color: var(--danger-color);
+}
+
+/* === THRESHOLD SELECTOR === */
+.threshold-selector {
+    margin-top: var(--spacing-md);
+}
+
+.threshold-selector input[type="range"] {
+    width: 100%;
+    margin-bottom: var(--spacing-sm);
+}
+
+.threshold-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+}
+
+/* === CHECKBOX GROUP === */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* === PREVIEW SECTIONS === */
+.analysis-preview,
+.category-summary {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.analysis-preview h4,
+.category-summary h4 {
+    margin-bottom: var(--spacing-md);
+}
+
+.text-muted {
+    color: var(--text-tertiary);
+    font-style: italic;
+}

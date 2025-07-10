@@ -1,0 +1,36 @@
+/* ========================================
+   FILTERS - Estilos da Barra de Filtros
+   ======================================== */
+
+/* Stub temporário - será implementado quando desenvolvermos o FilterBar */
+
+.filter-bar {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.filter-badge:hover {
+    background: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.filter-badge.active {
+    background: var(--primary-color);
+    color: var(--text-inverse);
+    border-color: var(--primary-color);
+}

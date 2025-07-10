@@ -1,0 +1,23 @@
+/* ========================================
+   FILE LIST - Estilos da Lista de Arquivos
+   ======================================== */
+
+/* Stub temporário - será implementado quando desenvolvermos o FileRenderer */
+
+.files-container {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.file-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    transition: all var(--transition-fast);
+}
+
+.file-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+}
