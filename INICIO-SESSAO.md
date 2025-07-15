@@ -55,6 +55,13 @@ kcdiag()
 - [ ] kcdiag() executado sem erros
 - [ ] Console do browser aberto para debug
 - [ ] Entendi qual Sprint/tarefa está em andamento
+- [ ] Verificar integridade de dados:
+      ```javascript
+      // No console após descoberta:
+      KC.FileRenderer.getOriginalFiles().length  // Total descoberto
+      KC.FileRenderer.files.length              // Total com exclusões
+      // Se houver diferença, há filtros/exclusões aplicadas
+      ```
 
 ---
 

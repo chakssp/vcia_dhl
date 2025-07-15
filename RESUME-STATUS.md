@@ -9,9 +9,9 @@
 
 **Nome**: Consolidador de Conhecimento Pessoal (Personal Knowledge Consolidator)  
 **Visão**: Transformar conhecimento disperso em insights acionáveis  
-**Sprint Atual**: 1.3 - Análise com IA  
+**Sprint Atual**: 1.3.1 - Correção de Integridade de Dados  
 **Última Atualização**: 15/01/2025  
-**Status Geral**: 🟢 FUNCIONAL  
+**Status Geral**: 🟡 FUNCIONAL COM BUGS CRÍTICOS  
 
 ### 🌐 Ambiente de Desenvolvimento
 - **Servidor**: Five Server (gerenciado pelo USUÁRIO)
@@ -84,7 +84,25 @@ window.KnowledgeConsolidator = {
 - [x] Ordenação multi-critério
 - [x] LocalStorage com compressão
 
-### 🔄 SPRINT 1.3 - ANÁLISE COM IA (EM ANDAMENTO)
+### 🔄 SPRINT 1.3.1 - CORREÇÃO DE INTEGRIDADE DE DADOS (URGENTE)
+
+#### 🎯 Objetivos:
+1. Garantir que todos os 627 arquivos sejam visíveis e contabilizados
+2. Dar controle ao usuário sobre filtros e exclusões
+3. Corrigir cálculo de período com fallback de datas
+4. Restaurar confiabilidade dos dados
+
+#### 📋 Tarefas:
+- [ ] Desativar filtro de duplicatas por padrão em FilterPanel
+- [ ] Tornar exclusões inteligentes configuráveis em FileRenderer
+- [ ] Implementar fallback de datas para período (já parcialmente implementado)
+- [ ] Adicionar contadores de integridade no painel de stats
+- [ ] Criar toggle para ativar/desativar exclusões inteligentes
+- [ ] Logar detalhadamente arquivos excluídos
+
+### 🔄 SPRINT 1.3 - ANÁLISE COM IA (PAUSADA - BUGS CRÍTICOS)
+
+#### ⚠️ PAUSADA devido a bugs críticos de integridade de dados que precisam ser resolvidos primeiro
 
 #### ✅ Concluído
 - [x] Estrutura base do AnalysisManager
@@ -125,6 +143,79 @@ window.KnowledgeConsolidator = {
 - [ ] Workflow de revisão
 - [ ] Integração com N8N
 - [ ] API REST
+
+---
+
+## 🚨 BUGS CRÍTICOS - PRIORIDADE MÁXIMA
+
+### BUG #1: Inconsistência na Contagem de Arquivos
+- **Impacto**: 95 arquivos "desaparecem" entre descoberta e exibição (627 descobertos → 532 exibidos)
+- **Causa**: Dupla filtragem (exclusões inteligentes automáticas + possível filtro de duplicatas)
+- **Evidência**: 
+  - Total descoberto: 627
+  - Únicos detectados: 523
+  - Duplicados: 104
+  - Exibindo apenas: 532
+- **Status**: 🔴 CRÍTICO - Bloqueia confiabilidade dos dados
+- **Solução**: SPRINT 1.3.1 `docs/sprint/1.3/sprint-1.3.1-integridade-dados.md`
+
+📁 Arquivos Gerados e Modificados na Ultima Sessão:
+
+  ✅ Arquivos Modificados:
+
+  1. `/mnt/f/vcia-1307/vcia_dhl/RESUME-STATUS.md`
+    - Atualizado Sprint atual para 1.3.1
+    - Adicionada seção de BUGS CRÍTICOS
+    - Adicionada nova lição aprendida
+    - Atualizado histórico de 15/01/2025
+  2. `/mnt/f/vcia-1307/vcia_dhl/CLAUDE.md`
+    - Adicionada LEI #12 sobre TRANSPARÊNCIA DE DADOS
+  3. `/mnt/f/vcia-1307/vcia_dhl/INICIO-SESSAO.md`
+    - Adicionada verificação de integridade de dados no checklist
+
+  📄 Arquivos Criados:
+
+  1. `/mnt/f/vcia-1307/vcia_dhl/docs/sprint/1.3/sprint-1.3.1-integridade-dados.md`
+    - Documentação completa da SPRINT 1.3.1
+    - Análise detalhada do problema de integridade
+    - Plano de implementação em 3 fases
+    - Status das correções realizadas
+
+  📂 Arquivos de Correção Anteriores (criados durante a sessão):
+
+  1. `/mnt/f/vcia-1307/vcia_dhl/docs/sprint/1.3/fase1-complete-minimal-fixes.md`
+    - Documentação das correções mínimas da Fase 1
+  2. `/mnt/f/vcia-1307/vcia_dhl/docs/sprint/1.3/fix-contador-ui-consistency.md`
+    - Correção dos métodos updateCountersUI e updateDuplicateCounters
+  3. `/mnt/f/vcia-1307/vcia_dhl/docs/sprint/1.3/fix-contador-data-consistency.md`
+    - Correção de preservação de arquivos originais e validação de datas
+
+  🔧 Arquivos de Código Modificados:
+
+  1. `/mnt/f/vcia-1307/vcia_dhl/js/core/EventBus.js`
+    - Adicionado evento FILES_UPDATED
+  2. `/mnt/f/vcia-1307/vcia_dhl/js/app.js`
+    - Adicionado DuplicateDetector no registro de componentes
+  3. `/mnt/f/vcia-1307/vcia_dhl/js/components/FileRenderer.js`
+    - Adicionado sistema de preservação de originalFiles
+    - Adicionado método getOriginalFiles()
+    - Modificado showFilesSection() para exibir filtros
+  4. `/mnt/f/vcia-1307/vcia_dhl/js/components/FilterPanel.js`
+    - Adicionado método updateCountersUI()
+    - Adicionado método updateDuplicateCounters()
+    - Corrigido cálculo de período com validação de datas
+  
+### BUG #2: Período não Calculado
+- **Impacto**: Todos os filtros de período mostram zero
+- **Causa**: Arquivos sem data válida são ignorados no cálculo
+- **Evidência**: Todos os campos de período permanecem zerados
+- **Status**: 🟡 ALTO - Afeta análise temporal
+- **Solução**: Fallback de data já parcialmente implementado
+
+### BUG #3: Erro DuplicateDetector
+- **Impacto**: Sistema de detecção de duplicatas falha na inicialização
+- **Erro**: `TypeError: KC.DuplicateDetector.analyzeDuplicates is not a function`
+- **Status**: 🟡 MÉDIO - Já corrigido registro em app.js mas precisa validação
 
 ---
 
@@ -254,6 +345,9 @@ Antes de iniciar qualquer sessão:
 - Implementado auto-update da interface
 - Criada documentação do sistema de eventos
 - Arquivo criado: RESUME-STATUS.md
+- Identificados bugs críticos de integridade de dados
+- Criada SPRINT 1.3.1 para correção urgente
+- Implementado sistema de preservação de arquivos originais
 
 ### 14/01/2025
 - Identificado e corrigido bug de atualização
@@ -281,6 +375,11 @@ Antes de iniciar qualquer sessão:
 **Impacto**: Quebra funcionalidades existentes  
 **Causa**: Código original sobrescrito sem backup  
 **Solução**: SEMPRE comentar original antes de modificar  
+
+### 🔴 Problema Recorrente #4: Dupla filtragem sem transparência
+**Impacto**: 95 arquivos "desaparecem" sem explicação ao usuário  
+**Causa**: FileRenderer aplica exclusões automáticas + FilterPanel pode ter filtros ativos  
+**Solução**: SEMPRE dar controle e visibilidade ao usuário sobre filtros  
 
 ### ✅ Padrão de Sucesso
 ```javascript

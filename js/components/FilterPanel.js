@@ -157,6 +157,22 @@
             EventBus.on(Events.FILES_DISCOVERED, (data) => {
                 console.log('FilterPanel: FILES_DISCOVERED recebido');
                 this.updateCounters(data.files || []);
+                
+                // BUG FIX: Re-renderiza seção de duplicatas se necessário
+                const duplicateStats = KC.AppState?.get('stats.duplicateStats');
+                if (duplicateStats && duplicateStats.duplicates > 0) {
+                    // Verifica se a seção de duplicatas não existe
+                    if (!document.querySelector('[data-group="duplicates"]')) {
+                        console.log('FilterPanel: Re-renderizando para mostrar seção de duplicatas');
+                        // Preserva estado atual dos filtros
+                        const currentFilters = this.getCurrentFilterState();
+                        // Re-renderiza interface
+                        this.renderIntuitiveInterface();
+                        this.setupEventListeners();
+                        // Restaura estado dos filtros
+                        this.restoreFilterState(currentFilters);
+                    }
+                }
             });
 
             EventBus.on(Events.STATE_CHANGED, (data) => {
@@ -170,6 +186,13 @@
                 console.log('FilterPanel: FILES_FILTERED - sincronizando interface');
                 // Mantém interface sincronizada com filtros aplicados
                 this.syncWithFilterManager();
+            });
+
+            // BUG FIX: Escuta evento centralizado de stats
+            EventBus.on('STATS_UPDATED', (stats) => {
+                console.log('FilterPanel: STATS_UPDATED recebido', stats);
+                // Atualiza contadores com dados centralizados
+                this.updateCountersFromStats(stats);
             });
         }
 
@@ -407,6 +430,9 @@
             
             // Padrões de exclusão
             this.setupExclusionPatternsListeners();
+            
+            // Duplicatas
+            this.setupDuplicateHandlers();
         }
 
         /**
@@ -515,8 +541,21 @@
          */
         handleFilterChange(input) {
             const group = input.dataset.filterGroup;
+            
+            // Verifica se o grupo existe antes de continuar
+            if (!group) {
+                // Ignora inputs sem filter-group (ex: checkboxes de duplicatas)
+                return;
+            }
+            
             const value = input.value;
             const config = this.uiConfig[group];
+
+            // Verifica se o config existe (para evitar erro com checkboxes de duplicatas)
+            if (!config) {
+                console.warn(`FilterPanel: Configuração não encontrada para grupo ${group}`);
+                return;
+            }
 
             if (config.type === 'radio') {
                 config.active = value;
@@ -572,6 +611,7 @@
             filteredFiles = this.applyTypeFilter(filteredFiles);
             filteredFiles = this.applySearchFilter(filteredFiles);
             filteredFiles = this.applyExclusionFilter(filteredFiles);
+            filteredFiles = this.applyDuplicateFilter(filteredFiles);
 
             // Emite evento para FileRenderer (compatibilidade com pipeline existente)
             EventBus.emit(Events.FILES_FILTERED, {
@@ -786,6 +826,53 @@
             
             // Atualiza contadores de tipo
             this.updateTypeCounters(files);
+            
+            // NOVO: Atualiza a interface dos contadores
+            this.updateCountersUI();
+        }
+
+        /**
+         * Atualiza contadores com dados do StatsCoordinator
+         */
+        updateCountersFromStats(stats) {
+            if (!stats) return;
+            
+            // Atualiza contadores de relevância
+            const relevanceOptions = this.uiConfig.relevance.options;
+            relevanceOptions[0].count = stats.files.total; // Todos
+            relevanceOptions[1].count = stats.relevance.high; // Alta (>=70%)
+            relevanceOptions[2].count = stats.relevance.medium + stats.relevance.high; // Média (>=50%)
+            relevanceOptions[3].count = stats.relevance.low + stats.relevance.medium + stats.relevance.high; // Baixa (>=30%)
+            
+            // Atualiza contadores de status
+            const statusOptions = this.uiConfig.status.options;
+            statusOptions[0].count = stats.files.total; // Todos
+            statusOptions[1].count = stats.files.pending; // Pendente
+            statusOptions[2].count = stats.files.approved; // Aprovados
+            statusOptions[3].count = stats.files.archived; // Arquivados
+            
+            // Atualiza contadores de tamanho
+            const sizeOptions = this.uiConfig.size.options;
+            sizeOptions[0].count = stats.files.total; // Qualquer
+            sizeOptions[1].count = stats.sizes.small; // < 50KB
+            sizeOptions[2].count = stats.sizes.medium; // 50-500KB
+            sizeOptions[3].count = stats.sizes.large; // > 500KB
+            
+            // Atualiza contadores de tipo
+            const typeOptions = this.uiConfig.types.options;
+            typeOptions.forEach(option => {
+                option.count = stats.types[option.value] || 0;
+            });
+            
+            // Atualiza UI
+            this.updateCountersUI();
+            
+            // Atualiza info de bulk actions
+            const bulkInfo = document.getElementById('bulk-info-text');
+            if (bulkInfo && this.fileRenderer) {
+                const count = this.fileRenderer.filteredFiles?.length || 0;
+                bulkInfo.textContent = `${count} arquivos serão afetados pelas ações em lote`;
+            }
 
             // Atualiza info de ações em lote
             this.updateBulkInfo();
@@ -858,11 +945,25 @@
 
             // Conta arquivos em cada período (cumulativo)
             files.forEach(file => {
-                const fileDate = new Date(file.lastModified || file.dateCreated || 0);
+                let fileDate;
                 
-                // Verifica se o arquivo tem data válida
-                if (fileDate.getTime() === 0) {
-                    console.warn('FilterPanel: Arquivo sem data de modificação:', file.name);
+                // NOVO: Validação robusta de data
+                if (file.lastModified) {
+                    fileDate = new Date(file.lastModified);
+                } else if (file.dateCreated) {
+                    fileDate = new Date(file.dateCreated);
+                } else if (file.date) {
+                    fileDate = new Date(file.date);
+                } else {
+                    // Fallback: considera como arquivo de hoje se não tiver data
+                    fileDate = new Date();
+                    console.warn('FilterPanel: Arquivo sem data, usando data atual:', file.name);
+                }
+                
+                // Verifica se a data é válida
+                if (isNaN(fileDate.getTime())) {
+                    fileDate = new Date();
+                    console.warn('FilterPanel: Data inválida, usando data atual:', file.name);
                 }
                 
                 Object.entries(periods).forEach(([period, days]) => {
@@ -979,6 +1080,91 @@
                 return this.fileRenderer.filteredFiles.length;
             }
             return 0;
+        }
+
+        /**
+         * Atualiza interface dos contadores
+         */
+        updateCountersUI() {
+            // Atualiza contadores de relevância
+            const relevanceOptions = this.uiConfig.relevance.options;
+            relevanceOptions.forEach(option => {
+                const element = document.getElementById(`count-relevance-${option.value}`);
+                if (element) {
+                    element.textContent = option.count || 0;
+                }
+            });
+
+            // Atualiza contadores de status
+            const statusOptions = this.uiConfig.status.options;
+            statusOptions.forEach(option => {
+                const element = document.getElementById(`count-status-${option.value}`);
+                if (element) {
+                    element.textContent = option.count || 0;
+                }
+            });
+
+            // Atualiza contadores de período
+            const periodOptions = this.uiConfig.period.options;
+            periodOptions.forEach(option => {
+                const element = document.getElementById(`count-period-${option.value}`);
+                if (element) {
+                    element.textContent = option.count || 0;
+                }
+            });
+
+            // Atualiza contadores de tamanho
+            const sizeOptions = this.uiConfig.size.options;
+            sizeOptions.forEach(option => {
+                const element = document.getElementById(`count-size-${option.value}`);
+                if (element) {
+                    element.textContent = option.count || 0;
+                }
+            });
+
+            // Atualiza contadores de tipo
+            const typeOptions = this.uiConfig.types.options;
+            typeOptions.forEach(option => {
+                const element = document.getElementById(`count-types-${option.value}`);
+                if (element) {
+                    element.textContent = option.count || 0;
+                }
+            });
+
+            // Atualiza contadores de duplicatas se existirem
+            this.updateDuplicateCounters();
+        }
+
+        /**
+         * Atualiza contadores da seção de duplicatas
+         */
+        updateDuplicateCounters() {
+            const duplicateStats = KC.AppState.get('stats.duplicateStats');
+            if (!duplicateStats) return;
+
+            // Atualiza contador de duplicatas totais
+            const duplicatesElement = document.getElementById('count-duplicates-duplicates');
+            if (duplicatesElement) {
+                duplicatesElement.textContent = duplicateStats.duplicates || 0;
+            }
+
+            // Atualiza contador de grupos
+            const groupsElement = document.getElementById('count-duplicates-groups');
+            if (groupsElement) {
+                groupsElement.textContent = duplicateStats.groups || 0;
+            }
+
+            // Atualiza contador de removíveis
+            const removableElement = document.getElementById('count-duplicates-removable');
+            if (removableElement) {
+                removableElement.textContent = duplicateStats.removable || 0;
+            }
+
+            // Atualiza contador de únicos
+            const uniqueElement = document.getElementById('count-duplicates-unique');
+            if (uniqueElement) {
+                uniqueElement.textContent = duplicateStats.unique || 0;
+            }
         }
 
         /**
@@ -1349,6 +1535,446 @@
                 archiveBtn.style.display = 'block';
                 approveBtn.style.display = 'block';
             }
+        }
+
+        /**
+         * Configura handlers para duplicatas
+         */
+        setupDuplicateHandlers() {
+            // Botão de limpar automaticamente
+            const autoDeduplicateBtn = document.getElementById('auto-deduplicate');
+            if (autoDeduplicateBtn) {
+                autoDeduplicateBtn.addEventListener('click', () => {
+                    this.handleAutoDeduplicate();
+                });
+            }
+
+            // Botão de revisar manualmente
+            const reviewDuplicatesBtn = document.getElementById('review-duplicates');
+            if (reviewDuplicatesBtn) {
+                reviewDuplicatesBtn.addEventListener('click', () => {
+                    this.handleReviewDuplicates();
+                });
+            }
+
+            // Checkbox mostrar apenas duplicatas
+            const showDuplicatesCheck = document.getElementById('show-duplicates');
+            if (showDuplicatesCheck) {
+                showDuplicatesCheck.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        // Desmarcar "ocultar duplicatas" se estava marcado
+                        const hideCheck = document.getElementById('hide-duplicates');
+                        if (hideCheck) hideCheck.checked = false;
+                    }
+                    this.handleDuplicateFilter();
+                });
+            }
+
+            // Checkbox ocultar duplicatas
+            const hideDuplicatesCheck = document.getElementById('hide-duplicates');
+            if (hideDuplicatesCheck) {
+                hideDuplicatesCheck.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        // Desmarcar "mostrar apenas duplicatas" se estava marcado
+                        const showCheck = document.getElementById('show-duplicates');
+                        if (showCheck) showCheck.checked = false;
+                    }
+                    this.handleDuplicateFilter();
+                });
+            }
+        }
+
+        /**
+         * Remove duplicatas automaticamente (alta confiança)
+         */
+        handleAutoDeduplicate() {
+            const duplicateStats = KC.AppState?.get('stats.duplicateStats');
+            
+            if (!duplicateStats || duplicateStats.confident === 0) {
+                KC.showNotification({
+                    type: 'warning',
+                    message: 'Nenhuma duplicata com alta confiança para remover'
+                });
+                return;
+            }
+
+            // Confirma ação
+            if (!confirm(`Remover automaticamente ${duplicateStats.confident} duplicata(s) com alta confiança?`)) {
+                return;
+            }
+
+            const allFiles = KC.AppState.get('files') || [];
+            const filesToRemove = allFiles.filter(file => 
+                file.isDuplicate && 
+                file.duplicateConfidence >= 0.9
+            );
+
+            if (filesToRemove.length === 0) {
+                KC.showNotification({
+                    type: 'error',
+                    message: 'Nenhuma duplicata encontrada para remover'
+                });
+                return;
+            }
+
+            // Remove duplicatas do estado
+            const remainingFiles = allFiles.filter(file => 
+                !filesToRemove.some(removeFile => 
+                    removeFile.id === file.id || 
+                    (removeFile.name === file.name && removeFile.path === file.path)
+                )
+            );
+
+            // Salva no estado
+            KC.AppState.set('files', remainingFiles);
+
+            // Emite eventos
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, {
+                key: 'files',
+                newValue: remainingFiles,
+                oldValue: allFiles
+            });
+
+            KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                action: 'deduplicate',
+                removedCount: filesToRemove.length
+            });
+
+            KC.showNotification({
+                type: 'success',
+                message: `${filesToRemove.length} duplicata(s) removida(s) com sucesso`
+            });
+
+            // Atualiza interface e força recálculo de stats
+            setTimeout(() => {
+                // Força atualização centralizada
+                if (KC.StatsCoordinator) {
+                    KC.StatsCoordinator.forceUpdate();
+                }
+                this.applyFilters();
+                // Re-renderiza para remover seção de duplicatas se não houver mais
+                if (remainingFiles.filter(f => f.isDuplicate).length === 0) {
+                    this.renderIntuitiveInterface();
+                    this.setupEventListeners();
+                }
+            }, 100);
+        }
+
+        /**
+         * Abre modal para revisar duplicatas manualmente
+         */
+        handleReviewDuplicates() {
+            const allFiles = KC.AppState.get('files') || [];
+            const duplicateFiles = allFiles.filter(file => file.isDuplicate || file.isPrimaryDuplicate);
+            
+            // Debug: verificar dados
+            console.log('[DEBUG] Total de arquivos:', allFiles.length);
+            console.log('[DEBUG] Duplicatas encontradas:', duplicateFiles.length);
+            console.log('[DEBUG] Primeiras 3 duplicatas:', duplicateFiles.slice(0, 3));
+
+            if (duplicateFiles.length === 0) {
+                KC.showNotification({
+                    type: 'info',
+                    message: 'Nenhuma duplicata para revisar'
+                });
+                return;
+            }
+
+            // Agrupa duplicatas
+            const duplicateGroups = this.groupDuplicateFiles(duplicateFiles);
+            
+            // Debug: verificar grupos formados
+            console.log('[DEBUG] Grupos formados:', duplicateGroups.length);
+            console.log('[DEBUG] Grupos:', duplicateGroups);
+
+            // Cria conteúdo do modal
+            const modalContent = this.createDuplicateReviewModal(duplicateGroups);
+
+            // Abre modal usando ModalManager
+            if (KC.ModalManager) {
+                // CORREÇÃO: ModalManager espera 3 parâmetros (id, content, options)
+                KC.ModalManager.showModal(
+                    'duplicate-review',  // ID único do modal
+                    modalContent,        // Conteúdo HTML
+                    {                   // Opções (não utilizadas atualmente)
+                        title: '🔄 Revisar Duplicatas',
+                        size: 'large',
+                        buttons: [
+                            {
+                                text: 'Aplicar Seleções',
+                                class: 'primary',
+                                action: () => this.applyDuplicateSelections()
+                            },
+                            {
+                                text: 'Cancelar',
+                                class: 'secondary',
+                                action: () => KC.ModalManager.closeModal('duplicate-review')
+                            }
+                        ]
+                    }
+                );
+            } else {
+                KC.showNotification({
+                    type: 'error',
+                    message: 'ModalManager não disponível'
+                });
+            }
+        }
+
+        /**
+         * Agrupa arquivos duplicados
+         */
+        groupDuplicateFiles(files) {
+            // Debug no início
+            console.log('[DEBUG] Agrupando arquivos:', files);
+            console.log('[DEBUG] Exemplo de arquivo:', files[0]);
+            
+            const groups = new Map();
+
+            files.forEach(file => {
+                const groupKey = file.duplicateGroup || 'unknown';
+                console.log('[DEBUG] Arquivo:', file.name, 'Grupo:', groupKey);
+                
+                if (!groups.has(groupKey)) {
+                    groups.set(groupKey, []);
+                }
+                groups.get(groupKey).push(file);
+            });
+            
+            // Debug após agrupamento
+            console.log('[DEBUG] Grupos criados:', groups);
+
+            return Array.from(groups.entries()).map(([type, files]) => ({
+                type,
+                files: files.sort((a, b) => {
+                    // Primary first
+                    if (a.isPrimaryDuplicate && !b.isPrimaryDuplicate) return -1;
+                    if (!a.isPrimaryDuplicate && b.isPrimaryDuplicate) return 1;
+                    // Then by confidence
+                    return (b.duplicateConfidence || 0) - (a.duplicateConfidence || 0);
+                })
+            }));
+        }
+
+        /**
+         * Cria conteúdo do modal de revisão
+         */
+        createDuplicateReviewModal(groups) {
+            let html = '<div class="duplicate-review-container">';
+            
+            // Debug e tratamento de erro
+            console.log('[DEBUG] Criando modal para grupos:', groups);
+            
+            if (!groups || groups.length === 0) {
+                html += '<p class="no-duplicates-message">Nenhum grupo de duplicatas encontrado. Verifique se os arquivos têm as propriedades de duplicata configuradas corretamente.</p>';
+                html += '</div>';
+                return html;
+            }
+
+            groups.forEach((group, index) => {
+                const typeLabels = {
+                    'exact': '📋 Duplicatas Exatas',
+                    'pattern': '📝 Padrões Similares',
+                    'version': '📊 Possíveis Versões'
+                };
+
+                html += `
+                    <div class="duplicate-group" data-group-index="${index}">
+                        <h4>${typeLabels[group.type] || '❓ Outros'}</h4>
+                        <div class="duplicate-files-list">
+                `;
+
+                group.files.forEach((file, fileIndex) => {
+                    const isPrimary = file.isPrimaryDuplicate;
+                    const isChecked = !isPrimary; // Por padrão, marca duplicatas para remoção
+                    
+                    html += `
+                        <div class="duplicate-file-item ${isPrimary ? 'primary' : 'duplicate'}">
+                            <label>
+                                <input type="checkbox" 
+                                       name="duplicate-${group.type}-${fileIndex}" 
+                                       value="${file.id || file.path}"
+                                       ${isChecked ? 'checked' : ''}
+                                       ${isPrimary ? 'disabled' : ''}>
+                                <div class="file-info">
+                                    <strong>${file.name}</strong>
+                                    ${isPrimary ? '<span class="badge primary">Principal</span>' : ''}
+                                    ${file.duplicateConfidence ? `<span class="confidence">Confiança: ${Math.round(file.duplicateConfidence * 100)}%</span>` : ''}
+                                    <div class="file-details">
+                                        <small>${file.path || file.relativePath}</small>
+                                        <small>${this.formatFileSize(file.size)}</small>
+                                        ${file.duplicateReason ? `<small class="reason">${file.duplicateReason}</small>` : ''}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    `;
+                });
+
+                html += '</div></div>';
+            });
+
+            html += '</div>';
+            
+            // Debug: verificar HTML final
+            console.log('[DEBUG] HTML do modal criado, tamanho:', html.length);
+            
+            return html;
+        }
+
+        /**
+         * Aplica seleções de duplicatas do modal
+         */
+        applyDuplicateSelections() {
+            const checkedInputs = document.querySelectorAll('.duplicate-review-container input[type="checkbox"]:checked:not(:disabled)');
+            const filesToRemove = Array.from(checkedInputs).map(input => input.value);
+
+            if (filesToRemove.length === 0) {
+                KC.showNotification({
+                    type: 'info',
+                    message: 'Nenhuma duplicata selecionada para remover'
+                });
+                return;
+            }
+
+            const allFiles = KC.AppState.get('files') || [];
+            const remainingFiles = allFiles.filter(file => {
+                const fileId = file.id || file.path;
+                return !filesToRemove.includes(fileId);
+            });
+
+            // Salva no estado
+            KC.AppState.set('files', remainingFiles);
+
+            // Emite eventos
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, {
+                key: 'files',
+                newValue: remainingFiles,
+                oldValue: allFiles
+            });
+
+            KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                action: 'deduplicate_manual',
+                removedCount: filesToRemove.length
+            });
+
+            KC.showNotification({
+                type: 'success',
+                message: `${filesToRemove.length} duplicata(s) removida(s) manualmente`
+            });
+
+            // Fecha modal
+            KC.ModalManager.closeModal();
+
+            // Atualiza interface e força recálculo de stats
+            setTimeout(() => {
+                // Força atualização centralizada
+                if (KC.StatsCoordinator) {
+                    KC.StatsCoordinator.forceUpdate();
+                }
+                this.applyFilters();
+                // Re-renderiza se não houver mais duplicatas
+                if (remainingFiles.filter(f => f.isDuplicate).length === 0) {
+                    this.renderIntuitiveInterface();
+                    this.setupEventListeners();
+                }
+            }, 100);
+        }
+
+        /**
+         * Obtém estado atual dos filtros
+         */
+        getCurrentFilterState() {
+            const state = {
+                relevance: this.uiConfig.relevance.active,
+                status: this.uiConfig.status.active,
+                period: this.uiConfig.period.active,
+                size: this.uiConfig.size.active,
+                types: [...this.uiConfig.types.active],
+                search: this.searchTerm,
+                customSize: {
+                    min: this.uiConfig.size.customMin,
+                    max: this.uiConfig.size.customMax
+                },
+                duplicates: {
+                    show: document.getElementById('show-duplicates')?.checked,
+                    hide: document.getElementById('hide-duplicates')?.checked
+                }
+            };
+            return state;
+        }
+
+        /**
+         * Restaura estado dos filtros
+         */
+        restoreFilterState(state) {
+            if (!state) return;
+            
+            // Restaura configurações
+            this.uiConfig.relevance.active = state.relevance;
+            this.uiConfig.status.active = state.status;
+            this.uiConfig.period.active = state.period;
+            this.uiConfig.size.active = state.size;
+            this.uiConfig.types.active = state.types;
+            this.searchTerm = state.search;
+            this.uiConfig.size.customMin = state.customSize.min;
+            this.uiConfig.size.customMax = state.customSize.max;
+            
+            // Restaura checkboxes de duplicatas
+            const showDuplicates = document.getElementById('show-duplicates');
+            const hideDuplicates = document.getElementById('hide-duplicates');
+            if (showDuplicates) showDuplicates.checked = state.duplicates.show;
+            if (hideDuplicates) hideDuplicates.checked = state.duplicates.hide;
+            
+            // Re-aplica filtros
+            this.applyFilters();
+        }
+
+        /**
+         * Manipula mudança no filtro de duplicatas
+         */
+        handleDuplicateFilter() {
+            const showDuplicates = document.getElementById('show-duplicates')?.checked;
+            const hideDuplicates = document.getElementById('hide-duplicates')?.checked;
+
+            // Salva estado do filtro
+            this.duplicateFilterState = {
+                showOnly: showDuplicates,
+                hide: hideDuplicates
+            };
+
+            // Re-aplica todos os filtros
+            this.applyFilters();
+        }
+
+        /**
+         * Aplica filtro de duplicatas
+         */
+        applyDuplicateFilter(files) {
+            if (!this.duplicateFilterState) return files;
+
+            const { showOnly, hide } = this.duplicateFilterState;
+
+            if (showOnly) {
+                // Mostra apenas duplicatas
+                return files.filter(file => file.isDuplicate || file.isPrimaryDuplicate);
+            } else if (hide) {
+                // Oculta duplicatas
+                return files.filter(file => !file.isDuplicate);
+            }
+
+            return files;
+        }
+
+        /**
+         * Formata tamanho do arquivo
+         */
+        formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         /**

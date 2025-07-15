@@ -16,7 +16,8 @@
     class FileRenderer {
         constructor() {
             this.container = null;
-            this.files = [];
+            this.originalFiles = [];    // NOVO: Arquivos originais sem filtros
+            this.files = [];            // Arquivos para exibição (com exclusões)
             this.filteredFiles = [];
             this.currentFilter = 'all';
             this.currentSort = 'relevance';
@@ -46,6 +47,13 @@
             this.setupContainer();
         }
 
+        /**
+         * Getter para arquivos originais (sem exclusões)
+         */
+        getOriginalFiles() {
+            return this.originalFiles;
+        }
+
 
         /**
          * Configura event listeners
@@ -55,11 +63,19 @@
             if (Events && Events.FILES_DISCOVERED) {
                 EventBus.on(Events.FILES_DISCOVERED, (data) => {
                     console.log('FileRenderer: Evento FILES_DISCOVERED recebido', data);
-                    this.files = data.files || [];
-                    // Aplica exclusões inteligentes
-                    if (this.files.length > 0) {
-                        this.files = this.applySmartExclusions(this.files);
+                    
+                    // NOVO: Preserva arquivos originais
+                    this.originalFiles = data.files || [];
+                    console.log(`FileRenderer: ${this.originalFiles.length} arquivos originais descobertos`);
+                    
+                    // Aplica exclusões apenas para exibição
+                    if (this.originalFiles.length > 0) {
+                        this.files = this.applySmartExclusions([...this.originalFiles]);
+                        console.log(`FileRenderer: ${this.files.length} arquivos após exclusões para exibição`);
+                    } else {
+                        this.files = [];
                     }
+                    
                     this.renderFileList();
                     this.showFilesSection();
                 });
@@ -79,8 +95,11 @@
                             itemsPerPage: this.pagination.itemsPerPage
                         };
                         
-                        // Atualiza arquivos
-                        this.files = data.newValue || [];
+                        // NOVO: Preserva arquivos originais e aplica exclusões para exibição
+                        this.originalFiles = data.newValue || [];
+                        this.files = this.applySmartExclusions([...this.originalFiles]);
+                        
+                        console.log(`FileRenderer: STATE_CHANGED - ${this.originalFiles.length} originais, ${this.files.length} para exibição`);
                         
                         // Re-renderiza preservando estado
                         this.renderFileList();
@@ -187,9 +206,14 @@
             
             if (existingFiles.length > 0) {
                 console.log(`FileRenderer: Carregando ${existingFiles.length} arquivos existentes`);
-                // Aplica filtros de exclusão proativa
-                this.files = this.applySmartExclusions(existingFiles);
-                console.log(`FileRenderer: ${this.files.length} arquivos após exclusões`);
+                
+                // NOVO: Preserva originais e aplica exclusões apenas para exibição
+                this.originalFiles = existingFiles;
+                this.files = this.applySmartExclusions([...existingFiles]);
+                
+                console.log(`FileRenderer: ${this.originalFiles.length} arquivos originais`);
+                console.log(`FileRenderer: ${this.files.length} arquivos após exclusões para exibição`);
+                
                 this.renderFileList();
                 this.showFilesSection();
             }
@@ -367,6 +391,14 @@
             const fileId = file.id || file.name;
             const isSelected = this.selectedFiles.has(fileId);
             
+            // Adiciona classe duplicata se necessário
+            if (file.isDuplicate) {
+                fileDiv.classList.add('duplicate-file');
+            }
+            if (file.isPrimaryDuplicate) {
+                fileDiv.classList.add('primary-duplicate');
+            }
+
             fileDiv.innerHTML = `
                 <div class="file-main-content">
                     <input type="checkbox" 
@@ -375,14 +407,20 @@
                            ${isSelected ? 'checked' : ''}>
                     <div class="file-icon">📄</div>
                     <div class="file-info">
-                        <div class="file-name">${this.escapeHtml(file.name)}</div>
+                        <div class="file-name">
+                            ${this.escapeHtml(file.name)}
+                            ${file.isDuplicate ? '<span class="duplicate-badge" title="Duplicata detectada">🔄</span>' : ''}
+                            ${file.isPrimaryDuplicate ? '<span class="primary-badge" title="Arquivo principal">✓</span>' : ''}
+                        </div>
                         <div class="file-path">${this.escapeHtml(file.relativePath || file.path || '')}</div>
                         <div class="file-preview">${this.escapeHtml(preview)}</div>
+                        ${file.duplicateReason ? `<div class="duplicate-reason">${file.duplicateReason}</div>` : ''}
                     </div>
                     <div class="file-meta">
                         <div class="relevance-badge">Relevância: ${relevance}%</div>
                         <div class="file-date">${this.formatDate(file.lastModified)}</div>
                         <div class="file-size">${this.formatFileSize(file.size)}</div>
+                        ${file.duplicateConfidence ? `<div class="duplicate-confidence">Confiança: ${Math.round(file.duplicateConfidence * 100)}%</div>` : ''}
                     </div>
                     <div class="file-actions">
                         <button class="action-btn primary" data-action="analyze">🔍 Analisar com IA</button>
@@ -903,6 +941,7 @@
          */
         showFilesSection() {
             const filesSection = document.getElementById('files-section');
+            const filterSection = document.getElementById('filter-section');
             
             // [DEBUG] Log do estado da seção
             console.log('[DEBUG] FileRenderer.showFilesSection:', {
@@ -914,6 +953,12 @@
             if (filesSection) {
                 filesSection.style.display = 'block';
                 console.log('FileRenderer: Seção de arquivos exibida');
+            }
+            
+            // NOVO: Também mostra a seção de filtros quando há arquivos
+            if (filterSection && this.files.length > 0) {
+                filterSection.style.display = 'block';
+                console.log('FileRenderer: Seção de filtros exibida');
             }
         }
 

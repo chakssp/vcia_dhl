@@ -56,6 +56,11 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
  9. COMPONENTIZAÇÃO MÁXIMA EXIGIDA para qualquer nova função criada como forma de ESTABELECER PADRAO PARA REUTILIZAÇÃO OBRIGATÓRIA DE COMPONENTES PRÉ EXISTENTES que ja estejam em produção como base para novo desenvolvimento.
  10. ANTES DE PLANEJAR QUALQUER NOVA ADIÇÃO OU REMOÇÃO é VITAL QUE SEJA FEITA A REVISÃO dos COMPONENTES ATUAIS. para Verificar se a funcionalidade planejada já não existe no sitema ou se pode ser utilizada como base para GARANTIR a estabilidade do sitema em FUNCIONAMENTO.
  11. CORELACIONAMENTO entre os componentes de BUSCA, ANALISE, CATEGORIZAÇÃO SÃO DE PRIORIDADE CRITICA PARA CONSISTENCIA DOS DADOS A PARTIR DA ETAPA 1. ITERE SEMPRE A IMPORTANCIA DE CORELACIONAR AS SUAS ACOES E EVENTOS DE FORMA RELACIONADA AOS EVENTOS PRE-EXISTENTES.
+ 12. TRANSPARÊNCIA DE DADOS: Toda filtragem ou exclusão de arquivos DEVE ser:
+     - Visível ao usuário (mostrar quantos foram excluídos e por quê)
+     - Controlável (permitir desativar filtros/exclusões)
+     - Reversível (permitir ver arquivos excluídos)
+     - NUNCA remover dados silenciosamente sem conhecimento do usuário
 
 ### 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO
 

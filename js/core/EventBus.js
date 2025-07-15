@@ -291,6 +291,7 @@
         
         // Arquivos
         FILES_DISCOVERED: 'files:discovered',
+        FILES_UPDATED: 'files:updated',
         FILE_SELECTED: 'file:selected',
         FILE_ANALYZED: 'file:analyzed',
         FILE_CATEGORIZED: 'file:categorized',

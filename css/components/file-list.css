@@ -408,3 +408,267 @@
 .analysis-type-tag:hover {
     transform: scale(1.05);
 }
+
+/* === ESTILOS PARA DUPLICATAS === */
+
+/* Arquivo duplicado */
+.duplicate-file {
+    background: #fff5f5;
+    border-color: #fed7d7;
+}
+
+.duplicate-file:hover {
+    border-color: #fc8181;
+}
+
+/* Arquivo principal de grupo duplicado */
+.primary-duplicate {
+    background: #f0fff4;
+    border-color: #c6f6d5;
+}
+
+.primary-duplicate:hover {
+    border-color: #68d391;
+}
+
+/* Badges de duplicata */
+.duplicate-badge {
+    display: inline-block;
+    margin-left: 8px;
+    color: #e53e3e;
+    font-size: 0.9rem;
+    cursor: help;
+}
+
+.primary-badge {
+    display: inline-block;
+    margin-left: 8px;
+    color: #38a169;
+    font-size: 0.9rem;
+    font-weight: bold;
+    cursor: help;
+}
+
+/* Razão da duplicata */
+.duplicate-reason {
+    font-size: 0.75rem;
+    color: #e53e3e;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+/* Confiança da duplicata */
+.duplicate-confidence {
+    font-size: 0.75rem;
+    color: #e53e3e;
+    font-weight: 500;
+}
+
+/* Seção de duplicatas no painel de filtros */
+.duplicate-stats {
+    margin-bottom: var(--spacing-md);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-item {
+    text-align: center;
+    padding: var(--spacing-sm);
+    background: var(--bg-light);
+    border-radius: var(--border-radius-sm);
+}
+
+.stat-item.warning {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+
+.stat-item.success {
+    background: #f0fff4;
+    color: #38a169;
+}
+
+.stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Ações de duplicatas */
+.duplicate-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.duplicate-actions button {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.btn-primary.auto-clean {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-primary.auto-clean:hover:not(:disabled) {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-primary.auto-clean:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary.review {
+    background: white;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-secondary.review:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Economia estimada */
+.duplicate-savings {
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.duplicate-savings small {
+    color: var(--text-muted);
+}
+
+/* Filtros de duplicatas */
+.duplicate-filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* Modal de revisão de duplicatas */
+.duplicate-review-container {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+}
+
+.duplicate-group {
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+}
+
+.duplicate-group h4 {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--text-primary);
+}
+
+.duplicate-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.duplicate-file-item {
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-light);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.duplicate-file-item.primary {
+    background: #f0fff4;
+    border-color: #c6f6d5;
+}
+
+.duplicate-file-item.duplicate {
+    background: #fff5f5;
+    border-color: #fed7d7;
+}
+
+.duplicate-file-item label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+}
+
+.duplicate-file-item input[type="checkbox"] {
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+.duplicate-file-item input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}
+
+.file-info {
+    flex: 1;
+}
+
+.file-info strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.badge.primary {
+    background: #38a169;
+    color: white;
+}
+
+.confidence {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
+}
+
+.file-details small {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.file-details .reason {
+    font-style: italic;
+    color: #e53e3e;
+}

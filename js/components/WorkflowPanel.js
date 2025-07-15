@@ -1014,6 +1014,25 @@
                         KC.FileRenderer.renderFileList();
                     }
                     
+                    // LIMPA ESTADO DE DUPLICATAS
+                    AppState.set('stats.duplicateStats', null);
+                    
+                    // LIMPA FILTROS DE DUPLICATAS
+                    if (KC.FilterPanel) {
+                        KC.FilterPanel.duplicateFilterState = null;
+                        // Força re-renderização para remover seção de duplicatas
+                        if (KC.FilterPanel.container) {
+                            KC.FilterPanel.renderIntuitiveInterface();
+                            KC.FilterPanel.setupEventListeners();
+                        }
+                        
+                        // Remove seção de duplicatas do DOM como fallback
+                        const duplicateSection = document.querySelector('[data-group="duplicates"]');
+                        if (duplicateSection) {
+                            duplicateSection.remove();
+                        }
+                    }
+                    
                     this.updateDirectoryList();
                     KC.showNotification({
                         type: 'success',

@@ -191,12 +191,12 @@
                 let finalFiles = this.discoveredFiles;
                 let duplicateStats = null;
                 
-                if (KC.DuplicateDetector && this.discoveredFiles.length > 1) {
+                if (KC.duplicateDetector && this.discoveredFiles.length > 1) {
                     KC.Logger?.info('🔍 Iniciando detecção de duplicatas...');
                     
                     try {
-                        const duplicateResults = KC.DuplicateDetector.analyzeDuplicates(this.discoveredFiles);
-                        duplicateStats = KC.DuplicateDetector.getStats();
+                        const duplicateResults = KC.duplicateDetector.analyzeDuplicates(this.discoveredFiles);
+                        duplicateStats = KC.duplicateDetector.getStats();
                         
                         KC.Logger?.success(`📊 Duplicatas detectadas: ${duplicateStats.duplicates} de ${duplicateStats.total} arquivos`, {
                             exact: duplicateResults.exact.length,

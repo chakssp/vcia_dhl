@@ -60,12 +60,14 @@
             'FilterManager',
             'ExportManager',
             'StatsManager',
+            'StatsCoordinator',
             'FileRenderer',
             'FilterPanel',
             'ModalManager',
             'FilterBar',
             'StatsPanel',
-            'DashboardRenderer'
+            'DashboardRenderer',
+            'DuplicateDetector'
         ];
 
         components.forEach(name => {
