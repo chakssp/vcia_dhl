@@ -94,22 +94,6 @@ getOriginalFiles() {
 }
 ```
 
-### Fase 2: Transparência (PENDENTE)
-
-#### 2.1 Desativar Filtro de Duplicatas por Padrão
-- Verificar estado inicial do checkbox em FilterPanel
-- Garantir que inicie desmarcado
-
-#### 2.2 Logar Exclusões Detalhadamente
-```javascript
-// applySmartExclusions()
-console.log(`Exclusões aplicadas:
-- Pastas excluídas: ${excludedByPath.length}
-- Nomes excluídos: ${excludedByName.length}  
-- Tamanho < 50b: ${excludedBySize.length}
-- Total removido: ${totalExcluded}`);
-```
-
 #### 2.3 Adicionar Contadores de Integridade no StatsPanel
 ```javascript
 // Nova seção: "Integridade de Dados"

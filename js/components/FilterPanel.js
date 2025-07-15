@@ -324,6 +324,7 @@
             `;
         }
 
+
         /**
          * Renderiza grupo de busca
          */
@@ -674,6 +675,7 @@
 
         /**
          * Aplica filtro de período
+         * SPRINT 1.3.1: Usa a mesma lógica de data do StatsManager
          */
         applyPeriodFilter(files) {
             const activePeriod = this.uiConfig.period.active;
@@ -695,7 +697,34 @@
             const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
 
             return files.filter(file => {
-                const fileDate = new Date(file.lastModified || file.dateCreated || 0);
+                // SPRINT 1.3.1: Usa mesma lógica de validação de data do StatsManager
+                let fileDate = null;
+                
+                // Tenta várias propriedades de data com fallback
+                const possibleDates = [
+                    file.lastModified,
+                    file.dateCreated,
+                    file.date,
+                    file.created,
+                    file.modified,
+                    file.timestamp
+                ];
+                
+                for (const dateValue of possibleDates) {
+                    if (dateValue) {
+                        const parsed = new Date(dateValue);
+                        if (!isNaN(parsed.getTime())) {
+                            fileDate = parsed;
+                            break;
+                        }
+                    }
+                }
+                
+                // Se não tiver data válida, considera como arquivo recente (inclui no filtro)
+                if (!fileDate) {
+                    return true;
+                }
+                
                 return fileDate >= cutoffDate;
             });
         }
@@ -1045,6 +1074,16 @@
          * Atualiza contadores de um grupo
          */
         updateGroupCounters(group, counts) {
+            // CORREÇÃO: Também atualiza no uiConfig para manter sincronizado
+            if (this.uiConfig[group]) {
+                this.uiConfig[group].options.forEach(option => {
+                    if (counts.hasOwnProperty(option.value)) {
+                        option.count = counts[option.value];
+                    }
+                });
+            }
+            
+            // Atualiza elementos HTML
             Object.entries(counts).forEach(([option, count]) => {
                 const counterElement = document.getElementById(`count-${group}-${option}`);
                 if (counterElement) {
@@ -1537,6 +1576,7 @@
             }
         }
 
+
         /**
          * Configura handlers para duplicatas
          */
@@ -1951,18 +1991,26 @@
          * Aplica filtro de duplicatas
          */
         applyDuplicateFilter(files) {
-            if (!this.duplicateFilterState) return files;
+            // CORREÇÃO SPRINT 1.3.1: Garantir que filtro de duplicatas inicie desativado
+            if (!this.duplicateFilterState) {
+                // Se não há estado definido, retorna todos os arquivos (sem filtrar)
+                console.log('FilterPanel: Filtro de duplicatas não configurado, retornando todos os arquivos');
+                return files;
+            }
 
             const { showOnly, hide } = this.duplicateFilterState;
 
             if (showOnly) {
                 // Mostra apenas duplicatas
+                console.log('FilterPanel: Mostrando apenas duplicatas');
                 return files.filter(file => file.isDuplicate || file.isPrimaryDuplicate);
             } else if (hide) {
                 // Oculta duplicatas
+                console.log('FilterPanel: Ocultando duplicatas');
                 return files.filter(file => !file.isDuplicate);
             }
 
+            // Por padrão, retorna todos os arquivos sem filtrar
             return files;
         }
 

@@ -67,7 +67,11 @@
             'FilterBar',
             'StatsPanel',
             'DashboardRenderer',
-            'DuplicateDetector'
+            'DuplicateDetector',
+            'APIConfig',
+            'AIAPIManager',
+            'PromptManager',
+            'AnalysisAdapter'
         ];
 
         components.forEach(name => {

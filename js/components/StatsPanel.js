@@ -81,6 +81,16 @@
                     this.updateStats(data.stats);
                 });
             }
+
+            // NOVO: Escuta evento CATEGORIES_CHANGED do CategoryManager
+            if (Events && Events.CATEGORIES_CHANGED) {
+                EventBus.on(Events.CATEGORIES_CHANGED, (data) => {
+                    console.log('StatsPanel: Evento CATEGORIES_CHANGED recebido', data);
+                    
+                    // Re-renderiza categorias quando há mudanças
+                    this.renderCategories();
+                });
+            }
         }
 
         /**
@@ -160,23 +170,122 @@
                 </div>
             `;
 
-            this.statsContainer.innerHTML = cardsHTML + relevanceCard;
+            // SPRINT 1.3.1: Card de integridade de dados
+            const integrityCard = this.renderIntegrityCard();
+            
+            // SPRINT 1.3.1: Card de períodos
+            const periodsCard = this.renderPeriodsCard();
+
+            this.statsContainer.innerHTML = cardsHTML + relevanceCard + integrityCard + periodsCard;
+        }
+
+        /**
+         * SPRINT 1.3.1: Renderiza card de integridade de dados
+         */
+        renderIntegrityCard() {
+            const fileRenderer = KC.FileRenderer;
+            const discoveredCount = KC.StatsManager?.getStats()?.arquivosEncontrados || 0;
+            const displayedCount = fileRenderer?.files?.length || 0;
+            
+            return `
+                <div class="stat-card integrity-card" style="grid-column: span 2;">
+                    <div class="integrity-header">
+                        <h4>🔍 Integridade de Dados</h4>
+                    </div>
+                    <div class="integrity-stats">
+                        <div class="integrity-item">
+                            <span class="integrity-label">Arquivos Descobertos:</span>
+                            <span class="integrity-value">${discoveredCount}</span>
+                        </div>
+                        <div class="integrity-item">
+                            <span class="integrity-label">Exibindo Atualmente:</span>
+                            <span class="integrity-value">${displayedCount}</span>
+                        </div>
+                        <div class="integrity-item">
+                            <span class="integrity-label">Diferença:</span>
+                            <span class="integrity-value ${displayedCount < discoveredCount ? 'warning' : 'success'}">
+                                ${discoveredCount - displayedCount} 
+                                ${displayedCount < discoveredCount ? '(filtros aplicados)' : '(todos visíveis)'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * SPRINT 1.3.1: Renderiza card de períodos usando StatsManager
+         */
+        renderPeriodsCard() {
+            const periodStats = KC.StatsManager?.getPeriodStats() || {
+                hoje: 0,
+                semana: 0,
+                mes: 0,
+                tresMeses: 0,
+                seisMeses: 0,
+                ano: 0,
+                todos: 0
+            };
+            
+            return `
+                <div class="stat-card periods-card" style="grid-column: span 2;">
+                    <div class="periods-header">
+                        <h4>📅 Distribuição Temporal</h4>
+                    </div>
+                    <div class="periods-grid">
+                        <div class="period-item">
+                            <span class="period-label">Hoje:</span>
+                            <span class="period-value">${periodStats.hoje}</span>
+                        </div>
+                        <div class="period-item">
+                            <span class="period-label">7 dias:</span>
+                            <span class="period-value">${periodStats.semana}</span>
+                        </div>
+                        <div class="period-item">
+                            <span class="period-label">30 dias:</span>
+                            <span class="period-value">${periodStats.mes}</span>
+                        </div>
+                        <div class="period-item">
+                            <span class="period-label">3 meses:</span>
+                            <span class="period-value">${periodStats.tresMeses}</span>
+                        </div>
+                        <div class="period-item">
+                            <span class="period-label">6 meses:</span>
+                            <span class="period-value">${periodStats.seisMeses}</span>
+                        </div>
+                        <div class="period-item">
+                            <span class="period-label">1 ano:</span>
+                            <span class="period-value">${periodStats.ano}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         /**
          * Renderiza sistema de categorias com badges coloridos
          */
         renderCategories() {
+            // CORREÇÃO: Usar CategoryManager para obter categorias
+            /* CÓDIGO ORIGINAL PRESERVADO PARA ROLLBACK:
             const categories = AppState.get('categories') || [];
+            */
             
-            const categoriesHTML = categories.map(category => `
-                <div class="category-badge" data-id="${category.id}">
-                    <span class="category-color" style="background-color: ${category.color}"></span>
-                    <span class="category-name">${category.name}</span>
-                    <span class="category-count">${category.count || 0}</span>
-                    <button class="category-remove" data-id="${category.id}">×</button>
-                </div>
-            `).join('');
+            // NOVO: Obtém categorias do CategoryManager (padrão + customizadas)
+            const categories = KC.CategoryManager.getCategories();
+            const categoryStats = KC.CategoryManager.getCategoryStats();
+            
+            const categoriesHTML = categories.map(category => {
+                const stats = categoryStats[category.id] || { count: 0 };
+                return `
+                    <div class="category-badge" data-id="${category.id}">
+                        <span class="category-color" style="background-color: ${category.color}"></span>
+                        <span class="category-name">${category.name}</span>
+                        <span class="category-count">${stats.count}</span>
+                        ${category.custom ? `<button class="category-remove" data-id="${category.id}">×</button>` : ''}
+                    </div>
+                `;
+            }).join('');
 
             const categoriesContainer = this.categoryContainer?.querySelector('#categories-list');
             if (categoriesContainer) {
@@ -267,6 +376,8 @@
          * Adiciona nova categoria
          */
         addCategory(name) {
+            // CORREÇÃO: Usar CategoryManager em vez de criar diretamente
+            /* CÓDIGO ORIGINAL PRESERVADO PARA ROLLBACK:
             const categories = AppState.get('categories') || [];
             const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#84cc16', '#f97316'];
             
@@ -280,6 +391,25 @@
             categories.push(newCategory);
             AppState.set('categories', categories);
             this.renderCategories();
+            */
+            
+            // NOVO: Usa CategoryManager para criar categoria
+            const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#84cc16', '#f97316'];
+            const currentCategoriesCount = KC.CategoryManager.getCategories().length;
+            
+            const newCategory = KC.CategoryManager.createCategory({
+                name: name,
+                color: colors[currentCategoriesCount % colors.length],
+                icon: '🏷️' // ícone padrão para categorias customizadas
+            });
+            
+            if (!newCategory) {
+                // CategoryManager já loga o erro
+                return;
+            }
+            
+            // NOTA: renderCategories será chamado automaticamente via evento CATEGORIES_CHANGED
+            // this.renderCategories();
 
             KC.Logger?.success(`Categoria "${name}" adicionada`);
         }
@@ -288,11 +418,25 @@
          * Remove categoria
          */
         removeCategory(categoryId) {
+            // CORREÇÃO: Usar CategoryManager em vez de manipular diretamente
+            /* CÓDIGO ORIGINAL PRESERVADO PARA ROLLBACK:
             const categories = AppState.get('categories') || [];
             const updatedCategories = categories.filter(cat => cat.id !== categoryId);
             
             AppState.set('categories', updatedCategories);
             this.renderCategories();
+            */
+            
+            // NOVO: Usa CategoryManager para remover categoria
+            const success = KC.CategoryManager.deleteCategory(categoryId);
+            
+            if (!success) {
+                KC.Logger?.warning('Não foi possível remover a categoria');
+                return;
+            }
+            
+            // NOTA: renderCategories será chamado automaticamente via evento CATEGORIES_CHANGED
+            // this.renderCategories();
 
             KC.Logger?.info(`Categoria removida`);
         }

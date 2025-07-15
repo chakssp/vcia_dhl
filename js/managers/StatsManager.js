@@ -92,7 +92,17 @@
                 pendenteAnalise: 0,
                 altaRelevancia: 0,
                 mediaRelevancia: 0,
-                baixaRelevancia: 0
+                baixaRelevancia: 0,
+                // SPRINT 1.3.1: Adiciona contadores de período
+                periodos: {
+                    hoje: 0,
+                    semana: 0,
+                    mes: 0,
+                    tresMeses: 0,
+                    seisMeses: 0,
+                    ano: 0,
+                    todos: files.length
+                }
             };
 
             let totalRelevance = 0;
@@ -136,6 +146,46 @@
                 if (file.archived) {
                     newStats.arquivados++;
                 }
+                
+                // SPRINT 1.3.1: Calcula períodos com validação de data
+                const now = new Date();
+                let fileDate = null;
+                
+                // Tenta várias propriedades de data com fallback
+                const possibleDates = [
+                    file.lastModified,
+                    file.dateCreated,
+                    file.date,
+                    file.created,
+                    file.modified,
+                    file.timestamp
+                ];
+                
+                for (const dateValue of possibleDates) {
+                    if (dateValue) {
+                        const parsed = new Date(dateValue);
+                        if (!isNaN(parsed.getTime())) {
+                            fileDate = parsed;
+                            break;
+                        }
+                    }
+                }
+                
+                // Se nenhuma data válida, usa data atual como fallback
+                if (!fileDate) {
+                    fileDate = now;
+                    KC.Logger?.warn(`StatsManager: Arquivo sem data válida, usando data atual: ${file.name}`);
+                }
+                
+                const daysDiff = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));
+                
+                // Contabiliza em TODOS os períodos aplicáveis (cumulativo)
+                if (daysDiff <= 1) newStats.periodos.hoje++;
+                if (daysDiff <= 7) newStats.periodos.semana++;
+                if (daysDiff <= 30) newStats.periodos.mes++;
+                if (daysDiff <= 90) newStats.periodos.tresMeses++;
+                if (daysDiff <= 180) newStats.periodos.seisMeses++;
+                if (daysDiff <= 365) newStats.periodos.ano++;
             });
 
             // Calcula relevância média
@@ -242,6 +292,22 @@
         getStats() {
             return { ...this.stats };
         }
+        
+        /**
+         * SPRINT 1.3.1: Obtém estatísticas de período
+         * Centraliza cálculo para evitar inconsistências
+         */
+        getPeriodStats() {
+            return this.stats.periodos || {
+                hoje: 0,
+                semana: 0,
+                mes: 0,
+                tresMeses: 0,
+                seisMeses: 0,
+                ano: 0,
+                todos: this.stats.arquivosEncontrados
+            };
+        }
 
         /**
          * Atualiza uma estatística específica
@@ -278,7 +344,17 @@
                 pendenteAnalise: 0,
                 altaRelevancia: 0,
                 mediaRelevancia: 0,
-                baixaRelevancia: 0
+                baixaRelevancia: 0,
+                // SPRINT 1.3.1: Inclui períodos no reset
+                periodos: {
+                    hoje: 0,
+                    semana: 0,
+                    mes: 0,
+                    tresMeses: 0,
+                    seisMeses: 0,
+                    ano: 0,
+                    todos: 0
+                }
             };
             
             this.emitStatsUpdate();

@@ -286,29 +286,44 @@
                     <h2>Análise IA Seletiva</h2>
                     <p>Configure os parâmetros para análise com IA.</p>
                     
+                    <!-- Botão de Configuração de APIs -->
+                    <div class="api-config-banner" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div>
+                                <h3 style="margin: 0 0 8px 0; color: #1e40af;">⚙️ Configuração de APIs de IA</h3>
+                                <p style="margin: 0; color: #3730a3;">Configure suas API keys e escolha entre providers locais (Ollama) ou cloud (OpenAI, Gemini, Claude)</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="KC.APIConfig.showConfigModal()" style="background: #3b82f6; min-width: 150px;">
+                                🔧 Configurar APIs
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="form-section">
                         <div class="form-group">
-                            <label class="form-label">Modelo de IA</label>
-                            <select class="form-control" id="ai-model">
-                                <option value="claude-sonnet-4" selected>Claude Sonnet 4 (Equilibrado)</option>
-                                <option value="claude-opus-4">Claude Opus 4 (Máxima qualidade)</option>
-                                <option value="gpt-4">GPT-4 (Alternativo)</option>
+                            <label class="form-label">Template de Análise</label>
+                            <select class="form-control" id="analysis-template">
+                                <option value="decisiveMoments" selected>Momentos Decisivos</option>
+                                <option value="technicalInsights">Insights Técnicos</option>
+                                <option value="projectAnalysis">Análise de Projetos</option>
                             </select>
+                            <small class="form-help">Cada template é otimizado para diferentes tipos de análise</small>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Limite de Tokens</label>
-                            <select class="form-control" id="token-limit">
-                                <option value="4000">Focada (4.000 tokens)</option>
-                                <option value="8000" selected>Detalhada (8.000 tokens)</option>
-                                <option value="16000">Completa (16.000 tokens)</option>
+                            <label class="form-label">Tamanho do Batch</label>
+                            <select class="form-control" id="batch-size">
+                                <option value="1">1 arquivo por vez (mais lento, mais preciso)</option>
+                                <option value="5" selected>5 arquivos (recomendado)</option>
+                                <option value="10">10 arquivos (mais rápido)</option>
                             </select>
+                            <small class="form-help">Processa múltiplos arquivos em paralelo para melhor performance</small>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label">Prompt Personalizado (opcional)</label>
-                            <textarea class="form-control" id="custom-prompt" rows="3" 
-                                      placeholder="Adicione instruções específicas para a análise..."></textarea>
+                            <label class="form-label">Contexto Adicional (opcional)</label>
+                            <textarea class="form-control" id="analysis-context" rows="3" 
+                                      placeholder="Adicione contexto específico para guiar a análise..."></textarea>
                         </div>
                         
                         <div class="analysis-preview">

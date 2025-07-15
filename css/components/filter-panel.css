@@ -47,6 +47,8 @@
     transform: translateY(-1px);
 }
 
+/* REMOVIDO: Estilos do toggle de exclusões inteligentes - funcionalidade redundante */
+
 /* Container dos Grupos de Filtro */
 .filter-groups-container {
     display: grid;

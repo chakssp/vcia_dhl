@@ -12,7 +12,8 @@
       "Bash(node:*)",
       "Bash(npm i:*)",
       "Bash(touch:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:127.0.0.1)"
     ],
     "deny": []
   }

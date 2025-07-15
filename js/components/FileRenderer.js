@@ -68,10 +68,11 @@
                     this.originalFiles = data.files || [];
                     console.log(`FileRenderer: ${this.originalFiles.length} arquivos originais descobertos`);
                     
-                    // Aplica exclusões apenas para exibição
+                    // SPRINT 1.3.1: NÃO aplica mais exclusões automáticas
                     if (this.originalFiles.length > 0) {
-                        this.files = this.applySmartExclusions([...this.originalFiles]);
-                        console.log(`FileRenderer: ${this.files.length} arquivos após exclusões para exibição`);
+                        // this.files = this.applySmartExclusions([...this.originalFiles]);
+                        this.files = [...this.originalFiles]; // Mantém TODOS os arquivos
+                        console.log(`FileRenderer: ${this.files.length} arquivos SEM exclusões`);
                     } else {
                         this.files = [];
                     }
@@ -95,11 +96,12 @@
                             itemsPerPage: this.pagination.itemsPerPage
                         };
                         
-                        // NOVO: Preserva arquivos originais e aplica exclusões para exibição
+                        // SPRINT 1.3.1: Preserva arquivos originais SEM exclusões
                         this.originalFiles = data.newValue || [];
-                        this.files = this.applySmartExclusions([...this.originalFiles]);
+                        // this.files = this.applySmartExclusions([...this.originalFiles]);
+                        this.files = [...this.originalFiles]; // Mantém TODOS os arquivos
                         
-                        console.log(`FileRenderer: STATE_CHANGED - ${this.originalFiles.length} originais, ${this.files.length} para exibição`);
+                        console.log(`FileRenderer: STATE_CHANGED - ${this.originalFiles.length} originais = ${this.files.length} para exibição (SEM EXCLUSÕES)`);
                         
                         // Re-renderiza preservando estado
                         this.renderFileList();
@@ -181,6 +183,21 @@
                     this.showFilesSection();
                 });
             }
+
+            // NOVO: Escuta evento CATEGORIES_CHANGED do CategoryManager
+            if (Events && Events.CATEGORIES_CHANGED) {
+                EventBus.on(Events.CATEGORIES_CHANGED, (data) => {
+                    console.log('FileRenderer: Evento CATEGORIES_CHANGED recebido', data);
+                    
+                    // Atualiza lista de categorias em modais abertos
+                    this.updateCategoryList();
+                    
+                    // Se a ação foi delete, re-renderiza arquivos para remover tags órfãs
+                    if (data.action === 'deleted') {
+                        this.renderFileList();
+                    }
+                });
+            }
         }
 
         /**
@@ -219,51 +236,7 @@
             }
         }
 
-        /**
-         * Sistema de Exclusão Proativa - Remove arquivos desnecessários
-         */
-        applySmartExclusions(files) {
-            const excludedPaths = [
-                '.trash',           // Lixeira do Obsidian
-                'node_modules',     // Dependências
-                '.git',             // Controle de versão
-                '.obsidian',        // Configurações Obsidian
-                'temp',             // Arquivos temporários
-                'cache'             // Cache
-            ];
-
-            const excludedNames = [
-                '.md',              // Arquivos só com extensão
-                'untitled',         // Arquivos sem nome
-                'new file',         // Arquivos padrão
-                'changelog',        // Logs de mudança
-                'readme'            // READMEs genéricos
-            ];
-
-            const filtered = files.filter(file => {
-                // Exclui por path
-                const hasExcludedPath = excludedPaths.some(excludedPath => 
-                    file.path.toLowerCase().includes(excludedPath.toLowerCase())
-                );
-
-                // Exclui por nome
-                const hasExcludedName = excludedNames.some(excludedName => 
-                    file.name.toLowerCase().includes(excludedName.toLowerCase())
-                );
-
-                // Exclui arquivos muito pequenos (provavelmente vazios)
-                const isTooSmall = file.size < 50;
-
-                return !hasExcludedPath && !hasExcludedName && !isTooSmall;
-            });
-
-            const excluded = files.length - filtered.length;
-            if (excluded > 0) {
-                console.log(`FileRenderer: ${excluded} arquivos excluídos proativamente (.trash, vazios, etc.)`);
-            }
-
-            return filtered;
-        }
+        // REMOVIDO: método applySmartExclusions() - redundante com filtros da ETAPA 1
 
         /**
          * Define o container onde renderizar a lista
@@ -495,7 +468,7 @@
         /**
          * Inicia análise de arquivo com IA
          */
-        /* ORIGINAL - PRESERVADO PARA ROLLBACK SE NECESSÁRIO
+        // CLASSIFICAÇÃO DINÂMICA RESTAURADA - Sem IA real (IA apenas na Etapa 4)
         analyzeFile(file, buttonElement) {
             console.log(`FileRenderer: Iniciando análise IA para ${file.name}`);
             
@@ -557,10 +530,9 @@
                 
             }, 2000); // Simula 2s de processamento
         }
-        */
         
-        // VERSÃO MODIFICADA - Integração com AnalysisManager
-        analyzeFile(file, buttonElement) {
+        /* VERSÃO COM IA REAL - DESATIVADA (usar apenas na Etapa 4)
+        analyzeFile_withRealAI(file, buttonElement) {
             console.log(`FileRenderer: Iniciando análise IA para ${file.name}`);
             
             // Verifica se AnalysisManager está disponível
@@ -671,6 +643,7 @@
                 }, 2000); // Simula 2s de processamento
             }
         }
+        */
 
         /**
          * Exibe conteúdo do arquivo em modal
@@ -1138,6 +1111,7 @@
         /**
          * Detecta tipo de análise do arquivo (conforme PRD)
          */
+        // CLASSIFICAÇÃO DINÂMICA RESTAURADA - Baseada em keywords
         detectAnalysisType(file) {
             const fileName = (file.name || '').toLowerCase();
             const content = (file.content || '').toLowerCase();
@@ -1162,10 +1136,24 @@
             
             return 'Aprendizado Geral';
         }
+        
+        /* VERSÃO COM FONTE ÚNICA - DESATIVADA (mantendo classificação local)
+        detectAnalysisType_withManager(file) {
+            // Delega para o AnalysisTypesManager (Single Source of Truth)
+            if (KC.AnalysisTypesManager && KC.AnalysisTypesManager.detectType) {
+                return KC.AnalysisTypesManager.detectType(file);
+            }
+            
+            // Fallback se o manager não estiver disponível
+            console.warn('AnalysisTypesManager não disponível, usando detecção local');
+            return 'Aprendizado Geral';
+        }
+        */
 
         /**
          * Calcula relevância aprimorada pós-análise
          */
+        // CLASSIFICAÇÃO DINÂMICA RESTAURADA
         calculateEnhancedRelevance(file) {
             let score = this.calculateRelevance(file) / 100; // Converte para 0-1
             
@@ -1187,6 +1175,24 @@
             
             return score;
         }
+        
+        /* VERSÃO COM FONTE ÚNICA - DESATIVADA
+        calculateEnhancedRelevance_withManager(file) {
+            let score = this.calculateRelevance(file) / 100; // Converte para 0-1
+            
+            // Usa AnalysisTypesManager para obter boost correto
+            if (KC.AnalysisTypesManager && KC.AnalysisTypesManager.getRelevanceBoost) {
+                const boost = KC.AnalysisTypesManager.getRelevanceBoost(file.analysisType);
+                score = Math.min(score + boost, 1.0);
+            } else {
+                // Fallback: boost padrão
+                console.warn('AnalysisTypesManager não disponível para boost de relevância');
+                score = Math.min(score + 0.05, 1.0);
+            }
+            
+            return score;
+        }
+        */
 
         /**
          * Cria modal de visualização de conteúdo
@@ -1432,6 +1438,8 @@
                 return;
             }
             
+            // CORREÇÃO: Usar CategoryManager em vez de criar diretamente
+            /* CÓDIGO ORIGINAL PRESERVADO PARA ROLLBACK:
             // Verifica se categoria já existe
             const existingCategories = this.getAvailableCategories();
             const categoryId = name.toLowerCase().replace(/\s+/g, '-');
@@ -1452,9 +1460,24 @@
             const categories = AppState.get('categories') || [];
             categories.push(newCategory);
             AppState.set('categories', categories);
+            */
+            
+            // NOVO: Usa CategoryManager para criar categoria
+            const newCategory = KC.CategoryManager.createCategory({
+                name: name,
+                color: color,
+                icon: '🏷️' // ícone padrão para categorias customizadas
+            });
+            
+            if (!newCategory) {
+                // CategoryManager já loga o erro, então apenas retornamos
+                nameInput.focus();
+                return;
+            }
             
             // ✅ CORREÇÃO: Atualização incremental em vez de recriar modal
-            this.updateCategoryList(newCategory.id);
+            // NOTA: updateCategoryList será chamado automaticamente via evento CATEGORIES_CHANGED
+            // this.updateCategoryList(newCategory.id);
             
             // Limpa form após atualização bem-sucedida
             nameInput.value = '';
@@ -1463,7 +1486,7 @@
             
             KC.showNotification({
                 type: 'success',
-                message: `Categoria '${name}' criada e aplicada com sucesso`
+                message: `Categoria '${name}' criada com sucesso`
             });
         }
 

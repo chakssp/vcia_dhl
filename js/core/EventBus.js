@@ -334,6 +334,13 @@
         EXECUTE_SYSTEM_REQUESTED: 'system:execute:requested',
         RESET_CONFIGURATION_REQUESTED: 'system:reset:requested',
         
+        // API Configuration
+        OPEN_API_CONFIG: 'api:config:open',
+        API_CONFIG_CHANGED: 'api:config:changed',
+        
+        // Categories
+        CATEGORIES_CHANGED: 'categories:changed',
+        
         // Erros
         ERROR_OCCURRED: 'error:occurred'
     };

@@ -248,6 +248,14 @@
                     'stats.lastUpdate': new Date().toISOString()
                 });
 
+                // Log detalhado para debug
+                console.log('DiscoveryManager: === RELATÓRIO FINAL DE DESCOBERTA ===');
+                console.log(`Total de arquivos verificados: ${this.stats.totalFiles}`);
+                console.log(`Arquivos com extensões suportadas: ${this.stats.matchedFiles}`);
+                console.log(`Arquivos descobertos (após filtros): ${finalFiles.length}`);
+                console.log(`Arquivos pulados: ${this.stats.skippedFiles}`);
+                console.log('==========================================');
+                
                 // Emite evento de conclusão
                 EventBus.emit(Events.FILES_DISCOVERED, {
                     files: finalFiles,
@@ -515,7 +523,7 @@
          * Escaneia diretório usando File System Access API
          * @private
          */
-        async _realDirectoryScan(directoryHandle, config, currentDepth = 0) {
+        async _realDirectoryScan(directoryHandle, configParam, currentDepth = 0) {
             // Verifica compatibilidade
             if (!KC.compatibility || !KC.compatibility.isSupported()) {
                 console.error('File System Access API não suportada - use Chrome/Edge 86+');
@@ -532,7 +540,12 @@
             });
 
             const files = [];
-            const supportedExtensions = ['.md', '.txt', '.docx', '.pdf'];
+            // Usa as extensões configuradas do parâmetro ou padrão
+            const filePatterns = configParam.filePatterns || ['*.md', '*.txt', '*.docx', '*.pdf', '*.gdoc'];
+            const supportedExtensions = filePatterns.map(pattern => 
+                pattern.replace('*', '').toLowerCase()
+            );
+            console.log('DiscoveryManager: Extensões suportadas:', supportedExtensions);
             
             try {
                 // Itera sobre os itens do diretório
@@ -544,15 +557,20 @@
                         const file = await entry.getFile();
                         const extension = '.' + file.name.split('.').pop().toLowerCase();
                         
+                        // SEMPRE incrementa totalFiles (mesmo que não seja suportado)
+                        this.stats.totalFiles++;
+                        
                         // Verifica se é um tipo de arquivo suportado
                         if (supportedExtensions.includes(extension)) {
+                            this.stats.matchedFiles++;
+                            // SPRINT 1.3.1: DESATIVADO - Sem filtros automáticos
                             // Aplica filtros de data e tamanho
-                            if (this._passesFilters(file, config)) {
+                            // if (this._passesFilters(file, config)) {
                                 const metadata = await this._extractRealMetadata(file, entry, directoryHandle.name);
                                 files.push(metadata);
                                 
                                 // Atualiza estatísticas
-                                this.stats.totalFiles++;
+                                // this.stats.totalFiles++; // JÁ INCREMENTADO ACIMA
                                 
                                 // Feedback de progresso
                                 if (files.length % 5 === 0) {
@@ -564,19 +582,19 @@
                                         details: `${files.length} arquivos encontrados`
                                     });
                                 }
-                            } else {
-                                this.stats.skippedFiles++;
-                            }
+                            // } else {
+                            //     this.stats.skippedFiles++;
+                            // }
                         }
                         
                     } else if (entry.kind === 'directory') {
                         // Scanning recursivo se configurado
-                        const shouldRecurse = config.subfolderDepth === 0 || currentDepth < config.subfolderDepth;
+                        const shouldRecurse = configParam.subfolderDepth === 0 || currentDepth < configParam.subfolderDepth;
                         
                         if (shouldRecurse) {
                             try {
                                 const subDirHandle = await directoryHandle.getDirectoryHandle(entry.name);
-                                const subFiles = await this._realDirectoryScan(subDirHandle, config, currentDepth + 1);
+                                const subFiles = await this._realDirectoryScan(subDirHandle, configParam, currentDepth + 1);
                                 files.push(...subFiles);
                             } catch (error) {
                                 console.warn(`Erro ao acessar subdiretório ${entry.name}:`, error);
@@ -679,48 +697,49 @@
         }
 
         /**
+         * SPRINT 1.3.1: DESATIVADO - Método de filtros automáticos comentado
          * Verifica se um arquivo passa pelos filtros configurados
          * @private
          */
-        _passesFilters(file, config) {
-            // Filtro de tamanho mínimo
-            if (config.minFileSize && file.size < config.minFileSize) {
-                return false;
-            }
-
-            // Filtro de data
-            if (config.timeRange && config.timeRange !== 'all') {
-                const fileDate = new Date(file.lastModified);
-                const now = new Date();
-                
-                let cutoffDate;
-                switch (config.timeRange) {
-                    case '1m':
-                        cutoffDate = new Date(now.setMonth(now.getMonth() - 1));
-                        break;
-                    case '3m':
-                        cutoffDate = new Date(now.setMonth(now.getMonth() - 3));
-                        break;
-                    case '6m':
-                        cutoffDate = new Date(now.setMonth(now.getMonth() - 6));
-                        break;
-                    case '1y':
-                        cutoffDate = new Date(now.setFullYear(now.getFullYear() - 1));
-                        break;
-                    case '2y':
-                        cutoffDate = new Date(now.setFullYear(now.getFullYear() - 2));
-                        break;
-                    default:
-                        return true;
-                }
-                
-                if (fileDate < cutoffDate) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        // _passesFilters(file, config) {
+        //     // Filtro de tamanho mínimo
+        //     if (config.minFileSize && file.size < config.minFileSize) {
+        //         return false;
+        //     }
+        //
+        //     // Filtro de data
+        //     if (config.timeRange && config.timeRange !== 'all') {
+        //         const fileDate = new Date(file.lastModified);
+        //         const now = new Date();
+        //         
+        //         let cutoffDate;
+        //         switch (config.timeRange) {
+        //             case '1m':
+        //                 cutoffDate = new Date(now.setMonth(now.getMonth() - 1));
+        //                 break;
+        //             case '3m':
+        //                 cutoffDate = new Date(now.setMonth(now.getMonth() - 3));
+        //                 break;
+        //             case '6m':
+        //                 cutoffDate = new Date(now.setMonth(now.getMonth() - 6));
+        //                 break;
+        //             case '1y':
+        //                 cutoffDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        //                 break;
+        //             case '2y':
+        //                 cutoffDate = new Date(now.setFullYear(now.getFullYear() - 2));
+        //                 break;
+        //             default:
+        //                 return true;
+        //         }
+        //         
+        //         if (fileDate < cutoffDate) {
+        //             return false;
+        //         }
+        //     }
+        //
+        //     return true;
+        // }
 
         // REMOVIDO: _fallbackDirectoryScan - sem simulações
 

@@ -162,44 +162,81 @@
         async processBatch(batch) {
             KC.Logger?.info(`Processando batch de ${batch.length} arquivo(s)`);
             
-            // Por enquanto, simula análise
-            // TODO: Integrar com APIs reais
+            // Verifica se os managers necessários estão disponíveis
+            if (!KC.AIAPIManager || !KC.PromptManager || !KC.AnalysisAdapter) {
+                KC.Logger?.error('Managers de IA não disponíveis');
+                throw new Error('Sistema de IA não inicializado corretamente');
+            }
+            
             for (const item of batch) {
                 try {
                     item.status = 'processing';
                     this.emitItemUpdate(item);
                     
-                    // Simula processamento
-                    await this.delay(2000);
+                    const startTime = Date.now();
                     
-                    // Simula resultado
+                    // Prepara o prompt usando PromptManager
+                    const promptData = KC.PromptManager.prepare(
+                        item.file,
+                        item.config.template || 'decisiveMoments',
+                        { additionalContext: item.config.context }
+                    );
+                    
+                    // Chama API real usando AIAPIManager
+                    KC.Logger?.info(`Analisando arquivo: ${item.file.name}`);
+                    const rawResponse = await KC.AIAPIManager.analyze(item.file, {
+                        model: item.config.model,
+                        temperature: promptData.temperature || item.config.temperature,
+                        maxTokens: promptData.maxTokens || item.config.maxTokens,
+                        template: item.config.template
+                    });
+                    
+                    // Normaliza resposta usando AnalysisAdapter
+                    const normalizedAnalysis = KC.AnalysisAdapter.normalize(
+                        rawResponse,
+                        KC.AIAPIManager.getActiveProviderInfo().id,
+                        item.config.template
+                    );
+                    
+                    // Valida resposta
+                    if (!KC.AnalysisAdapter.validate(normalizedAnalysis, item.config.template)) {
+                        throw new Error('Resposta da análise inválida');
+                    }
+                    
+                    // Calcula métricas
+                    const processingTime = Date.now() - startTime;
+                    const providerInfo = KC.AIAPIManager.getActiveProviderInfo();
+                    
+                    // Estrutura resultado final
                     const result = {
                         analysis: {
-                            momentos_decisivos: [
-                                {
-                                    tipo: "insight",
-                                    titulo: "Insight Simulado",
-                                    descricao: "Este é um resultado simulado da análise",
-                                    contexto: "Contexto do arquivo analisado",
-                                    impacto: "Alto",
-                                    categoria: "Desenvolvimento"
-                                }
-                            ],
-                            temas_principais: ["simulação", "teste"],
-                            palavras_chave: ["análise", "ia", "teste"],
-                            nivel_relevancia: 8,
-                            potencial_projeto: {
-                                tem_potencial: true,
-                                area: "Automação",
-                                descricao: "Potencial para automação de processos"
-                            }
+                            analysisType: normalizedAnalysis.analysisType,
+                            moments: normalizedAnalysis.moments || [],
+                            categories: normalizedAnalysis.categories || [],
+                            summary: normalizedAnalysis.summary,
+                            relevanceScore: normalizedAnalysis.relevanceScore,
+                            // Campos adicionais baseados no template
+                            ...(item.config.template === 'technicalInsights' && {
+                                technicalPoints: normalizedAnalysis.technicalPoints,
+                                implementation: normalizedAnalysis.implementation,
+                                complexity: normalizedAnalysis.complexity
+                            }),
+                            ...(item.config.template === 'projectAnalysis' && {
+                                projectPotential: normalizedAnalysis.projectPotential,
+                                requiredResources: normalizedAnalysis.requiredResources,
+                                nextSteps: normalizedAnalysis.nextSteps,
+                                feasibility: normalizedAnalysis.feasibility
+                            })
                         },
                         metadata: {
-                            processingTime: 2000,
-                            model: item.config.model,
+                            processingTime: processingTime,
+                            model: item.config.model || providerInfo.defaultModel,
+                            provider: providerInfo.id,
                             template: item.config.template,
-                            tokensUsed: 1500,
-                            cost: 0.003
+                            timestamp: new Date().toISOString(),
+                            // Estimativa de tokens/custo (ajustar conforme provider)
+                            tokensUsed: Math.ceil((item.file.content?.length || 0) / 4) + 500,
+                            cost: providerInfo.isLocal ? 0 : 0.002 // Custo estimado para providers cloud
                         }
                     };
                     
@@ -320,12 +357,23 @@
                         }
                     }
                     
-                    // Usa métodos existentes do FileRenderer
-                    analysisType = KC.FileRenderer.detectAnalysisType(files[fileIndex]);
-                    relevanceScore = KC.FileRenderer.calculateEnhancedRelevance({
-                        ...files[fileIndex],
-                        analysisType
-                    });
+                    // MODIFICADO: Usa fonte única de tipos (Lei 0 e Lei 11)
+                    if (KC.AnalysisTypesManager && KC.AnalysisTypesManager.detectType) {
+                        analysisType = KC.AnalysisTypesManager.detectType(files[fileIndex]);
+                        // Calcula relevância base primeiro
+                        const baseRelevance = KC.FileRenderer ? 
+                            KC.FileRenderer.calculateRelevance(files[fileIndex]) / 100 : 0.5;
+                        // Aplica boost do tipo
+                        const boost = KC.AnalysisTypesManager.getRelevanceBoost(analysisType);
+                        relevanceScore = Math.min(baseRelevance + boost, 1.0);
+                    } else {
+                        // Fallback: usa métodos do FileRenderer se disponíveis
+                        analysisType = KC.FileRenderer.detectAnalysisType(files[fileIndex]);
+                        relevanceScore = KC.FileRenderer.calculateEnhancedRelevance({
+                            ...files[fileIndex],
+                            analysisType
+                        });
+                    }
                 }
                 
                 files[fileIndex] = {
