@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Filtros - Correção</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    
+    <style>
+        body {
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .log-output {
+            background: #f3f4f6;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Correção dos Filtros</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Eventos</h2>
+        <button class="test-button" onclick="testFilterEvent()">Simular FILES_FILTERED</button>
+        <button class="test-button" onclick="testFilterManager()">Testar FilterManager</button>
+        <div id="event-log" class="log-output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Filtros Reais</h2>
+        <div class="filter-bar">
+            <button class="filter-button" data-filter="all">Todos</button>
+            <button class="filter-button" data-filter="alta-relevancia">Alta Relevância (70%+)</button>
+            <button class="filter-button" data-filter="media-relevancia">Média Relevância (50-69%)</button>
+            <button class="filter-button" data-filter="pendente-analise">Pendente Análise</button>
+            <button class="filter-button" data-filter="ja-analisados">Já Analisados</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Lista de Arquivos</h2>
+        <div id="files-container"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        // Inicialização
+        const KC = window.KnowledgeConsolidator;
+        let logElement = document.getElementById('event-log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // Dados de teste
+        const testFiles = [
+            {
+                name: 'insight-decisao.md',
+                path: '/test/insight-decisao.md',
+                size: 5000,
+                modified: new Date(),
+                relevanceScore: 85,
+                content: 'Este documento contém insights importantes sobre decisão estratégica e transformação.',
+                analyzed: false
+            },
+            {
+                name: 'notas-reuniao.txt',
+                path: '/test/notas-reuniao.txt',
+                size: 2000,
+                modified: new Date(),
+                relevanceScore: 45,
+                content: 'Notas gerais da reunião de equipe.',
+                analyzed: true
+            },
+            {
+                name: 'projeto-breakthrough.md',
+                path: '/test/projeto-breakthrough.md',
+                size: 8000,
+                modified: new Date(),
+                relevanceScore: 92,
+                content: 'Documento sobre breakthrough técnico e inovação no projeto.',
+                analyzed: false
+            },
+            {
+                name: 'arquivo-comum.txt',
+                path: '/test/arquivo-comum.txt',
+                size: 1000,
+                modified: new Date(),
+                relevanceScore: 15,
+                content: 'Arquivo comum sem palavras-chave relevantes.',
+                analyzed: true
+            }
+        ];
+        
+        // Inicializa componentes
+        window.addEventListener('load', () => {
+            log('Inicializando teste...');
+            
+            // Configura AppState
+            KC.AppState.set('files', testFiles);
+            log(`AppState: ${testFiles.length} arquivos carregados`);
+            
+            // Inicializa FileRenderer
+            KC.FileRenderer.initialize();
+            KC.FileRenderer.setContainer('files-container');
+            log('FileRenderer inicializado');
+            
+            // Inicializa FilterManager
+            if (KC.FilterManager) {
+                KC.FilterManager.initialize();
+                log('FilterManager inicializado');
+            } else {
+                log('⚠️ FilterManager não encontrado!');
+            }
+            
+            // Monitora eventos
+            KC.EventBus.on(KC.Events.FILES_FILTERED, (data) => {
+                log(`📨 FILES_FILTERED recebido: ${data.originalFiles.length} → ${data.filteredFiles.length} arquivos`);
+            });
+        });
+        
+        // Função de teste: Simular evento FILES_FILTERED
+        function testFilterEvent() {
+            log('🚀 Simulando evento FILES_FILTERED...');
+            
+            // Filtra apenas alta relevância
+            const filtered = testFiles.filter(f => f.relevanceScore >= 70);
+            
+            KC.EventBus.emit(KC.Events.FILES_FILTERED, {
+                originalFiles: testFiles,
+                filteredFiles: filtered,
+                filters: { relevance: 'alta' }
+            });
+            
+            log(`✅ Evento emitido: ${filtered.length} arquivos com alta relevância`);
+        }
+        
+        // Função de teste: Testar FilterManager
+        function testFilterManager() {
+            log('🔍 Testando FilterManager.applyCurrentFilters()...');
+            
+            if (KC.FilterManager && KC.FilterManager.applyCurrentFilters) {
+                KC.FilterManager.applyCurrentFilters();
+                log('✅ applyCurrentFilters() executado');
+            } else {
+                log('❌ FilterManager.applyCurrentFilters não disponível');
+            }
+        }
+        
+        // Adiciona listeners aos botões de filtro
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const filter = e.target.dataset.filter;
+                log(`🎯 Filtro clicado: ${filter}`);
+                
+                // Remove active de todos
+                document.querySelectorAll('.filter-button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Aplica filtro via FilterManager
+                if (KC.FilterManager && KC.FilterManager.activateFilter) {
+                    KC.FilterManager.activateFilter(filter);
+                } else {
+                    // Fallback direto
+                    KC.FileRenderer.currentFilter = filter;
+                    KC.FileRenderer.renderFileList();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

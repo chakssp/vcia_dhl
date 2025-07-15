@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Word Cloud Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste de Integração - Word Cloud Generator</h1>
+        
+        <div class="test-section">
+            <h2>📦 Componentes Carregados</h2>
+            <div id="components-test"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Teste de Geração de Word Cloud</h2>
+            <button onclick="testWordCloudGeneration()">Gerar Word Cloud de Teste</button>
+            <div id="wordcloud-test"></div>
+            <div id="wordcloud-display-test" style="margin-top: 20px; min-height: 100px; border: 1px dashed #ccc; padding: 15px; text-align: center;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔗 Teste de Pipeline Integration</h2>
+            <button onclick="testPipelineIntegration()">Testar Integração com Pipeline</button>
+            <div id="pipeline-test"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>💾 Teste de Storage Manager</h2>
+            <button onclick="testStorageOperations()">Testar Operações de Storage</button>
+            <div id="storage-test"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Dashboard Integration</h2>
+            <button onclick="testDashboardIntegration()">Testar Dashboard Integration</button>
+            <div id="dashboard-test"></div>
+        </div>
+    </div>
+
+    <!-- Scripts do projeto -->
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/core/AppController.js"></script>
+    <script src="js/utils/Logger.js"></script>
+    <script src="js/utils/WordCloudGenerator.js"></script>
+    <script src="js/components/DashboardRenderer.js"></script>
+    
+    <script>
+        // Inicializa namespace global
+        window.KnowledgeConsolidator = window.KnowledgeConsolidator || {};
+        const KC = window.KnowledgeConsolidator;
+        
+        // Dados de teste
+        const testFiles = [
+            {
+                name: "estrategia-decisao.md",
+                content: "Este arquivo contém informações sobre decisão estratégica para transformação digital. Insights importantes sobre aprendizado organizacional e breakthrough tecnológico.",
+                size: 1024,
+                lastModified: new Date().toISOString(),
+                relevanceScore: 85
+            },
+            {
+                name: "projeto-inovacao.txt", 
+                content: "Documento sobre inovação e transformação. Decisões importantes para mudança cultural e aprendizado contínuo.",
+                size: 2048,
+                lastModified: new Date(Date.now() - 86400000).toISOString(),
+                relevanceScore: 75
+            },
+            {
+                name: "insights-pessoais.md",
+                content: "Reflexões pessoais sobre breakthrough em projetos. Insights sobre decisão e transformação pessoal.",
+                size: 512,
+                lastModified: new Date(Date.now() - 172800000).toISOString(),
+                relevanceScore: 90
+            }
+        ];
+        
+        function logResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.textContent = message;
+            element.appendChild(resultDiv);
+        }
+        
+        function clearResults(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+        
+        // Teste 1: Componentes Carregados
+        function testComponentsLoaded() {
+            clearResults('components-test');
+            
+            const components = [
+                'EventBus', 'AppState', 'AppController', 
+                'Logger', 'WordCloudGenerator', 'DashboardRenderer'
+            ];
+            
+            components.forEach(comp => {
+                if (KC[comp]) {
+                    logResult('components-test', `✅ KC.${comp} carregado`, 'success');
+                } else {
+                    logResult('components-test', `❌ KC.${comp} não encontrado`, 'error');
+                }
+            });
+            
+            // Testa métodos específicos do WordCloudGenerator
+            if (KC.WordCloudGenerator) {
+                if (typeof KC.WordCloudGenerator.generateWordCloud === 'function') {
+                    logResult('components-test', '✅ Método generateWordCloud disponível', 'success');
+                } else {
+                    logResult('components-test', '❌ Método generateWordCloud não encontrado', 'error');
+                }
+            }
+        }
+        
+        // Teste 2: Geração de Word Cloud
+        async function testWordCloudGeneration() {
+            clearResults('wordcloud-test');
+            
+            if (!KC.WordCloudGenerator) {
+                logResult('wordcloud-test', '❌ WordCloudGenerator não disponível', 'error');
+                return;
+            }
+            
+            try {
+                logResult('wordcloud-test', '🔄 Gerando word cloud...', 'info');
+                
+                // Simula dados no AppState
+                KC.AppState.set('files', testFiles);
+                
+                const wordCloudData = await KC.WordCloudGenerator.generateWordCloud({
+                    files: testFiles,
+                    maxWords: 15,
+                    minFrequency: 1
+                });
+                
+                logResult('wordcloud-test', '✅ Word cloud gerada com sucesso', 'success');
+                
+                // Verifica se metadata existe e tem as propriedades esperadas
+                if (wordCloudData && wordCloudData.metadata) {
+                    logResult('wordcloud-test', `📊 Total de palavras: ${wordCloudData.metadata.totalWords || 0}`, 'info');
+                    logResult('wordcloud-test', `🎯 Keywords encontradas: ${wordCloudData.metadata.keywordCount || 0}`, 'info');
+                } else {
+                    logResult('wordcloud-test', '⚠️ Metadata não encontrada nos dados', 'info');
+                    console.log('WordCloud data recebida:', wordCloudData);
+                }
+                
+                // Exibe word cloud visualmente
+                displayTestWordCloud(wordCloudData);
+                
+            } catch (error) {
+                logResult('wordcloud-test', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro na geração de word cloud:', error);
+            }
+        }
+        
+        function displayTestWordCloud(wordCloudData) {
+            const display = document.getElementById('wordcloud-display-test');
+            
+            if (!wordCloudData || !wordCloudData.words || wordCloudData.words.length === 0) {
+                display.innerHTML = '<em>Nenhuma palavra encontrada</em>';
+                return;
+            }
+            
+            const wordsHtml = wordCloudData.words.map(word => `
+                <span style="font-size: ${word.size}px; color: ${word.color}; 
+                            font-weight: 600; margin: 4px; display: inline-block;
+                            padding: 2px 6px; border-radius: 12px;
+                            ${word.isKeyword ? 'border: 2px solid ' + word.color + '; background: rgba(37,99,235,0.1);' : ''}"
+                      title="Freq: ${word.frequency} | Peso: ${(word.weight * 100).toFixed(1)}%">
+                    ${word.text}
+                </span>
+            `).join(' ');
+            
+            display.innerHTML = wordsHtml;
+        }
+        
+        // Teste 3: Pipeline Integration
+        function testPipelineIntegration() {
+            clearResults('pipeline-test');
+            
+            // Simula dados descobertos
+            KC.AppState.set('files', testFiles);
+            
+            // Testa se FileRenderer seria detectado
+            if (KC.FileRenderer) {
+                logResult('pipeline-test', '✅ FileRenderer detectado', 'success');
+            } else {
+                logResult('pipeline-test', '⚠️ FileRenderer não carregado (normal em teste)', 'info');
+            }
+            
+            // Testa métodos de integração
+            if (KC.WordCloudGenerator) {
+                const files = KC.WordCloudGenerator.getFilteredFiles();
+                logResult('pipeline-test', `📁 Arquivos obtidos via pipeline: ${files.length}`, 'info');
+                
+                const keywords = KC.WordCloudGenerator.getCombinedKeywords();
+                logResult('pipeline-test', `🔑 Keywords combinadas: ${keywords.length}`, 'info');
+                logResult('pipeline-test', `📝 Keywords: ${keywords.join(', ')}`, 'info');
+            }
+        }
+        
+        // Teste 4: Storage Operations
+        async function testStorageOperations() {
+            clearResults('storage-test');
+            
+            if (!KC.WordCloudGenerator) {
+                logResult('storage-test', '❌ WordCloudGenerator não disponível', 'error');
+                return;
+            }
+            
+            try {
+                // Testa backup
+                const backup = await KC.WordCloudGenerator.exportBackup();
+                if (backup) {
+                    logResult('storage-test', '✅ Backup exportado com sucesso', 'success');
+                    logResult('storage-test', `📄 Tamanho do backup: ${backup.length} caracteres`, 'info');
+                } else {
+                    logResult('storage-test', '⚠️ Backup vazio (normal se não há dados)', 'info');
+                }
+                
+                // Testa limpeza
+                const cleared = await KC.WordCloudGenerator.clearWordCloudData();
+                logResult('storage-test', cleared ? '✅ Dados limpos' : '❌ Erro ao limpar', cleared ? 'success' : 'error');
+                
+                // Testa estatísticas
+                const stats = KC.WordCloudGenerator.getStatistics();
+                logResult('storage-test', `📊 Estatísticas obtidas: ${JSON.stringify(stats)}`, 'info');
+                
+            } catch (error) {
+                logResult('storage-test', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+        
+        // Teste 5: Dashboard Integration
+        function testDashboardIntegration() {
+            clearResults('dashboard-test');
+            
+            if (!KC.DashboardRenderer) {
+                logResult('dashboard-test', '❌ DashboardRenderer não disponível', 'error');
+                return;
+            }
+            
+            // Verifica se método renderWordCloudSection existe
+            if (typeof KC.DashboardRenderer.renderWordCloudSection === 'function') {
+                logResult('dashboard-test', '✅ Método renderWordCloudSection encontrado', 'success');
+            } else {
+                logResult('dashboard-test', '❌ Método renderWordCloudSection não encontrado', 'error');
+            }
+            
+            // Verifica métodos de controle
+            const methods = [
+                'generateAndDisplayWordCloud',
+                'updateWordCloud', 
+                'refreshWordCloud'
+            ];
+            
+            methods.forEach(method => {
+                if (typeof KC.DashboardRenderer[method] === 'function') {
+                    logResult('dashboard-test', `✅ Método ${method} encontrado`, 'success');
+                } else {
+                    logResult('dashboard-test', `❌ Método ${method} não encontrado`, 'error');
+                }
+            });
+            
+            logResult('dashboard-test', '📋 Integração com Dashboard validada', 'info');
+        }
+        
+        // Executa testes iniciais
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testComponentsLoaded();
+            }, 100);
+        });
+    </script>
+</body>
+</html>

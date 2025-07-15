@@ -1,6 +1,64 @@
+
 /* ========================================
-   ESTILOS PRINCIPAIS - Knowledge Consolidator
+   DASHBOARD DE INSIGHTS (ETAPA 3)
    ======================================== */
+
+.dashboard-container {
+    padding: var(--spacing-lg);
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+}
+
+.theme-group {
+    margin-bottom: var(--spacing-xl);
+}
+
+.theme-group h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.insight-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+.insight-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.insight-content {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+.insight-content mark {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.insight-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+    padding-top: var(--spacing-sm);
+}
+
+
 
 /* === RESET E BASE === */
 *, *::before, *::after {
@@ -111,6 +169,29 @@ a:hover {
 .main-container {
   flex: 1;
   padding: var(--spacing-lg) 0;
+}
+
+/* NOVO: Layout flexbox para conteúdo e stats lado a lado */
+.main-content-wrapper {
+  display: flex;
+  gap: var(--spacing-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  align-items: flex-start;
+}
+
+.main-content-wrapper .content-section {
+  flex: 1;
+  min-width: 0; /* Previne overflow de conteúdo */
+}
+
+.main-content-wrapper .stats-section {
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--spacing-lg);
+  max-height: calc(100vh - 2 * var(--spacing-lg));
+  overflow-y: auto;
 }
 
 /* === WORKFLOW SECTION === */

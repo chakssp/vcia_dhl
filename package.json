@@ -1,7 +1,7 @@
 {
   "name": "knowledge-consolidator",
   "version": "1.0.0",
-  "description": "Consolidador de Conhecimento Pessoal - Sistema para descoberta automatizada de momentos decisivos",
+  "description": "V///Alliances vcia.com.br - Descoberta do jogo: Valores, Visões e Ações",
   "main": "index.html",
   "scripts": {
     "serve": "python3 -m http.server 8080",
@@ -16,7 +16,7 @@
     "rag-preparation",
     "vanilla-js"
   ],
-  "author": "Knowledge Consolidator Team",
+  "author": "Fernando Brito - brito@vcia.com.br",
   "license": "MIT",
   "devDependencies": {
     "eslint": "^8.45.0",

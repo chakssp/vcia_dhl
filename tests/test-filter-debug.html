@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug de Filtros - Análise Completa</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    
+    <style>
+        body {
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: #f9fafb;
+        }
+        .debug-button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .debug-button:hover {
+            background: #2563eb;
+        }
+        .debug-output {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-ok { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-warning { background: #f59e0b; }
+        h2 { color: #1f2937; margin-top: 0; }
+        .filter-tab {
+            padding: 8px 16px;
+            margin: 0 5px;
+            border: 1px solid #d1d5db;
+            background: white;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .filter-tab.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .tab-badge {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Completo de Filtros</h1>
+    
+    <!-- Seção 1: Status dos Componentes -->
+    <div class="debug-section">
+        <h2>1. Status dos Componentes</h2>
+        <button class="debug-button" onclick="checkComponents()">Verificar Componentes</button>
+        <button class="debug-button" onclick="checkEventListeners()">Verificar Event Listeners</button>
+        <button class="debug-button" onclick="checkAppState()">Verificar AppState</button>
+        <div id="component-status" class="debug-output"></div>
+    </div>
+    
+    <!-- Seção 2: Dados de Teste -->
+    <div class="debug-section">
+        <h2>2. Dados de Teste</h2>
+        <button class="debug-button" onclick="loadTestData()">Carregar Dados de Teste</button>
+        <button class="debug-button" onclick="showCurrentFiles()">Mostrar Arquivos Atuais</button>
+        <button class="debug-button" onclick="calculateAllRelevance()">Calcular Relevância</button>
+        <div id="data-output" class="debug-output"></div>
+    </div>
+    
+    <!-- Seção 3: Filtros -->
+    <div class="debug-section">
+        <h2>3. Interface de Filtros</h2>
+        <div class="filter-tabs" id="filter-tabs">
+            <button class="filter-tab active" data-filter="all" onclick="testFilter('all')">
+                Todos <span class="tab-badge" id="badge-all">0</span>
+            </button>
+            <button class="filter-tab" data-filter="high" onclick="testFilter('high')">
+                Alta Relevância <span class="tab-badge" id="badge-high">0</span>
+            </button>
+            <button class="filter-tab" data-filter="medium" onclick="testFilter('medium')">
+                Média Relevância <span class="tab-badge" id="badge-medium">0</span>
+            </button>
+            <button class="filter-tab" data-filter="pending" onclick="testFilter('pending')">
+                Pendente Análise <span class="tab-badge" id="badge-pending">0</span>
+            </button>
+            <button class="filter-tab" data-filter="analyzed" onclick="testFilter('analyzed')">
+                Já Analisados <span class="tab-badge" id="badge-analyzed">0</span>
+            </button>
+        </div>
+        <div id="filter-output" class="debug-output" style="margin-top: 20px;"></div>
+    </div>
+    
+    <!-- Seção 4: Eventos -->
+    <div class="debug-section">
+        <h2>4. Monitoramento de Eventos</h2>
+        <button class="debug-button" onclick="startEventMonitoring()">Iniciar Monitoramento</button>
+        <button class="debug-button" onclick="clearEventLog()">Limpar Log</button>
+        <div id="event-log" class="debug-output"></div>
+    </div>
+    
+    <!-- Seção 5: Lista de Arquivos -->
+    <div class="debug-section">
+        <h2>5. Lista de Arquivos Renderizada</h2>
+        <div id="files-container"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        // Namespace
+        const KC = window.KnowledgeConsolidator;
+        
+        // Dados de teste
+        const testFiles = [
+            {
+                name: 'decisao-estrategica.md',
+                path: '/test/decisao-estrategica.md',
+                size: 5000,
+                modified: new Date(),
+                relevanceScore: 0.85,
+                content: 'Este documento contém uma decisão estratégica importante sobre transformação digital e insights de negócio.',
+                analyzed: false,
+                archived: false
+            },
+            {
+                name: 'notas-reuniao.txt',
+                path: '/test/notas-reuniao.txt',
+                size: 2000,
+                modified: new Date(),
+                relevanceScore: 0.45,
+                content: 'Notas gerais da reunião semanal da equipe.',
+                analyzed: true,
+                archived: false
+            },
+            {
+                name: 'breakthrough-tecnico.md',
+                path: '/test/breakthrough-tecnico.md',
+                size: 8000,
+                modified: new Date(),
+                relevanceScore: 0.92,
+                content: 'Documento sobre breakthrough técnico com insights importantes para o projeto de inovação.',
+                analyzed: false,
+                archived: false
+            },
+            {
+                name: 'arquivo-comum.txt',
+                path: '/test/arquivo-comum.txt',
+                size: 1000,
+                modified: new Date(),
+                relevanceScore: 0.15,
+                content: 'Arquivo comum sem palavras-chave relevantes ou conteúdo estratégico.',
+                analyzed: true,
+                archived: false
+            },
+            {
+                name: 'aprendizado-equipe.md',
+                path: '/test/aprendizado-equipe.md',
+                size: 3500,
+                modified: new Date(),
+                relevanceScore: 0.68,
+                content: 'Lições aprendidas e insights da equipe sobre o último sprint.',
+                analyzed: false,
+                archived: false
+            }
+        ];
+        
+        // Funções de Debug
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const symbols = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            };
+            return `[${timestamp}] ${symbols[type]} ${message}`;
+        }
+        
+        function checkComponents() {
+            const output = document.getElementById('component-status');
+            let status = '';
+            
+            // Verifica componentes principais
+            const components = [
+                { name: 'EventBus', obj: KC.EventBus },
+                { name: 'AppState', obj: KC.AppState },
+                { name: 'PreviewUtils', obj: KC.PreviewUtils },
+                { name: 'FilterManager', obj: KC.FilterManager },
+                { name: 'FileRenderer', obj: KC.FileRenderer }
+            ];
+            
+            components.forEach(comp => {
+                const exists = comp.obj !== undefined;
+                const initialized = exists && (comp.obj.initialized || comp.obj.filters || comp.obj.files !== undefined);
+                
+                status += log(`${comp.name}: ${exists ? 'Carregado' : 'NÃO ENCONTRADO'}`, exists ? 'success' : 'error') + '\n';
+                if (exists && comp.name === 'FilterManager') {
+                    status += `  → Filtros definidos: ${comp.obj.filters ? 'SIM' : 'NÃO'}\n`;
+                }
+                if (exists && comp.name === 'FileRenderer') {
+                    status += `  → Container definido: ${comp.obj.container ? 'SIM' : 'NÃO'}\n`;
+                }
+            });
+            
+            output.textContent = status;
+        }
+        
+        function checkEventListeners() {
+            const output = document.getElementById('component-status');
+            let status = log('Verificando Event Listeners...', 'info') + '\n\n';
+            
+            // Verifica eventos registrados
+            const events = ['FILES_FILTERED', 'FILTER_APPLIED', 'FILTER_CHANGED'];
+            
+            events.forEach(eventName => {
+                const eventKey = KC.Events[eventName];
+                if (eventKey && KC.EventBus._events && KC.EventBus._events[eventKey]) {
+                    const listeners = KC.EventBus._events[eventKey];
+                    status += log(`${eventName}: ${listeners.length} listener(s)`, 'success') + '\n';
+                } else {
+                    status += log(`${eventName}: NENHUM listener`, 'warning') + '\n';
+                }
+            });
+            
+            output.textContent = status;
+        }
+        
+        function checkAppState() {
+            const output = document.getElementById('component-status');
+            const files = KC.AppState.get('files') || [];
+            const filters = KC.AppState.get('filters') || {};
+            
+            let status = log('Estado do AppState:', 'info') + '\n\n';
+            status += `Arquivos: ${files.length}\n`;
+            status += `Filtros salvos: ${JSON.stringify(filters, null, 2)}\n`;
+            
+            output.textContent = status;
+        }
+        
+        function loadTestData() {
+            const output = document.getElementById('data-output');
+            
+            // Carrega dados no AppState
+            KC.AppState.set('files', testFiles);
+            
+            output.textContent = log('Dados de teste carregados!', 'success') + '\n\n';
+            output.textContent += `Total de arquivos: ${testFiles.length}\n\n`;
+            
+            testFiles.forEach(file => {
+                output.textContent += `📄 ${file.name}\n`;
+                output.textContent += `   Relevância: ${Math.round(file.relevanceScore * 100)}%\n`;
+                output.textContent += `   Status: ${file.analyzed ? 'Analisado' : 'Pendente'}\n`;
+                output.textContent += `   Tamanho: ${file.size} bytes\n\n`;
+            });
+            
+            // Inicializa componentes
+            if (KC.FilterManager) {
+                KC.FilterManager.initialize();
+                output.textContent += log('\nFilterManager inicializado', 'success');
+            }
+            
+            if (KC.FileRenderer) {
+                KC.FileRenderer.initialize();
+                KC.FileRenderer.setContainer('files-container');
+                output.textContent += log('\nFileRenderer inicializado', 'success');
+            }
+            
+            updateBadges();
+        }
+        
+        function showCurrentFiles() {
+            const output = document.getElementById('data-output');
+            const files = KC.AppState.get('files') || [];
+            
+            output.textContent = log(`Arquivos no AppState: ${files.length}`, 'info') + '\n\n';
+            
+            if (KC.FileRenderer) {
+                output.textContent += log(`FileRenderer.files: ${KC.FileRenderer.files.length}`, 'info') + '\n';
+                output.textContent += log(`FileRenderer.filteredFiles: ${KC.FileRenderer.filteredFiles.length}`, 'info') + '\n';
+            }
+        }
+        
+        function calculateAllRelevance() {
+            const output = document.getElementById('data-output');
+            const files = KC.AppState.get('files') || [];
+            
+            output.textContent = log('Calculando relevância...', 'info') + '\n\n';
+            
+            files.forEach(file => {
+                let relevance = 0;
+                
+                // Tenta diferentes métodos
+                if (KC.FileRenderer && KC.FileRenderer.calculateRelevance) {
+                    relevance = KC.FileRenderer.calculateRelevance(file);
+                } else if (KC.FilterManager && KC.FilterManager.calculateRelevance) {
+                    relevance = KC.FilterManager.calculateRelevance(file);
+                } else if (file.relevanceScore !== undefined) {
+                    relevance = Math.round(file.relevanceScore * 100);
+                }
+                
+                output.textContent += `${file.name}: ${relevance}%\n`;
+            });
+        }
+        
+        function testFilter(filterType) {
+            const output = document.getElementById('filter-output');
+            output.textContent = log(`Ativando filtro: ${filterType}`, 'info') + '\n\n';
+            
+            // Atualiza visual dos botões
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.closest('.filter-tab').classList.add('active');
+            
+            // Testa ativação do filtro
+            if (KC.FilterManager) {
+                output.textContent += log('Chamando FilterManager.activateFilter()', 'info') + '\n';
+                KC.FilterManager.activateFilter(filterType);
+                
+                // Mostra filtros ativos
+                const activeFilters = KC.FilterManager.getActiveFilters();
+                output.textContent += log(`Filtros ativos: ${JSON.stringify(activeFilters)}`, 'success') + '\n';
+                
+                // Verifica arquivos filtrados
+                setTimeout(() => {
+                    if (KC.FileRenderer) {
+                        output.textContent += log(`\nArquivos filtrados: ${KC.FileRenderer.filteredFiles.length}`, 'info') + '\n';
+                        KC.FileRenderer.filteredFiles.forEach(file => {
+                            output.textContent += `  - ${file.name}\n`;
+                        });
+                    }
+                }, 100);
+            } else {
+                output.textContent += log('FilterManager não disponível!', 'error');
+            }
+        }
+        
+        function startEventMonitoring() {
+            const eventLog = document.getElementById('event-log');
+            eventLog.textContent = log('Monitoramento iniciado...', 'info') + '\n\n';
+            
+            // Monitora eventos principais
+            const eventsToMonitor = [
+                'FILES_FILTERED',
+                'FILTER_APPLIED', 
+                'FILTER_CHANGED',
+                'SORT_CHANGED',
+                'FILES_DISCOVERED'
+            ];
+            
+            eventsToMonitor.forEach(eventName => {
+                const eventKey = KC.Events[eventName];
+                if (eventKey) {
+                    KC.EventBus.on(eventKey, (data) => {
+                        eventLog.textContent += log(`📨 ${eventName}`, 'success') + '\n';
+                        eventLog.textContent += `   Dados: ${JSON.stringify(data, null, 2)}\n\n`;
+                        eventLog.scrollTop = eventLog.scrollHeight;
+                    });
+                }
+            });
+        }
+        
+        function clearEventLog() {
+            document.getElementById('event-log').textContent = '';
+        }
+        
+        function updateBadges() {
+            const files = KC.AppState.get('files') || [];
+            
+            // Calcula contagens
+            let counts = {
+                all: files.length,
+                high: 0,
+                medium: 0,
+                pending: 0,
+                analyzed: 0
+            };
+            
+            files.forEach(file => {
+                const relevance = Math.round((file.relevanceScore || 0) * 100);
+                if (relevance >= 70) counts.high++;
+                else if (relevance >= 50) counts.medium++;
+                
+                if (file.analyzed) counts.analyzed++;
+                else counts.pending++;
+            });
+            
+            // Atualiza badges
+            Object.entries(counts).forEach(([key, count]) => {
+                const badge = document.getElementById(`badge-${key}`);
+                if (badge) badge.textContent = count;
+            });
+        }
+        
+        // Inicialização
+        window.addEventListener('load', () => {
+            console.log('Debug de Filtros carregado');
+            checkComponents();
+        });
+    </script>
+</body>
+</html>

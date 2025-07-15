@@ -1,4 +1,4 @@
-/# CLAUDE.md
+# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -6,115 +6,98 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This repository contains the specification for "Consolidador de Conhecimento Pessoal" (Personal Knowledge Consolidator) - an intelligent system for automated discovery, analysis, and structuring of decisive moments in personal knowledge bases.
 
-## Key Architecture
+**Vision:** Transform scattered knowledge into actionable insights, establishing a pre-structured foundation that will feed IA automation flows for internal project proposition and strategic decision-making.
 
-The system is designed as a modular single-page application with the following structure:
+## 🚨 PROTOCOLO DE INÍCIO DE SESSÃO OBRIGATÓRIO
 
-```javascript
-window.KnowledgeConsolidator = {
-  AppState: {},           // Central state management
-  AppController: {},      // Navigation and general control
-  ConfigManager: {},      // Configuration management
-  DiscoveryManager: {},   // File discovery process
-  FileRenderer: {},       // Visual interface
-  AnalysisManager: {},    // AI analysis
-  ExportManager: {},      // Export and RAG preparation
-  CategoryManager: {},    // Category system
-  FilterManager: {},      // Filters and sorting
-  StatsManager: {},       // Real-time statistics
-  ModalManager: {}        // Modal controls
-};
+**ATENÇÃO**: Existe um protocolo formal para início de sessão em `/INICIO-SESSAO.md`
+
+Para evitar retrabalho (que já causou 3+ horas de perda), SEMPRE:
+1. Leia este arquivo (CLAUDE.md) primeiro para entender as LEIS
+2. Leia RESUME-STATUS.md para entender o estado atual
+3. Siga as instruções em INICIO-SESSAO.md
+
+**Comando padrão de início**:
+```
+Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
 ```
 
-## Core Functionality
+# Estilo de Código
+- Use ES modules (import/export)
+- Destructuring quando possível
+- Prefira const/let sobre var
 
-### 4-Step Workflow
-1. **Automated Discovery**: Configure file patterns, directories, and temporal filters
-2. **Local Pre-Analysis**: Keyword relevance scoring with smart preview (70% token economy)
-3. **Selective AI Analysis**: Contextual analysis with configurable models
-4. **Intelligent Organization**: Categorization and multi-format export with RAG preparation
+# Workflow
+- Sempre executar typechecking após mudanças
+- Usar single tests para performance
+- Criar feature branches do develop
 
-### Smart Preview System
-The system uses an intelligent preview to reduce token usage by 70%:
-- First 30 words
-- Complete second paragraph
-- Last paragraph before ':'
-- Phrase starting with ':'
-- First paragraph after ':' (30 words)
 
-### Export Formats
-- **Markdown (.md)**: For Obsidian compatibility
-- **JSON**: For RAG integration (Qdrant-compatible)
-- **PDF**: For documentation
-- **HTML**: For visualization
+## Server Maintenance Guidelines
 
-## Technical Requirements
+### Procedimentos para Início de Sessão
+- Ao iniciar a sessão Leia primeiro @CLAUDE.md para entender as LEIS do projeto
+- Depois leia @RESUME-STATUS.md para entender o estado atual 
+- O servidor Five Server já está rodando na porta 5500 (gerenciado pelo usuário conforme @docs/servidor.md)
+- Acesse http://127.0.0.1:5500 
+- Execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir
 
-### Frontend Stack
-- HTML5 + CSS3 (CSS variables)
-- Vanilla JavaScript ES6+ (modules)
-- Component architecture
-- Mobile-first responsive design
-- No external dependencies
+<LEIS>
+### LEIS do projeto
 
-### Performance Targets
-- < 2s initial loading
-- < 500ms filter response
-- Support for 1000+ files
+ 1. NÃO MODIFICAR código que está funcionando
+ 2. APENAS REMOVER as adições problemáticas identificadas
+ 3. ADICIONAR MINIMAMENTE apenas o listener necessário
+ 4. PRESERVAR todas as funcionalidades já homologadas
+ 5. PARA TESTAR Solicite feedback do usuário que esta com o Five Server em aberto paralelamente para Auditar o processo
+ 6. DOCUMENTAR cada mudança para auditoria e backlog das atividades, REGISTRAR SEMPRE utilizando a estrutura pré-existente criada para esta finalidade em /doc/sprint/
+ 7. SOLICITAR APROVAÇÃO do usuário antes de prosseguir COM QUALQUER ALTERAÇÃO no Código Original
+ 8. TODA ALTERAÇÃO APROVADA PARA ALTERAÇÃO DO CODIGO ORIGINAL CASO NECESSARIO DEVE SER CLONADO COMO COMENTÁRIO, ACIONAVEL para rollback caso seja identificado qualquer desvio ou QUEBRA DA APLICAÇÃO COMO MEDIDA PREVENTIVA SEGURA.
+ 9. COMPONENTIZAÇÃO MÁXIMA EXIGIDA para qualquer nova função criada como forma de ESTABELECER PADRAO PARA REUTILIZAÇÃO OBRIGATÓRIA DE COMPONENTES PRÉ EXISTENTES que ja estejam em produção como base para novo desenvolvimento.
+ 10. ANTES DE PLANEJAR QUALQUER NOVA ADIÇÃO OU REMOÇÃO é VITAL QUE SEJA FEITA A REVISÃO dos COMPONENTES ATUAIS. para Verificar se a funcionalidade planejada já não existe no sitema ou se pode ser utilizada como base para GARANTIR a estabilidade do sitema em FUNCIONAMENTO.
+ 11. CORELACIONAMENTO entre os componentes de BUSCA, ANALISE, CATEGORIZAÇÃO SÃO DE PRIORIDADE CRITICA PARA CONSISTENCIA DOS DADOS A PARTIR DA ETAPA 1. ITERE SEMPRE A IMPORTANCIA DE CORELACIONAR AS SUAS ACOES E EVENTOS DE FORMA RELACIONADA AOS EVENTOS PRE-EXISTENTES.
 
-## Development Patterns
+### 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO
 
-### State Management
-All state is centralized in `AppState` object with the following structure:
+#### 🔴 Problema Recorrente #1: Criar código sem verificar existente
+**Impacto**: 3+ horas de retrabalho na sessão de 15/01/2025  
+**Causa**: FileRenderer já existia e funcionava, mas foi recriado  
+**Solução**: SEMPRE ler código existente antes de criar novo  
+
+#### 🔴 Problema Recorrente #2: Não emitir FILES_UPDATED
+**Impacto**: Interface não atualiza, usuário pensa que está quebrado  
+**Causa**: Apenas STATE_CHANGED era emitido  
+**Solução**: SEMPRE emitir ambos eventos após modificar arquivos  
+
+#### 🔴 Problema Recorrente #3: Modificar sem preservar original
+**Impacto**: Quebra funcionalidades existentes  
+**Causa**: Código original sobrescrito sem backup  
+**Solução**: SEMPRE comentar original antes de modificar  
+
+### ✅ Padrão de Sucesso
 ```javascript
-const AppState = {
-  currentStep: 1,
-  configuration: {
-    discovery: {},
-    preAnalysis: {},
-    aiAnalysis: {},
-    organization: {}
-  },
-  files: [],
-  categories: [],
-  stats: {},
-  timeline: [],
-  currentFilter: 'all',
-  currentSort: 'relevance'
-};
+// 1. Verificar se existe
+if (KC.ComponenteX) {
+    // 2. Ler e entender
+    // 3. Preservar original em comentário
+    // 4. Modificar com cuidado
+    // 5. Testar incrementalmente
+}
 ```
 
-### File Status Flow
-- **Pending**: Ready for AI analysis
-- **Analyzed**: Processing complete
-- **Archived**: Stored for reference
+### 📊 Métricas de Retrabalho
+- **Tempo perdido médio por erro**: 1-3 horas
+- **Principais causas**: Falta de contexto, não seguir LEIS
+- **Solução**: Protocolo de início em INICIO-SESSAO.md
 
-### Export Schema
-The system prepares data for SPRINT 2 RAG integration with:
-- Qdrant vector database (384-dimension embeddings)
-- PostgreSQL for metadata
-- Redis for caching
-- N8N workflow automation
+# Estilo de Código
+- Use ES modules (import/export)
+- Destructuring quando possível
+- Prefira const/let sobre var
 
-## Future Integration (SPRINT 2)
+# Workflow
+- Sempre executar typechecking após mudanças
+- Usar single tests para performance
+- Criar feature branches do develop (CASO INDISPONIVEL, CRIE E COPIE TODA A ESTRUTURA ORIGINAL PARA UMA NOVA PASTA PARA HOMOLOGAÇÃO PARA MITIGAR QUEBRA DA APLICACAO/ROLLBACK)
 
-The system is designed to integrate with a RAG stack:
-- **Ollama**: Local embeddings and LLM
-- **N8N**: Workflow automation
-- **Langchain**: LLM framework
-- **Qdrant**: Vector database
-- **Redis**: Cache and sessions
-- **PostgreSQL**: Structured metadata
-
-## File Structure
-
-This is a single-file application contained in `vcia_dhl.txt` which contains the complete PRD (Product Requirements Document) for the system.
-
-## Testing and Validation
-
-When implementing, ensure:
-- All JavaScript modules are properly namespaced
-- Error handling is robust throughout
-- Mobile responsiveness is maintained
-- Performance targets are met
-- Export formats are valid and compatible with target systems
+</LEIS>

@@ -2,25 +2,30 @@
    MODALS - Estilos dos Modais
    ======================================== */
 
-/* Stub temporário - será implementado quando desenvolvermos o ModalManager */
-
-.modal-container {
+/* Overlay do modal */
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
-    z-index: var(--z-modal-backdrop);
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
 }
 
-.modal-container.active {
-    display: flex;
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
 }
 
+/* Modal principal */
 .modal {
     background: var(--bg-primary);
     border-radius: var(--border-radius-lg);
@@ -29,4 +34,422 @@
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: var(--shadow-2xl);
+    border: 1px solid var(--border-color);
+}
+
+/* Header do modal */
+.modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Corpo do modal */
+.modal-body {
+    padding: 1.5rem;
+}
+
+/* Ações do modal */
+.modal-actions {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Estilos específicos para modal de compatibilidade */
+.compatibility-modal {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.compatibility-modal .browser-info {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.compatibility-modal .capabilities ul,
+.compatibility-modal .limitations ul,
+.compatibility-modal .recommendations ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.compatibility-modal .capabilities li,
+.compatibility-modal .limitations li,
+.compatibility-modal .recommendations li {
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.compatibility-modal .security-info {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-info);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid var(--color-info);
+}
+
+.compatibility-modal.supported {
+    border-left: 4px solid var(--color-success);
+}
+
+.compatibility-modal.unsupported {
+    border-left: 4px solid var(--color-warning);
+}
+
+/* Modal de acesso ao Obsidian */
+.obsidian-access-modal {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.obsidian-access-modal .access-explanation {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+}
+
+.obsidian-access-modal .access-explanation ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.obsidian-access-modal .access-explanation li {
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.obsidian-access-modal .security-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-success);
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid var(--color-success);
+    font-size: 0.875rem;
+}
+
+/* Botões do modal */
+.modal-actions .btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.modal-actions .btn-primary {
+    background: var(--color-primary);
+    color: white;
+}
+
+.modal-actions .btn-primary:hover {
+    background: var(--color-primary-hover);
+}
+
+.modal-actions .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.modal-actions .btn-secondary:hover {
+    background: var(--bg-tertiary);
+}
+
+/* ===========================
+   MODAL DE VISUALIZAÇÃO
+   =========================== */
+
+.modal-content {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-2xl);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+    background: var(--hover-bg);
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.view-modal {
+    max-width: 800px;
+}
+
+.file-metadata {
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.metadata-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.metadata-row:last-child {
+    margin-bottom: 0;
+}
+
+.metadata-row .label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 120px;
+}
+
+.metadata-row .value {
+    color: var(--text-primary);
+    text-align: right;
+    word-break: break-word;
+}
+
+.analysis-type {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.file-content h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.content-preview {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+/* ===========================
+   MODAL DE CATEGORIZAÇÃO
+   =========================== */
+
+/* ORIGINAL - Preservado para rollback */
+/* .category-modal {
+    max-width: 500px;
+} */
+
+/* NOVO - Modal de categorização com controle de altura e scroll */
+.category-modal {
+    max-width: 500px;
+    max-height: 70vh; /* Limita altura total do modal */
+}
+
+.category-modal .modal-body {
+    max-height: calc(70vh - 140px); /* Desconta header e footer */
+    overflow-y: auto;
+}
+
+.category-section,
+.new-category-section {
+    margin-bottom: 1.5rem;
+}
+
+.category-section h4,
+.new-category-section h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 300px; /* Limita altura da lista de categorias */
+    overflow-y: auto; /* Adiciona scroll vertical */
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+}
+
+.category-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.category-option:hover {
+    background: var(--bg-secondary);
+}
+
+.category-option input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.category-badge {
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.new-category-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.new-category-form input {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.new-category-form select {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.new-category-form button {
+    white-space: nowrap;
+}
+
+/* Estados dos botões de ação */
+.action-btn.analyzed {
+    background: var(--color-success);
+    color: white;
+    border-color: var(--color-success);
+}
+
+.action-btn.analyzed:hover {
+    background: var(--color-success-hover);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .modal {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 1rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .modal-actions,
+    .modal-footer {
+        padding: 0.75rem 1rem 1rem;
+        flex-direction: column;
+    }
+    
+    .modal-actions .btn {
+        width: 100%;
+    }
+    
+    .view-modal,
+    .category-modal {
+        max-width: none;
+    }
+    
+    .metadata-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .metadata-row .value {
+        text-align: left;
+    }
+    
+    .new-category-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .new-category-form input,
+    .new-category-form select,
+    .new-category-form button {
+        width: 100%;
+    }
 }

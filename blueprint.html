@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle do Projeto: Knowledge Consolidator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Chosen Palette: Developer's Focus (Neutral & Accent) */
+        /* Application Structure Plan: A dashboard-style SPA using a two-column grid layout on larger screens. The main column presents the project overview, the interactive software architecture, and the feature workflow. A dedicated sidebar permanently displays the critical "Guardrail" (development rules) and the status legend, reflecting their high importance in the source document. This structure was chosen to provide a dense, information-rich "cockpit" view suitable for a developer, allowing simultaneous reference to core logic and process rules, rather than a linear narrative. */
+        /* Visualization & Content Choices: JS Namespace -> Goal: Organize/Inform -> Method: Interactive HTML/CSS tree diagram for clarity. | 4-Step Workflow -> Goal: Organize -> Method: Compact stepper component. | Rules & Legend -> Goal: Inform -> Method: High-prominence cards in a sidebar. | Data Models -> Goal: Inform -> Method: Styled code blocks. All choices adhere to NO SVG/Mermaid. */
+        /* CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. */
+
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+
+        body {
+            background-color: #f8f9fa;
+            color: #343a40;
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .code-block {
+            background-color: #212529;
+            color: #f8f9fa;
+            font-family: 'Fira Code', monospace;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .code-block .comment { color: #6c757d; }
+        .code-block .key { color: #9d80ff; }
+        .code-block .string { color: #a5d8ff; }
+        .code-block .object { color: #ffd6a5; }
+
+        .namespace-item {
+            padding-left: 1.5rem;
+            border-left: 1px dashed #ced4da;
+            position: relative;
+        }
+        .namespace-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.7rem;
+            width: 1rem;
+            height: 1px;
+            background-color: #ced4da;
+        }
+        .rules-card {
+            background-color: #fffbeb;
+            border-color: #fbbF24;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 lg:p-8">
+
+    <main class="max-w-screen-2xl mx-auto">
+        <header class="mb-8 pb-4 border-b border-gray-300">
+            <h1 class="text-4xl font-bold text-gray-800">Painel de Controle do Projeto</h1>
+            <p class="text-xl text-gray-600">Especificação Técnica: Consolidador de Conhecimento Pessoal</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            
+            <div class="lg:col-span-2 xl:col-span-3 space-y-8">
+                
+                <section class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800">Visão Geral e Status Atual</h2>
+                    <p class="mt-2 text-gray-700">Transformar conhecimento disperso em insights acionáveis, estabelecendo uma fundação pré-estruturada para alimentar fluxos de automação de IA para proposição de projetos internos e tomada de decisão estratégica.</p>
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                        <div class="bg-green-100 text-green-800 p-3 rounded-lg">
+                            <span class="font-bold">SPRINT 1.1 & 1.2:</span> ✅ COMPLETOS
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 p-3 rounded-lg">
+                            <span class="font-bold">PRÓXIMO SPRINT (1.3):</span> 🔄 ANÁLISE COM IA
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Arquitetura do Software (Namespace)</h2>
+                    <div class="space-y-2 text-sm">
+                        <div class="font-bold text-base">window.KnowledgeConsolidator</div>
+                        <div class="pl-4 space-y-2">
+                            <div class="namespace-item"><span class="font-semibold text-purple-700">// Infraestrutura Core</span></div>
+                            <div class="namespace-item ml-4">AppState: <span class="text-gray-500">Gerenciamento de estado central</span></div>
+                            <div class="namespace-item ml-4">AppController: <span class="text-gray-500">Navegação e controle geral</span></div>
+                            <div class="namespace-item ml-4">EventBus: <span class="text-gray-500">Arquitetura orientada a eventos</span></div>
+
+                            <div class="namespace-item"><span class="font-semibold text-purple-700">// Utilitários (Fundação)</span></div>
+                            <div class="namespace-item ml-4">Logger: <span class="text-gray-500">Sistema de logging</span></div>
+                            <div class="namespace-item ml-4">HandleManager: <span class="text-gray-500">Gerenciamento da File System Access API</span></div>
+                            <div class="namespace-item ml-4">PreviewUtils: <span class="text-gray-500">Extração de preview inteligente</span></div>
+                            
+                            <div class="namespace-item"><span class="font-semibold text-purple-700">// Gerenciadores Core</span></div>
+                            <div class="namespace-item ml-4">ConfigManager: <span class="text-gray-500">Gerenciamento de configurações</span></div>
+                            <div class="namespace-item ml-4">DiscoveryManager: <span class="text-gray-500">Descoberta de arquivos</span></div>
+                            <div class="namespace-item ml-4">FilterManager: <span class="text-gray-500">Filtragem avançada</span></div>
+                             <div class="namespace-item ml-4">AnalysisManager: <span class="text-gray-500">Análise com IA</span></div>
+                            <div class="namespace-item ml-4">ExportManager: <span class="text-gray-500">Exportação e preparação para RAG</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                 <section class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Fluxo de Trabalho e Funcionalidades</h2>
+                    <div class="flex flex-col sm:flex-row justify-around items-center text-center space-y-4 sm:space-y-0">
+                        <div class="flex flex-col items-center">
+                            <div class="w-24 h-24 flex items-center justify-center bg-blue-100 rounded-full text-blue-600 font-bold text-lg">Passo 1</div>
+                            <p class="mt-2 font-semibold">Descoberta</p>
+                            <p class="text-xs text-gray-500">Filtros temporais e de padrão</p>
+                        </div>
+                        <div class="text-gray-300 text-2xl font-mono hidden sm:block">→</div>
+                        <div class="flex flex-col items-center">
+                           <div class="w-24 h-24 flex items-center justify-center bg-blue-100 rounded-full text-blue-600 font-bold text-lg">Passo 2</div>
+                            <p class="mt-2 font-semibold">Pré-Análise</p>
+                            <p class="text-xs text-gray-500">Score de relevância e preview</p>
+                        </div>
+                        <div class="text-gray-300 text-2xl font-mono hidden sm:block">→</div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-24 h-24 flex items-center justify-center bg-blue-100 rounded-full text-blue-600 font-bold text-lg">Passo 3</div>
+                            <p class="mt-2 font-semibold">Análise IA</p>
+                            <p class="text-xs text-gray-500">Modelos e prompts configuráveis</p>
+                        </div>
+                        <div class="text-gray-300 text-2xl font-mono hidden sm:block">→</div>
+                        <div class="flex flex-col items-center">
+                            <div class="w-24 h-24 flex items-center justify-center bg-blue-100 rounded-full text-blue-600 font-bold text-lg">Passo 4</div>
+                            <p class="mt-2 font-semibold">Organização</p>
+                            <p class="text-xs text-gray-500">Exportação multi-formato</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Modelos de Dados</h2>
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="font-semibold mb-2">Estrutura do Objeto de Arquivo</h3>
+                            <div class="code-block">
+                                <pre><code><span class="object">{</span>
+  <span class="key">id</span>: <span class="string">"file_123"</span>,
+  <span class="key">relevance</span>: <span class="string">0.89</span>,
+  <span class="key">path</span>: <span class="string">"/path/to/file"</span>,
+  <span class="key">status</span>: <span class="string">"pending"</span>,
+  <span class="key">category</span>: <span class="object">{</span> <span class="key">name</span>: <span class="string">"Técnico"</span> <span class="object">}</span>,
+  <span class="key">analysisData</span>: <span class="object">{}</span>
+<span class="object">}</span></code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Payload de Exportação para Qdrant</h3>
+                            <div class="code-block">
+                                <pre><code><span class="object">{</span>
+  <span class="key">id</span>: <span class="string">"file_123"</span>,
+  <span class="key">vector</span>: <span class="object">[</span><span class="comment">/* 384 dimensões */</span><span class="object">]</span>,
+  <span class="key">payload</span>: <span class="object">{</span>
+    <span class="key">filename</span>: <span class="string">"insight.md"</span>,
+    <span class="key">relevance_score</span>: <span class="string">0.89</span>,
+    <span class="key">analysis_type</span>: <span class="string">"Técnico"</span>,
+    <span class="comment">// ... outros metadados</span>
+  <span class="object">}</span>
+<span class="object">}</span></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div class="lg:col-span-1 xl:col-span-1 space-y-8">
+                <section class="card p-6 rules-card">
+                    <h2 class="text-xl font-bold text-amber-800 mb-4">⚠️ Regras Críticas de Desenvolvimento</h2>
+                    <ul class="space-y-3 text-sm text-amber-900">
+                        <li class="pl-5 relative before:content-['P0'] before:absolute before:left-0 before:font-bold before:text-red-600">
+                            <strong>NÃO USAR DADOS MOCK:</strong> Componentes core (Fases 1 e 2) DEVEM usar dados reais para garantir a validação do MVP.
+                        </li>
+                        <li class="pl-5 relative before:content-['P0'] before:absolute before:left-0 before:font-bold before:text-red-600">
+                           <strong>PRESERVAÇÃO DO CÓDIGO:</strong> Nunca alterar código homologado sem aprovação. Usar a técnica de clonar-e-comentar para sugerir alterações.
+                        </li>
+                         <li class="pl-5 relative before:content-['P1'] before:absolute before:left-0 before:font-semibold">
+                           <strong>PLANEJAMENTO OBRIGATÓRIO:</strong> Documentar o plano de trabalho no formato de SPRINT (`/docs/sprint`) antes de iniciar o desenvolvimento.
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="card p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Legenda de Status e Controles</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🔝</span> <span class="flex-1"><strong>Prioritário/Crítico:</strong> Deve ser funcional (`🔛`) sem dados simulados.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🔙</span> <span class="flex-1"><strong>Rollback:</strong> Desfazer a última alteração.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">✖️</span> <span class="flex-1"><strong>Rejeitado:</strong> Não corresponde ao escopo.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">✔️</span> <span class="flex-1"><strong>Implementado Parcialmente:</strong> Adicionado, mas não testado ou com dados mock.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🔛</span> <span class="flex-1"><strong>Funcional:</strong> Em homologação com dados reais.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">✅</span> <span class="flex-1"><strong>Concluído:</strong> Etapa/Módulo/Fase aprovada.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🔜</span> <span class="flex-1"><strong>Mover para Próximo Sprint:</strong> Repriorizar atividade.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">💱</span> <span class="flex-1"><strong>Refatorar/Iterar:</strong> Revisar com base no feedback.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">💲</span> <span class="flex-1"><strong>Penalidade:</strong> Nível 1 a 4, indica falhas recorrentes.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🩹</span> <span class="flex-1"><strong>Corrigir/Ajustar:</strong> Reavaliar a abordagem atual.</span></div>
+                        <div class="flex items-start"><span class="text-lg w-8 text-center">🔰</span> <span class="flex-1"><strong>Sinalizar como Lido/Adotado:</strong> Reconhecimento de instrução.</span></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+/**
+ * Progress Global - Barra de progresso global para operações do sistema
+ */
+
+/* Container principal da barra de progresso global */
+.progress-global {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    z-index: 9999;
+    background: transparent;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.progress-global.active {
+    opacity: 1;
+}
+
+/* Barra de progresso animada */
+.progress-global-bar {
+    height: 100%;
+    background: linear-gradient(90deg, 
+        var(--primary-color) 0%, 
+        var(--success-color) 50%, 
+        var(--primary-color) 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Efeito de brilho na barra */
+.progress-global-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%);
+    animation: progress-shine 2s infinite;
+}
+
+/* Animação de brilho */
+@keyframes progress-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Modo indeterminado (quando não sabemos o progresso exato) */
+.progress-global.indeterminate .progress-global-bar {
+    width: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--primary-color) 50%, 
+        transparent 100%);
+    animation: progress-indeterminate 1.5s infinite;
+}
+
+@keyframes progress-indeterminate {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Overlay de informações (opcional) */
+.progress-global-overlay {
+    position: fixed;
+    top: 4px;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 16px;
+    z-index: 9998;
+    font-size: 12px;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.progress-global-overlay.active {
+    opacity: 1;
+}
+
+.progress-global-title {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.progress-global-details {
+    opacity: 0.8;
+    font-size: 11px;
+}
+
+/* Variações de cor por tipo de operação */
+.progress-global.discovery .progress-global-bar {
+    background: linear-gradient(90deg, 
+        var(--info-color) 0%, 
+        var(--primary-color) 100%);
+}
+
+.progress-global.analysis .progress-global-bar {
+    background: linear-gradient(90deg, 
+        var(--warning-color) 0%, 
+        var(--success-color) 100%);
+}
+
+.progress-global.filter .progress-global-bar {
+    background: linear-gradient(90deg, 
+        var(--success-color) 0%, 
+        var(--info-color) 100%);
+}
+
+.progress-global.export .progress-global-bar {
+    background: linear-gradient(90deg, 
+        var(--primary-color) 0%, 
+        var(--warning-color) 100%);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .progress-global {
+        height: 3px;
+    }
+    
+    .progress-global-overlay {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .progress-global-details {
+        font-size: 10px;
+    }
+}

@@ -161,4 +161,15 @@
   --relevance-high: var(--success-color);
   --relevance-medium: var(--info-color);
   --relevance-low: var(--gray-400);
+  
+  /* === ALIASES FOR COMPONENT COMPATIBILITY === */
+  --color-primary: var(--primary-color);
+  --color-primary-hover: var(--primary-hover);
+  --color-success: var(--success-color);
+  --color-success-hover: var(--success-hover);
+  --color-info: var(--info-color);
+  --bg-info: var(--info-light);
+  --border-color: var(--border-light);
+  --hover-bg: var(--gray-100);
+  --color-warning: var(--warning-color);
 }

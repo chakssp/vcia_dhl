@@ -1,0 +1,21 @@
+.file-entry {
+    display: flex;
+    flex-wrap: wrap; /* ESSENCIAL: Permite a quebra de linha */
+    align-items: center;
+    padding: 1rem;
+  }
+  
+  /* Estilo para o novo container da primeira linha */
+  .file-main-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  /* Regra que move as categorias para a segunda linha */
+  .file-categories {
+    flex-basis: 100%; /* Força o elemento a ocupar 100% da largura do pai */
+    margin-top: 12px; /* Adiciona um espaçamento para não colar no conteúdo de cima */
+    padding-left: 52px; /* Opcional: Alinha o início das tags com o texto do arquivo, assumindo a largura do ícone */
+  }
