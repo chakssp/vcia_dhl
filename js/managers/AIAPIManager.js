@@ -317,7 +317,29 @@
          */
         _preparePrompt(file, options) {
             const template = options.template || 'decisiveMoments';
-            const typesDescription = KC.AnalysisTypesManager.getPromptDescription();
+            
+            // Usa PromptManager para obter o prompt base
+            const basePrompt = KC.PromptManager?.getPrompt(template, file, {
+                additionalContext: options.context || ''
+            }) || this._getFallbackPrompt(file);
+
+            // Adapta prompt para Ollama se necessário
+            if (this.activeProvider === 'ollama' && KC.PromptManager) {
+                const adaptedPrompt = KC.PromptManager.adaptPromptForTextResponse(
+                    basePrompt,
+                    this.activeProvider
+                );
+                return adaptedPrompt;
+            }
+
+            return basePrompt;
+        }
+
+        /**
+         * Prompt de fallback caso PromptManager não esteja disponível
+         */
+        _getFallbackPrompt(file) {
+            const typesDescription = KC.AnalysisTypesManager?.getPromptDescription() || '';
             
             const systemPrompt = `Você é um analista especializado em identificar momentos decisivos e insights em bases de conhecimento pessoal.
 
@@ -361,6 +383,27 @@ Forneça sua análise em formato JSON com a estrutura:
             const provider = this.providers.ollama;
             const model = options.model || provider.defaultModel;
 
+            // ORIGINAL - Preservado para rollback
+            // const response = await fetch(provider.baseUrl + provider.endpoints.generate, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({
+            //         model: model,
+            //         prompt: `${prompt.system}\n\n${prompt.user}`,
+            //         stream: false,
+            //         format: 'json',  // ⚠️ Causava resposta vazia
+            //         options: {
+            //             temperature: options.temperature || 0.7,
+            //             top_p: 0.9,
+            //             num_predict: 1000
+            //         }
+            //     }),
+            //     signal: AbortSignal.timeout(this.timeout)
+            // });
+
+            // CORREÇÃO BUG #6: Remover format: 'json' e adicionar parâmetros adequados
             const response = await fetch(provider.baseUrl + provider.endpoints.generate, {
                 method: 'POST',
                 headers: {
@@ -370,11 +413,15 @@ Forneça sua análise em formato JSON com a estrutura:
                     model: model,
                     prompt: `${prompt.system}\n\n${prompt.user}`,
                     stream: false,
-                    format: 'json',
+                    // format: 'json' removido - causava resposta vazia
                     options: {
                         temperature: options.temperature || 0.7,
+                        num_predict: 1000,     // Forçar geração mínima
+                        num_ctx: 4096,         // Contexto adequado
+                        top_k: 40,
                         top_p: 0.9,
-                        num_predict: 1000
+                        repeat_penalty: 1.1,
+                        stop: ["</analysis>", "\n\n\n"]  // Stop sequences
                     }
                 }),
                 signal: AbortSignal.timeout(this.timeout)
@@ -385,6 +432,17 @@ Forneça sua análise em formato JSON com a estrutura:
             }
 
             const data = await response.json();
+            
+            // Validar resposta
+            if (!data.response || data.response.trim() === '{}' || data.response.trim() === '') {
+                KC.Logger?.warn('AIAPIManager', 'Resposta vazia do Ollama', {
+                    model: model,
+                    eval_count: data.eval_count,
+                    total_duration: data.total_duration
+                });
+                throw new Error('Resposta vazia do Ollama - verificar modelo e parâmetros');
+            }
+            
             return data.response;
         }
 

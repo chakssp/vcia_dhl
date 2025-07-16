@@ -8,6 +8,9 @@
 ### **Visão do Produto**
 Sistema inteligente para descoberta, análise e estruturação automatizada de momentos decisivos em bases de conhecimento pessoal, criando insights estruturados para potencializar projetos internos através de automação com IA.
 
+
+
+
 ### **Objetivo Estratégico**
 Transformar conhecimento disperso em insights acionáveis, estabelecendo uma base pré-estruturada que alimentará fluxos de automação IA para proposição de projetos internos e tomada de decisões estratégicas.
 

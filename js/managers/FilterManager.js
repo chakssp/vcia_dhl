@@ -850,6 +850,18 @@
         }
 
         /**
+         * Obtém configuração completa dos filtros (para exportação)
+         */
+        getConfig() {
+            return {
+                filters: this.filters,
+                activeFilters: this.getActiveFilters(),
+                currentSort: this.currentSort,
+                keywords: this.keywords || []
+            };
+        }
+
+        /**
          * Define configuração semântica
          */
         setSemanticConfig(config) {

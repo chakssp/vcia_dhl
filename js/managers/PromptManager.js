@@ -392,6 +392,65 @@ Análise de projeto em JSON:
         }
 
         /**
+         * Adapta prompt para formato texto quando usando Ollama
+         */
+        adaptPromptForTextResponse(prompt, provider) {
+            if (provider !== 'ollama') {
+                return prompt; // Mantém formato JSON para outros providers
+            }
+
+            // Modifica o prompt do usuário para pedir resposta em texto estruturado
+            const textPrompt = prompt.user.replace(
+                /(?:Forneça análise|Análise).*?em JSON:[\s\S]*$/,
+                `Forneça uma análise estruturada com as seguintes seções:
+
+ANÁLISE:
+[Escreva aqui o tipo de análise identificado]
+
+RESUMO:
+[Escreva um resumo conciso dos pontos principais]
+
+INSIGHTS/PONTOS PRINCIPAIS:
+- [Primeiro insight ou ponto relevante]
+- [Segundo insight ou ponto relevante]
+- [Terceiro insight ou ponto relevante]
+
+CATEGORIAS:
+[Liste as categorias relevantes separadas por vírgula]
+
+RELEVÂNCIA:
+[Indique a relevância de 0 a 100]
+
+${prompt.user.includes('technicalPoints') ? `
+DETALHES TÉCNICOS:
+[Descreva implementação ou configuração relevante]
+
+COMPLEXIDADE:
+[Indique: baixa, média ou alta]
+` : ''}
+
+${prompt.user.includes('projectPotential') ? `
+POTENCIAL DE PROJETO:
+[Descreva o potencial identificado]
+
+RECURSOS NECESSÁRIOS:
+- [Recurso 1]
+- [Recurso 2]
+
+PRÓXIMOS PASSOS:
+1. [Passo 1]
+2. [Passo 2]
+` : ''}`
+            );
+
+            return {
+                ...prompt,
+                user: textPrompt,
+                format: 'text' // Sinaliza que espera resposta em texto
+            };
+        }
+
+        /**
          * Cria ou atualiza template customizado
          */
         createCustomTemplate(id, config) {

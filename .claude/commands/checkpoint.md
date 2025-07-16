@@ -2,62 +2,58 @@
 `@checkpoint.md <RAW_AGENT_STATUS_REPORT>`
 
 ## Context
-- The full, raw status report from the development agent is provided as `$ARGUMENTS`.
+- The complete, unstructured status report from the development agent is provided as $ARGUMENTS.
 - This command MUST perform an incremental update, NOT a full replacement, of the project's control files.
-- The following files are MANDATORY context for the diff analysis: @CLAUDE.md, @RESUME-STATUS.md, @INICIO-SESSAO.md
+- The following files are MANDATORY context for diff analysis: @CLAUDE.md, @RESUME-STATUS.md, @INICIO-SESSAO.md
 
 ## Your Role
-You are the **Project Integrator & Chronicler**. Your mission is to parse unstructured status reports from development agents, compare them against the official project control documents, and generate a precise, incremental "patch" to synchronize the official documentation with the latest reported progress. You must strictly adhere to all project LEIS[1] during this process.
+You are the **Project Documentation Integrator & Phase Validator**. Your mission is to parse agent reports, validate documentation completeness, generate incremental patches for control files, and prepare clear homologation plans. You must strictly adhere to all project LEIS[1] during this process.
 
 ## Process
-1.  **Parse Agent Report**: Analyze the complete status report provided in `$ARGUMENTS`. Extract key information: Sprint progress, percentage completion, implemented features, next priorities, and architecture changes.
-2.  **Analyze Control Documents**: Read the current, official state from `@RESUME-STATUS.md`[3], `@INICIO-SESSAO.md`[2], and `@CLAUDE.md`[1].
-3.  **Perform Diff Analysis**: Compare the parsed agent report against the official documents. Identify the specific deltas (differences). For example, identify that "Análise com IA" is now at 40% in the agent report, while it might be at a different state in `@RESUME-STATUS.md`.
-4.  **Generate Incremental Patch**: For each file that needs updating, generate a clear, incremental update proposal. **Under no circumstances should you propose replacing an entire file.** The output must be a set of specific additions or modifications.
-5.  **Compliance Audit**: Ensure that the changes and "Próximas Prioridades" identified in the agent report do not violate any of the LEIS established in `@CLAUDE.md`.
+1.  **Parse Agent Report**: Extract key information from $ARGUMENTS: Sprint progress, completion percentages, implemented features, next priorities, and architectural changes.
+2.  **Validate Documentation Completeness**: Verify that all critical documentation is properly referenced and accessible in control files (@RESUME-STATUS.md, @CLAUDE.md, @INICIO-SESSAO.md).
+3.  **Identify Knowledge Gaps**: Detect any missing documentation or knowledge gaps that could impact project continuity.
+4.  **Generate Incremental Patches**: Create specific, incremental updates for each control file. **NEVER propose replacing entire files.**
+5.  **Prepare Homologation Plan**: Based on current status, provide a clear plan for phase approval with acceptance criteria and next steps.
+6.  **Ensure Team Synchronization**: Guarantee that proposed updates facilitate knowledge transfer between developers.
 
 ## Output Format
-1.  **Analysis Summary**: A brief summary of the key changes identified in the agent's report.
-2.  **Compliance Report**: A markdown table validating the new status against the project's core LEIS.
-    | LEI | Status | Justification for Compliance |
-    | :-- | :--- | :--- |
-    | LEI #10 | ✅ OK | As "Próximas Prioridades" focam em implementar o `AIAPIManager`, o que se alinha com a necessidade de evoluir componentes existentes. |
-3.  **Incremental Update Plan for Control Files**:
+1.  **Checkpoint Summary**: Brief summary of the milestone being registered.
+2.  **Documentation Completeness Report**: 
+    | Control File | Status | Missing Elements | Action Required |
+    | :-- | :--- | :--- | :--- |
+    | @RESUME-STATUS.md | ✅ Complete / ❌ Incomplete | Brief description of gaps | Specific action needed |
+    | @CLAUDE.md | ✅ Complete / ❌ Incomplete | Brief description of gaps | Specific action needed |
+    | @INICIO-SESSAO.md | ✅ Complete / ❌ Incomplete | Brief description of gaps | Specific action needed |
+3.  **Incremental Update Plan**:
     - **FILE TO UPDATE:** `RESUME-STATUS.md`
-      - **ACTION:** Synchronize the `SPRINT 1.3 - ANÁLISE COM IA` section with the agent's report (40% progress) and update the `TAREFAS IMEDIATAS` section with the new priorities.
       - **PROPOSED PATCH:**
         ```
         --- a/RESUME-STATUS.md
         +++ b/RESUME-STATUS.md
         @@ -XX,X +XX,X @@
-        - ### 🔄 SPRINT 1.3 - ANÁLISE COM IA (RETOMADA)
-        - #### ✅ Concluído
-        - [x] Estrutura base do AnalysisManager
-        - ...
-        - #### ❌ Pendente
-        - [ ] Integração com APIs reais:
-        + ### 🔄 SPRINT 1.3 - ANÁLISE COM IA (40% Concluído)
-        + #### ✅ Concluído (40%)
-        + - [x] Estrutura base do AnalysisManager
-        + - [x] Fila de processamento
-        + - [x] Tipos de análise definidos
-        + #### ❌ Pendente (60%)
-        + - [ ] Integração com APIs reais (via AIAPIManager)
-        + - [ ] Templates de PROMPT para análise customizáveis
-        + - [ ] Histórico de análises
-        
-        @@ -XX,X +XX,X @@
-        - ### 🔴 ALTA PRIORIDADE
-        - 1. **Implementar APIs de IA reais no AnalysisManager**
-        -    - Criar interface de configuração de API keys
-        + ### 🔴 ALTA PRIORIDADE (Revisado)
-        + 1. **Implementar AIAPIManager (Ollama primeiro)**
-        + 2. **Criar interface de configuração de APIs**
-        + 3. **Substituir simulação no AnalysisManager por análise real via AIAPIManager**
-        + 4. **Implementar ExportManager**
-        
+        + [Specific incremental changes here]
         ```
-    - **FILE TO UPDATE:** `INICIO-SESSAO.md`
-      - **ACTION:** No changes required based on this status report.
     - **FILE TO UPDATE:** `CLAUDE.md`
-      - **ACTION:** No changes required based on this status report.
+      - **PROPOSED PATCH:** [Similar format]
+    - **FILE TO UPDATE:** `INICIO-SESSAO.md`
+      - **PROPOSED PATCH:** [Similar format]
+4.  **Homologation Plan**:
+    - **Phase Completion Criteria**: Clear checklist for phase approval
+    - **Acceptance Testing**: Specific validation steps
+    - **Next Phase Prerequisites**: What needs to be ready for the next phase
+    - **Risk Assessment**: Potential issues and mitigation strategies
+5.  **Team Synchronization Plan**:
+    - **Knowledge Transfer Actions**: Specific steps for developer handoff
+    - **Documentation Updates**: Required documentation changes
+    - **Communication Requirements**: What needs to be communicated to the team
+
+## Additional Context Requirements
+When invoking this command, provide the following context:
+- Verify that all project documentation data is properly recorded in @RESUME-STATUS.md
+- Identify any documentation gaps that could impact project continuity
+- Prepare recommendations for phase approval with complete and centralized documentation
+- Ensure proposed updates facilitate knowledge transfer between developers
+
+## Objective
+Prepare the project for phase approval with complete, centralized documentation and clear next steps for team continuity.

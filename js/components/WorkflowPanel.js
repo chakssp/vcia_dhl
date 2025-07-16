@@ -344,48 +344,7 @@
                     </div>
                 `,
                 
-                organization: `
-                    <h2>Organização e Exportação</h2>
-                    <p>Categorize os resultados e escolha o formato de exportação.</p>
-                    
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label class="form-label">Estrutura de Organização</label>
-                            <select class="form-control" id="org-structure">
-                                <option value="category" selected>Por Categoria</option>
-                                <option value="date">Por Data (YYYY/MM)</option>
-                                <option value="relevance">Por Relevância</option>
-                                <option value="hybrid">Híbrida (Categoria + Data)</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Formatos de Exportação</label>
-                            <div class="checkbox-group">
-                                <label><input type="checkbox" name="export-format" value="json" checked> JSON (RAG-Ready)</label>
-                                <label><input type="checkbox" name="export-format" value="markdown" checked> Markdown</label>
-                                <label><input type="checkbox" name="export-format" value="pdf"> PDF</label>
-                                <label><input type="checkbox" name="export-format" value="html"> HTML</label>
-                            </div>
-                        </div>
-                        
-                        <div class="category-summary">
-                            <h4>Resumo por Categoria</h4>
-                            <div id="category-stats">
-                                <p class="text-muted">Aguardando análise dos arquivos</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="panel-actions">
-                        <button class="btn btn-secondary" onclick="callKC('AppController.previousStep')">
-                            Voltar
-                        </button>
-                        <button class="btn btn-success btn-lg" onclick="callKC('WorkflowPanel.exportResults')">
-                            Exportar Resultados
-                        </button>
-                    </div>
-                `,
+                organization: '', // Será renderizado pelo OrganizationPanel
                 
                 dashboard: `
                     <div class="dashboard-container">
@@ -571,7 +530,7 @@
             if (!selector) return;
 
             const selectedIntentId = selector.value;
-            KC.logger.flow('WorkflowPanel', `Usuário selecionou a intenção: ${selectedIntentId}`);
+            KC.Logger.flow('WorkflowPanel', `Usuário selecionou a intenção: ${selectedIntentId}`);
 
             KC.EventBus.emit(KC.Events.PROGRESS_START, { 
                 type: 'insight', 
@@ -1659,10 +1618,16 @@
          * Exporta resultados
          */
         exportResults() {
-            KC.showNotification({
-                type: 'success',
-                message: 'Exportação será implementada em breve'
-            });
+            // Usa o ExportUI para gerenciar a exportação
+            if (KC.ExportUI) {
+                KC.ExportUI.handleExportRequest();
+            } else {
+                KC.Logger?.error('WorkflowPanel', 'ExportUI não está disponível');
+                KC.showNotification({
+                    type: 'error',
+                    message: 'Sistema de exportação não está carregado'
+                });
+            }
         }
     }
 

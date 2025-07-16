@@ -129,9 +129,20 @@
                 try {
                     return JSON.parse(cleaned);
                 } catch (parseError) {
-                    // Tenta corrigir JSON malformado comum
-                    cleaned = this._fixCommonJsonIssues(cleaned);
-                    return JSON.parse(cleaned);
+                    // Se não for JSON, tenta parsear como texto estruturado
+                    const textParsed = this._parseTextResponse(response);
+                    if (textParsed) {
+                        return textParsed;
+                    }
+                    
+                    // Última tentativa: corrigir JSON malformado
+                    try {
+                        cleaned = this._fixCommonJsonIssues(cleaned);
+                        return JSON.parse(cleaned);
+                    } catch (fixError) {
+                        // Se tudo falhar, retorna estrutura baseada no texto
+                        return this._extractFromPlainText(response);
+                    }
                 }
             }
 
@@ -394,6 +405,106 @@
                 normalized: true,
                 isFallback: true
             };
+        }
+
+        /**
+         * Parseia resposta em texto estruturado
+         */
+        _parseTextResponse(text) {
+            // Procura por padrões de texto estruturado
+            const patterns = {
+                summary: /(?:summary|resumo|síntese)[:\s]+(.+?)(?=\n\n|\n[A-Z]|$)/is,
+                insights: /(?:insights?|pontos?|observações)[:\s]+(.+?)(?=\n\n|\n[A-Z]|$)/is,
+                relevance: /(?:relevance|relevância)[:\s]+(\d+)/i,
+                categories: /(?:categor(?:y|ies|ia)|tags?)[:\s]+(.+?)(?=\n\n|\n[A-Z]|$)/is,
+                type: /(?:type|tipo)[:\s]+(.+?)(?=\n|$)/i
+            };
+
+            const result = {};
+            
+            for (const [key, pattern] of Object.entries(patterns)) {
+                const match = text.match(pattern);
+                if (match) {
+                    result[key] = match[1].trim();
+                }
+            }
+
+            // Se encontrou estrutura suficiente, retorna
+            if (Object.keys(result).length >= 2) {
+                return this._structureTextData(result);
+            }
+
+            return null;
+        }
+
+        /**
+         * Extrai informações de texto plano
+         */
+        _extractFromPlainText(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const firstParagraph = lines.slice(0, 3).join(' ');
+            
+            return {
+                summary: firstParagraph.substring(0, 200) + (firstParagraph.length > 200 ? '...' : ''),
+                analysisType: this._detectAnalysisType(text),
+                relevanceScore: 0.5, // Score padrão quando não detectado
+                categories: this._extractKeywords(text),
+                moments: [],
+                insights: lines.filter(line => 
+                    line.match(/^[-*•]\s/) || // Itens de lista
+                    line.match(/^\d+[\.)]\s/) // Listas numeradas
+                ).map(line => line.replace(/^[-*•\d\.)]\s*/, '').trim()),
+                rawText: text,
+                parseMethod: 'plainText'
+            };
+        }
+
+        /**
+         * Estrutura dados extraídos do texto
+         */
+        _structureTextData(extracted) {
+            return {
+                summary: extracted.summary || '',
+                analysisType: extracted.type || this._detectAnalysisType(extracted.summary || ''),
+                relevanceScore: extracted.relevance ? 
+                    this._normalizeScore(extracted.relevance) : 0.5,
+                categories: extracted.categories ? 
+                    this._normalizeArray(extracted.categories) : [],
+                insights: extracted.insights ? 
+                    this._normalizeArray(extracted.insights) : [],
+                moments: [],
+                parseMethod: 'textStructured'
+            };
+        }
+
+        /**
+         * Extrai keywords do texto
+         */
+        _extractKeywords(text) {
+            // Remove stopwords comuns
+            const stopwords = ['o', 'a', 'os', 'as', 'de', 'da', 'do', 'em', 'no', 'na', 
+                'para', 'com', 'por', 'que', 'é', 'um', 'uma', 'aos', 'das', 'dos'];
+            
+            // Extrai palavras únicas significativas
+            const words = text.toLowerCase()
+                .replace(/[^\w\sáàâãéèêíïóôõöúüçñ]/g, ' ')
+                .split(/\s+/)
+                .filter(word => 
+                    word.length > 4 && 
+                    !stopwords.includes(word)
+                );
+            
+            // Conta frequência
+            const freq = {};
+            words.forEach(word => {
+                freq[word] = (freq[word] || 0) + 1;
+            });
+            
+            // Retorna top 5 palavras mais frequentes
+            return Object.entries(freq)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5)
+                .map(([word]) => word);
         }
 
         /**

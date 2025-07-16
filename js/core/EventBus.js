@@ -341,6 +341,12 @@
         // Categories
         CATEGORIES_CHANGED: 'categories:changed',
         
+        // Export
+        EXPORT_REQUEST: 'export:request',
+        EXPORT_PROGRESS: 'export:progress',
+        EXPORT_COMPLETED: 'export:completed',
+        EXPORT_ERROR: 'export:error',
+        
         // Erros
         ERROR_OCCURRED: 'error:occurred'
     };

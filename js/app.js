@@ -71,7 +71,11 @@
             'APIConfig',
             'AIAPIManager',
             'PromptManager',
-            'AnalysisAdapter'
+            'AnalysisAdapter',
+            'QdrantSchema',
+            'RAGExportManager',
+            'ExportUI',
+            'OrganizationPanel'
         ];
 
         components.forEach(name => {
@@ -387,6 +391,10 @@
             }
             
             if (typeof obj === 'function') {
+                // Preservar contexto para métodos do AppController
+                if (method.startsWith('AppController.') && KC.AppController) {
+                    return obj.call(KC.AppController, ...args);
+                }
                 return obj(...args);
             }
         } else {

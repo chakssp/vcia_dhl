@@ -40,20 +40,21 @@
                 },
                 {
                     id: 3,
-                    name: 'Dashboard de Insights',
-                    icon: '✨',
-                    description: 'Explore os insights extraídos da sua base de conhecimento.',
-                    panel: 'dashboard', // Novo painel
-                    validator: null
-                },
-                {
-                    id: 4,
                     name: 'Análise IA Seletiva',
                     icon: '🤖',
-                    description: 'Configure modelos e parâmetros',
+                    description: 'Configure modelos e parâmetros de IA',
                     panel: 'aiAnalysis',
                     validator: 'validateAIConfig'
                 },
+                // ORIGINAL - Preservado para rollback
+                // {
+                //     id: 3,
+                //     name: 'Dashboard de Insights',
+                //     icon: '✨',
+                //     description: 'Explore os insights extraídos da sua base de conhecimento.',
+                //     panel: 'dashboard',
+                //     validator: null
+                // },
                 {
                     id: 4,
                     name: 'Organização Inteligente',
@@ -449,6 +450,23 @@
          * @private
          */
         _showPanel(panelName) {
+            // Caso especial para o OrganizationPanel
+            if (panelName === 'organization') {
+                // Esconde seções que podem interferir
+                const filesSection = document.querySelector('.files-section');
+                const filterSection = document.querySelector('.filter-section');
+                if (filesSection) filesSection.style.display = 'none';
+                if (filterSection) filterSection.style.display = 'none';
+                
+                // Ativa o OrganizationPanel
+                if (KC.OrganizationPanel) {
+                    KC.OrganizationPanel.initialize();
+                    KC.OrganizationPanel.render();
+                }
+                return;
+            }
+            
+            // Comportamento padrão para outros painéis
             const panel = document.getElementById(`${panelName}-panel`);
             if (panel) {
                 panel.style.display = 'block';
@@ -461,6 +479,15 @@
          * @private
          */
         _hidePanel(panelName) {
+            // Caso especial para o OrganizationPanel
+            if (panelName === 'organization') {
+                if (KC.OrganizationPanel) {
+                    KC.OrganizationPanel.hide();
+                }
+                return;
+            }
+            
+            // Comportamento padrão para outros painéis
             const panel = document.getElementById(`${panelName}-panel`);
             if (panel) {
                 panel.style.display = 'none';

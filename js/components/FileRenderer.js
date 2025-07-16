@@ -524,8 +524,8 @@
                 }
                 
                 // Atualiza estatísticas
-                if (KC.StatsPanel) {
-                    KC.StatsPanel.updateStats();
+                if (KC.StatsPanel && KC.StatsManager) {
+                    KC.StatsPanel.updateStats(KC.StatsManager.getStats());
                 }
                 
             }, 2000); // Simula 2s de processamento
@@ -636,8 +636,8 @@
                     // this.renderFileList(); // Removido para evitar dupla renderização
                     
                     // Atualiza estatísticas
-                    if (KC.StatsPanel) {
-                        KC.StatsPanel.updateStats();
+                    if (KC.StatsPanel && KC.StatsManager) {
+                        KC.StatsPanel.updateStats(KC.StatsManager.getStats());
                     }
                     
                 }, 2000); // Simula 2s de processamento
@@ -725,8 +725,8 @@
             // this.renderFileList(); // Removido para evitar dupla renderização
             
             // Atualiza estatísticas
-            if (KC.StatsPanel) {
-                KC.StatsPanel.updateStats();
+            if (KC.StatsPanel && KC.StatsManager) {
+                KC.StatsPanel.updateStats(KC.StatsManager.getStats());
             }
         }
 
