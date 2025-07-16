@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 package-lock.json
+CLAUDE.*
 
 # Logs
 *.log
@@ -23,6 +24,10 @@ Thumbs.db
 # Build/Dist
 dist/
 build/
+docs/
+imagens/
+claude/
+templates/
 
 # Temporary files
 temp/
@@ -34,10 +39,16 @@ tmp/
 config/local.json
 config/credentials.json
 
+
 # Test coverage
 coverage/
 .nyc_output/
+tests/
 
 # Cache
 .cache/
 .parcel-cache/
+.vscode/
+.claude/
+analise-prd.md
+docs/export-schema-intelligence.md
