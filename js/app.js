@@ -75,7 +75,10 @@
             'QdrantSchema',
             'RAGExportManager',
             'ExportUI',
-            'OrganizationPanel'
+            'OrganizationPanel',
+            'TripleStoreManager',
+            'TripleStoreService',
+            'TripleSchema'
         ];
 
         components.forEach(name => {

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Runner - TripleStoreService</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        #console {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            min-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Runner - TripleStoreService</h1>
+        
+        <button onclick="runTests()">▶️ Executar Testes</button>
+        <button onclick="clearConsole()">🗑️ Limpar Console</button>
+        <button onclick="location.reload()">🔄 Recarregar</button>
+        
+        <div id="console"></div>
+    </div>
+
+    <!-- Carregar todos os scripts necessários -->
+    <script src="js/core/Logger.js"></script>
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/core/AppController.js"></script>
+    
+    <!-- Utilidades -->
+    <script src="js/utils/ChunkingUtils.js"></script>
+    <script src="js/utils/ProgressManager.js"></script>
+    <script src="js/utils/DuplicateDetector.js"></script>
+    <script src="js/utils/BrowserCompatibility.js"></script>
+    <script src="js/utils/HandleManager.js"></script>
+    <script src="js/utils/FileUtils.js"></script>
+    <script src="js/utils/DateUtils.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/utils/ValidationUtils.js"></script>
+    <script src="js/utils/WordCloudGenerator.js"></script>
+    
+    <!-- AI Managers -->
+    <script src="js/managers/AIAPIManager.js"></script>
+    <script src="js/managers/PromptManager.js"></script>
+    <script src="js/managers/AnalysisAdapter.js"></script>
+    <script src="js/managers/RAGExportManager.js"></script>
+    
+    <!-- Schemas -->
+    <script src="js/schemas/QdrantSchema.js"></script>
+    <script src="js/schemas/TripleSchema.js"></script>
+    
+    <!-- Extractors -->
+    <script src="js/extractors/RelationshipExtractor.js"></script>
+    
+    <!-- Triple Store -->
+    <script src="js/managers/TripleStoreManager.js"></script>
+    
+    <!-- Services -->
+    <script src="js/services/TripleStoreService.js"></script>
+    
+    <!-- Components -->
+    <script src="js/components/FileRenderer.js"></script>
+    <script src="js/components/FilterPanel.js"></script>
+    <script src="js/components/ModalManager.js"></script>
+    <script src="js/components/WorkflowPanel.js"></script>
+    <script src="js/components/FilterBar.js"></script>
+    <script src="js/components/StatsPanel.js"></script>
+    <script src="js/components/DashboardRenderer.js"></script>
+    <script src="js/components/ExportUI.js"></script>
+    <script src="js/components/OrganizationPanel.js"></script>
+    <script src="js/components/APIConfig.js"></script>
+    
+    <!-- Core Managers -->
+    <script src="js/managers/ConfigManager.js"></script>
+    <script src="js/managers/DiscoveryManager.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/managers/AnalysisManager.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/managers/ExportManager.js"></script>
+    <script src="js/managers/StatsManager.js"></script>
+    <script src="js/managers/StatsCoordinator.js"></script>
+    <script src="js/managers/IntentManager.js"></script>
+    <script src="js/managers/InsightExtractor.js"></script>
+    
+    <!-- App -->
+    <script src="js/app.js"></script>
+    
+    <!-- Teste -->
+    <script src="test/test-triple-store-service.js"></script>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        let originalLog = console.log;
+        let originalError = console.error;
+        
+        // Interceptar console.log e console.error
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const text = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleDiv.textContent += text + '\n';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const text = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleDiv.textContent += '❌ ERROR: ' + text + '\n';
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+        
+        function clearConsole() {
+            consoleDiv.textContent = '';
+        }
+        
+        async function runTests() {
+            clearConsole();
+            console.log('🚀 Iniciando testes...\n');
+            
+            if (typeof testTripleStoreService === 'function') {
+                try {
+                    const results = await testTripleStoreService();
+                    console.log('\n✅ Testes concluídos!');
+                } catch (error) {
+                    console.error('Erro ao executar testes:', error);
+                }
+            } else {
+                console.error('Função testTripleStoreService não encontrada!');
+            }
+        }
+        
+        // Executar automaticamente ao carregar
+        window.addEventListener('load', () => {
+            console.log('📋 Test Runner carregado!');
+            console.log('Clique em "Executar Testes" para iniciar.\n');
+        });
+    </script>
+</body>
+</html>

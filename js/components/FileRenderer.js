@@ -226,10 +226,11 @@
                 
                 // NOVO: Preserva originais e aplica exclusões apenas para exibição
                 this.originalFiles = existingFiles;
-                this.files = this.applySmartExclusions([...existingFiles]);
+                // SPRINT 1.3.1: Mantém TODOS os arquivos sem exclusões
+                this.files = [...existingFiles];
                 
                 console.log(`FileRenderer: ${this.originalFiles.length} arquivos originais`);
-                console.log(`FileRenderer: ${this.files.length} arquivos após exclusões para exibição`);
+                console.log(`FileRenderer: ${this.files.length} arquivos carregados`);
                 
                 this.renderFileList();
                 this.showFilesSection();

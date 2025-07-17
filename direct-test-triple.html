@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Test TripleStoreService Directly</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>TripleStoreService Direct Test</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test-section ${type}`;
+            div.innerHTML = message;
+            output.appendChild(div);
+        }
+
+        async function runTests() {
+            log('<h2>Starting TripleStoreService Tests</h2>');
+            
+            try {
+                // Load all required modules
+                log('Loading modules...');
+                await import('/js/core/EventBus.js');
+                await import('/js/core/AppState.js');
+                await import('/js/utils/Logger.js');
+                await import('/js/extractors/RelationshipExtractor.js');
+                await import('/js/schemas/TripleSchema.js');
+                await import('/js/managers/TripleStoreManager.js');
+                await import('/js/services/TripleStoreService.js');
+                
+                const KC = window.KnowledgeConsolidator;
+                log('✅ All modules loaded successfully', 'success');
+                
+                // Check if service exists
+                if (!KC.TripleStoreService) {
+                    log('❌ TripleStoreService not found in KC namespace', 'error');
+                    return;
+                }
+                
+                log('✅ TripleStoreService found', 'success');
+                
+                // Initialize the service
+                log('\n<h3>1. Initializing Service</h3>');
+                await KC.TripleStoreService.inicializar();
+                log('✅ Service initialized', 'success');
+                
+                // Test basic triple extraction
+                log('\n<h3>2. Testing Triple Extraction</h3>');
+                const testFile = {
+                    id: 'test-file-1',
+                    name: 'test-document.md',
+                    path: '/test/test-document.md',
+                    content: `# Projeto de IA com Machine Learning
+                    
+                    Este projeto utiliza TensorFlow para implementar redes neurais.
+                    A arquitetura baseia-se em transformers para processamento de linguagem natural.
+                    
+                    ## Decisão importante
+                    
+                    Decidimos migrar de PyTorch para TensorFlow devido à melhor integração com Google Cloud.
+                    Esta mudança resultou em 40% de melhoria na performance.`,
+                    type: 'text/markdown',
+                    size: 1024,
+                    lastModified: Date.now(),
+                    relevanceScore: 85,
+                    categories: ['IA', 'Machine Learning']
+                };
+                
+                const triplas = await KC.TripleStoreService.extrairTriplas(testFile);
+                log(`Extracted ${triplas.length} triples:`, 'info');
+                
+                if (triplas.length > 0) {
+                    log('<pre>' + JSON.stringify(triplas.slice(0, 3), null, 2) + '</pre>');
+                    log('✅ Triple extraction working', 'success');
+                } else {
+                    log('⚠️ No triples extracted', 'error');
+                }
+                
+                // Test batch extraction
+                log('\n<h3>3. Testing Batch Extraction</h3>');
+                const testFiles = [
+                    testFile,
+                    {
+                        ...testFile,
+                        id: 'test-file-2',
+                        name: 'another-doc.md',
+                        content: 'Python evoluiu para suportar type hints. Isso transformou a forma como escrevemos código.'
+                    }
+                ];
+                
+                const batchResult = await KC.TripleStoreService.extrairTriplasBatch(testFiles, {
+                    batchSize: 2,
+                    onProgress: (progress) => {
+                        log(`Progress: ${progress.porcentagem.toFixed(0)}%`);
+                    }
+                });
+                
+                log(`Batch extraction completed: ${batchResult.triplas.length} triples total`, 'info');
+                
+                // Test search
+                log('\n<h3>4. Testing Triple Search</h3>');
+                const searchResults = await KC.TripleStoreService.buscarTriplas({
+                    sujeito: 'TensorFlow'
+                });
+                
+                log(`Search found ${searchResults.length} results`, 'info');
+                if (searchResults.length > 0) {
+                    log('<pre>' + JSON.stringify(searchResults[0], null, 2) + '</pre>');
+                }
+                
+                // Test insights generation
+                log('\n<h3>5. Testing Insights Generation</h3>');
+                const insights = await KC.TripleStoreService.gerarInsights({
+                    arquivo: 'test-file-1'
+                });
+                
+                log(`Generated ${insights.length} insights`, 'info');
+                if (insights.length > 0) {
+                    insights.forEach(insight => {
+                        log(`<strong>${insight.tipo}:</strong> ${insight.titulo}<br>${insight.descricao}`);
+                    });
+                }
+                
+                // Test statistics
+                log('\n<h3>6. Service Statistics</h3>');
+                const stats = KC.TripleStoreService.stats;
+                log('<pre>' + JSON.stringify(stats, null, 2) + '</pre>');
+                
+                // Test export
+                log('\n<h3>7. Testing Export</h3>');
+                const qdrantExport = await KC.TripleStoreService.exportarParaIntegracao('qdrant');
+                log(`Qdrant export: ${qdrantExport.length} items ready`, 'info');
+                
+                const n8nExport = await KC.TripleStoreService.exportarParaIntegracao('n8n');
+                log(`N8N export: ${n8nExport.nodes.length} nodes, ${n8nExport.edges.length} edges`, 'info');
+                
+                log('\n<h2>✅ All tests completed!</h2>', 'success');
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                log('<pre>' + error.stack + '</pre>', 'error');
+            }
+        }
+
+        // Run tests when page loads
+        runTests();
+    </script>
+</body>
+</html>

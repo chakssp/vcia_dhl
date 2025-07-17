@@ -1,20 +1,34 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(python3:*)",
-      "Bash(pkill:*)",
-      "Bash(true)",
-      "Bash(lsof:*)",
-      "Bash(python:*)",
       "Bash(grep:*)",
-      "Bash(curl:*)",
-      "Bash(node:*)",
-      "Bash(npm i:*)",
-      "Bash(touch:*)",
-      "Bash(ls:*)",
-      "WebFetch(domain:127.0.0.1)"
+      "Bash(ls:*)"
     ],
     "deny": []
+  },
+  "enableAllProjectMcpServers": false,
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/tool ./run-playwright-mcp.sh.navigate http://127.0.0.1:5500"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/tool ./run-playwright-mcp.sh.navigate http://localhost:8080"
+          }
+        ]
+      }
+    ]
   }
 }

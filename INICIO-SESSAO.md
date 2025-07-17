@@ -153,34 +153,36 @@ Contexto adicional: [descreva o que pretende fazer hoje]
 Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo
   usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
 
-  CONTEXTO DA ÚLTIMA SESSÃO (15/01/2025 - Sexta sessão - Pipeline RAG):
-  - ✅ Sprint 1.3.2 CONCLUÍDA - Pipeline de Consolidação RAG implementado
-  - ✅ RAGExportManager.js (906 linhas) - Orquestrador principal do pipeline
-  - ✅ ChunkingUtils.js (445 linhas) - Completamente reescrito com chunking semântico
-  - ✅ QdrantSchema.js (563 linhas) - Schema completo para exportação Qdrant
-  - ✅ Pipeline documentado em /docs/sprint/1.3/pipeline-consolidacao-rag-completo.md
-  - ✅ BUG #6 documentado (Resposta vazia Ollama) - Em investigação
-  - ✅ Sistema IA + Pipeline RAG 100% Operacional
+  CONTEXTO DA ÚLTIMA SESSÃO (17/01/2025 - Sprint Fase 2 - Fundação Semântica):
+  - 🚧 Sprint Fase 2 INICIADA - Análise arquitetural bottom-up
+  - ⚠️ DESCOBERTA CRÍTICA: Sistema de triplas extraindo apenas metadados (13 triplas superficiais)
+  - 💡 INSIGHT: "Construindo do telhado" - falta toda camada de embeddings/vetorização
+  - 🎯 NOVA ABORDAGEM: Fundação → Embeddings → Qdrant → Similaridade → Triplas
+  - ✅ Categorias manuais identificadas como ground truth para validação
+
+  📊 STATUS ANTERIOR:
+  - ✅ Sprint 2.0.1 CONCLUÍDA (BUG #6 e #7 corrigidos)
+  - ✅ Sistema base 100% operacional
+  - ✅ Pipeline RAG implementado (RAGExportManager, ChunkingUtils, QdrantSchema)
 
   ⚠️ IMPORTANTE: 
-  - RAGExportManager substitui o ExportManager original (não implementado)
-  - Pipeline consolida dados das etapas 1-4 para formato Qdrant
-  - Integração com PreviewUtils e CategoryManager implementada
+  - TripleStoreService atual só extrai metadados, não relações semânticas
+  - RelationshipExtractor usa apenas regex, não compreensão semântica
+  - Precisamos construir da fundação (embeddings) antes de extrair triplas reais
 
-  📌 Arquivos chave do Pipeline RAG:
-  - Pipeline completo: @docs/sprint/1.3/pipeline-consolidacao-rag-completo.md
-  - RAGExportManager: @js/managers/RAGExportManager.js
-  - ChunkingUtils: @js/utils/ChunkingUtils.js
-  - QdrantSchema: @js/schemas/QdrantSchema.js
-  - Troubleshooting Ollama: @docs/sprint/1.3/troubleshooting-resposta-vazia-ollama.md
+  📌 Arquivos chave da Sprint Fase 2:
+  - Análise arquitetural: @docs/sprint/fase2/analise-arquitetural-bottomup.md
+  - Triple Store Service: @js/services/TripleStoreService.js (a refatorar)
+  - Relationship Extractor: @js/extractors/RelationshipExtractor.js (a substituir)
+  - Teste 2Litros: @test/teste-final-2litros.js (benchmark de validação)
 
-  🎯 Próximos passos sugeridos:
-  1. Resolver BUG #6 (Resposta vazia Ollama)
-  2. Testar pipeline com dados reais
-  3. Implementar geração de embeddings (Sprint 2.0)
-  4. Criar interface de exportação na Etapa 4
+  🎯 Próximos passos imediatos:
+  1. POC de EmbeddingService com Ollama
+  2. Validar geração de embeddings com dados reais
+  3. Criar estrutura básica do QdrantService
+  4. Refatorar extração para usar similaridade semântica
 
-  Este prompt garantirá que a próxima sessão tenha todo o contexto necessário!
+  Este prompt garantirá continuidade com a nova abordagem bottom-up!
 ```
 
 ---

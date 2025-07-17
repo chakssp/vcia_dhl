@@ -96,6 +96,12 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 **Solução**: Usar Manager centralizado + Event-Driven Architecture  
 **Documentação**: `/docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`
 
+#### 🔴 Problema Recorrente #6: Construir "do telhado" sem fundação
+**Impacto**: Sistema de triplas extraindo apenas metadados superficiais  
+**Causa**: Tentativa de extração semântica sem embeddings/vetorização  
+**Solução**: SEMPRE construir da fundação: Dados → Embeddings → Similaridade → Extração  
+**Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`
+
 ### ✅ Padrão de Sucesso
 
 ```javascript

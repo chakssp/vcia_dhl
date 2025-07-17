@@ -9,9 +9,9 @@
 
 **Nome**: Consolidador de Conhecimento Pessoal (Personal Knowledge Consolidator)  
 **Visão**: Transformar conhecimento disperso em insights acionáveis  
-**Sprint Atual**: 2.0.1 - Correções e UI ✅ CONCLUÍDA  
-**Última Atualização**: 16/01/2025 (Sprint 2.0.1 - Correções BUG #6 e #7)  
-**Status Geral**: 🟢 FUNCIONAL - Sistema 100% Operacional com Exportação Funcionando  
+**Sprint Atual**: FASE 2 - Fundação Semântica 🚧 EM ANDAMENTO  
+**Última Atualização**: 17/01/2025 (Análise arquitetural bottom-up)  
+**Status Geral**: 🟢 FUNCIONAL - Sistema base operacional / 🚧 Extração semântica em refatoração  
 
 ### 🌐 Ambiente de Desenvolvimento
 - **Servidor**: Five Server (gerenciado pelo USUÁRIO)
@@ -249,20 +249,50 @@ curl http://127.0.0.1:11434/api/tags
 - `/docs/sprint/2.0/checkpoint-sprint-2.0.1-16-01-2025.md` - Checkpoint geral
 - `/docs/sprint/2.0/evolucao-sprint-2.0.1-completa.md` - Relatório completo
 
-### 📝 SPRINT 2.0.2 - EMBEDDINGS & QDRANT (PRÓXIMA)
+### 🚧 SPRINT FASE 2 - FUNDAÇÃO SEMÂNTICA (EM ANDAMENTO)
 
-#### 🎯 Objetivo: Sistema completo de embeddings e busca semântica
-**Status**: 📝 PRONTA PARA INICIAR (13 dias de antecedência)
-**Duração estimada**: 2 semanas
+#### 🎯 Objetivo: Construir fundação bottom-up para extração semântica real
+**Status**: 🚧 INICIADA - Análise arquitetural concluída
+**Sprint Anterior**: 2.0.1 (Correções) ✅ CONCLUÍDA
+**Insight Crítico**: "Construir pela fundação, não pelo telhado"
 
-#### 📋 Tarefas Planejadas:
-- [ ] **EmbeddingManager**: Multi-provider (Ollama, OpenAI)
-- [ ] **CacheManager**: IndexedDB para embeddings
-- [ ] **QdrantClient**: Integração com vector DB
-- [ ] **SearchInterface**: Busca semântica
+#### 📋 Nova Arquitetura Bottom-Up:
+```
+FUNDAÇÃO → EMBEDDINGS → QDRANT → SIMILARIDADE → TRIPLAS
+   ↑
+Categorias Humanas (Ground Truth)
+```
 
-#### 📁 Documentação Sprint 2.0:
-- `/docs/sprint/2.0/planejamento-sprint-2.0.md` - Planejamento completo
+#### ✅ O que descobrimos:
+- Sistema atual extrai apenas 13 triplas superficiais (metadados)
+- RelationshipExtractor usa apenas regex, não semântica
+- Falta toda a camada de embeddings e vetorização
+- **Insight chave**: Categorias manuais são nosso ground truth
+
+#### 📋 Fases da Sprint Fase 2:
+
+**Fase 1: Fundação de Embeddings (2-3 dias)**
+- [ ] Criar EmbeddingService.js
+- [ ] Integração com Ollama para embeddings locais
+- [ ] Cache de embeddings em IndexedDB
+- [ ] POC de validação com dados reais
+
+**Fase 2: Integração Qdrant (2-3 dias)**
+- [ ] Criar QdrantService.js
+- [ ] Popular com dados do RAGExportManager
+- [ ] Indexar por categorias humanas
+
+**Fase 3: Busca por Similaridade (2 dias)**
+- [ ] Criar SimilaritySearchService.js
+- [ ] Validar com categorias como ground truth
+
+**Fase 4: Refatorar Extração de Triplas (3 dias)**
+- [ ] Atualizar RelationshipExtractor para usar similaridade
+- [ ] Integrar TripleStoreService com nova arquitetura
+
+#### 📁 Documentação Sprint Fase 2:
+- `/docs/sprint/fase2/analise-arquitetural-bottomup.md` - Análise completa
+- `/docs/sprint/2.0/planejamento-sprint-2.0.md` - Planejamento anterior
 - `/docs/sprint/2.0/arquitetura-embeddings-rag.md` - Arquitetura técnica
 
 ### 🔮 SPRINT 3.0 - ORGANIZAÇÃO INTELIGENTE (FUTURA)
@@ -679,6 +709,14 @@ Antes de iniciar qualquer sessão:
 
 ## 📅 HISTÓRICO DE ATUALIZAÇÕES
 
+### 17/01/2025 - Sprint Fase 2 INICIADA
+- **Análise arquitetural bottom-up concluída**
+- **Insight crítico**: Sistema atual "construído do telhado" - extrai apenas metadados
+- **Nova abordagem**: Fundação → Embeddings → Qdrant → Similaridade → Triplas
+- **Descoberta**: Categorias manuais são nosso ground truth para validação
+- **Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`
+- **Próximo passo**: POC de EmbeddingService com Ollama
+
 ### 16/01/2025 - Sprint 2.0.1 CONCLUÍDA
 - **SPRINT 2.0.1 CONCLUÍDA EM 1 DIA** (92.8% economia de tempo)
 - ✅ **BUG #6 CORRIGIDO**: Resposta vazia do Ollama
@@ -784,7 +822,13 @@ Antes de iniciar qualquer sessão:
 **Impacto**: Categorias criadas em um componente não aparecem em outros  
 **Causa**: Múltiplas fontes de verdade e falta de listeners de eventos  
 **Solução**: Usar Manager centralizado + Event-Driven Architecture  
-**Documentação**: `/docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`  
+**Documentação**: `/docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`
+
+### 🔴 Problema Recorrente #6: Construir "do telhado" sem fundação
+**Impacto**: Sistema de triplas extraindo apenas metadados superficiais (13 triplas)  
+**Causa**: Tentativa de extração semântica sem embeddings/vetorização  
+**Solução**: Construir bottom-up: Curadoria → Embeddings → Qdrant → Similaridade → Triplas  
+**Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`  
 
 ### ✅ Padrão de Sucesso
 ```javascript

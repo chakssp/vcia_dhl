@@ -19,8 +19,9 @@
   "author": "Fernando Brito - brito@vcia.com.br",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/mcp": "^0.0.30",
     "eslint": "^8.45.0",
-    "prettier": "^3.0.0",
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "prettier": "^3.0.0"
   }
 }
