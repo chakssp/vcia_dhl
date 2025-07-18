@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POC Simples - Embeddings</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #3a3a3a;
+        }
+        h1, h2 {
+            color: #00ffcc;
+        }
+        button {
+            background: #00ffcc;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00ddb3;
+        }
+        .result {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff6666; }
+        .info { color: #0099ff; }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .similarity-bar {
+            background: #3a3a3a;
+            height: 30px;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .similarity-fill {
+            height: 100%;
+            background: linear-gradient(to right, #ff6666, #ffaa00, #00ff00);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 POC Simples - Teste de Embeddings</h1>
+        
+        <div class="section">
+            <h2>1️⃣ Dados de Exemplo</h2>
+            <p>Vamos usar exemplos do case Ambev/2Litros para testar:</p>
+            <button onclick="testWithExampleData()">Testar com Dados de Exemplo</button>
+            <div id="example-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ Busca Semântica</h2>
+            <textarea id="search-text" rows="2" placeholder="Digite sua busca...">Machine Learning no marketing digital</textarea>
+            <button onclick="semanticSearch()">Buscar Similares</button>
+            <div id="search-result" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ Comparação de Textos</h2>
+            <textarea id="text1" rows="2" placeholder="Texto 1">Ambev usa IA para melhorar campanhas</textarea>
+            <textarea id="text2" rows="2" placeholder="Texto 2">Empresa implementa inteligência artificial em marketing</textarea>
+            <button onclick="compareTexts()">Comparar Similaridade</button>
+            <div class="similarity-bar">
+                <div class="similarity-fill" id="similarity-bar" style="width: 0%">0%</div>
+            </div>
+            <div id="compare-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Namespace mínimo
+        window.KC = window.KC || {};
+        
+        // Dados de exemplo (baseados no case Ambev)
+        const exampleData = [
+            {
+                id: 1,
+                text: "Ambev implementou Machine Learning para análise preditiva de comportamento do consumidor, resultando em +32% de brand awareness",
+                category: "IA/ML",
+                relevance: 95
+            },
+            {
+                id: 2,
+                text: "O projeto 2Litros revolucionou a abordagem de marketing digital através de algoritmos de personalização em tempo real",
+                category: "Marketing Digital",
+                relevance: 90
+            },
+            {
+                id: 3,
+                text: "Análise de dados em larga escala permitiu identificar padrões de consumo e otimizar campanhas publicitárias",
+                category: "Analytics",
+                relevance: 85
+            },
+            {
+                id: 4,
+                text: "A integração de IA nas estratégias de vendas aumentou a conversão em 45% no primeiro trimestre",
+                category: "Vendas",
+                relevance: 88
+            },
+            {
+                id: 5,
+                text: "Tecnologia de reconhecimento de imagem aplicada em PDVs para análise de comportamento do shopper",
+                category: "Computer Vision",
+                relevance: 82
+            }
+        ];
+
+        let embeddings = new Map();
+
+        // Carregar o EmbeddingService
+        const script = document.createElement('script');
+        script.src = '../js/services/EmbeddingService.js';
+        document.head.appendChild(script);
+
+        // Helper para mostrar resultados
+        function showResult(elementId, content, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${content}</div>`;
+        }
+
+        // 1. Testar com dados de exemplo
+        async function testWithExampleData() {
+            try {
+                showResult('example-result', '⏳ Gerando embeddings para dados de exemplo...', 'info');
+                
+                if (!KC.EmbeddingService) {
+                    showResult('example-result', '❌ EmbeddingService não carregado. Recarregue a página.', 'error');
+                    return;
+                }
+
+                const service = KC.EmbeddingService;
+                
+                // Verificar Ollama primeiro
+                const ollamaOk = await service.checkOllamaAvailability();
+                if (!ollamaOk) {
+                    showResult('example-result', '❌ Ollama não está disponível. Instale e execute o modelo nomic-embed-text', 'error');
+                    return;
+                }
+
+                // Gerar embeddings para cada exemplo
+                embeddings.clear();
+                let results = '✅ Embeddings gerados:\n\n';
+
+                for (const example of exampleData) {
+                    const embedding = await service.generateEmbedding(example.text, {
+                        category: example.category,
+                        relevance: example.relevance
+                    });
+                    
+                    embeddings.set(example.id, {
+                        ...example,
+                        embedding: embedding
+                    });
+                    
+                    results += `📄 ID ${example.id}: ${example.text.substring(0, 50)}...\n`;
+                    results += `   Categoria: ${example.category} | Relevância: ${example.relevance}%\n`;
+                    results += `   Embedding: ${embedding.dimensions} dimensões | Modelo: ${embedding.model}\n\n`;
+                }
+
+                results += `\n💾 Total: ${embeddings.size} embeddings em cache`;
+                showResult('example-result', results, 'success');
+
+            } catch (error) {
+                showResult('example-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. Busca semântica
+        async function semanticSearch() {
+            try {
+                const searchText = document.getElementById('search-text').value;
+                if (!searchText) {
+                    showResult('search-result', '❌ Digite um texto para buscar', 'error');
+                    return;
+                }
+
+                if (embeddings.size === 0) {
+                    showResult('search-result', '❌ Gere os embeddings de exemplo primeiro', 'error');
+                    return;
+                }
+
+                showResult('search-result', '⏳ Buscando textos similares...', 'info');
+
+                const service = KC.EmbeddingService;
+                
+                // Gerar embedding da busca
+                const searchEmbedding = await service.generateEmbedding(searchText);
+                
+                // Calcular similaridade com cada exemplo
+                const similarities = [];
+                for (const [id, data] of embeddings) {
+                    const similarity = service.cosineSimilarity(
+                        searchEmbedding.embedding,
+                        data.embedding.embedding
+                    );
+                    similarities.push({
+                        ...data,
+                        similarity: similarity,
+                        percent: Math.round(similarity * 100)
+                    });
+                }
+
+                // Ordenar por similaridade
+                similarities.sort((a, b) => b.similarity - a.similarity);
+
+                // Mostrar resultados
+                let results = `🔍 Busca: "${searchText}"\n\n`;
+                results += 'Resultados ordenados por similaridade:\n\n';
+
+                similarities.forEach((result, index) => {
+                    const emoji = result.percent > 70 ? '🟢' : 
+                                result.percent > 40 ? '🟡' : '🔴';
+                    results += `${index + 1}. ${emoji} ${result.percent}% - ${result.text.substring(0, 60)}...\n`;
+                    results += `   Categoria: ${result.category}\n\n`;
+                });
+
+                showResult('search-result', results, 'success');
+
+            } catch (error) {
+                showResult('search-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. Comparar textos
+        async function compareTexts() {
+            try {
+                const text1 = document.getElementById('text1').value;
+                const text2 = document.getElementById('text2').value;
+
+                if (!text1 || !text2) {
+                    showResult('compare-result', '❌ Preencha ambos os textos', 'error');
+                    return;
+                }
+
+                showResult('compare-result', '⏳ Calculando similaridade...', 'info');
+
+                const service = KC.EmbeddingService;
+                
+                // Gerar embeddings
+                const [emb1, emb2] = await Promise.all([
+                    service.generateEmbedding(text1),
+                    service.generateEmbedding(text2)
+                ]);
+
+                // Calcular similaridade
+                const similarity = service.cosineSimilarity(emb1.embedding, emb2.embedding);
+                const percent = Math.round(similarity * 100);
+
+                // Atualizar barra visual
+                const bar = document.getElementById('similarity-bar');
+                bar.style.width = percent + '%';
+                bar.textContent = percent + '%';
+
+                // Mostrar análise
+                let analysis = `📊 Análise de Similaridade\n\n`;
+                analysis += `Texto 1: "${text1}"\n`;
+                analysis += `Texto 2: "${text2}"\n\n`;
+                analysis += `Similaridade: ${percent}% (${similarity.toFixed(4)})\n\n`;
+                
+                if (percent > 80) {
+                    analysis += '✅ Textos muito similares - provavelmente tratam do mesmo assunto';
+                } else if (percent > 60) {
+                    analysis += '🟡 Textos moderadamente similares - temas relacionados';
+                } else if (percent > 40) {
+                    analysis += '🟠 Textos pouco similares - alguma relação temática';
+                } else {
+                    analysis += '🔴 Textos diferentes - temas distintos';
+                }
+
+                showResult('compare-result', analysis, 'success');
+
+            } catch (error) {
+                showResult('compare-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Verificar quando carregado
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (KC.EmbeddingService) {
+                    showResult('example-result', '✅ Sistema pronto! Clique em "Testar com Dados de Exemplo" para começar.', 'success');
+                } else {
+                    showResult('example-result', '❌ Erro ao carregar EmbeddingService', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

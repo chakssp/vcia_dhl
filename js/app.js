@@ -78,7 +78,10 @@
             'OrganizationPanel',
             'TripleStoreManager',
             'TripleStoreService',
-            'TripleSchema'
+            'TripleSchema',
+            'EmbeddingService',
+            'QdrantService',
+            'SimilaritySearchService'
         ];
 
         components.forEach(name => {

@@ -16,9 +16,9 @@
   - 5: CategoryManager + sistema de categorias
 
   SPRINT 4: Análise e Exportação
-  - 1-2: AnalysisManager + integração IA (mock inicial)
-  - 3-4: ExportManager + formatos de exportação
-  - 5: StatsManager + StatsPanel
+  - 1-2: AnalysisManager + integração IA (DADOS REAIS)
+  - 3-4: ExportManager + formatos de exportação (COMPATIVEL COM RAG QDRANT)
+  - 5: StatsManager + StatsPanel (DASHBOARD DE ESTATÍSTICAS SEMANTICO)
 
   SPRINT 5: Polimento e Testes
   - 1-2: ModalManager + melhorias UX

@@ -68,6 +68,20 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
      - Reversível (permitir ver arquivos excluídos
      - NUNCA remover dados silenciosamente sem conhecimento do usuário
 
+### 🚀 SPRINT FASE 2 - NOVOS SERVIÇOS IMPLEMENTADOS (17/01/2025)
+
+#### ✅ EmbeddingService.js
+- **Função**: Gera embeddings semânticos usando Ollama local
+- **Modelo**: nomic-embed-text (768 dimensões)
+- **Features**: Cache em IndexedDB, cálculo de similaridade, fallback para OpenAI
+- **Localização**: `/js/services/EmbeddingService.js`
+
+#### ✅ QdrantService.js
+- **Função**: Integração com Qdrant Vector Database na VPS
+- **Conexão**: http://qdr.vcia.com.br:6333 (via Tailscale)
+- **Features**: CRUD completo, busca semântica, cache de resultados
+- **Localização**: `/js/services/QdrantService.js`
+
 ### 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO ler /RESUME-STATUS.md
 
 #### 🔴 Problema Recorrente #1: Criar código sem verificar existente

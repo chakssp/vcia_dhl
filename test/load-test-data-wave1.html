@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregar Dados de Teste - Wave 1</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        .container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { color: #4ade80; }
+        h2 { color: #60a5fa; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .success { color: #4ade80; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+        pre {
+            background: #262626;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4ade80;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Carregar Dados de Teste - Wave 1</h1>
+    
+    <div class="container">
+        <h2>📥 Dados de Teste</h2>
+        <p>Este utilitário carrega dados de teste diretamente no AppState para testar o pipeline Wave 1.</p>
+        
+        <button onclick="loadTestData()">📦 Carregar Dados de Teste</button>
+        <button onclick="clearData()">🗑️ Limpar Dados</button>
+        <button onclick="checkStatus()">📊 Verificar Status</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <div class="container">
+        <h2>🔄 Pipeline Wave 1</h2>
+        <p>Execute o pipeline completo após carregar os dados.</p>
+        
+        <button onclick="goToStep1()">1️⃣ Ir para Etapa 1</button>
+        <button onclick="goToStep2()">2️⃣ Ir para Etapa 2</button>
+        <button onclick="goToStep3()">3️⃣ Ir para Etapa 3</button>
+        <button onclick="goToStep4()">4️⃣ Ir para Etapa 4</button>
+        
+        <div class="progress-bar" id="progressBar" style="display:none;">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        
+        <button onclick="runWave1Pipeline()">🌊 Executar Pipeline Wave 1</button>
+        
+        <div id="pipelineStatus"></div>
+    </div>
+
+    <div class="container">
+        <h2>📋 Log de Execução</h2>
+        <pre id="log">Aguardando comandos...</pre>
+    </div>
+
+    <script>
+        const log = (message, type = 'info') => {
+            const logEl = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ef4444' : type === 'success' ? '#4ade80' : '#60a5fa';
+            logEl.innerHTML += `\n<span style="color: ${color}">[${timestamp}] ${message}</span>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        };
+
+        const testFiles = [
+            {
+                id: 'file_001',
+                name: 'projeto_2litros_ambev.md',
+                path: '/test/projeto_2litros_ambev.md',
+                content: `# Case de Sucesso: Projeto 2Litros - Ambev
+
+## Resumo Executivo
+A Ambev implementou com sucesso um sistema de Machine Learning para otimizar a produção de garrafas de 2 litros, resultando em uma redução de 15% no desperdício e aumento de 32% na eficiência da linha de produção.
+
+## Desafio
+A linha de produção de garrafas PET de 2 litros apresentava alta variabilidade na qualidade, com índice de rejeição de 8% devido a defeitos de moldagem e problemas de pressurização.
+
+## Solução Implementada
+- **Tecnologia**: TensorFlow + IoT sensors
+- **Algoritmo**: Random Forest para detecção de anomalias
+- **Integração**: SAP Manufacturing Execution
+- **ROI**: 18 meses
+
+## Resultados
+1. Redução de 15% no desperdício de material
+2. Aumento de 32% na eficiência operacional
+3. Economia anual de R$ 2.3 milhões
+4. Melhoria de 25% no NPS industrial
+
+## Aprendizados Chave
+- A importância da qualidade dos dados dos sensores
+- Necessidade de retreinamento mensal do modelo
+- Engajamento da equipe operacional foi crucial`,
+                size: 1024,
+                lastModified: Date.now() - 86400000,
+                type: 'file',
+                extension: '.md',
+                relevanceScore: 0,
+                preview: '',
+                categories: [],
+                approved: true,
+                analysisType: 'Breakthrough Técnico'
+            },
+            {
+                id: 'file_002',
+                name: 'ml_producao_insights.md',
+                path: '/test/ml_producao_insights.md',
+                content: `# Machine Learning na Produção - Insights e Patterns
+
+## Padrões Identificados
+
+### 1. Qualidade de Dados é Fundamental
+Todo projeto bem-sucedido de ML em produção começa com dados limpos e confiáveis. Sensores mal calibrados = modelos ruins.
+
+### 2. ROI Médio: 12-24 meses
+Projetos industriais de ML tipicamente se pagam entre 1-2 anos quando bem implementados.
+
+### 3. Resistência Cultural
+O maior desafio não é técnico, mas cultural. Operadores precisam confiar no sistema.
+
+## Framework de Implementação
+1. **Fase Piloto** (3 meses): Uma linha, métricas claras
+2. **Validação** (3 meses): Ajustes e otimização
+3. **Rollout** (6 meses): Expansão gradual
+4. **Maturidade** (ongoing): Melhoria contínua`,
+                size: 768,
+                lastModified: Date.now() - 172800000,
+                type: 'file',
+                extension: '.md',
+                relevanceScore: 0,
+                preview: '',
+                categories: [],
+                approved: true,
+                analysisType: 'Insight Estratégico'
+            },
+            {
+                id: 'file_003',
+                name: 'decisao_tecnologia_stack.md',
+                path: '/test/decisao_tecnologia_stack.md',
+                content: `# Decisão Estratégica: Stack Tecnológico para IA
+
+## Contexto
+Momento decisivo em 2023: escolher entre construir solução própria ou adotar plataforma terceirizada.
+
+## Análise Comparativa
+
+### Opção A: Desenvolvimento Interno
+- **Prós**: Customização total, propriedade intelectual
+- **Contras**: Time-to-market longo, custo alto
+
+### Opção B: Plataforma Cloud (AWS/Azure)
+- **Prós**: Rapidez, escalabilidade
+- **Contras**: Vendor lock-in, custos recorrentes
+
+## Decisão Final
+Híbrido: Core algorithms internos + infraestrutura cloud
+
+## Resultados (6 meses depois)
+- 70% de redução no time-to-market
+- Flexibilidade mantida
+- Custos 40% menores que full-cloud`,
+                size: 612,
+                lastModified: Date.now() - 259200000,
+                type: 'file',
+                extension: '.md',
+                relevanceScore: 0,
+                preview: '',
+                categories: [],
+                approved: true,
+                analysisType: 'Momento Decisivo'
+            },
+            {
+                id: 'file_004',
+                name: 'evolucao_data_pipeline.md',
+                path: '/test/evolucao_data_pipeline.md',
+                content: `# Evolução do Data Pipeline - De Batch para Real-time
+
+## Timeline de Evolução
+
+### 2021: Era Batch
+- Processamento noturno
+- Latência de 24h
+- Tecnologia: Spark + HDFS
+
+### 2022: Mini-batches
+- Processamento a cada hora
+- Latência de 1h
+- Tecnologia: Spark Streaming
+
+### 2023: Near Real-time
+- Processamento a cada 5 minutos
+- Latência < 5min
+- Tecnologia: Kafka + Flink
+
+### 2024: True Real-time
+- Processamento em stream
+- Latência < 1 segundo
+- Tecnologia: Kafka + ClickHouse
+
+## Impacto no Negócio
+- Decisões 100x mais rápidas
+- Detecção de fraude em tempo real
+- Customer experience transformada`,
+                size: 534,
+                lastModified: Date.now() - 345600000,
+                type: 'file',
+                extension: '.md',
+                relevanceScore: 0,
+                preview: '',
+                categories: [],
+                approved: true,
+                analysisType: 'Evolução Conceitual'
+            },
+            {
+                id: 'file_005',
+                name: 'licoes_aprendidas_2024.md',
+                path: '/test/licoes_aprendidas_2024.md',
+                content: `# Lições Aprendidas - Projetos IA 2024
+
+## Top 5 Aprendizados
+
+1. **Simplicidade vence complexidade**
+   - Modelos simples bem ajustados > modelos complexos mal mantidos
+
+2. **Observabilidade é crucial**
+   - Sem métricas detalhadas, não há otimização
+
+3. **Feature engineering > Algoritmos sofisticados**
+   - 80% do sucesso vem de features bem construídas
+
+4. **Versionamento de modelos salva vidas**
+   - Rollback rápido evitou 3 incidentes críticos
+
+5. **Documentação técnica paga dividendos**
+   - Onboarding de 3 semanas → 3 dias
+
+## Métricas de Sucesso
+- 15 projetos entregues
+- 92% de satisfação interna
+- ROI médio: 237%`,
+                size: 489,
+                lastModified: Date.now() - 432000000,
+                type: 'file',
+                extension: '.md',
+                relevanceScore: 0,
+                preview: '',
+                categories: [],
+                approved: true,
+                analysisType: 'Aprendizado Geral'
+            }
+        ];
+
+        async function loadTestData() {
+            try {
+                log('Iniciando carregamento de dados de teste...');
+                
+                // Gerar previews
+                for (const file of testFiles) {
+                    if (KC.PreviewUtils) {
+                        const preview = KC.PreviewUtils.generatePreview(file.content);
+                        file.preview = preview.text;
+                        file.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(file.content);
+                        log(`Preview gerado para ${file.name}: ${file.relevanceScore}% relevância`);
+                    }
+                }
+                
+                // Salvar no AppState
+                KC.AppState.set('files', testFiles);
+                KC.AppState.set('stats', {
+                    totalFiles: testFiles.length,
+                    approvedFiles: testFiles.filter(f => f.approved).length,
+                    analyzedFiles: testFiles.filter(f => f.analysisType).length
+                });
+                
+                // Emitir eventos
+                KC.EventBus.emit(KC.Events.FILES_DISCOVERED, {
+                    files: testFiles,
+                    stats: KC.AppState.get('stats')
+                });
+                
+                KC.EventBus.emit(KC.Events.STATE_CHANGED, {
+                    key: 'files',
+                    newValue: testFiles
+                });
+                
+                log(`✅ ${testFiles.length} arquivos de teste carregados com sucesso!`, 'success');
+                document.getElementById('status').innerHTML = 
+                    `<p class="success">✅ Dados carregados! Navegue para as etapas para processar.</p>`;
+                
+            } catch (error) {
+                log(`❌ Erro ao carregar dados: ${error.message}`, 'error');
+            }
+        }
+
+        function clearData() {
+            KC.AppState.set('files', []);
+            KC.AppState.set('stats', {});
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: [] });
+            log('🗑️ Dados limpos', 'info');
+            document.getElementById('status').innerHTML = '<p class="info">Dados removidos</p>';
+        }
+
+        function checkStatus() {
+            const files = KC.AppState.get('files') || [];
+            const stats = KC.AppState.get('stats') || {};
+            
+            const statusHtml = `
+                <h3>📊 Status Atual</h3>
+                <ul>
+                    <li>Total de arquivos: ${files.length}</li>
+                    <li>Arquivos aprovados: ${files.filter(f => f.approved).length}</li>
+                    <li>Arquivos analisados: ${files.filter(f => f.analysisType).length}</li>
+                    <li>Categorias: ${[...new Set(files.flatMap(f => f.categories || []))].length}</li>
+                </ul>
+            `;
+            
+            document.getElementById('status').innerHTML = statusHtml;
+            log(`Status verificado: ${files.length} arquivos no sistema`);
+        }
+
+        function goToStep1() { KC.AppController.goToStep(1); log('Navegando para Etapa 1'); }
+        function goToStep2() { KC.AppController.goToStep(2); log('Navegando para Etapa 2'); }
+        function goToStep3() { KC.AppController.goToStep(3); log('Navegando para Etapa 3'); }
+        function goToStep4() { KC.AppController.goToStep(4); log('Navegando para Etapa 4'); }
+
+        async function runWave1Pipeline() {
+            try {
+                log('🌊 Iniciando Pipeline Wave 1...', 'info');
+                updateProgress(0);
+                
+                // 1. Verificar pré-requisitos
+                log('1️⃣ Verificando pré-requisitos...');
+                const files = KC.AppState.get('files') || [];
+                const approved = files.filter(f => f.approved);
+                
+                if (approved.length === 0) {
+                    throw new Error('Nenhum arquivo aprovado para processar');
+                }
+                
+                log(`✅ ${approved.length} arquivos aprovados encontrados`);
+                updateProgress(20);
+                
+                // 2. Verificar serviços
+                log('2️⃣ Verificando serviços...');
+                const hasOllama = await KC.EmbeddingService.checkOllamaAvailability();
+                const hasQdrant = await KC.QdrantService.checkConnection();
+                
+                log(`Ollama: ${hasOllama ? '✅' : '❌'}`);
+                log(`Qdrant: ${hasQdrant ? '✅' : '❌'}`);
+                updateProgress(40);
+                
+                // 3. Processar com RAGExportManager
+                log('3️⃣ Processando dados com RAGExportManager...');
+                const result = await KC.RAGExportManager.processApprovedFiles();
+                
+                log(`✅ Processamento concluído!`, 'success');
+                log(`   Chunks gerados: ${result.totalChunks}`);
+                log(`   Embeddings criados: ${result.embeddingsGenerated}`);
+                log(`   Pontos no Qdrant: ${result.pointsInserted}`);
+                updateProgress(100);
+                
+                document.getElementById('pipelineStatus').innerHTML = `
+                    <div class="success">
+                        <h3>✅ Wave 1 Concluída!</h3>
+                        <ul>
+                            <li>Chunks: ${result.totalChunks}</li>
+                            <li>Embeddings: ${result.embeddingsGenerated}</li>
+                            <li>Qdrant: ${result.pointsInserted} pontos</li>
+                        </ul>
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Erro no pipeline: ${error.message}`, 'error');
+                document.getElementById('pipelineStatus').innerHTML = 
+                    `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressBar').style.display = 'block';
+            document.getElementById('progressFill').style.width = percent + '%';
+        }
+
+        // Auto-check ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(checkStatus, 1000);
+        });
+    </script>
+</body>
+</html>

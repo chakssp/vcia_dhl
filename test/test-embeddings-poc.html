@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POC - Embeddings com Dados Reais</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #3a3a3a;
+        }
+        h1, h2 {
+            color: #00ffcc;
+        }
+        button {
+            background: #00ffcc;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00ddb3;
+        }
+        .results {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .file-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #2a2a2a;
+            border-radius: 4px;
+            border: 1px solid #3a3a3a;
+        }
+        .similarity-high { border-color: #00ff00; }
+        .similarity-medium { border-color: #ffaa00; }
+        .similarity-low { border-color: #ff6666; }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success { background: #1a3a1a; color: #00ff00; }
+        .status.info { background: #1a2a3a; color: #0099ff; }
+        .status.error { background: #3a1a1a; color: #ff0000; }
+        .progress {
+            background: #3a3a3a;
+            border-radius: 4px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background: #00ffcc;
+            height: 100%;
+            transition: width 0.3s;
+            text-align: center;
+            line-height: 20px;
+            color: #1a1a1a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 POC - Embeddings com Dados Reais</h1>
+        
+        <div class="section">
+            <h2>1️⃣ Carregar Dados do Sistema</h2>
+            <button onclick="loadSystemData()">Carregar Arquivos do AppState</button>
+            <button onclick="loadCategories()">Carregar Categorias</button>
+            <div id="load-status"></div>
+            <div id="data-summary"></div>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ Gerar Embeddings para Arquivos</h2>
+            <button onclick="generateFileEmbeddings()">Gerar Embeddings (Top 10)</button>
+            <button onclick="generateCategoryEmbeddings()">Gerar Embeddings por Categoria</button>
+            <div class="progress" style="display:none;">
+                <div class="progress-bar" id="progress-bar">0%</div>
+            </div>
+            <div id="embedding-status"></div>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ Teste de Busca Semântica</h2>
+            <input type="text" id="search-query" placeholder="Digite uma busca semântica..." 
+                   value="Machine Learning e IA no marketing">
+            <button onclick="searchSimilar()">Buscar Similares</button>
+            <div id="search-results" class="results"></div>
+        </div>
+
+        <div class="section">
+            <h2>4️⃣ Análise de Clusters por Categoria</h2>
+            <button onclick="analyzeCategories()">Analisar Similaridade entre Categorias</button>
+            <div id="category-analysis" class="results"></div>
+        </div>
+
+        <div class="section">
+            <h2>5️⃣ Exportar para Qdrant</h2>
+            <button onclick="prepareQdrantExport()">Preparar Dados para Qdrant</button>
+            <button onclick="downloadExport()">Baixar JSON</button>
+            <div id="export-status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Namespace e dados globais
+        window.KC = window.KC || {};
+        let systemFiles = [];
+        let systemCategories = [];
+        let fileEmbeddings = new Map();
+        let qdrantData = null;
+
+        // Carregar módulos necessários na ordem correta
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        // Carregar scripts em sequência para garantir dependências
+        async function loadScripts() {
+            try {
+                // Core primeiro (ordem importa!)
+                await loadScript('../js/core/EventBus.js');
+                await loadScript('../js/core/AppState.js');
+                await loadScript('../js/core/AppController.js');
+                
+                // Utils
+                await loadScript('../js/utils/Logger.js');
+                await loadScript('../js/utils/PreviewUtils.js');
+                
+                // Services e Managers
+                await loadScript('../js/services/EmbeddingService.js');
+                await loadScript('../js/managers/CategoryManager.js');
+                
+                console.log('✅ Todos os scripts carregados');
+                window.scriptsLoaded = true;
+            } catch (error) {
+                console.error('Erro ao carregar scripts:', error);
+            }
+        }
+
+        // Iniciar carregamento
+        loadScripts();
+
+        // Helpers
+        function showStatus(elementId, message, type = 'info') {
+            document.getElementById(elementId).innerHTML = 
+                `<div class="status ${type}">${message}</div>`;
+        }
+
+        function updateProgress(current, total) {
+            const percent = Math.round((current / total) * 100);
+            const bar = document.getElementById('progress-bar');
+            bar.style.width = percent + '%';
+            bar.textContent = percent + '%';
+            document.querySelector('.progress').style.display = 'block';
+        }
+
+        // 1. Carregar dados do sistema
+        async function loadSystemData() {
+            try {
+                // Aguardar carregamento dos módulos
+                if (!window.scriptsLoaded) {
+                    showStatus('load-status', '⏳ Aguardando carregamento dos módulos...', 'info');
+                    await new Promise(resolve => {
+                        const checkInterval = setInterval(() => {
+                            if (window.scriptsLoaded) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 100);
+                    });
+                }
+
+                // Verificar se AppState existe
+                if (!KC.AppState) {
+                    showStatus('load-status', 'AppState não encontrado. Abra o sistema principal primeiro.', 'error');
+                    return;
+                }
+
+                // Carregar arquivos do AppState
+                systemFiles = KC.AppState.get('files') || [];
+                
+                if (systemFiles.length === 0) {
+                    showStatus('load-status', 
+                        'Nenhum arquivo encontrado no AppState. Execute a descoberta primeiro.', 
+                        'error'
+                    );
+                    return;
+                }
+
+                // Filtrar apenas arquivos com preview e relevância > 50%
+                const relevantFiles = systemFiles.filter(f => 
+                    f.preview && f.relevanceScore > 50
+                ).slice(0, 20); // Limitar para POC
+
+                systemFiles = relevantFiles;
+
+                showStatus('load-status', 
+                    `✅ ${systemFiles.length} arquivos relevantes carregados`, 
+                    'success'
+                );
+
+                // Mostrar resumo
+                const summary = `
+                    <h3>Resumo dos Dados:</h3>
+                    <ul>
+                        <li>Total de arquivos: ${systemFiles.length}</li>
+                        <li>Com categorias: ${systemFiles.filter(f => f.categories?.length > 0).length}</li>
+                        <li>Analisados por IA: ${systemFiles.filter(f => f.analyzed).length}</li>
+                        <li>Relevância média: ${Math.round(systemFiles.reduce((sum, f) => sum + f.relevanceScore, 0) / systemFiles.length)}%</li>
+                    </ul>
+                `;
+                document.getElementById('data-summary').innerHTML = summary;
+
+            } catch (error) {
+                showStatus('load-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. Carregar categorias
+        async function loadCategories() {
+            try {
+                if (!KC.CategoryManager) {
+                    showStatus('load-status', 'CategoryManager não encontrado', 'error');
+                    return;
+                }
+
+                systemCategories = KC.CategoryManager.getAllCategories();
+                
+                showStatus('load-status', 
+                    `✅ ${systemCategories.length} categorias carregadas: ${systemCategories.map(c => c.name).join(', ')}`, 
+                    'success'
+                );
+
+            } catch (error) {
+                showStatus('load-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. Gerar embeddings para arquivos
+        async function generateFileEmbeddings() {
+            try {
+                if (!KC.EmbeddingService) {
+                    showStatus('embedding-status', 'EmbeddingService não encontrado', 'error');
+                    return;
+                }
+
+                if (systemFiles.length === 0) {
+                    showStatus('embedding-status', 'Carregue os arquivos primeiro', 'error');
+                    return;
+                }
+
+                showStatus('embedding-status', '⏳ Gerando embeddings...', 'info');
+                fileEmbeddings.clear();
+
+                const service = KC.EmbeddingService;
+                const total = Math.min(systemFiles.length, 10); // Limitar para teste
+
+                for (let i = 0; i < total; i++) {
+                    const file = systemFiles[i];
+                    updateProgress(i + 1, total);
+
+                    // Usar preview como texto base
+                    const text = file.preview || file.name;
+                    const context = {
+                        category: file.categories?.[0] || 'sem-categoria',
+                        relevance: file.relevanceScore,
+                        analyzed: file.analyzed
+                    };
+
+                    try {
+                        const embedding = await service.generateEmbedding(text, context);
+                        fileEmbeddings.set(file.id, {
+                            file: file,
+                            embedding: embedding
+                        });
+                    } catch (error) {
+                        console.error(`Erro no arquivo ${file.name}:`, error);
+                    }
+                }
+
+                showStatus('embedding-status', 
+                    `✅ ${fileEmbeddings.size} embeddings gerados com sucesso`, 
+                    'success'
+                );
+
+            } catch (error) {
+                showStatus('embedding-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. Busca semântica
+        async function searchSimilar() {
+            try {
+                const query = document.getElementById('search-query').value;
+                if (!query) {
+                    showStatus('search-results', 'Digite uma busca', 'error');
+                    return;
+                }
+
+                if (fileEmbeddings.size === 0) {
+                    showStatus('search-results', 'Gere os embeddings primeiro', 'error');
+                    return;
+                }
+
+                const service = KC.EmbeddingService;
+                
+                // Gerar embedding da query
+                const queryEmbedding = await service.generateEmbedding(query);
+                
+                // Calcular similaridades
+                const similarities = [];
+                for (const [fileId, data] of fileEmbeddings) {
+                    const similarity = service.cosineSimilarity(
+                        queryEmbedding.embedding,
+                        data.embedding.embedding
+                    );
+                    similarities.push({
+                        file: data.file,
+                        similarity: similarity,
+                        percent: Math.round(similarity * 100)
+                    });
+                }
+
+                // Ordenar por similaridade
+                similarities.sort((a, b) => b.similarity - a.similarity);
+
+                // Mostrar resultados
+                let html = '<h3>Resultados da Busca:</h3>';
+                similarities.slice(0, 5).forEach(result => {
+                    const cssClass = result.percent > 70 ? 'similarity-high' :
+                                   result.percent > 40 ? 'similarity-medium' : 
+                                   'similarity-low';
+                    
+                    html += `
+                        <div class="file-item ${cssClass}">
+                            <strong>${result.file.name}</strong> - ${result.percent}% similar<br>
+                            <small>${result.file.preview?.substring(0, 100)}...</small><br>
+                            <small>Categoria: ${result.file.categories?.[0] || 'sem categoria'}</small>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('search-results').innerHTML = html;
+
+            } catch (error) {
+                showStatus('search-results', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. Analisar categorias
+        async function analyzeCategories() {
+            try {
+                // Agrupar arquivos por categoria
+                const categoryGroups = new Map();
+                
+                for (const [fileId, data] of fileEmbeddings) {
+                    const category = data.file.categories?.[0] || 'sem-categoria';
+                    if (!categoryGroups.has(category)) {
+                        categoryGroups.set(category, []);
+                    }
+                    categoryGroups.get(category).push(data.embedding.embedding);
+                }
+
+                // Calcular centróide de cada categoria
+                const centroids = new Map();
+                for (const [category, embeddings] of categoryGroups) {
+                    const centroid = calculateCentroid(embeddings);
+                    centroids.set(category, centroid);
+                }
+
+                // Calcular similaridade entre categorias
+                let html = '<h3>Análise de Similaridade entre Categorias:</h3>';
+                const categories = Array.from(centroids.keys());
+                
+                for (let i = 0; i < categories.length; i++) {
+                    for (let j = i + 1; j < categories.length; j++) {
+                        const cat1 = categories[i];
+                        const cat2 = categories[j];
+                        const similarity = KC.EmbeddingService.cosineSimilarity(
+                            centroids.get(cat1),
+                            centroids.get(cat2)
+                        );
+                        
+                        if (similarity > 0.3) {
+                            html += `
+                                <div class="file-item">
+                                    <strong>${cat1} ↔ ${cat2}</strong>: 
+                                    ${Math.round(similarity * 100)}% similares
+                                </div>
+                            `;
+                        }
+                    }
+                }
+
+                document.getElementById('category-analysis').innerHTML = html;
+
+            } catch (error) {
+                showStatus('category-analysis', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 6. Preparar export para Qdrant
+        async function prepareQdrantExport() {
+            try {
+                if (fileEmbeddings.size === 0) {
+                    showStatus('export-status', 'Gere os embeddings primeiro', 'error');
+                    return;
+                }
+
+                qdrantData = {
+                    collection_name: "knowledge_consolidator",
+                    points: []
+                };
+
+                let id = 1;
+                for (const [fileId, data] of fileEmbeddings) {
+                    const point = {
+                        id: id++,
+                        vector: data.embedding.embedding,
+                        payload: {
+                            file_id: data.file.id,
+                            file_name: data.file.name,
+                            file_path: data.file.path,
+                            category: data.file.categories?.[0] || 'sem-categoria',
+                            relevance_score: data.file.relevanceScore,
+                            preview: data.file.preview,
+                            analyzed: data.file.analyzed,
+                            analysis_type: data.file.analysisType,
+                            timestamp: data.embedding.timestamp
+                        }
+                    };
+                    qdrantData.points.push(point);
+                }
+
+                showStatus('export-status', 
+                    `✅ ${qdrantData.points.length} pontos preparados para Qdrant`, 
+                    'success'
+                );
+
+            } catch (error) {
+                showStatus('export-status', `Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 7. Download do export
+        function downloadExport() {
+            if (!qdrantData) {
+                showStatus('export-status', 'Prepare o export primeiro', 'error');
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(qdrantData, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `qdrant-export-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showStatus('export-status', '✅ Download iniciado', 'success');
+        }
+
+        // Helper: Calcular centróide
+        function calculateCentroid(embeddings) {
+            const dimensions = embeddings[0].length;
+            const centroid = new Array(dimensions).fill(0);
+            
+            for (const embedding of embeddings) {
+                for (let i = 0; i < dimensions; i++) {
+                    centroid[i] += embedding[i];
+                }
+            }
+            
+            for (let i = 0; i < dimensions; i++) {
+                centroid[i] /= embeddings.length;
+            }
+            
+            return centroid;
+        }
+
+        // Carregar dados ao iniciar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                showStatus('load-status', 
+                    'Pronto! Carregue os dados do sistema para começar.', 
+                    'info'
+                );
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

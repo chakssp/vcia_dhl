@@ -73,7 +73,13 @@
 
             // Filtrar apenas arquivos que passaram pela pré-análise
             const approvedFiles = files.filter(file => {
-                return file.relevanceScore >= 50 && // Threshold de relevância
+                // Normaliza relevanceScore para percentual se necessário
+                let relevance = file.relevanceScore;
+                if (relevance && relevance < 1) {
+                    relevance = relevance * 100;
+                }
+                
+                return relevance >= 50 && // Threshold de relevância (50%)
                        file.preview && // Tem preview extraído
                        !file.archived; // Não está arquivado
             });
@@ -323,6 +329,291 @@
         }
 
         /**
+         * Processa arquivos aprovados - Pipeline completo com embeddings e Qdrant
+         * @param {Object} options - Opções de processamento
+         * @returns {Object} Resultado do processamento
+         */
+        async processApprovedFiles(options = {}) {
+            KC.Logger?.info('RAGExportManager', 'Iniciando pipeline de processamento');
+            
+            // Emite evento de início
+            KC.EventBus?.emit(KC.Events.PIPELINE_STARTED || 'pipeline:started', {
+                timestamp: new Date().toISOString()
+            });
+
+            try {
+                // 0. Garantir integridade dos dados se DataIntegrityManager estiver disponível
+                if (KC.DataIntegrityManager) {
+                    await KC.DataIntegrityManager.ensureDataIntegrity();
+                    KC.Logger?.info('RAGExportManager', 'Integridade dos dados verificada');
+                }
+                
+                // 1. Consolida dados
+                const consolidatedData = await this.consolidateData();
+                const totalDocuments = consolidatedData.documents.length;
+                
+                if (totalDocuments === 0) {
+                    KC.Logger?.warn('RAGExportManager', 'Nenhum arquivo para processar');
+                    KC.EventBus?.emit(KC.Events.PIPELINE_COMPLETED || 'pipeline:completed', {
+                        success: false,
+                        message: 'Nenhum arquivo aprovado encontrado'
+                    });
+                    return { success: false, message: 'Nenhum arquivo aprovado encontrado' };
+                }
+
+                KC.Logger?.info('RAGExportManager', `Processando ${totalDocuments} documentos`);
+
+                // 2. Verifica serviços necessários
+                const embeddingAvailable = await KC.EmbeddingService?.checkOllamaAvailability();
+                const qdrantAvailable = await KC.QdrantService?.checkConnection();
+
+                if (!embeddingAvailable) {
+                    throw new Error('Serviço de embeddings (Ollama) não está disponível');
+                }
+
+                if (!qdrantAvailable) {
+                    throw new Error('Serviço Qdrant não está acessível');
+                }
+
+                // 3. Processa documentos em batches
+                const batchSize = options.batchSize || 10;
+                const results = {
+                    processed: 0,
+                    failed: 0,
+                    totalChunks: 0,
+                    errors: []
+                };
+
+                for (let i = 0; i < totalDocuments; i += batchSize) {
+                    const batch = consolidatedData.documents.slice(i, i + batchSize);
+                    
+                    // Emite progresso
+                    KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
+                        current: i,
+                        total: totalDocuments,
+                        percentage: Math.round((i / totalDocuments) * 100)
+                    });
+
+                    // Processa batch
+                    await this._processBatch(batch, results);
+                }
+
+                // 4. Emite evento de conclusão
+                KC.EventBus?.emit(KC.Events.PIPELINE_COMPLETED || 'pipeline:completed', {
+                    success: true,
+                    results: results
+                });
+
+                KC.Logger?.success('RAGExportManager', 'Pipeline concluído', results);
+
+                return {
+                    success: true,
+                    results: results,
+                    message: `Processados ${results.processed} documentos com ${results.totalChunks} chunks`
+                };
+
+            } catch (error) {
+                KC.Logger?.error('RAGExportManager', 'Erro no pipeline', error);
+                
+                KC.EventBus?.emit(KC.Events.PIPELINE_COMPLETED || 'pipeline:completed', {
+                    success: false,
+                    error: error.message
+                });
+
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        /**
+         * Processa um batch de documentos
+         * @private
+         */
+        async _processBatch(documents, results) {
+            for (const doc of documents) {
+                try {
+                    // Prepara pontos para o Qdrant
+                    const points = [];
+                    
+                    for (const chunk of doc.chunks) {
+                        let retries = 3;
+                        let lastError = null;
+                        
+                        while (retries > 0) {
+                            try {
+                                // Gera embedding para o chunk com retry
+                                const embedding = await this._generateEmbeddingWithRetry(chunk.content, 3);
+                                
+                                if (!embedding) {
+                                    throw new Error(`Falha ao gerar embedding para chunk ${chunk.id}`);
+                                }
+
+                                // Prepara ponto para inserção
+                                // Gera ID numérico único baseado em timestamp + índice
+                                const pointId = Date.now() * 1000 + points.length;
+                                
+                                points.push({
+                                    id: pointId,
+                                    vector: embedding,
+                                    payload: {
+                                        originalChunkId: chunk.id, // Salva o ID original no payload
+                                        documentId: doc.id,
+                                        fileName: doc.source.fileName,
+                                        chunkId: chunk.id,
+                                        content: chunk.content,
+                                        metadata: {
+                                            ...chunk.metadata,
+                                            analysisType: doc.analysis.type,
+                                            categories: doc.analysis.categories.map(cat => cat.name),
+                                            relevanceScore: doc.analysis.relevanceScore,
+                                            lastModified: doc.source.lastModified,
+                                            processedAt: new Date().toISOString()
+                                        }
+                                    }
+                                });
+
+                                results.totalChunks++;
+                                break; // Sucesso, sai do loop de retry
+                                
+                            } catch (chunkError) {
+                                lastError = chunkError;
+                                retries--;
+                                
+                                if (retries > 0) {
+                                    KC.Logger?.info('RAGExportManager', `Tentando novamente chunk ${chunk.id} (${retries} tentativas restantes)`);
+                                    await this._delay(1000 * (3 - retries)); // Delay progressivo
+                                }
+                            }
+                        }
+                        
+                        // Se esgotou as tentativas, registra erro
+                        if (retries === 0 && lastError) {
+                            KC.Logger?.error('RAGExportManager', `Erro ao processar chunk ${chunk.id} após 3 tentativas`, lastError);
+                            results.errors.push({
+                                documentId: doc.id,
+                                chunkId: chunk.id,
+                                error: lastError.message
+                            });
+                        }
+                    }
+
+                    // Insere pontos no Qdrant se houver
+                    if (points.length > 0) {
+                        const insertResult = await this._insertWithRetry(points, 3);
+                        
+                        if (insertResult?.success) {
+                            results.processed++;
+                            KC.Logger?.info('RAGExportManager', `Documento ${doc.id} processado com ${points.length} chunks`);
+                        } else {
+                            throw new Error(`Falha ao inserir no Qdrant: ${insertResult?.error}`);
+                        }
+                    }
+
+                } catch (docError) {
+                    KC.Logger?.error('RAGExportManager', `Erro ao processar documento ${doc.id}`, docError);
+                    results.failed++;
+                    results.errors.push({
+                        documentId: doc.id,
+                        error: docError.message
+                    });
+                }
+            }
+        }
+
+        /**
+         * Gera embedding com retry
+         * @private
+         */
+        async _generateEmbeddingWithRetry(content, maxRetries = 3) {
+            let retries = maxRetries;
+            let lastError = null;
+            
+            while (retries > 0) {
+                try {
+                    // Verifica se conteúdo é válido
+                    if (!content || content.trim().length < 3) {
+                        throw new Error('Conteúdo muito curto ou vazio para gerar embedding');
+                    }
+                    
+                    // Se conteúdo for muito curto, adiciona contexto
+                    let textForEmbedding = content;
+                    if (content.trim().length < 20) {
+                        textForEmbedding = `Documento: ${content}`;
+                    }
+                    
+                    const embedding = await KC.EmbeddingService?.generateEmbedding(textForEmbedding);
+                    
+                    if (embedding && embedding.length > 0) {
+                        return embedding;
+                    }
+                    
+                    throw new Error('Embedding retornado está vazio');
+                    
+                } catch (error) {
+                    lastError = error;
+                    retries--;
+                    
+                    if (retries > 0) {
+                        // Verifica se é erro de conexão com Ollama
+                        if (error.message?.includes('Ollama') || error.message?.includes('ECONNREFUSED')) {
+                            KC.Logger?.info('RAGExportManager', 'Ollama parece estar offline, aguardando...');
+                            await this._delay(5000); // Espera mais para Ollama
+                        } else {
+                            await this._delay(1000 * (maxRetries - retries));
+                        }
+                    }
+                }
+            }
+            
+            throw lastError || new Error('Falha ao gerar embedding após múltiplas tentativas');
+        }
+
+        /**
+         * Insere no Qdrant com retry
+         * @private
+         */
+        async _insertWithRetry(points, maxRetries = 3) {
+            let retries = maxRetries;
+            let lastError = null;
+            
+            while (retries > 0) {
+                try {
+                    const result = await KC.QdrantService?.insertBatch(points);
+                    
+                    if (result?.success) {
+                        return result;
+                    }
+                    
+                    throw new Error(result?.error || 'Erro desconhecido ao inserir no Qdrant');
+                    
+                } catch (error) {
+                    lastError = error;
+                    retries--;
+                    
+                    if (retries > 0) {
+                        KC.Logger?.info('RAGExportManager', `Tentando inserir novamente no Qdrant (${retries} tentativas restantes)`);
+                        await this._delay(2000 * (maxRetries - retries));
+                    }
+                }
+            }
+            
+            return {
+                success: false,
+                error: lastError?.message || 'Falha ao inserir no Qdrant após múltiplas tentativas'
+            };
+        }
+
+        /**
+         * Delay helper
+         * @private
+         */
+        async _delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        /**
          * Exporta para formato Qdrant
          * @private
          */
@@ -364,7 +655,20 @@
         _extractKeywords(text) {
             if (!text) return [];
             
-            const words = text.toLowerCase()
+            // Garantir que text é uma string
+            let textStr = text;
+            if (typeof text === 'object') {
+                // Se for um objeto preview, extrair o texto
+                if (text.segment1 || text.segment2 || text.segment3) {
+                    textStr = KC.PreviewUtils?.getTextPreview(text) || '';
+                } else {
+                    textStr = JSON.stringify(text);
+                }
+            } else if (typeof text !== 'string') {
+                textStr = String(text);
+            }
+            
+            const words = textStr.toLowerCase()
                 .replace(/[^\w\s]/g, ' ')
                 .split(/\s+/)
                 .filter(word => word.length > 3);

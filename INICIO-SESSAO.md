@@ -154,11 +154,21 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
   usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
 
   CONTEXTO DA ÚLTIMA SESSÃO (17/01/2025 - Sprint Fase 2 - Fundação Semântica):
-  - 🚧 Sprint Fase 2 INICIADA - Análise arquitetural bottom-up
+  - 🚧 Sprint Fase 2 EM ANDAMENTO - Fases 1 e 2 CONCLUÍDAS ✅
   - ⚠️ DESCOBERTA CRÍTICA: Sistema de triplas extraindo apenas metadados (13 triplas superficiais)
   - 💡 INSIGHT: "Construindo do telhado" - falta toda camada de embeddings/vetorização
   - 🎯 NOVA ABORDAGEM: Fundação → Embeddings → Qdrant → Similaridade → Triplas
   - ✅ Categorias manuais identificadas como ground truth para validação
+
+  🏆 AVANÇOS DA SESSÃO (17/01/2025):
+  - ✅ FASE 1 CONCLUÍDA: EmbeddingService implementado
+    - Ollama conectado (nomic-embed-text, 768 dimensões)
+    - Cache em IndexedDB funcionando
+    - POC validado com dados reais
+  - ✅ FASE 2 CONCLUÍDA: QdrantService implementado
+    - Conectado à VPS (http://qdr.vcia.com.br:6333)
+    - CRUD completo, 8 pontos inseridos
+    - Busca semântica validada
 
   📊 STATUS ANTERIOR:
   - ✅ Sprint 2.0.1 CONCLUÍDA (BUG #6 e #7 corrigidos)
@@ -168,21 +178,21 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
   ⚠️ IMPORTANTE: 
   - TripleStoreService atual só extrai metadados, não relações semânticas
   - RelationshipExtractor usa apenas regex, não compreensão semântica
-  - Precisamos construir da fundação (embeddings) antes de extrair triplas reais
+  - Próximo passo: SimilaritySearchService (Fase 3)
 
   📌 Arquivos chave da Sprint Fase 2:
-  - Análise arquitetural: @docs/sprint/fase2/analise-arquitetural-bottomup.md
-  - Triple Store Service: @js/services/TripleStoreService.js (a refatorar)
-  - Relationship Extractor: @js/extractors/RelationshipExtractor.js (a substituir)
-  - Teste 2Litros: @test/teste-final-2litros.js (benchmark de validação)
+  - Progresso detalhado: @docs/sprint/fase2/progresso-embeddings-qdrant-17-01-2025.md
+  - EmbeddingService: @js/services/EmbeddingService.js (✅ implementado)
+  - QdrantService: @js/services/QdrantService.js (✅ implementado)
+  - Páginas de teste: @test/test-embeddings-simples.html, @test/test-qdrant-service.html
 
   🎯 Próximos passos imediatos:
-  1. POC de EmbeddingService com Ollama
-  2. Validar geração de embeddings com dados reais
-  3. Criar estrutura básica do QdrantService
-  4. Refatorar extração para usar similaridade semântica
+  1. Criar SimilaritySearchService.js
+  2. Integrar com RAGExportManager
+  3. Validar com categorias como ground truth
+  4. Refatorar RelationshipExtractor para usar similaridade
 
-  Este prompt garantirá continuidade com a nova abordagem bottom-up!
+  Este prompt garantirá continuidade com os avanços já implementados!
 ```
 
 ---

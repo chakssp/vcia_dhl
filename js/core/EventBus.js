@@ -347,6 +347,11 @@
         EXPORT_COMPLETED: 'export:completed',
         EXPORT_ERROR: 'export:error',
         
+        // Pipeline de Processamento
+        PIPELINE_STARTED: 'pipeline:started',
+        PIPELINE_PROGRESS: 'pipeline:progress',
+        PIPELINE_COMPLETED: 'pipeline:completed',
+        
         // Erros
         ERROR_OCCURRED: 'error:occurred'
     };

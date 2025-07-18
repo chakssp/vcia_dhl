@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Direto - Upload Qdrant</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .test-container {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        .main-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            transition: all 0.3s;
+        }
+        .main-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .main-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .status-section {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 20px;
+            min-height: 100px;
+        }
+        .file-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid var(--success-color);
+        }
+        .chunk-preview {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .process-button {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .error { color: var(--danger-color); }
+        .success { color: var(--success-color); }
+        .info { color: var(--info-color); }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Direto - Upload para Qdrant</h1>
+    
+    <div class="test-container">
+        <h2>📁 Passo 1: Selecionar Pasta</h2>
+        <p>Clique no botão abaixo para selecionar uma pasta com arquivos .md, .txt ou outros formatos de texto.</p>
+        
+        <button id="select-folder-btn" class="main-button">
+            📂 Selecionar Pasta
+        </button>
+        
+        <div id="folder-status" class="status-section">
+            <p class="info">Aguardando seleção de pasta...</p>
+        </div>
+    </div>
+
+    <div class="test-container" id="files-container" style="display: none;">
+        <h2>📄 Passo 2: Arquivos Carregados</h2>
+        <div id="files-list"></div>
+        
+        <button id="process-btn" class="process-button" style="display: none;">
+            🚀 Processar e Enviar para Qdrant
+        </button>
+        
+        <div id="process-status" class="status-section" style="display: none;">
+            <div class="progress-bar" style="display: none;">
+                <div class="progress-fill" id="progress-fill">0%</div>
+            </div>
+            <div id="process-log"></div>
+        </div>
+    </div>
+
+    <div class="test-container" id="results-container" style="display: none;">
+        <h2>📊 Resultados</h2>
+        <div id="results"></div>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    <script src="../js/core/Logger.js"></script>
+    <script src="../js/utils/FileUtils.js"></script>
+    <script src="../js/utils/PreviewUtils.js"></script>
+    <script src="../js/utils/ChunkingUtils.js"></script>
+    <script src="../js/services/EmbeddingService.js"></script>
+    <script src="../js/services/QdrantService.js"></script>
+
+    <script>
+        const KC = window.KnowledgeConsolidator;
+        let selectedFiles = [];
+
+        // Botão de seleção de pasta
+        document.getElementById('select-folder-btn').addEventListener('click', async () => {
+            try {
+                const dirHandle = await window.showDirectoryPicker();
+                await processDirectory(dirHandle);
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    updateStatus('folder-status', `Erro: ${error.message}`, 'error');
+                }
+            }
+        });
+
+        // Processar diretório
+        async function processDirectory(dirHandle) {
+            updateStatus('folder-status', '🔄 Processando pasta...', 'info');
+            selectedFiles = [];
+            
+            try {
+                // Percorrer arquivos
+                await scanDirectory(dirHandle, dirHandle.name);
+                
+                if (selectedFiles.length === 0) {
+                    updateStatus('folder-status', '⚠️ Nenhum arquivo de texto encontrado!', 'error');
+                    return;
+                }
+                
+                updateStatus('folder-status', `✅ ${selectedFiles.length} arquivos encontrados!`, 'success');
+                
+                // Mostrar arquivos
+                displayFiles();
+                
+            } catch (error) {
+                updateStatus('folder-status', `Erro ao processar: ${error.message}`, 'error');
+            }
+        }
+
+        // Escanear diretório recursivamente
+        async function scanDirectory(dirHandle, path) {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file') {
+                    // Filtrar apenas arquivos de texto
+                    if (isTextFile(entry.name)) {
+                        const file = await entry.getFile();
+                        const content = await file.text();
+                        
+                        selectedFiles.push({
+                            name: entry.name,
+                            path: path + '/' + entry.name,
+                            size: file.size,
+                            lastModified: file.lastModified,
+                            content: content,
+                            handle: entry
+                        });
+                    }
+                } else if (entry.kind === 'directory') {
+                    // Recursão em subdiretórios
+                    await scanDirectory(entry, path + '/' + entry.name);
+                }
+            }
+        }
+
+        // Verificar se é arquivo de texto
+        function isTextFile(filename) {
+            const textExtensions = ['.md', '.txt', '.text', '.markdown', '.mdown', '.mkd', '.mdx'];
+            return textExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+        }
+
+        // Exibir arquivos carregados
+        function displayFiles() {
+            const container = document.getElementById('files-container');
+            const list = document.getElementById('files-list');
+            
+            container.style.display = 'block';
+            list.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const preview = file.content.substring(0, 200) + '...';
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.innerHTML = `
+                    <h4>${file.name}</h4>
+                    <p>Tamanho: ${formatSize(file.size)} | Caminho: ${file.path}</p>
+                    <div class="chunk-preview">${escapeHtml(preview)}</div>
+                `;
+                list.appendChild(item);
+            });
+            
+            document.getElementById('process-btn').style.display = 'block';
+        }
+
+        // Botão de processar
+        document.getElementById('process-btn').addEventListener('click', async () => {
+            await processFiles();
+        });
+
+        // Processar arquivos
+        async function processFiles() {
+            const statusDiv = document.getElementById('process-status');
+            const logDiv = document.getElementById('process-log');
+            const progressBar = document.querySelector('.progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            
+            statusDiv.style.display = 'block';
+            progressBar.style.display = 'block';
+            logDiv.innerHTML = '';
+            
+            // Desabilitar botão
+            document.getElementById('process-btn').disabled = true;
+            
+            try {
+                // 1. Verificar serviços
+                log('🔍 Verificando serviços...');
+                
+                const ollamaOk = await KC.EmbeddingService.checkOllamaAvailability();
+                if (!ollamaOk) {
+                    throw new Error('Ollama não está disponível. Certifique-se que está rodando na porta 11434');
+                }
+                log('✅ Ollama conectado');
+                
+                const qdrantOk = await KC.QdrantService.checkConnection();
+                if (!qdrantOk) {
+                    throw new Error('Qdrant não está disponível');
+                }
+                log('✅ Qdrant conectado');
+                
+                // 2. Processar cada arquivo
+                const results = {
+                    processed: 0,
+                    chunks: 0,
+                    points: 0,
+                    errors: []
+                };
+                
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+                    const progress = Math.round(((i + 1) / selectedFiles.length) * 100);
+                    
+                    updateProgress(progress);
+                    log(`\n📄 Processando ${file.name}...`);
+                    
+                    try {
+                        // Gerar chunks
+                        const chunks = KC.ChunkingUtils.getSemanticChunks(file.content);
+                        log(`  📝 ${chunks.length} chunks gerados`);
+                        results.chunks += chunks.length;
+                        
+                        // Processar cada chunk
+                        const points = [];
+                        for (let j = 0; j < chunks.length; j++) {
+                            const chunk = chunks[j];
+                            
+                            // Gerar embedding
+                            const embedding = await KC.EmbeddingService.generateEmbedding(chunk.content);
+                            
+                            // Criar ponto para Qdrant
+                            const pointId = Date.now() * 1000 + j;
+                            points.push({
+                                id: pointId,
+                                vector: embedding,
+                                payload: {
+                                    fileName: file.name,
+                                    filePath: file.path,
+                                    chunkIndex: j,
+                                    totalChunks: chunks.length,
+                                    content: chunk.content,
+                                    position: chunk.position,
+                                    processedAt: new Date().toISOString()
+                                }
+                            });
+                        }
+                        
+                        // Inserir no Qdrant
+                        if (points.length > 0) {
+                            const insertResult = await KC.QdrantService.insertBatch(points);
+                            if (insertResult.success) {
+                                log(`  ✅ ${points.length} pontos inseridos no Qdrant`);
+                                results.points += points.length;
+                                results.processed++;
+                            } else {
+                                throw new Error('Falha ao inserir no Qdrant');
+                            }
+                        }
+                        
+                    } catch (error) {
+                        log(`  ❌ Erro: ${error.message}`, 'error');
+                        results.errors.push({
+                            file: file.name,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                // 3. Mostrar resultados
+                showResults(results);
+                
+            } catch (error) {
+                log(`❌ Erro geral: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('process-btn').disabled = false;
+            }
+        }
+
+        // Mostrar resultados
+        function showResults(results) {
+            const container = document.getElementById('results-container');
+            const div = document.getElementById('results');
+            
+            container.style.display = 'block';
+            
+            div.innerHTML = `
+                <h3>✅ Processamento Concluído!</h3>
+                <ul>
+                    <li>Arquivos processados: ${results.processed}/${selectedFiles.length}</li>
+                    <li>Total de chunks: ${results.chunks}</li>
+                    <li>Pontos no Qdrant: ${results.points}</li>
+                    <li>Erros: ${results.errors.length}</li>
+                </ul>
+            `;
+            
+            if (results.errors.length > 0) {
+                div.innerHTML += '<h4>Erros:</h4><ul>';
+                results.errors.forEach(err => {
+                    div.innerHTML += `<li class="error">${err.file}: ${err.error}</li>`;
+                });
+                div.innerHTML += '</ul>';
+            }
+        }
+
+        // Funções auxiliares
+        function updateStatus(elementId, message, className = '') {
+            const el = document.getElementById(elementId);
+            el.innerHTML = `<p class="${className}">${message}</p>`;
+        }
+
+        function log(message, className = '') {
+            const logDiv = document.getElementById('process-log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateProgress(percent) {
+            const fill = document.getElementById('progress-fill');
+            fill.style.width = percent + '%';
+            fill.textContent = percent + '%';
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Verificar API disponível
+        if (!window.showDirectoryPicker) {
+            updateStatus('folder-status', 
+                '❌ Seu navegador não suporta File System Access API. Use Chrome ou Edge.', 
+                'error'
+            );
+            document.getElementById('select-folder-btn').disabled = true;
+        }
+    </script>
+</body>
+</html>

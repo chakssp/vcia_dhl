@@ -20,8 +20,8 @@ Implementar a camada de análise inteligente que processará os arquivos filtrad
 window.KnowledgeConsolidator.AnalysisManager = {
     // Configuração
     config: {
-        model: 'claude-3-sonnet', // claude-3-opus, gpt-4, gemini-pro
-        temperature: 0.7,
+        model: 'ollama', // ollama local http://127.0.0.1:11434/api/tags
+        temperature: 0.5,
         maxTokens: 2000,
         batchSize: 10,
         rateLimit: 60 // requests per minute
@@ -85,6 +85,10 @@ const analysisTemplates = {
 ## 🔧 Requisitos Técnicos
 
 ### APIs de IA:
+
+0. **Ollama Local** (para testes rápidos)
+   - Endpoint: http://127.0.0.1:11434/api/tags
+   
 1. **Claude API (Anthropic)**
    - Endpoint: https://api.anthropic.com/v1/messages
    - Auth: API Key no header

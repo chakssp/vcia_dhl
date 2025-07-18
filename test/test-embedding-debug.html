@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug de Embeddings</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-output {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .status-ok { color: var(--success-color); }
+        .status-error { color: var(--danger-color); }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug de Embeddings - Diagnóstico Detalhado</h1>
+    
+    <!-- Teste Básico -->
+    <div class="test-section">
+        <h2>1. Teste Básico de Embedding</h2>
+        <button onclick="testBasicEmbedding()">Testar Embedding Simples</button>
+        <div id="basic-output" class="test-output">Aguardando teste...</div>
+    </div>
+
+    <!-- Teste de Conteúdo Real -->
+    <div class="test-section">
+        <h2>2. Teste com Conteúdo de Arquivo</h2>
+        <button onclick="testFileContent()">Testar com Arquivo Real</button>
+        <div id="file-output" class="test-output">Aguardando teste...</div>
+    </div>
+
+    <!-- Teste Direto com Ollama -->
+    <div class="test-section">
+        <h2>3. Teste Direto com Ollama API</h2>
+        <button onclick="testOllamaDirect()">Testar API Diretamente</button>
+        <div id="ollama-output" class="test-output">Aguardando teste...</div>
+    </div>
+
+    <!-- Verificar Configuração -->
+    <div class="test-section">
+        <h2>4. Verificar Configuração do Serviço</h2>
+        <button onclick="checkServiceConfig()">Verificar Configuração</button>
+        <div id="config-output" class="test-output">Aguardando verificação...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    <script src="../js/core/Logger.js"></script>
+    <script src="../js/services/EmbeddingService.js"></script>
+
+    <script>
+        const KC = window.KnowledgeConsolidator;
+
+        function log(elementId, message, isError = false) {
+            const output = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'status-error' : '';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // 1. Teste básico
+        async function testBasicEmbedding() {
+            const outputId = 'basic-output';
+            document.getElementById(outputId).innerHTML = '';
+            
+            log(outputId, 'Iniciando teste básico...');
+            
+            try {
+                // Teste 1: Texto muito simples
+                const text1 = "teste";
+                log(outputId, `Teste 1: "${text1}"`);
+                const emb1 = await KC.EmbeddingService.generateEmbedding(text1);
+                log(outputId, `Resultado: ${emb1 ? `Array[${emb1.length}]` : 'NULL/UNDEFINED'}`);
+                if (emb1 && emb1.length > 0) {
+                    log(outputId, `Primeiros valores: [${emb1.slice(0, 3).map(v => v.toFixed(4)).join(', ')}...]`);
+                }
+                
+                // Teste 2: Texto médio
+                const text2 = "Este é um teste de geração de embeddings para verificar se o sistema está funcionando corretamente.";
+                log(outputId, `\nTeste 2: "${text2.substring(0, 50)}..."`);
+                const emb2 = await KC.EmbeddingService.generateEmbedding(text2);
+                log(outputId, `Resultado: ${emb2 ? `Array[${emb2.length}]` : 'NULL/UNDEFINED'}`);
+                
+                // Teste 3: Texto com caracteres especiais
+                const text3 = "Teste com números 123 e símbolos !@#$%";
+                log(outputId, `\nTeste 3: "${text3}"`);
+                const emb3 = await KC.EmbeddingService.generateEmbedding(text3);
+                log(outputId, `Resultado: ${emb3 ? `Array[${emb3.length}]` : 'NULL/UNDEFINED'}`);
+                
+            } catch (error) {
+                log(outputId, `ERRO: ${error.message}`, true);
+                log(outputId, `Stack: ${error.stack}`, true);
+            }
+        }
+
+        // 2. Teste com conteúdo de arquivo
+        async function testFileContent() {
+            const outputId = 'file-output';
+            document.getElementById(outputId).innerHTML = '';
+            
+            log(outputId, 'Carregando arquivos...');
+            
+            try {
+                const files = KC.AppState.get('files') || [];
+                const approved = files.filter(f => !f.archived && f.relevanceScore >= 50);
+                
+                if (approved.length === 0) {
+                    log(outputId, 'Nenhum arquivo aprovado encontrado!', true);
+                    return;
+                }
+                
+                const testFile = approved[0];
+                log(outputId, `Testando com arquivo: ${testFile.name}`);
+                
+                // Testa com preview
+                if (testFile.preview) {
+                    const previewText = Object.values(testFile.preview).join(' ').substring(0, 200);
+                    log(outputId, `Preview: "${previewText}..."`);
+                    
+                    const embedding = await KC.EmbeddingService.generateEmbedding(previewText);
+                    log(outputId, `Embedding do preview: ${embedding ? `Array[${embedding.length}]` : 'NULL/UNDEFINED'}`);
+                }
+                
+                // Testa com conteúdo
+                if (testFile.content) {
+                    const contentSnippet = testFile.content.substring(0, 200);
+                    log(outputId, `\nConteúdo: "${contentSnippet}..."`);
+                    
+                    const embedding = await KC.EmbeddingService.generateEmbedding(contentSnippet);
+                    log(outputId, `Embedding do conteúdo: ${embedding ? `Array[${embedding.length}]` : 'NULL/UNDEFINED'}`);
+                }
+                
+            } catch (error) {
+                log(outputId, `ERRO: ${error.message}`, true);
+                log(outputId, `Stack: ${error.stack}`, true);
+            }
+        }
+
+        // 3. Teste direto com Ollama
+        async function testOllamaDirect() {
+            const outputId = 'ollama-output';
+            document.getElementById(outputId).innerHTML = '';
+            
+            log(outputId, 'Testando conexão direta com Ollama...');
+            
+            try {
+                // Verifica se Ollama está rodando
+                const healthResponse = await fetch('http://127.0.0.1:11434/api/tags');
+                const healthData = await healthResponse.json();
+                log(outputId, `Ollama status: ${healthResponse.ok ? 'ONLINE' : 'OFFLINE'}`);
+                log(outputId, `Modelos disponíveis: ${healthData.models?.map(m => m.name).join(', ') || 'Nenhum'}`);
+                
+                // Testa embedding diretamente
+                log(outputId, '\nTestando geração de embedding...');
+                const response = await fetch('http://127.0.0.1:11434/api/embeddings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'nomic-embed-text',
+                        prompt: 'Este é um teste direto de embedding'
+                    })
+                });
+                
+                const data = await response.json();
+                log(outputId, `Response status: ${response.status}`);
+                
+                if (response.ok) {
+                    log(outputId, `Embedding recebido: ${data.embedding ? `Array[${data.embedding.length}]` : 'Não encontrado'}`);
+                    if (data.embedding) {
+                        log(outputId, `Primeiros valores: [${data.embedding.slice(0, 3).map(v => v.toFixed(4)).join(', ')}...]`);
+                    }
+                } else {
+                    log(outputId, `Erro: ${JSON.stringify(data)}`, true);
+                }
+                
+            } catch (error) {
+                log(outputId, `ERRO de conexão: ${error.message}`, true);
+                log(outputId, 'Verifique se o Ollama está rodando com: ollama serve', true);
+            }
+        }
+
+        // 4. Verificar configuração
+        async function checkServiceConfig() {
+            const outputId = 'config-output';
+            document.getElementById(outputId).innerHTML = '';
+            
+            log(outputId, 'Verificando configuração do EmbeddingService...');
+            
+            try {
+                // Configuração atual
+                log(outputId, `Configuração:`, false);
+                log(outputId, JSON.stringify(KC.EmbeddingService.config, null, 2));
+                
+                // Estatísticas
+                log(outputId, `\nEstatísticas:`, false);
+                log(outputId, JSON.stringify(KC.EmbeddingService.stats, null, 2));
+                
+                // Teste o método enrichTextWithContext
+                const enriched = KC.EmbeddingService.enrichTextWithContext('teste', {category: 'test'});
+                log(outputId, `\nTexto enriquecido: "${enriched}"`);
+                
+                // Teste cache key
+                const cacheKey = KC.EmbeddingService.generateCacheKey('teste', {});
+                log(outputId, `Cache key gerada: ${cacheKey}`);
+                
+            } catch (error) {
+                log(outputId, `ERRO: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

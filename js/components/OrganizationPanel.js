@@ -197,6 +197,30 @@
                         </div>
                     </div>
 
+                    <!-- Pipeline de Processamento -->
+                    <div class="pipeline-section card">
+                        <h3>🚀 Pipeline de Processamento RAG</h3>
+                        <p>Processa arquivos aprovados gerando embeddings e inserindo no Qdrant.</p>
+                        
+                        <div id="pipeline-status" class="pipeline-status">
+                            <div class="status-info">
+                                <span class="status-label">Status:</span>
+                                <span id="pipeline-status-text" class="status-value">Pronto para processar</span>
+                            </div>
+                            <div id="pipeline-progress" class="progress-bar-container" style="display: none;">
+                                <div class="progress-bar">
+                                    <div id="pipeline-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
+                                </div>
+                                <span id="pipeline-progress-text" class="progress-text">0%</span>
+                            </div>
+                            <div id="pipeline-results" class="pipeline-results" style="display: none;"></div>
+                        </div>
+                        
+                        <button id="btn-process-pipeline" class="btn btn-primary" onclick="KC.OrganizationPanel.processWithPipeline()">
+                            🔄 Processar Arquivos Aprovados
+                        </button>
+                    </div>
+
                     <!-- Ações -->
                     <div class="panel-actions">
                         <button class="btn btn-secondary" onclick="KC.AppController.previousStep()">
@@ -521,6 +545,125 @@
             setTimeout(() => {
                 KC.RAGExportManager._collectApprovedData = originalCollect;
             }, 5000);
+        }
+
+        /**
+         * Processa arquivos com o pipeline completo
+         */
+        async processWithPipeline() {
+            const button = document.getElementById('btn-process-pipeline');
+            const statusText = document.getElementById('pipeline-status-text');
+            const progressContainer = document.getElementById('pipeline-progress');
+            const progressBar = document.getElementById('pipeline-progress-bar');
+            const progressText = document.getElementById('pipeline-progress-text');
+            const resultsContainer = document.getElementById('pipeline-results');
+            
+            // Desabilita botão e mostra status
+            if (button) button.disabled = true;
+            if (statusText) statusText.textContent = 'Processando...';
+            if (progressContainer) progressContainer.style.display = 'block';
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+                resultsContainer.innerHTML = '';
+            }
+
+            // Configura listeners de progresso
+            const removeProgressListener = KC.EventBus?.on(KC.Events.PIPELINE_PROGRESS, (data) => {
+                if (progressBar) progressBar.style.width = `${data.percentage}%`;
+                if (progressText) progressText.textContent = `${data.percentage}% (${data.current}/${data.total})`;
+            });
+
+            // Configura listener de conclusão
+            const removeCompletedListener = KC.EventBus?.once(KC.Events.PIPELINE_COMPLETED, (data) => {
+                // Remove listener de progresso
+                if (removeProgressListener) removeProgressListener();
+                
+                // Atualiza UI
+                if (button) button.disabled = false;
+                if (progressContainer) progressContainer.style.display = 'none';
+                
+                if (data.success) {
+                    if (statusText) statusText.textContent = 'Processamento concluído!';
+                    
+                    // Mostra resultados
+                    if (resultsContainer && data.results) {
+                        resultsContainer.innerHTML = `
+                            <div class="results-success">
+                                <h4>✅ Processamento Concluído</h4>
+                                <ul>
+                                    <li>Documentos processados: <strong>${data.results.processed}</strong></li>
+                                    <li>Chunks gerados: <strong>${data.results.totalChunks}</strong></li>
+                                    <li>Falhas: <strong>${data.results.failed}</strong></li>
+                                </ul>
+                                ${data.results.errors.length > 0 ? `
+                                    <details>
+                                        <summary>Ver erros (${data.results.errors.length})</summary>
+                                        <ul class="error-list">
+                                            ${data.results.errors.map(err => `
+                                                <li>${err.documentId}: ${err.error}</li>
+                                            `).join('')}
+                                        </ul>
+                                    </details>
+                                ` : ''}
+                            </div>
+                        `;
+                        resultsContainer.style.display = 'block';
+                    }
+                } else {
+                    if (statusText) statusText.textContent = 'Erro no processamento';
+                    
+                    // Mostra erro
+                    if (resultsContainer) {
+                        resultsContainer.innerHTML = `
+                            <div class="results-error">
+                                <h4>❌ Erro no Processamento</h4>
+                                <p>${data.error || data.message || 'Erro desconhecido'}</p>
+                            </div>
+                        `;
+                        resultsContainer.style.display = 'block';
+                    }
+                }
+            });
+
+            try {
+                // Inicia processamento
+                const result = await KC.RAGExportManager?.processApprovedFiles({
+                    batchSize: 10
+                });
+                
+                // Se não houver evento de conclusão, atualiza manualmente
+                if (!KC.EventBus?.hasListeners(KC.Events.PIPELINE_COMPLETED)) {
+                    if (button) button.disabled = false;
+                    if (progressContainer) progressContainer.style.display = 'none';
+                    
+                    if (result.success) {
+                        if (statusText) statusText.textContent = 'Processamento concluído!';
+                    } else {
+                        if (statusText) statusText.textContent = 'Erro no processamento';
+                        KC.showNotification?.({
+                            type: 'error',
+                            message: result.error || result.message
+                        });
+                    }
+                }
+                
+            } catch (error) {
+                KC.Logger?.error('OrganizationPanel', 'Erro ao processar pipeline', error);
+                
+                // Limpa listeners
+                if (removeProgressListener) removeProgressListener();
+                if (removeCompletedListener) removeCompletedListener();
+                
+                // Atualiza UI
+                if (button) button.disabled = false;
+                if (progressContainer) progressContainer.style.display = 'none';
+                if (statusText) statusText.textContent = 'Erro no processamento';
+                
+                KC.showNotification?.({
+                    type: 'error',
+                    message: 'Erro ao processar arquivos: ' + error.message
+                });
+            }
         }
 
         /**

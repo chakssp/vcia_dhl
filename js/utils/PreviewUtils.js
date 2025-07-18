@@ -159,7 +159,12 @@
             if (preview.structure.hasLists) score += 1;
             if (preview.structure.hasCode) score += 1;
             
-            return score;
+            // Converte score para percentual (0-100)
+            // Assume que score máximo realista seria ~20 (muitas keywords + bônus)
+            // Score 1 = 5%, Score 5 = 25%, Score 10 = 50%, Score 20+ = 100%
+            const percentage = Math.min(100, score * 5);
+            
+            return percentage;
         }
     }
 

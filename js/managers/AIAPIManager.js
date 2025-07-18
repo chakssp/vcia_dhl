@@ -25,8 +25,8 @@
                     isLocal: true,
                     requiresApiKey: false,
                     priority: 1,
-                    models: ['llama2', 'mistral', 'mixtral', 'phi', 'neural-chat'],
-                    defaultModel: 'llama2',
+                    models: ['nomic-embed-text', 'mistral', 'mixtral', 'phi', 'neural-chat'],
+                    defaultModel: 'nomic-embed-text',
                     endpoints: {
                         generate: '/api/generate',
                         chat: '/api/chat',
