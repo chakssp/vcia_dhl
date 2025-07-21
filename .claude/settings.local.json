@@ -2,7 +2,22 @@
   "permissions": {
     "allow": [
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cd:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(touch:*)",
+      "Bash(mkdir:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(curl:*)",
+      "Bash(playwright:*)",
+      "Bash(http-server:*)",
+      "Bash(prettier:*)",
+      "Bash(eslint:*)",
+      "Bash(http:*)",
+      "Bash(http-server:*)"
     ],
     "deny": []
   },
