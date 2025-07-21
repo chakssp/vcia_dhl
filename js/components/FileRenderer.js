@@ -291,6 +291,9 @@
             // Atualiza paginação
             this.updatePagination();
 
+            // AIDEV-NOTE: filter-transparency; show filter info to user
+            this.renderFilterInfo();
+
             // Limpa container
             this.container.innerHTML = '';
             
@@ -319,6 +322,9 @@
             
             // Renderiza controles de paginação no final
             this.renderPaginationControls('bottom');
+            
+            // Atualiza barra de ações em lote
+            this.updateBulkActionsBar();
 
             console.log(`FileRenderer: ${paginatedFiles.length} arquivos renderizados (página ${this.pagination.currentPage} de ${this.pagination.totalPages})`);
         }
@@ -397,15 +403,24 @@
                         ${file.duplicateConfidence ? `<div class="duplicate-confidence">Confiança: ${Math.round(file.duplicateConfidence * 100)}%</div>` : ''}
                     </div>
                     <div class="file-actions">
-                        <button class="action-btn primary" data-action="analyze">🔍 Analisar com IA</button>
-                        <button class="action-btn secondary" data-action="view">👁️ Ver Conteúdo</button>
-                        <button class="action-btn secondary" data-action="categorize">📂 Categorizar</button>
-                        <button class="action-btn secondary" data-action="archive">📦 Arquivar</button>
+                        ${!file.archived ? `
+                            <button class="action-btn primary" data-action="analyze">🔍 Analisar com IA</button>
+                            <button class="action-btn secondary" data-action="view">👁️ Ver Conteúdo</button>
+                            <button class="action-btn secondary" data-action="categorize">📂 Categorizar</button>
+                            ${file.approved ? 
+                                `<button class="action-btn danger" data-action="reject">❌ Rejeitar</button>` :
+                                `<button class="action-btn success" data-action="approve">✅ Aprovar</button>`
+                            }
+                            <button class="action-btn secondary" data-action="archive">📦 Arquivar</button>
+                        ` : `
+                            <button class="action-btn secondary" data-action="view">👁️ Ver Conteúdo</button>
+                            <span class="archived-badge">📦 Arquivado</span>
+                        `}
                     </div>
                 </div>
                 <div class="file-categories">
                     ${file.analysisType ? `
-                        <span class="analysis-type-tag" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; margin-right: 8px;">
+                        <span class="analysis-type-tag" style="background: var(--primary-color); color: var(--text-inverse); padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 500; margin-right: 8px;">
                             🏷️ ${file.analysisType}
                         </span>
                     ` : ''}
@@ -461,6 +476,12 @@
                 case 'archive':
                     this.archiveFile(file, buttonElement);
                     break;
+                case 'approve':
+                    this.approveFile(file, buttonElement);
+                    break;
+                case 'reject':
+                    this.rejectFile(file, buttonElement);
+                    break;
                 default:
                     console.warn(`FileRenderer: Ação desconhecida: ${action}`);
             }
@@ -489,11 +510,13 @@
             
             // Simula análise IA (será substituído por integração real)
             setTimeout(() => {
-                // Marca arquivo como analisado
+                // AIDEV-NOTE: separate-analyzed-approved; analyzed != approved
+                // Marca arquivo como analisado mas NÃO como aprovado
                 file.analyzed = true;
                 file.analysisDate = new Date().toISOString();
                 file.analysisType = this.detectAnalysisType(file);
                 file.relevanceScore = this.calculateEnhancedRelevance(file);
+                // file.approved mantém seu estado atual (não altera)
                 
                 // Atualiza AppState
                 const allFiles = AppState.get('files') || [];
@@ -528,6 +551,23 @@
                 if (KC.StatsPanel && KC.StatsManager) {
                     KC.StatsPanel.updateStats(KC.StatsManager.getStats());
                 }
+                
+                // AIDEV-NOTE: update-counters-after-analysis; sync filter counters
+                // Força atualização dos contadores nos filtros
+                if (KC.FilterPanel) {
+                    KC.FilterPanel.updateAllCounters(allFiles);
+                }
+                
+                // AIDEV-NOTE: emit-events-for-sync; ensure all components update
+                EventBus.emit(Events.STATE_CHANGED, {
+                    key: 'files',
+                    newValue: allFiles,
+                    oldValue: allFiles
+                });
+                EventBus.emit(Events.FILES_UPDATED, {
+                    action: 'analyze',
+                    fileId: file.id
+                });
                 
             }, 2000); // Simula 2s de processamento
         }
@@ -732,6 +772,96 @@
         }
 
         /**
+         * Aprova um arquivo para processamento
+         */
+        approveFile(file, buttonElement) {
+            console.log(`FileRenderer: Aprovando ${file.name}`);
+            
+            // Marca como aprovado
+            file.approved = true;
+            file.approvedDate = new Date().toISOString();
+            
+            // Atualiza AppState
+            const allFiles = AppState.get('files') || [];
+            const fileIndex = allFiles.findIndex(f => f.id === file.id || f.name === file.name);
+            if (fileIndex !== -1) {
+                allFiles[fileIndex] = { ...allFiles[fileIndex], ...file };
+                AppState.set('files', allFiles);
+            }
+            
+            // Notifica sucesso
+            KC.showNotification({
+                type: 'success',
+                message: `✅ Arquivo aprovado: ${file.name}`,
+                details: 'O arquivo será incluído no processamento RAG'
+            });
+            
+            // Emite eventos
+            EventBus.emit(Events.STATE_CHANGED, {
+                key: 'files',
+                newValue: allFiles,
+                oldValue: allFiles
+            });
+            EventBus.emit(Events.FILES_UPDATED, {
+                action: 'approve',
+                fileId: file.id
+            });
+            
+            // Atualiza estatísticas
+            if (KC.StatsPanel && KC.StatsManager) {
+                KC.StatsPanel.updateStats(KC.StatsManager.getStats());
+            }
+            
+            // AIDEV-NOTE: force-filter-update; ensure counters update
+            // Força atualização dos contadores nos filtros
+            if (KC.FilterPanel) {
+                KC.FilterPanel.updateAllCounters(allFiles);
+            }
+        }
+
+        /**
+         * Rejeita um arquivo, removendo-o do processamento
+         */
+        rejectFile(file, buttonElement) {
+            console.log(`FileRenderer: Rejeitando ${file.name}`);
+            
+            // Marca como rejeitado
+            file.approved = false;
+            file.rejectedDate = new Date().toISOString();
+            
+            // Atualiza AppState
+            const allFiles = AppState.get('files') || [];
+            const fileIndex = allFiles.findIndex(f => f.id === file.id || f.name === file.name);
+            if (fileIndex !== -1) {
+                allFiles[fileIndex] = { ...allFiles[fileIndex], ...file };
+                AppState.set('files', allFiles);
+            }
+            
+            // Notifica sucesso
+            KC.showNotification({
+                type: 'warning',
+                message: `❌ Arquivo rejeitado: ${file.name}`,
+                details: 'O arquivo não será incluído no processamento'
+            });
+            
+            // Emite eventos
+            EventBus.emit(Events.STATE_CHANGED, {
+                key: 'files',
+                newValue: allFiles,
+                oldValue: allFiles
+            });
+            EventBus.emit(Events.FILES_UPDATED, {
+                action: 'reject',
+                fileId: file.id
+            });
+            
+            // Atualiza estatísticas
+            if (KC.StatsPanel && KC.StatsManager) {
+                KC.StatsPanel.updateStats(KC.StatsManager.getStats());
+            }
+        }
+
+        /**
          * Calcula relevância do arquivo integrando com PreviewUtils
          */
         calculateRelevance(file) {
@@ -844,6 +974,76 @@
         }
 
         /**
+         * Renderiza informações sobre filtros ativos
+         * @private
+         */
+        renderFilterInfo() {
+            // AIDEV-NOTE: filter-info-display; transparency about active filters
+            const filterSection = document.querySelector('.filter-section');
+            if (!filterSection) return;
+
+            // Remove info anterior se existir
+            const existingInfo = filterSection.querySelector('.filter-info');
+            if (existingInfo) {
+                existingInfo.remove();
+            }
+
+            const totalFiles = this.files?.length || 0;
+            const filteredFiles = this.filteredFiles?.length || 0;
+            
+            // Conta filtros ativos
+            let activeFilters = 0;
+            const filterManager = KC.FilterManager;
+            
+            if (filterManager) {
+                const filters = filterManager.filters;
+                
+                // Verifica relevância
+                Object.values(filters.relevance || {}).forEach(f => {
+                    if (f.active && f.threshold > 0) activeFilters++;
+                });
+                
+                // Verifica tempo
+                Object.values(filters.time || {}).forEach(f => {
+                    if (f.active && f.range !== 'all') activeFilters++;
+                });
+                
+                // Verifica tamanho
+                Object.values(filters.size || {}).forEach(f => {
+                    if (f.active && f !== filters.size.all) activeFilters++;
+                });
+                
+                // Verifica tipo
+                Object.values(filters.fileType || {}).forEach(f => {
+                    if (f.active && f !== filters.fileType.all) activeFilters++;
+                });
+            }
+
+            // Cria elemento de info
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'filter-info';
+            infoDiv.innerHTML = `
+                <div class="filter-info-content">
+                    <span class="filter-info-text">
+                        Exibindo <strong>${filteredFiles}</strong> de <strong>${totalFiles}</strong> arquivos
+                        ${activeFilters > 0 ? `<span class="filter-info-active">(${activeFilters} filtros ativos)</span>` : ''}
+                    </span>
+                    ${filteredFiles < totalFiles ? `
+                        <button class="filter-info-clear" onclick="KC.FilterManager.clearAllFilters()">
+                            ✕ Limpar filtros
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            // Adiciona após os controles de filtro
+            const filterControls = filterSection.querySelector('.filter-controls');
+            if (filterControls) {
+                filterControls.appendChild(infoDiv);
+            }
+        }
+
+        /**
          * Aplica ordenação aos arquivos filtrados
          */
         applySorting() {
@@ -869,11 +1069,57 @@
          * Renderiza estado vazio
          */
         renderEmptyState() {
+            const filterManager = KC.FilterManager;
+            const activeFilters = filterManager?.getActiveFilters() || {};
+            const originalCount = this.originalFiles?.length || 0;
+            
+            let icon = '📁';
+            let message = 'Nenhum arquivo encontrado';
+            let suggestion = 'Configure a descoberta de arquivos para começar a análise.';
+            
+            // Mensagens específicas baseadas nos filtros ativos
+            if (originalCount > 0) {
+                // Tem arquivos, mas foram filtrados
+                if (activeFilters.status === 'approved') {
+                    icon = '✅';
+                    message = 'Nenhum arquivo aprovado';
+                    suggestion = 'Você precisa aprovar alguns arquivos na Etapa 3 antes de filtrar por aprovados.';
+                } else if (activeFilters.status === 'archived') {
+                    icon = '📦';
+                    message = 'Nenhum arquivo arquivado';
+                    suggestion = 'Você ainda não arquivou nenhum arquivo. Use o botão "Arquivar" nos arquivos que deseja guardar.';
+                } else if (activeFilters.relevance) {
+                    icon = '📊';
+                    message = 'Nenhum arquivo com a relevância selecionada';
+                    suggestion = `Tente reduzir o filtro de relevância (atualmente ${activeFilters.relevance}%) ou analise mais arquivos.`;
+                } else if (activeFilters.type && activeFilters.type.length > 0) {
+                    icon = '📄';
+                    message = 'Nenhum arquivo do tipo selecionado';
+                    suggestion = `Não há arquivos ${activeFilters.type.join(', ')} na sua seleção atual.`;
+                } else if (activeFilters.time) {
+                    icon = '📅';
+                    message = 'Nenhum arquivo no período selecionado';
+                    suggestion = 'Tente expandir o período de tempo ou verificar as datas dos arquivos.';
+                } else {
+                    icon = '🔍';
+                    message = 'Nenhum arquivo corresponde aos filtros';
+                    suggestion = 'Tente ajustar ou remover alguns filtros para ver mais resultados.';
+                }
+                
+                // Adiciona contagem original
+                suggestion += ` (${originalCount} arquivo${originalCount > 1 ? 's' : ''} no total)`;
+            }
+            
             this.container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-icon">📁</div>
-                    <h3>Nenhum arquivo encontrado</h3>
-                    <p>Configure a descoberta de arquivos para começar a análise.</p>
+                    <div class="empty-icon">${icon}</div>
+                    <h3>${message}</h3>
+                    <p>${suggestion}</p>
+                    ${originalCount > 0 ? `
+                        <button class="btn btn-secondary" onclick="KC.FilterPanel?.clearAllFilters()">
+                            🔄 Limpar Todos os Filtros
+                        </button>
+                    ` : ''}
                 </div>
             `;
         }
@@ -1389,12 +1635,12 @@
                 const category = availableCategories.find(c => c.id === categoryId);
                 if (!category) {
                     // Fallback para categoria não encontrada
-                    return `<span class="file-category-tag" style="background-color: #6b7280">
+                    return `<span class="file-category-tag" style="background-color: var(--gray-600); color: var(--text-inverse);">
                         ${categoryId}
                     </span>`;
                 }
                 
-                return `<span class="file-category-tag" style="background-color: ${category.color}" title="${category.name}">
+                return `<span class="file-category-tag" style="background-color: ${category.color}; color: var(--text-inverse);" title="${category.name}">
                     ${category.name}
                 </span>`;
             }).join('');
@@ -1656,33 +1902,54 @@
                 existingBar.remove();
             }
             
-            // Se não há seleção, não mostra a barra
-            if (count === 0) {
+            // Verifica se há checkboxes na página (arquivos visíveis)
+            const hasVisibleFiles = document.querySelectorAll('.file-select-checkbox').length > 0;
+            
+            // Se não há arquivos visíveis, não mostra a barra
+            if (!hasVisibleFiles) {
                 return;
             }
             
             // Cria nova barra
             const bar = document.createElement('div');
             bar.className = 'bulk-actions-bar';
-            bar.innerHTML = `
-                <div class="bulk-actions-container">
-                    <span class="selection-count">${count} arquivo(s) selecionado(s)</span>
-                    <div class="bulk-actions">
-                        <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkCategorize()">
-                            📂 Categorizar Selecionados
-                        </button>
-                        <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkAnalyze()">
-                            🔍 Analisar Selecionados
-                        </button>
-                        <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkArchive()">
-                            📦 Arquivar Selecionados
-                        </button>
-                        <button class="bulk-action-btn secondary" onclick="KC.FileRenderer.clearSelection()">
-                            ❌ Limpar Seleção
-                        </button>
+            
+            // Se não há seleção, mostra apenas o botão de selecionar todos
+            if (count === 0) {
+                bar.innerHTML = `
+                    <div class="bulk-actions-container">
+                        <span class="selection-count">Nenhum arquivo selecionado</span>
+                        <div class="bulk-actions">
+                            <button class="bulk-action-btn primary" onclick="KC.FileRenderer.selectAllVisible()">
+                                ☑️ Selecionar Todos
+                            </button>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                bar.innerHTML = `
+                    <div class="bulk-actions-container">
+                        <span class="selection-count">${count} arquivo(s) selecionado(s)</span>
+                        <div class="bulk-actions">
+                            <button class="bulk-action-btn primary" onclick="KC.FileRenderer.selectAllVisible()">
+                                ☑️ Selecionar Todos
+                            </button>
+                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkCategorize()">
+                                📂 Categorizar Selecionados
+                            </button>
+                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkAnalyze()">
+                                🔍 Analisar Selecionados
+                            </button>
+                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkArchive()">
+                                📦 Arquivar Selecionados
+                            </button>
+                            <button class="bulk-action-btn secondary" onclick="KC.FileRenderer.clearSelection()">
+                                ❌ Limpar Seleção
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
             
             // Insere após o header da seção de arquivos
             const filesHeader = document.querySelector('.files-header');
@@ -1780,6 +2047,26 @@
             
             // Mostra notificação (usando alert por enquanto, até implementar sistema de notificações)
             alert(`✅ Categorias aplicadas com sucesso a ${fileIds.length} arquivo(s)!`);
+            
+            // AIDEV-NOTE: sync-after-categorize; force counter updates and emit event
+            // Força atualização dos contadores após categorização
+            setTimeout(() => {
+                if (KC.FilterPanel) {
+                    const allFiles = KC.AppState.get('files') || [];
+                    KC.FilterPanel.updateAllCounters(allFiles);
+                }
+                
+                // Emite evento para sincronizar outros componentes
+                KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                    action: 'bulk_categorize',
+                    fileIds: fileIds,
+                    categories: selectedCategories
+                });
+                
+                // Re-renderiza a lista para refletir mudanças
+                // AIDEV-NOTE: fix-method-name; correct method is showFilesSection
+                this.showFilesSection();
+            }, 100);
         }
         
         /**
@@ -1835,6 +2122,30 @@
             // Remove barra de ações
             this.updateBulkActionsBar();
         }
+        
+        /**
+         * NOVO: Seleciona todos os arquivos visíveis na página atual
+         */
+        selectAllVisible() {
+            console.log('FileRenderer: Selecionando todos os arquivos visíveis');
+            
+            // Obtém todos os checkboxes visíveis
+            const checkboxes = document.querySelectorAll('.file-select-checkbox');
+            
+            // Marca todos e adiciona ao Set
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                const fileId = checkbox.dataset.fileId;
+                if (fileId) {
+                    this.selectedFiles.add(fileId);
+                }
+            });
+            
+            console.log(`FileRenderer: ${this.selectedFiles.size} arquivos selecionados`);
+            
+            // Atualiza a barra de ações
+            this.updateBulkActionsBar();
+        }
     }
 
     // Registra no namespace global
@@ -1848,6 +2159,7 @@
     
     // NOVO: Expõe métodos de bulk actions
     KC.FileRenderer.bulkCategorize = KC.FileRenderer.bulkCategorize.bind(KC.FileRenderer);
+    KC.FileRenderer.selectAllVisible = KC.FileRenderer.selectAllVisible.bind(KC.FileRenderer);
     KC.FileRenderer.bulkAnalyze = KC.FileRenderer.bulkAnalyze.bind(KC.FileRenderer);
     KC.FileRenderer.bulkArchive = KC.FileRenderer.bulkArchive.bind(KC.FileRenderer);
     KC.FileRenderer.clearSelection = KC.FileRenderer.clearSelection.bind(KC.FileRenderer);

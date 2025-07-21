@@ -50,15 +50,16 @@
     function registerComponents() {
         const { AppController } = KC;
         
+        // Inicializa ThemeManager primeiro
+        KC.ThemeManager?.initialize();
+        
         // Registra componentes disponíveis
         const components = [
             'WorkflowPanel',
-            'ConfigManager',
             'DiscoveryManager',
             'AnalysisManager',
             'CategoryManager',
             'FilterManager',
-            'ExportManager',
             'StatsManager',
             'StatsCoordinator',
             'FileRenderer',

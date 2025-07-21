@@ -15,7 +15,8 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background: white;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
@@ -95,7 +96,7 @@
     content: '';
     width: 46px;
     height: 46px;
-    background: white;
+    background: var(--bg-secondary);
     border-radius: 50%;
     position: absolute;
 }
@@ -198,7 +199,8 @@
 
 /* Gerenciador de Categorias */
 .category-manager {
-    background: white;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-sm);
@@ -374,7 +376,7 @@
 }
 
 .filter-tab.active {
-    background: white;
+    background: var(--bg-tertiary);
     color: var(--text-primary);
     box-shadow: var(--shadow-sm);
 }
@@ -464,7 +466,8 @@
 
 /* === STATS SECTIONS === */
 .stats-section {
-    background: white;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;

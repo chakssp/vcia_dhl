@@ -891,6 +891,7 @@
          * Carrega filtros salvos
          */
         loadSavedFilters() {
+            // AIDEV-NOTE: load-filters-optional; only load if explicitly saved
             const saved = AppState.get('filters');
             if (!saved || !saved.active) return;
 

@@ -58,6 +58,11 @@
                     this.updateDiscoveryUI(false);
                 }
             });
+            
+            // AIDEV-NOTE: discovery-progress-listener; handle real-time progress updates
+            EventBus.on(Events.DISCOVERY_PROGRESS, (data) => {
+                this.updateDiscoveryRealTimeProgress(data);
+            });
 
             EventBus.on(Events.FILES_DISCOVERED, (data) => {
                 this.updateDiscoveryResults(data);
@@ -197,13 +202,13 @@
                         <!-- DESTACADO: Suporte ao Obsidian -->
                         <div class="form-group obsidian-highlight">
                             <div class="obsidian-support">
-                                <h4 style="color: #6366f1; margin-bottom: 10px;">🎯 Detecção Automática do Obsidian</h4>
+                                <h4 style="color: var(--primary-color); margin-bottom: 10px;">🎯 Detecção Automática do Obsidian</h4>
                                 <button class="btn btn-primary btn-lg" onclick="callKC('WorkflowPanel.checkObsidian')" 
-                                        style="background: #6366f1; border: 2px solid #4f46e5; padding: 12px 24px; font-size: 16px; font-weight: bold;">
+                                        style="background: var(--primary-color); border: 2px solid var(--primary-color); padding: 12px 24px; font-size: 16px; font-weight: bold;">
                                     🔍 PERMITIR ACESSO - Detectar Vaults do Obsidian
                                 </button>
-                                <div style="margin-top: 8px; padding: 8px; background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px;">
-                                    <small><strong>✅ SOLUÇÃO:</strong> Clique no botão acima para abrir o seletor de diretório e buscar automaticamente por estruturas do Obsidian (.obsidian/)</small>
+                                <div style="margin-top: 8px; padding: 8px; background: var(--bg-tertiary); color: var(--text-primary); border-left: 4px solid #0ea5e9; border-radius: 4px;">
+                                    <small style="color: var(--text-primary);"><strong>✅ SOLUÇÃO:</strong> Clique no botão acima para abrir o seletor de diretório e buscar automaticamente por estruturas do Obsidian (.obsidian/)</small>
                                 </div>
                             </div>
                         </div>
@@ -287,13 +292,13 @@
                     <p>Configure os parâmetros para análise com IA.</p>
                     
                     <!-- Botão de Configuração de APIs -->
-                    <div class="api-config-banner" style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+                    <div class="api-config-banner" style="background: var(--bg-tertiary); color: var(--text-primary); border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <div>
-                                <h3 style="margin: 0 0 8px 0; color: #1e40af;">⚙️ Configuração de APIs de IA</h3>
-                                <p style="margin: 0; color: #3730a3;">Configure suas API keys e escolha entre providers locais (Ollama) ou cloud (OpenAI, Gemini, Claude)</p>
+                                <h3 style="margin: 0 0 8px 0; color: var(--text-primary);">⚙️ Configuração de APIs de IA</h3>
+                                <p style="margin: 0; color: var(--text-primary);">Configure suas API keys e escolha entre providers locais (Ollama) ou cloud (OpenAI, Gemini, Claude)</p>
                             </div>
-                            <button class="btn btn-primary" onclick="KC.APIConfig.showConfigModal()" style="background: #3b82f6; min-width: 150px;">
+                            <button class="btn btn-primary" onclick="KC.APIConfig.showConfigModal()" style="background: var(--primary-color); min-width: 150px;">
                                 🔧 Configurar APIs
                             </button>
                         </div>
@@ -449,6 +454,9 @@
 
             // Adiciona event listeners para os elementos criados
             this.setupEventListeners();
+            
+            // AIDEV-NOTE: observer-init; setup MutationObserver to prevent floating elements
+            this.setupProgressTextObserver();
         }
 
         /**
@@ -1195,10 +1203,159 @@
         }
 
         /**
+         * AIDEV-NOTE: real-time-progress; smooth animated progress updates using requestAnimationFrame
+         * @private
+         */
+        updateDiscoveryRealTimeProgress(data) {
+            // AIDEV-NOTE: dom-elements; cache refs para progress UI elements
+            const progressFill = document.getElementById('discovery-progress-fill');
+            const progressText = document.getElementById('discovery-progress-text');
+            const discoveryStats = document.getElementById('discovery-stats');
+            const discoveryStatus = document.getElementById('discovery-status');
+            
+            // AIDEV-NOTE: container-validation; prevent floating elements bug
+            if (!progressFill || !progressText || !discoveryStatus) return;
+            
+            // AIDEV-NOTE: visibility-check; skip updates when container hidden
+            if (discoveryStatus.style.display === 'none') {
+                console.warn('Discovery status container is hidden, skipping update');
+                return;
+            }
+            
+            // AIDEV-NOTE: parent-check; ensure progress-text stays in container
+            if (!discoveryStatus.contains(progressText)) {
+                console.error('Progress text element is outside its container!');
+                // AIDEV-NOTE: force-reattach; move element back to correct position
+                const progressBar = discoveryStatus.querySelector('.progress-bar');
+                if (progressBar && progressBar.parentElement === discoveryStatus) {
+                    // Insere logo após a progress-bar
+                    progressBar.insertAdjacentElement('afterend', progressText);
+                    console.log('Progress text reattached to correct position');
+                } else {
+                    // Fallback: adiciona no final do discoveryStatus
+                    discoveryStatus.appendChild(progressText);
+                    console.log('Progress text reattached to discovery status container');
+                }
+            }
+            
+            // AIDEV-NOTE: raf-cancel; cancel any pending animation frame to prevent queue buildup
+            if (this.rafId) {
+                cancelAnimationFrame(this.rafId);
+            }
+            
+            // AIDEV-NOTE: raf-update; use requestAnimationFrame for smooth UI updates
+            this.rafId = requestAnimationFrame(() => {
+                const progress = data.progress || 0;
+                
+                // Update progress bar with smooth transition
+                progressFill.style.transition = 'width 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
+                progressFill.style.width = `${progress}%`;
+                
+                // AIDEV-NOTE: progress-text-inline; show percentage inside bar when visible
+                if (progress > 15) {
+                    progressFill.textContent = `${Math.round(progress)}%`;
+                    progressFill.style.color = 'white';
+                    progressFill.style.fontSize = '12px';
+                    progressFill.style.fontWeight = 'bold';
+                } else {
+                    progressFill.textContent = '';
+                }
+                
+                // AIDEV-NOTE: progress-message; dynamic text based on phase and current file
+                let mainMessage = data.message || 'Processando...';
+                let detailMessage = '';
+                
+                if (data.phase === 'scanning' && data.currentFile) {
+                    mainMessage = `Descobrindo arquivos... ${Math.round(progress)}%`;
+                    detailMessage = `<div class="progress-detail">📁 ${data.currentFile}</div>`;
+                } else if (data.phase === 'analyzing') {
+                    mainMessage = `Analisando conteúdo... ${Math.round(progress)}%`;
+                    detailMessage = `<div class="progress-detail">🔍 ${data.currentFile || 'Processando...'}</div>`;
+                } else if (data.phase === 'complete') {
+                    mainMessage = `Descoberta concluída! 100%`;
+                    detailMessage = `<div class="progress-detail">✅ ${data.stats?.totalFiles || 0} arquivos encontrados</div>`;
+                }
+                
+                // Update progress text
+                // AIDEV-NOTE: progress-detail; show calculation details if available
+                const calculationDetail = data.progressDetail ? 
+                    `<div class="progress-calculation">${data.progressDetail}</div>` : '';
+                
+                progressText.innerHTML = `
+                    <div class="progress-main">${mainMessage}</div>
+                    ${detailMessage}
+                    ${calculationDetail}
+                `;
+                
+                // Update stats if available
+                if (data.stats && discoveryStats) {
+                    // AIDEV-NOTE: stats-efficient-update; only update if stats container is visible
+                    if (discoveryStats.offsetParent !== null) {
+                        discoveryStats.innerHTML = `
+                            <div class="stat-row">
+                                <span>Diretórios escaneados:</span> 
+                                <strong>${data.stats.directories || 0}</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Total de arquivos:</span> 
+                                <strong>${data.stats.totalFiles || 0}</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Arquivos válidos:</span> 
+                                <strong>${data.stats.validFiles || 0}</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Arquivos ignorados:</span> 
+                                <strong>${data.stats.skipped || 0}</strong>
+                            </div>
+                            <div class="stat-row">
+                                <span>Tempo decorrido:</span> 
+                                <strong>${data.stats.elapsed || '0'}s</strong>
+                            </div>
+                        `;
+                    }
+                }
+                
+                // AIDEV-NOTE: progress-complete; add visual feedback when done
+                if (progress >= 100) {
+                    progressFill.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+                    document.querySelector('.discovery-status')?.classList.add('discovery-completed');
+                }
+            });
+        }
+
+        /**
          * Atualiza resultados da descoberta
          * @private
          */
         updateDiscoveryResults(data) {
+            // AIDEV-NOTE: complete-progress; force 100% on discovery completion
+            const progressFill = document.getElementById('discovery-progress-fill');
+            const progressText = document.getElementById('discovery-progress-text');
+            const statusDiv = document.getElementById('discovery-status');
+            
+            const stats = data.stats || {};
+            const matchedFiles = stats.matchedFiles || data.files?.length || 0;
+            const totalFiles = stats.totalFiles || matchedFiles;
+            
+            if (progressFill) {
+                progressFill.style.width = '100%';
+                progressFill.textContent = '100%';
+            }
+            
+            if (progressText) {
+                // AIDEV-NOTE: transparent-calculation; show actual discovery results
+                progressText.innerHTML = `
+                    <div class="progress-main">Descoberta concluída! 100%</div>
+                    <div class="progress-detail">✅ ${matchedFiles} arquivos válidos encontrados</div>
+                    <div class="progress-calculation">${matchedFiles} de ${totalFiles} arquivos analisados</div>
+                `;
+            }
+            
+            if (statusDiv) {
+                statusDiv.classList.add('discovery-completed');
+            }
+            
             const statsDiv = document.getElementById('discovery-stats');
             if (statsDiv && data.stats) {
                 const stats = data.stats;
@@ -1628,6 +1785,54 @@
                     message: 'Sistema de exportação não está carregado'
                 });
             }
+        }
+        
+        /**
+         * AIDEV-NOTE: mutation-observer; prevent progress-text from floating outside container
+         * @private
+         */
+        setupProgressTextObserver() {
+            // AIDEV-NOTE: delayed-setup; wait for DOM to be ready
+            setTimeout(() => {
+                const progressText = document.getElementById('discovery-progress-text');
+                const discoveryStatus = document.getElementById('discovery-status');
+                
+                if (!progressText || !discoveryStatus) {
+                    console.log('Progress elements not ready for observer setup');
+                    return;
+                }
+                
+                // AIDEV-NOTE: parent-observer; watch for removal from correct parent
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        // Check if progress-text was removed from its parent
+                        mutation.removedNodes.forEach((node) => {
+                            if (node === progressText || (node.contains && node.contains(progressText))) {
+                                console.warn('Progress text was removed from DOM, preventing...');
+                                
+                                // AIDEV-NOTE: immediate-reattach; put it back immediately
+                                if (!discoveryStatus.contains(progressText)) {
+                                    const progressBar = discoveryStatus.querySelector('.progress-bar');
+                                    if (progressBar) {
+                                        progressBar.insertAdjacentElement('afterend', progressText);
+                                        console.log('Progress text reattached by MutationObserver');
+                                    }
+                                }
+                            }
+                        });
+                    });
+                });
+                
+                // AIDEV-NOTE: observe-config; watch for child list changes on body
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                // Store observer reference for cleanup
+                this.progressTextObserver = observer;
+                console.log('MutationObserver for progress-text protection is active');
+            }, 1000); // Wait 1 second for DOM to stabilize
         }
     }
 

@@ -71,17 +71,15 @@
             const categories = KC.CategoryManager.getCategories();
             const stats = KC.AppState.get('stats') || {};
 
-            // Filtrar apenas arquivos que passaram pela pré-análise
+            // Filtrar apenas arquivos aprovados pelo usuário
             const approvedFiles = files.filter(file => {
-                // Normaliza relevanceScore para percentual se necessário
-                let relevance = file.relevanceScore;
-                if (relevance && relevance < 1) {
-                    relevance = relevance * 100;
-                }
+                // REMOVIDO: Restrição de relevância mínima de 50%
+                // Agora o usuário tem controle total sobre quais arquivos aprovar
                 
-                return relevance >= 50 && // Threshold de relevância (50%)
-                       file.preview && // Tem preview extraído
-                       !file.archived; // Não está arquivado
+                // Apenas verificações essenciais:
+                return file.preview && // Tem preview extraído (necessário para chunking)
+                       !file.archived && // Não está arquivado (arquivado = descartado pelo usuário)
+                       file.approved !== false; // Não foi explicitamente rejeitado
             });
 
             KC.Logger?.info('RAGExportManager', 'Dados coletados', {
@@ -342,7 +340,37 @@
             });
 
             try {
-                // 0. Garantir integridade dos dados se DataIntegrityManager estiver disponível
+                // 0. Validação inicial - verifica se há arquivos aprovados
+                const allFiles = KC.AppState?.get('files') || [];
+                const approvedFiles = allFiles.filter(f => f.approved && !f.archived);
+                
+                if (approvedFiles.length === 0) {
+                    KC.Logger?.warn('RAGExportManager', 'Nenhum arquivo aprovado encontrado');
+                    
+                    // Notifica o usuário
+                    KC.EventBus?.emit(KC.Events.NOTIFICATION_SHOW || 'notification:show', {
+                        type: 'warning',
+                        message: 'Nenhum arquivo aprovado encontrado',
+                        details: 'Aprove alguns arquivos na Etapa 3 antes de processar o pipeline',
+                        duration: 5000
+                    });
+                    
+                    // Emite evento de conclusão com erro
+                    KC.EventBus?.emit(KC.Events.PIPELINE_COMPLETED || 'pipeline:completed', {
+                        success: false,
+                        processed: 0,
+                        errors: ['Nenhum arquivo aprovado para processar'],
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    return {
+                        success: false,
+                        processed: 0,
+                        errors: ['Nenhum arquivo aprovado para processar']
+                    };
+                }
+                
+                // 0.1. Garantir integridade dos dados se DataIntegrityManager estiver disponível
                 if (KC.DataIntegrityManager) {
                     await KC.DataIntegrityManager.ensureDataIntegrity();
                     KC.Logger?.info('RAGExportManager', 'Integridade dos dados verificada');
@@ -434,8 +462,19 @@
         async _processBatch(documents, results) {
             for (const doc of documents) {
                 try {
+                    // Emite evento com arquivo atual
+                    KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
+                        current: results.processed,
+                        total: results.processed + documents.length,
+                        percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
+                        currentFile: doc.source.fileName,
+                        stage: 'chunking',
+                        stageStatus: 'processing'
+                    });
+                    
                     // Prepara pontos para o Qdrant
                     const points = [];
+                    let chunksProcessed = 0;
                     
                     for (const chunk of doc.chunks) {
                         let retries = 3;
@@ -443,6 +482,17 @@
                         
                         while (retries > 0) {
                             try {
+                                // Emite evento de embeddings
+                                KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
+                                    current: results.processed,
+                                    total: results.processed + documents.length,
+                                    percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
+                                    currentFile: doc.source.fileName,
+                                    stage: 'embeddings',
+                                    stageStatus: 'processing',
+                                    chunksGenerated: results.totalChunks + chunksProcessed
+                                });
+                                
                                 // Gera embedding para o chunk com retry
                                 const embedding = await this._generateEmbeddingWithRetry(chunk.content, 3);
                                 
@@ -475,6 +525,7 @@
                                 });
 
                                 results.totalChunks++;
+                                chunksProcessed++;
                                 break; // Sucesso, sai do loop de retry
                                 
                             } catch (chunkError) {
@@ -501,6 +552,17 @@
 
                     // Insere pontos no Qdrant se houver
                     if (points.length > 0) {
+                        // Emite evento de inserção no Qdrant
+                        KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
+                            current: results.processed,
+                            total: results.processed + documents.length,
+                            percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
+                            currentFile: doc.source.fileName,
+                            stage: 'qdrant',
+                            stageStatus: 'processing',
+                            chunksGenerated: results.totalChunks
+                        });
+                        
                         const insertResult = await this._insertWithRetry(points, 3);
                         
                         if (insertResult?.success) {

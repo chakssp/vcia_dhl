@@ -82,6 +82,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* === TIPOGRAFIA === */
@@ -157,6 +158,42 @@ a:hover {
   gap: var(--spacing-lg);
 }
 
+.btn-api-config {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-api-config:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-export-state {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-export-state:hover {
+  background: var(--success-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
 .nav-status {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
@@ -171,28 +208,6 @@ a:hover {
   padding: var(--spacing-lg) 0;
 }
 
-/* NOVO: Layout flexbox para conteúdo e stats lado a lado */
-.main-content-wrapper {
-  display: flex;
-  gap: var(--spacing-lg);
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--spacing-lg);
-  align-items: flex-start;
-}
-
-.main-content-wrapper .content-section {
-  flex: 1;
-  min-width: 0; /* Previne overflow de conteúdo */
-}
-
-.main-content-wrapper .stats-section {
-  flex-shrink: 0;
-  position: sticky;
-  top: var(--spacing-lg);
-  max-height: calc(100vh - 2 * var(--spacing-lg));
-  overflow-y: auto;
-}
 
 /* === WORKFLOW SECTION === */
 .workflow-section {
@@ -362,6 +377,9 @@ a:hover {
 /* === FORMS === */
 .form-group {
   margin-bottom: var(--spacing-lg);
+  background-color: var(--bg-form-group);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
 }
 
 .form-label {
@@ -375,9 +393,10 @@ a:hover {
   width: 100%;
   padding: var(--spacing-sm);
   font-size: var(--font-size-base);
-  border: var(--border-width-thin) solid var(--border-medium);
+  border: var(--border-width-default) solid var(--border-medium);
   border-radius: var(--border-radius-md);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
   transition: border-color var(--transition-fast);
 }
 

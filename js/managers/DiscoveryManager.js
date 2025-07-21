@@ -54,6 +54,11 @@
                 startTime: null,
                 endTime: null
             };
+            
+            // AIDEV-NOTE: progress-throttle; prevent UI blocking with many files (100ms default)
+            this.lastProgressUpdate = 0;
+            this.progressThrottleDelay = 100; // milliseconds
+            this.pendingProgressUpdate = null;
         }
 
         /**
@@ -247,6 +252,21 @@
                     'stats.duplicateStats': duplicateStats,
                     'stats.lastUpdate': new Date().toISOString()
                 });
+                
+                // AIDEV-NOTE: discovery-complete; emit 100% progress when done
+                EventBus.emit(Events.DISCOVERY_PROGRESS, {
+                    phase: 'complete',
+                    progress: 100,
+                    message: 'Descoberta concluída!',
+                    currentFile: '',
+                    stats: {
+                        directories: this.stats.scannedDirectories,
+                        totalFiles: this.stats.totalFiles,
+                        validFiles: this.stats.matchedFiles,
+                        skipped: this.stats.skippedFiles,
+                        elapsed: ((Date.now() - this.stats.startTime) / 1000).toFixed(1)
+                    }
+                });
 
                 // Log detalhado para debug
                 console.log('DiscoveryManager: === RELATÓRIO FINAL DE DESCOBERTA ===');
@@ -333,6 +353,9 @@
 
             this.stats.totalDirectories++;
             
+            // AIDEV-NOTE: emit-progress-update; throttled updates for smooth UI feedback
+            this._emitProgressUpdate('scanning', pathString);
+            
             try {
                 // Verifica se tem handle do File System Access API
                 let files = [];
@@ -365,6 +388,11 @@
                         // Arquivo já processado com metadados
                         this.discoveredFiles.push(file);
                         this.stats.matchedFiles++;
+                        
+                        // AIDEV-NOTE: file-progress; emit progress after each batch of files
+                        if (this.stats.matchedFiles % 10 === 0) {
+                            this._emitProgressUpdate('processing', file.path || file.name);
+                        }
                     } else {
                         // Arquivo precisa ser processado
                         await this._processFile(file, config);
@@ -571,6 +599,9 @@
                                 
                                 // Atualiza estatísticas
                                 // this.stats.totalFiles++; // JÁ INCREMENTADO ACIMA
+                                
+                                // AIDEV-NOTE: file-progress-update; emit progress for each file processed
+                                this._emitProgressUpdate('scanning', `${directoryHandle.name}/${file.name}`);
                                 
                                 // Feedback de progresso
                                 if (files.length % 5 === 0) {
@@ -1125,6 +1156,92 @@
             AppState.set('configuration.discovery.directories', []);
             KC.Logger.info('Todos os diretórios foram removidos');
             return true;
+        }
+        
+        /**
+         * AIDEV-NOTE: throttled-progress; emit progress updates without blocking UI (perf-critical)
+         * @private
+         */
+        _emitProgressUpdate(phase, currentPath) {
+            const now = Date.now();
+            const timeSinceLastUpdate = now - this.lastProgressUpdate;
+            
+            // AIDEV-TODO: make throttle delay configurable for different file counts
+            if (timeSinceLastUpdate < this.progressThrottleDelay) {
+                // Schedule update for later
+                if (this.pendingProgressUpdate) {
+                    clearTimeout(this.pendingProgressUpdate);
+                }
+                
+                this.pendingProgressUpdate = setTimeout(() => {
+                    this._doEmitProgress(phase, currentPath);
+                    this.pendingProgressUpdate = null;
+                }, this.progressThrottleDelay - timeSinceLastUpdate);
+                
+                return;
+            }
+            
+            this._doEmitProgress(phase, currentPath);
+        }
+        
+        /**
+         * AIDEV-NOTE: actual-progress-emit; calculates progress percentage and emits event
+         * @private
+         */
+        _doEmitProgress(phase, currentPath) {
+            this.lastProgressUpdate = Date.now();
+            
+            // AIDEV-NOTE: progress-calc; transparent percentage calculation
+            let progress = 0;
+            let progressDetail = '';
+            
+            if (this.stats.totalFiles > 0) {
+                // AIDEV-NOTE: real-percentage; show actual % without artificial limits
+                const actualPercentage = (this.stats.matchedFiles / this.stats.totalFiles) * 100;
+                
+                // AIDEV-NOTE: phase-logic; different progress calc per phase
+                if (phase === 'scanning') {
+                    // Durante escaneamento, limitamos a 95% para indicar que ainda está processando
+                    progress = Math.min(95, actualPercentage);
+                    progressDetail = `${this.stats.matchedFiles} de ${this.stats.totalFiles} arquivos válidos`;
+                } else if (phase === 'complete') {
+                    // Quando completo, sempre 100%
+                    progress = 100;
+                    progressDetail = `${this.stats.matchedFiles} arquivos válidos de ${this.stats.totalFiles} total`;
+                } else {
+                    // Outros casos, mostra porcentagem real
+                    progress = actualPercentage;
+                    progressDetail = `${Math.round(actualPercentage)}% real`;
+                }
+                
+                // AIDEV-QUESTION: why-95-limit; qual o motivo do limite de 95% durante scanning?
+            } else if (this.stats.scannedDirectories > 0) {
+                // AIDEV-NOTE: directory-based-progress; fallback when file count unknown
+                progress = Math.min(95, (this.stats.scannedDirectories / Math.max(this.stats.totalDirectories, 1)) * 100);
+                progressDetail = `${this.stats.scannedDirectories} diretórios escaneados`;
+            }
+            
+            // AIDEV-NOTE: current-file-name; extract filename from path for display
+            const pathParts = currentPath.split('/');
+            const currentFile = pathParts[pathParts.length - 1] || 'Raiz';
+            
+            // Emit progress event
+            EventBus.emit(Events.DISCOVERY_PROGRESS, {
+                phase: phase,
+                progress: progress,
+                message: `Escaneando: ${currentFile}`,
+                currentFile: currentFile,
+                currentPath: currentPath,
+                progressDetail: progressDetail, // AIDEV-NOTE: detail-info; adiciona explicação do cálculo
+                stats: {
+                    directories: this.stats.scannedDirectories,
+                    totalFiles: this.stats.totalFiles,
+                    validFiles: this.stats.matchedFiles,
+                    skipped: this.stats.skippedFiles,
+                    elapsed: ((Date.now() - this.stats.startTime) / 1000).toFixed(1)
+                },
+                startTime: this.stats.startTime
+            });
         }
     }
 

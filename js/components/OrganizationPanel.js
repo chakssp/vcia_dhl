@@ -63,13 +63,24 @@
             // CORREÇÃO: Busca o painel correto criado pelo WorkflowPanel
             this.container = document.getElementById('organization-panel');
             if (!this.container) {
-                KC.Logger?.error('OrganizationPanel', 'Container organization-panel não encontrado');
-                // Tenta notificar o usuário
-                KC.showNotification?.({
-                    type: 'error',
-                    message: 'Erro ao renderizar painel de organização. Recarregue a página.'
-                });
-                return;
+                // Se não existe, cria o container
+                KC.Logger?.info('OrganizationPanel', 'Criando container organization-panel');
+                
+                const panelContainer = document.getElementById('panel-container');
+                if (!panelContainer) {
+                    KC.Logger?.error('OrganizationPanel', 'panel-container não encontrado');
+                    return;
+                }
+                
+                // Cria o container do painel
+                this.container = document.createElement('div');
+                this.container.id = 'organization-panel';
+                this.container.className = 'panel organization-panel';
+                this.container.style.display = 'none';
+                
+                // Limpa outros painéis e adiciona o novo
+                panelContainer.innerHTML = '';
+                panelContainer.appendChild(this.container);
             }
 
             // Garante que o painel está visível
@@ -162,7 +173,7 @@
                                 <option value="all">Todos os Arquivos (${this.stats.total})</option>
                                 <option value="analyzed">Apenas Analisados (${this.stats.analyzed})</option>
                                 <option value="high-relevance">Alta Relevância ≥ 70% (${this.stats.highRelevance})</option>
-                                <option value="medium-relevance">Média Relevância ≥ 50% (${this.stats.mediumRelevance})</option>
+                                <option value="medium-relevance">Baixa Relevância ≥ 30% (${this.stats.mediumRelevance})</option>
                                 <option value="categorized">Com Categoria Definida (${this.stats.categorized})</option>
                             </select>
                         </div>
@@ -207,18 +218,61 @@
                                 <span class="status-label">Status:</span>
                                 <span id="pipeline-status-text" class="status-value">Pronto para processar</span>
                             </div>
+                            
+                            <!-- Detalhes do Processamento -->
+                            <div id="pipeline-details" class="pipeline-details" style="display: none;">
+                                <div class="processing-stages">
+                                    <div class="stage" id="stage-chunking">
+                                        <span class="stage-icon">📄</span>
+                                        <span class="stage-name">Chunking</span>
+                                        <span class="stage-status">⏳</span>
+                                    </div>
+                                    <div class="stage" id="stage-embeddings">
+                                        <span class="stage-icon">🧮</span>
+                                        <span class="stage-name">Embeddings</span>
+                                        <span class="stage-status">⏳</span>
+                                    </div>
+                                    <div class="stage" id="stage-qdrant">
+                                        <span class="stage-icon">💾</span>
+                                        <span class="stage-name">Qdrant</span>
+                                        <span class="stage-status">⏳</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="current-file" id="current-file" style="display: none;">
+                                    <span class="label">Processando:</span>
+                                    <span class="filename" id="current-filename"></span>
+                                </div>
+                                
+                                <div class="chunks-info" id="chunks-info" style="display: none;">
+                                    <span class="label">Chunks gerados:</span>
+                                    <span class="count" id="chunks-count">0</span>
+                                </div>
+                            </div>
+                            
                             <div id="pipeline-progress" class="progress-bar-container" style="display: none;">
                                 <div class="progress-bar">
                                     <div id="pipeline-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
                                 </div>
                                 <span id="pipeline-progress-text" class="progress-text">0%</span>
                             </div>
+                            
                             <div id="pipeline-results" class="pipeline-results" style="display: none;"></div>
                         </div>
                         
                         <button id="btn-process-pipeline" class="btn btn-primary" onclick="KC.OrganizationPanel.processWithPipeline()">
                             🔄 Processar Arquivos Aprovados
                         </button>
+                        
+                        <!-- Localização dos Dados -->
+                        <div id="data-location" class="data-location" style="display: none; margin-top: 15px;">
+                            <h4>📍 Localização dos Dados Processados:</h4>
+                            <ul>
+                                <li><strong>Embeddings:</strong> IndexedDB (cache local)</li>
+                                <li><strong>Vetores:</strong> Qdrant VPS - <code>http://qdr.vcia.com.br:6333</code></li>
+                                <li><strong>Coleção:</strong> <code>knowledge_consolidator</code></li>
+                            </ul>
+                        </div>
                     </div>
 
                     <!-- Ações -->
@@ -509,7 +563,8 @@
                         approvedFiles = files.filter(f => f.relevanceScore >= 70);
                         break;
                     case 'medium-relevance':
-                        approvedFiles = files.filter(f => f.relevanceScore >= 50);
+                        // REMOVIDO: Restrição de 50% - Usuário tem controle total
+                        approvedFiles = files.filter(f => f.relevanceScore >= 30);
                         break;
                     case 'categorized':
                         approvedFiles = files.filter(f => f.categories && f.categories.length > 0);
@@ -557,9 +612,18 @@
             const progressBar = document.getElementById('pipeline-progress-bar');
             const progressText = document.getElementById('pipeline-progress-text');
             const resultsContainer = document.getElementById('pipeline-results');
+            const detailsContainer = document.getElementById('pipeline-details');
+            const dataLocation = document.getElementById('data-location');
+            
+            // Elementos de detalhes
+            const currentFileDiv = document.getElementById('current-file');
+            const currentFilename = document.getElementById('current-filename');
+            const chunksInfo = document.getElementById('chunks-info');
+            const chunksCount = document.getElementById('chunks-count');
             
             // Desabilita botão e mostra status
             if (button) button.disabled = true;
+            if (detailsContainer) detailsContainer.style.display = 'block';
             if (statusText) statusText.textContent = 'Processando...';
             if (progressContainer) progressContainer.style.display = 'block';
             if (resultsContainer) {
@@ -571,6 +635,22 @@
             const removeProgressListener = KC.EventBus?.on(KC.Events.PIPELINE_PROGRESS, (data) => {
                 if (progressBar) progressBar.style.width = `${data.percentage}%`;
                 if (progressText) progressText.textContent = `${data.percentage}% (${data.current}/${data.total})`;
+                
+                // Atualiza arquivo atual e chunks
+                if (data.currentFile) {
+                    if (currentFileDiv) currentFileDiv.style.display = 'block';
+                    if (currentFilename) currentFilename.textContent = data.currentFile;
+                }
+                
+                if (data.chunksGenerated !== undefined) {
+                    if (chunksInfo) chunksInfo.style.display = 'block';
+                    if (chunksCount) chunksCount.textContent = data.chunksGenerated;
+                }
+                
+                // Atualiza status dos estágios
+                if (data.stage) {
+                    this._updateStageStatus(data.stage, data.stageStatus);
+                }
             });
 
             // Configura listener de conclusão
@@ -584,6 +664,14 @@
                 
                 if (data.success) {
                     if (statusText) statusText.textContent = 'Processamento concluído!';
+                    
+                    // Atualiza status final dos estágios
+                    this._updateStageStatus('chunking', 'completed');
+                    this._updateStageStatus('embeddings', 'completed');
+                    this._updateStageStatus('qdrant', 'completed');
+                    
+                    // Mostra localização dos dados
+                    if (dataLocation) dataLocation.style.display = 'block';
                     
                     // Mostra resultados
                     if (resultsContainer && data.results) {
@@ -664,6 +752,32 @@
                     message: 'Erro ao processar arquivos: ' + error.message
                 });
             }
+        }
+
+        /**
+         * Atualiza o status visual de um estágio do pipeline
+         * @param {string} stage - Nome do estágio (chunking, embeddings, qdrant)
+         * @param {string} status - Status do estágio (pending, processing, completed, error)
+         */
+        _updateStageStatus(stage, status) {
+            const stageElement = document.getElementById(`stage-${stage}`);
+            if (!stageElement) return;
+            
+            const statusElement = stageElement.querySelector('.stage-status');
+            if (!statusElement) return;
+            
+            // Define o ícone baseado no status
+            const statusIcons = {
+                'pending': '⏳',
+                'processing': '🔄',
+                'completed': '✅',
+                'error': '❌'
+            };
+            
+            statusElement.textContent = statusIcons[status] || '⏳';
+            
+            // Adiciona classe CSS para estilização
+            stageElement.className = `stage stage-${status}`;
         }
 
         /**

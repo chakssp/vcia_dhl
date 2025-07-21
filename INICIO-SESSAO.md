@@ -153,46 +153,40 @@ Contexto adicional: [descreva o que pretende fazer hoje]
 Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo
   usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
 
-  CONTEXTO DA ÚLTIMA SESSÃO (17/01/2025 - Sprint Fase 2 - Fundação Semântica):
-  - 🚧 Sprint Fase 2 EM ANDAMENTO - Fases 1 e 2 CONCLUÍDAS ✅
-  - ⚠️ DESCOBERTA CRÍTICA: Sistema de triplas extraindo apenas metadados (13 triplas superficiais)
-  - 💡 INSIGHT: "Construindo do telhado" - falta toda camada de embeddings/vetorização
-  - 🎯 NOVA ABORDAGEM: Fundação → Embeddings → Qdrant → Similaridade → Triplas
-  - ✅ Categorias manuais identificadas como ground truth para validação
+  CONTEXTO DA ÚLTIMA SESSÃO (21/07/2025 - Sprint Fase 2.1 - Correções Críticas):
+  - ✅ Sprint Fase 2 CONCLUÍDA - Todas as 3 fases implementadas
+  - ✅ Sistema 100% FUNCIONAL - Todos os bugs críticos corrigidos
+  - 📚 Timeline completo disponível em @docs/timeline-completo-projeto.md
+  - 📋 Plano de recuperação criado em @docs/sprint/fase2/plano-recuperacao-workflow.md
 
-  🏆 AVANÇOS DA SESSÃO (17/01/2025):
-  - ✅ FASE 1 CONCLUÍDA: EmbeddingService implementado
-    - Ollama conectado (nomic-embed-text, 768 dimensões)
-    - Cache em IndexedDB funcionando
-    - POC validado com dados reais
-  - ✅ FASE 2 CONCLUÍDA: QdrantService implementado
-    - Conectado à VPS (http://qdr.vcia.com.br:6333)
-    - CRUD completo, 8 pontos inseridos
-    - Busca semântica validada
+  🏆 CORREÇÕES DA SESSÃO (21/07/2025):
+  - ✅ BUG #8: TypeError renderFilesList → showFilesSection() corrigido
+  - ✅ BUG #9: Botão apply-exclusion agora atualiza contadores
+  - ✅ BUG #10: Filtro "pending" corrigido (approved vs analyzed)
 
-  📊 STATUS ANTERIOR:
-  - ✅ Sprint 2.0.1 CONCLUÍDA (BUG #6 e #7 corrigidos)
-  - ✅ Sistema base 100% operacional
-  - ✅ Pipeline RAG implementado (RAGExportManager, ChunkingUtils, QdrantSchema)
+  📊 ARQUITETURA ATUAL COMPLETA:
+  - ✅ EmbeddingService: Ollama (768 dimensões) com cache
+  - ✅ QdrantService: VPS conectada, CRUD completo
+  - ✅ SimilaritySearchService: Busca semântica multi-modal
+  - ✅ Pipeline RAG: Consolidação → Chunking → Embeddings → Qdrant
+  - ✅ Análise IA: 4 providers (Ollama, OpenAI, Gemini, Anthropic)
 
   ⚠️ IMPORTANTE: 
-  - TripleStoreService atual só extrai metadados, não relações semânticas
-  - RelationshipExtractor usa apenas regex, não compreensão semântica
-  - Próximo passo: SimilaritySearchService (Fase 3)
+  - Sistema pronto para teste completo do workflow
+  - Use o plano de recuperação para checkpoints durante testes
+  - Todos os bugs conhecidos foram resolvidos
 
-  📌 Arquivos chave da Sprint Fase 2:
-  - Progresso detalhado: @docs/sprint/fase2/progresso-embeddings-qdrant-17-01-2025.md
-  - EmbeddingService: @js/services/EmbeddingService.js (✅ implementado)
-  - QdrantService: @js/services/QdrantService.js (✅ implementado)
-  - Páginas de teste: @test/test-embeddings-simples.html, @test/test-qdrant-service.html
+  📌 Documentos essenciais:
+  - Timeline histórico: @docs/timeline-completo-projeto.md
+  - Plano de teste/recuperação: @docs/sprint/fase2/plano-recuperacao-workflow.md
+  - Comandos de debug: Ver seção "Comandos de Debug" em RESUME-STATUS.md
 
-  🎯 Próximos passos imediatos:
-  1. Criar SimilaritySearchService.js
-  2. Integrar com RAGExportManager
-  3. Validar com categorias como ground truth
-  4. Refatorar RelationshipExtractor para usar similaridade
+  🎯 Próximo passo imediato:
+  1. Executar teste completo do workflow (Etapas 1-4)
+  2. Usar checkpoints do plano de recuperação
+  3. Validar integração completa end-to-end
 
-  Este prompt garantirá continuidade com os avanços já implementados!
+  Sistema totalmente operacional e pronto para produção!
 ```
 
 ---

@@ -461,13 +461,54 @@ input[type="radio"]:checked + .algorithm-option {
 /* === STEP CARD === */
 .step-card {
     background: var(--bg-primary);
-    border: 2px solid var(--border-light);
+    border: var(--border-width-default) solid var(--border-light);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     cursor: pointer;
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
+}
+
+/* Cores específicas por etapa */
+.step-card[data-step="1"] {
+    border-color: var(--step1-border);
+}
+
+.step-card[data-step="1"].active {
+    background: var(--bg-primary);
+    border-color: var(--step1-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.step-card[data-step="2"] {
+    border-color: var(--step2-border);
+}
+
+.step-card[data-step="2"].active {
+    background: var(--bg-primary);
+    border-color: var(--step2-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.step-card[data-step="3"] {
+    border-color: var(--step3-border);
+}
+
+.step-card[data-step="3"].active {
+    background: var(--bg-primary);
+    border-color: var(--step3-color);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.step-card[data-step="4"] {
+    border-color: var(--step4-border);
+}
+
+.step-card[data-step="4"].active {
+    background: var(--bg-primary);
+    border-color: var(--step4-color);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
 .step-card:hover:not(.disabled) {
@@ -514,8 +555,24 @@ input[type="radio"]:checked + .algorithm-option {
 }
 
 .step-card.active .step-number {
-    background: var(--primary-color);
     color: var(--text-inverse);
+}
+
+/* Cores específicas por etapa para números */
+.step-card[data-step="1"].active .step-number {
+    background: var(--step1-color);
+}
+
+.step-card[data-step="2"].active .step-number {
+    background: var(--step2-color);
+}
+
+.step-card[data-step="3"].active .step-number {
+    background: var(--step3-color);
+}
+
+.step-card[data-step="4"].active .step-number {
+    background: var(--step4-color);
 }
 
 .step-card.completed .step-number {
@@ -726,15 +783,110 @@ input[type="radio"]:checked + .algorithm-option {
 
 /* === DISCOVERY SPECIFIC === */
 
+/* === BOTÕES ESPECÍFICOS POR ETAPA === */
+.step-panel[data-step="1"] .btn-primary {
+    background-color: var(--step1-color);
+    border-color: var(--step1-color);
+}
+
+.step-panel[data-step="1"] .btn-primary:hover {
+    background-color: var(--step1-hover);
+    border-color: var(--step1-hover);
+}
+
+.step-panel[data-step="2"] .btn-primary {
+    background-color: var(--step2-color);
+    border-color: var(--step2-color);
+}
+
+.step-panel[data-step="2"] .btn-primary:hover {
+    background-color: var(--step2-hover);
+    border-color: var(--step2-hover);
+}
+
+.step-panel[data-step="3"] .btn-primary {
+    background-color: var(--step3-color);
+    border-color: var(--step3-color);
+}
+
+.step-panel[data-step="3"] .btn-primary:hover {
+    background-color: var(--step3-hover);
+    border-color: var(--step3-hover);
+}
+
+.step-panel[data-step="4"] .btn-primary {
+    background-color: var(--step4-color);
+    border-color: var(--step4-color);
+}
+
+.step-panel[data-step="4"] .btn-primary:hover {
+    background-color: var(--step4-hover);
+    border-color: var(--step4-hover);
+}
+
+/* === BORDAS DE INPUTS POR ETAPA === */
+.step-panel[data-step="1"] input,
+.step-panel[data-step="1"] select,
+.step-panel[data-step="1"] textarea {
+    border-color: var(--step1-border);
+}
+
+.step-panel[data-step="1"] input:focus,
+.step-panel[data-step="1"] select:focus,
+.step-panel[data-step="1"] textarea:focus {
+    border-color: var(--step1-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.step-panel[data-step="2"] input,
+.step-panel[data-step="2"] select,
+.step-panel[data-step="2"] textarea {
+    border-color: var(--step2-border);
+}
+
+.step-panel[data-step="2"] input:focus,
+.step-panel[data-step="2"] select:focus,
+.step-panel[data-step="2"] textarea:focus {
+    border-color: var(--step2-color);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.step-panel[data-step="3"] input,
+.step-panel[data-step="3"] select,
+.step-panel[data-step="3"] textarea {
+    border-color: var(--step3-border);
+}
+
+.step-panel[data-step="3"] input:focus,
+.step-panel[data-step="3"] select:focus,
+.step-panel[data-step="3"] textarea:focus {
+    border-color: var(--step3-color);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.step-panel[data-step="4"] input,
+.step-panel[data-step="4"] select,
+.step-panel[data-step="4"] textarea {
+    border-color: var(--step4-border);
+}
+
+.step-panel[data-step="4"] input:focus,
+.step-panel[data-step="4"] select:focus,
+.step-panel[data-step="4"] textarea:focus {
+    border-color: var(--step4-color);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
 /* === OBSIDIAN HIGHLIGHT DESTACADO === */
 .obsidian-highlight {
-    background: linear-gradient(135deg, #f8fafc, #e0e7ff);
-    border: 2px solid #6366f1;
+    background: var(--bg-obsidian);
+    border: var(--border-width-default) solid var(--primary-color);
     border-radius: 12px;
     padding: 20px;
     margin: 20px 0;
     box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);
     transition: all 0.3s ease;
+    color: var(--text-primary);
 }
 
 .obsidian-highlight:hover {
@@ -766,6 +918,7 @@ input[type="radio"]:checked + .algorithm-option {
 }
 
 /* === PROGRESS BAR === */
+/* AIDEV-NOTE: containment-fix; prevent progress-text floating bug */
 .discovery-status {
     margin-top: var(--spacing-lg);
     padding: var(--spacing-lg);
@@ -773,6 +926,8 @@ input[type="radio"]:checked + .algorithm-option {
     border-radius: var(--border-radius-md);
     border: 1px solid var(--border-light);
     transition: all var(--transition-base);
+    position: relative;
+    contain: layout; /* Force layout containment */
 }
 
 .discovery-status.discovery-completed {
@@ -787,24 +942,49 @@ input[type="radio"]:checked + .algorithm-option {
     border-radius: var(--border-radius-full);
     overflow: hidden;
     margin-bottom: var(--spacing-md);
+    /* AIDEV-NOTE: progress-shadow; subtle depth for better visibility */
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
     height: 100%;
     background: var(--primary-color);
-    transition: width var(--transition-base);
+    /* AIDEV-NOTE: progress-animation; cubic-bezier for natural feel, 200ms optimal for real-time */
+    transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     color: var(--text-inverse);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
+    /* AIDEV-NOTE: progress-gradient; adds visual polish to loading */
+    background: linear-gradient(
+        90deg,
+        var(--primary-color) 0%,
+        var(--primary-dark) 50%,
+        var(--primary-color) 100%
+    );
+    background-size: 200% 100%;
+    animation: progressShine 2s linear infinite;
 }
 
+/* AIDEV-NOTE: shine-animation; subtle moving highlight for active progress */
+@keyframes progressShine {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* AIDEV-NOTE: z-index-stack; keep text above bar but in container */
 .progress-text {
     text-align: center;
     color: var(--text-secondary);
     margin-bottom: var(--spacing-md);
+    position: relative;
+    z-index: 1;
 }
 
 .progress-main {
@@ -813,10 +993,39 @@ input[type="radio"]:checked + .algorithm-option {
     margin-bottom: var(--spacing-xs);
 }
 
-.progress-details {
+.progress-details,
+.progress-detail {
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
     font-style: italic;
+    /* AIDEV-NOTE: ellipsis-overflow; prevent long filenames from breaking layout */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+
+/* AIDEV-NOTE: progress-calc-display; show calculation transparency */
+.progress-calculation {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    margin-top: var(--spacing-xs);
+    opacity: 0.8;
+}
+
+/* AIDEV-NOTE: hide-children; ensure all children hide with parent */
+.discovery-status[style*="display: none"] * {
+    display: none !important;
+}
+
+/* AIDEV-NOTE: orphan-protection; hide progress-text if outside its container */
+.progress-text:not(.discovery-status .progress-text) {
+    display: none !important;
+    visibility: hidden !important;
+    position: fixed !important;
+    top: -9999px !important;
+    left: -9999px !important;
 }
 
 .discovery-stats {

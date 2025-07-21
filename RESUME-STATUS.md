@@ -9,9 +9,9 @@
 
 **Nome**: Consolidador de Conhecimento Pessoal (Personal Knowledge Consolidator)  
 **Visão**: Transformar conhecimento disperso em insights acionáveis  
-**Sprint Atual**: FASE 2 - Fundação Semântica 🚧 EM ANDAMENTO  
-**Última Atualização**: 18/01/2025 (SimilaritySearchService implementado - Fase 3 concluída)  
-**Status Geral**: 🟢 FUNCIONAL - Sistema base operacional / ✅ Busca semântica implementada  
+**Sprint Atual**: FASE 2 - Fundação Semântica ✅ CONCLUÍDA  
+**Última Atualização**: 21/07/2025 (Correções críticas aplicadas - Sistema totalmente funcional)  
+**Status Geral**: 🟢 FUNCIONAL - Sistema base operacional / ✅ Busca semântica implementada / ✅ Bugs críticos corrigidos  
 
 ### 🌐 Ambiente de Desenvolvimento
 - **Servidor**: Five Server (gerenciado pelo USUÁRIO)
@@ -292,10 +292,10 @@ curl http://127.0.0.1:11434/api/tags
    - Teste individual de cada etapa
    - Busca semântica para validação
 
-### 🚧 SPRINT FASE 2 - FUNDAÇÃO SEMÂNTICA (CONCLUÍDA ✅)
+### ✅ SPRINT FASE 2 - FUNDAÇÃO SEMÂNTICA (CONCLUÍDA)
 
 #### 🎯 Objetivo: Construir fundação bottom-up para extração semântica real
-**Status**: ✅ CONCLUÍDA - Fases 1 e 2 implementadas
+**Status**: ✅ CONCLUÍDA - Fases 1, 2 e 3 implementadas
 **Sprint Anterior**: 2.0.1 (Correções) ✅ CONCLUÍDA
 **Insight Crítico**: "Construir pela fundação, não pelo telhado"
 **Última Atualização**: 17/01/2025 - EmbeddingService e QdrantService implementados
@@ -567,6 +567,15 @@ Atualmente não há bugs conhecidos no sistema. Todos os problemas anteriores fo
   - Corrigida duplicação de IDs nos steps
   - Interface de exportação agora acessível
   - OrganizationPanel funcionando corretamente
+- ✅ **BUG #8**: renderFilesList is not a function - RESOLVIDO (21/07/2025)
+  - Corrigido método inexistente para showFilesSection()
+  - AIDEV-NOTE adicionado para documentar correção
+- ✅ **BUG #9**: Botão apply-exclusion não atualizando contadores - RESOLVIDO (21/07/2025)
+  - Adicionado updateAllCounters() após aplicar exclusões
+  - Força sincronização de todos os filtros
+- ✅ **BUG #10**: Arquivos desaparecendo após análise IA - RESOLVIDO (21/07/2025)
+  - Corrigida lógica de filtro: approved vs analyzed
+  - Arquivos analisados mas não aprovados agora permanecem em "Pendentes"
 
 ---
 
@@ -778,14 +787,26 @@ console.log(`${chunks.length} chunks gerados`);
 Antes de iniciar qualquer sessão:
 - [ ] Ler este RESUME-STATUS.md
 - [ ] Verificar CLAUDE.md para LEIS
+- [ ] Consultar `/docs/timeline-completo-projeto.md` para histórico completo
 - [ ] Ler docs/servidor.md (entender Five Server)
 - [ ] Verificar acesso: http://127.0.0.1:5500
 - [ ] Abrir console do navegador
 - [ ] Executar `kcdiag()` para verificar saúde
+- [ ] Ver `/docs/sprint/fase2/plano-recuperacao-workflow.md` se for testar o workflow
 
 ---
 
 ## 📅 HISTÓRICO DE ATUALIZAÇÕES
+
+### 21/07/2025 - Sprint Fase 2.1 - Correções Críticas
+- **✅ BUGS CORRIGIDOS**: Sistema totalmente funcional
+  - BUG #8: TypeError renderFilesList corrigido para showFilesSection()
+  - BUG #9: Botão apply-exclusion agora atualiza contadores
+  - BUG #10: Arquivos permanecem em "Pendentes" após análise
+- **Documentação criada**:
+  - `/docs/sprint/fase2/plano-recuperacao-workflow.md` - Plano completo de teste e recuperação
+  - `/docs/timeline-completo-projeto.md` - Atualizado com histórico completo até 21/07
+- **Próximo passo**: Executar teste completo do workflow
 
 ### 18/01/2025 - Sprint Fase 2 - Fase 3 CONCLUÍDA
 - **✅ FASE 3 CONCLUÍDA**: SimilaritySearchService implementado

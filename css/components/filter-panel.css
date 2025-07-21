@@ -59,8 +59,9 @@
 
 /* Grupo Individual de Filtros */
 .filter-group {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     padding: 15px;
     transition: all 0.2s ease;
@@ -188,8 +189,9 @@
 
 /* Container de Ações em Lote */
 .bulk-actions-container {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     padding: 20px;
     margin-top: 25px;

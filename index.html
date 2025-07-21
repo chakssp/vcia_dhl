@@ -8,6 +8,7 @@
     
     <!-- CSS Principal -->
     <link rel="stylesheet" href="css/utils/variables.css">
+    <link rel="stylesheet" href="css/utils/dark-mode.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/utils/animations.css">
     <link rel="stylesheet" href="css/utils/responsive.css">
@@ -35,6 +36,12 @@
                 Knowledge Consolidator
             </h1>
             <nav class="main-nav">
+                <button class="btn-api-config" onclick="KC.EventBus.emit(KC.Events.OPEN_API_CONFIG)" title="Configurar APIs de IA">
+                    🔧 Configurar APIs
+                </button>
+                <button id="export-state" class="btn-export-state" title="Exportar Estado da Aplicação">
+                    💾 Exportar Estado
+                </button>
                 <span class="nav-status" id="nav-status">
                     Sprint 1 - Sistema Base
                 </span>
@@ -62,9 +69,8 @@
         </section>
         -->
         
-        <!-- NOVO: Container com layout flexbox para conteúdo e stats lado a lado -->
-        <div class="main-content-wrapper">
-            <section class="content-section" id="content-section">
+        <!-- Container de conteúdo principal -->
+        <section class="content-section" id="content-section">
                 <div class="container">
                     <!-- Painel de Configuração (Etapa 1-4) -->
                     <div class="panel-container" id="panel-container">
@@ -130,42 +136,6 @@
                 </div>
             </section>
 
-            <!-- Painel de Estatísticas (SPRINT 1.2 - insights-1.2.png) -->
-            <aside class="stats-section expanded" id="stats-section" style="display: none;">
-                <!-- Botão Toggle -->
-                <button class="stats-toggle-btn" id="stats-toggle-btn" onclick="KC.StatsPanel.toggle()">
-                    <span class="toggle-icon"></span>
-                </button>
-                
-                <!-- Cards de Estatísticas em Tempo Real -->
-                <div class="stats-cards" id="stats-cards">
-                    <!-- Cards baseados no insights-1.2.png -->
-                </div>
-                
-                <!-- Categories são gerenciadas via modal -->
-                
-                <!-- Sistema de Ações -->
-                <div class="system-actions" id="system-actions">
-                    <button id="validate-completeness" class="action-button primary">
-                        ✔️ Validar Completude
-                    </button>
-                    <button id="generate-summary" class="action-button secondary">
-                        📊 Gerar Resumo
-                    </button>
-                    <button id="export-state" class="action-button secondary">
-                        💾 Exportar Estado
-                    </button>
-                    <div style="margin-top: 10px; width: 100%;">
-                        <button id="execute-system" class="action-button primary" style="width: 100%;">
-                            ✅ Sistema Configurado - Executar Agora
-                        </button>
-                        <button id="reset-config" class="action-button secondary" style="width: 100%; margin-top: 8px;">
-                            🔄 Resetar Configurações
-                        </button>
-                    </div>
-                </div>
-            </aside>
-        </div>
     </main>
 
     <!-- Footer -->
@@ -200,6 +170,11 @@
         </div>
     </div>
 
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle" id="theme-toggle" title="Alternar tema">
+        <span id="theme-icon">☀️</span>
+    </button>
+
     <!-- Scripts Core -->
     <script src="js/core/EventBus.js"></script>
     <script src="js/core/AppState.js"></script>
@@ -223,10 +198,11 @@
     <script src="js/utils/ProgressManager.js"></script>
     <script src="js/utils/WordCloudGenerator.js"></script>
     <script src="js/utils/DuplicateDetector.js"></script>
+    <script src="js/utils/SessionCache.js"></script>
+    <script src="js/utils/ThemeManager.js"></script>
     
     <!-- Scripts Managers -->
     <script src="js/managers/DataIntegrityManager.js"></script>
-    <script src="js/managers/ConfigManager.js"></script>
     <script src="js/managers/DiscoveryManager.js"></script>
     <script src="js/managers/AnalysisManager.js"></script>
     <script src="js/managers/AIAPIManager.js"></script>
@@ -234,7 +210,6 @@
     <script src="js/managers/AnalysisAdapter.js"></script>
     <script src="js/managers/CategoryManager.js"></script>
     <script src="js/managers/FilterManager.js"></script>
-    <script src="js/managers/ExportManager.js"></script>
     <script src="js/managers/StatsManager.js"></script>
     <script src="js/managers/StatsCoordinator.js"></script>
     <script src="js/managers/RAGExportManager.js"></script>

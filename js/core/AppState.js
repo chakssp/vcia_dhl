@@ -401,8 +401,29 @@
                 
                 // Timestamps
                 discoveredAt: file.discoveredAt,
-                analyzedAt: file.analyzedAt
+                analyzedAt: file.analyzedAt,
+                
+                // AIDEV-NOTE: keep-duplicate-detection; maintain fingerprint for cross-session tracking
+                fingerprint: file.fingerprint || this._generateFingerprint(file),
+                inQdrant: file.inQdrant || false
             }));
+        }
+
+        /**
+         * Gera fingerprint único para arquivo
+         * @private
+         */
+        _generateFingerprint(file) {
+            // AIDEV-NOTE: fingerprint-generation; unique ID for duplicate detection across sessions
+            const data = `${file.path}|${file.size}|${file.lastModified}`;
+            // Simples hash para identificação única
+            let hash = 0;
+            for (let i = 0; i < data.length; i++) {
+                const char = data.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return hash.toString(36);
         }
 
         /**
@@ -470,22 +491,103 @@
          * @private
          */
         _clearOldData() {
-            // Remove chaves antigas do Knowledge Consolidator
+            // AIDEV-NOTE: smart-cleanup; preserve processed fingerprints for duplicate detection
             const keysToRemove = [];
+            const preserveKeys = [
+                this.localStorageKey,
+                'kc_processed_fingerprints', // Mantém histórico de processados
+                'kc_qdrant_synced'          // Mantém histórico de enviados ao Qdrant
+            ];
+            
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
                 if (key && (key.startsWith('kc_') || key.startsWith('knowledge_'))) {
-                    keysToRemove.push(key);
+                    if (!preserveKeys.includes(key)) {
+                        keysToRemove.push(key);
+                    }
                 }
             }
             
             keysToRemove.forEach(key => {
-                if (key !== this.localStorageKey) {
-                    localStorage.removeItem(key);
-                }
+                localStorage.removeItem(key);
             });
             
-            console.log(`Removidas ${keysToRemove.length} chaves antigas do localStorage`);
+            console.log(`Removidas ${keysToRemove.length} chaves antigas, preservadas ${preserveKeys.length} essenciais`);
+        }
+
+        /**
+         * Gerencia fingerprints de arquivos processados
+         * @param {string} action - 'add', 'check', 'getAll'
+         * @param {string} fingerprint - Fingerprint do arquivo
+         * @returns {boolean|Set} Resultado da operação
+         */
+        manageProcessedFingerprints(action, fingerprint = null) {
+            const key = 'kc_processed_fingerprints';
+            
+            try {
+                const stored = localStorage.getItem(key);
+                const fingerprints = stored ? new Set(JSON.parse(stored)) : new Set();
+                
+                switch (action) {
+                    case 'add':
+                        if (fingerprint) {
+                            fingerprints.add(fingerprint);
+                            localStorage.setItem(key, JSON.stringify(Array.from(fingerprints)));
+                            // AIDEV-NOTE: sync-to-session; also update session cache
+                            KC.SessionCache?.markAsProcessed(fingerprint);
+                        }
+                        return true;
+                        
+                    case 'check':
+                        return fingerprint ? fingerprints.has(fingerprint) : false;
+                        
+                    case 'getAll':
+                        return fingerprints;
+                        
+                    default:
+                        return false;
+                }
+            } catch (error) {
+                KC.Logger?.warn('AppState', 'Erro ao gerenciar fingerprints:', error);
+                return action === 'getAll' ? new Set() : false;
+            }
+        }
+
+        /**
+         * Gerencia arquivos sincronizados com Qdrant
+         * @param {string} action - 'add', 'check', 'getAll'
+         * @param {string} fileId - ID do arquivo
+         * @returns {boolean|Set} Resultado da operação
+         */
+        manageQdrantSynced(action, fileId = null) {
+            const key = 'kc_qdrant_synced';
+            
+            try {
+                const stored = localStorage.getItem(key);
+                const synced = stored ? new Set(JSON.parse(stored)) : new Set();
+                
+                switch (action) {
+                    case 'add':
+                        if (fileId) {
+                            synced.add(fileId);
+                            localStorage.setItem(key, JSON.stringify(Array.from(synced)));
+                            // AIDEV-TODO: update-file-flag; mark file.inQdrant = true
+                        }
+                        return true;
+                        
+                    case 'check':
+                        return fileId ? synced.has(fileId) : false;
+                        
+                    case 'getAll':
+                        return synced;
+                        
+                    default:
+                        return false;
+                }
+            } catch (error) {
+                KC.Logger?.warn('AppState', 'Erro ao gerenciar Qdrant sync:', error);
+                return action === 'getAll' ? new Set() : false;
+            }
         }
 
         /**

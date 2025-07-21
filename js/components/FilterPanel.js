@@ -194,6 +194,13 @@
                 // Atualiza contadores com dados centralizados
                 this.updateCountersFromStats(stats);
             });
+            
+            // AIDEV-NOTE: listen-files-updated; sync counters on file changes
+            EventBus.on(Events.FILES_UPDATED, (data) => {
+                console.log('FilterPanel: FILES_UPDATED - atualizando contadores após', data.action);
+                const files = KC.AppState.get('files') || [];
+                this.updateAllCounters(files);
+            });
         }
 
         /**
@@ -305,8 +312,8 @@
             let periodHint = '';
             if (configKey === 'period') {
                 periodHint = `
-                    <div class="filter-hint" style="font-size: 11px; color: #666; margin-top: 8px; padding: 8px; background: #f5f5f5; border-radius: 4px;">
-                        <span style="font-weight: bold;">ℹ️ Nota:</span> Os contadores mostram arquivos modificados dentro de cada período. 
+                    <div class="filter-hint" style="font-size: 11px; color: var(--text-primary); margin-top: 8px; padding: 8px; background: var(--bg-tertiary); border-radius: 4px;">
+                        <span style="font-weight: bold; color: var(--text-primary);">ℹ️ Nota:</span> Os contadores mostram arquivos modificados dentro de cada período. 
                         <br>Valores iguais indicam que todos os arquivos foram modificados recentemente.
                     </div>
                 `;
@@ -528,6 +535,11 @@
                         console.log('FilterPanel: Aplicando padrões de exclusão', patterns);
                         this.applyFilters();
                         
+                        // AIDEV-NOTE: update-counters-after-exclusion; ensure all counters reflect exclusion changes
+                        // Força atualização de todos os contadores após aplicar exclusões
+                        const allFiles = KC.AppState.get('files') || [];
+                        this.updateAllCounters(allFiles);
+                        
                         KC.showNotification({
                             type: 'info',
                             message: `${patterns.length} padrão(ões) de exclusão aplicado(s)`
@@ -666,8 +678,9 @@
             if (activeStatus === 'all') return files;
 
             return files.filter(file => {
-                if (activeStatus === 'pending') return !file.analyzed && !file.archived;
-                if (activeStatus === 'approved') return file.analyzed && !file.archived;
+                // AIDEV-NOTE: use-approved-field; pending means not approved, not "not analyzed"
+                if (activeStatus === 'pending') return !file.approved && !file.archived;
+                if (activeStatus === 'approved') return file.approved && !file.archived;
                 if (activeStatus === 'archived') return file.archived;
                 return true;
             });
@@ -832,8 +845,9 @@
         /**
          * Atualiza todos os contadores
          */
-        updateAllCounters() {
-            const files = AppState.get('files') || [];
+        updateAllCounters(filesParam = null) {
+            // AIDEV-NOTE: accept-files-param; allow external calls with specific files
+            const files = filesParam || AppState.get('files') || [];
             this.updateCounters(files);
         }
 
@@ -940,8 +954,9 @@
             };
 
             files.forEach(file => {
+                // AIDEV-NOTE: correct-status-logic; approved is different from analyzed
                 if (file.archived) statusCounts.archived++;
-                else if (file.analyzed) statusCounts.approved++;
+                else if (file.approved) statusCounts.approved++; // Usa approved, não analyzed
                 else statusCounts.pending++;
             });
 
@@ -1302,7 +1317,8 @@
                 return;
             }
 
-            const pendingFiles = filteredFiles.filter(f => !f.analyzed && !f.archived);
+            // AIDEV-NOTE: check-approved-not-analyzed; approved is the correct field
+            const pendingFiles = filteredFiles.filter(f => !f.approved && !f.archived);
             if (pendingFiles.length === 0) {
                 KC.showNotification({
                     type: 'info',
@@ -1331,10 +1347,11 @@
                     // Atualiza o arquivo no estado global
                     allFiles[fileIndex] = {
                         ...allFiles[fileIndex],
+                        approved: true, // AIDEV-NOTE: use-approved-field; consistent with individual approval
                         status: 'approved',
-                        analyzed: true,
                         approvedDate: new Date().toISOString(),
                         approvalMethod: 'bulk_action'
+                        // analyzed mantém seu estado (pode ser true ou false)
                     };
                     updatedCount++;
                 }

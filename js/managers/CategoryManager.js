@@ -56,6 +56,16 @@
         }
 
         /**
+         * Obtém categoria por nome
+         * @param {string} categoryName - Nome da categoria
+         * @returns {Object|null} Categoria encontrada ou null
+         */
+        getCategoryByName(categoryName) {
+            const categories = this.getCategories();
+            return categories.find(cat => cat.name === categoryName) || null;
+        }
+
+        /**
          * Cria nova categoria customizada
          */
         createCategory(category) {

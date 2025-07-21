@@ -284,7 +284,7 @@
                         <h3>Configurações de Análise</h3>
                         <div class="config-field">
                             <label>Template Padrão:</label>
-                            <select id="modal-analysis-template" class="config-select" onchange="KC.APIConfig.handleTemplateChange()">
+                            <select id="modal-analysis-template" class="config-select">
                                 ${this._renderTemplateOptions()}
                             </select>
                             <button class="btn btn-secondary btn-small" onclick="KC.APIConfig.toggleTemplateDetails()" style="margin-top: 8px;">
@@ -342,7 +342,7 @@
                         </div>
                         <div class="config-field">
                             <label>Tamanho do Batch:</label>
-                            <input type="number" id="batch-size" value="${this.config.analysis.batchSize}" 
+                            <input type="number" id="config-batch-size" value="${this.config.analysis.batchSize}" 
                                    min="1" max="20">
                         </div>
                         <div class="config-field">
@@ -379,10 +379,11 @@
                         color: var(--primary-color);
                     }
                     .provider-config {
-                        background: var(--background-light);
+                        background: var(--bg-secondary);
                         padding: 16px;
                         border-radius: 8px;
                         margin-bottom: 16px;
+                        border: 1px solid var(--border-light);
                     }
                     .provider-config h4 {
                         margin-top: 0;
@@ -402,17 +403,19 @@
                     .config-select {
                         width: 100%;
                         padding: 8px;
-                        border: 1px solid var(--border-color);
+                        border: 1px solid var(--border-light);
                         border-radius: 4px;
-                        background: white;
+                        background: var(--bg-tertiary);
+                        color: var(--text-primary);
                     }
                     .template-preview {
-                        background: var(--background-light);
-                        border: 1px solid var(--border-color);
+                        background: var(--bg-tertiary);
+                        border: 1px solid var(--border-light);
                         border-radius: 8px;
                         padding: 12px;
                         margin-top: 12px;
                         font-size: 0.9rem;
+                        color: var(--text-primary);
                     }
                     .template-objectives {
                         margin-top: 8px;
@@ -435,10 +438,11 @@
                     .template-details-section {
                         margin-top: 20px;
                         padding: 20px;
-                        background: var(--background-light);
-                        border: 1px solid var(--border-color);
+                        background: var(--bg-secondary);
+                        border: 1px solid var(--border-light);
                         border-radius: 8px;
                         animation: slideDown 0.3s ease-out;
+                        color: var(--text-primary);
                     }
                     @keyframes slideDown {
                         from {
@@ -473,10 +477,11 @@
                     .config-textarea {
                         width: 100%;
                         padding: 8px;
-                        border: 1px solid var(--border-color);
+                        border: 1px solid var(--border-light);
                         border-radius: 4px;
                         font-family: inherit;
-                        background: white;
+                        background: var(--bg-tertiary);
+                        color: var(--text-primary);
                     }
                     .config-textarea {
                         resize: vertical;
@@ -506,14 +511,14 @@
                         margin-top: 16px;
                     }
                     .test-results.success {
-                        background: #d1fae5;
-                        color: #065f46;
-                        border: 1px solid #6ee7b7;
+                        background: var(--bg-tertiary);
+                        color: var(--success-color);
+                        border: 1px solid var(--success-color);
                     }
                     .test-results.error {
-                        background: #fee2e2;
-                        color: #991b1b;
-                        border: 1px solid #fca5a5;
+                        background: var(--bg-tertiary);
+                        color: var(--danger-color);
+                        border: 1px solid var(--danger-color);
                     }
                 </style>
             `;
@@ -868,7 +873,7 @@
                 const selectedTemplate = document.getElementById('modal-analysis-template')?.value || 'decisiveMoments';
                 console.log('APIConfig: Salvando template selecionado:', selectedTemplate);
                 this.config.analysis.template = selectedTemplate;
-                this.config.analysis.batchSize = parseInt(document.getElementById('batch-size')?.value) || 5;
+                this.config.analysis.batchSize = parseInt(document.getElementById('config-batch-size')?.value) || 5;
                 this.config.analysis.temperature = parseFloat(document.getElementById('temperature')?.value) || 0.7;
                 this.config.analysis.autoFallback = document.getElementById('auto-fallback')?.checked || false;
 
