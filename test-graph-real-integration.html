@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização de Grafo - Integração Real</title>
+    
+    <!-- vis.js -->
+    <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network@9.1.2/dist/dist/vis-network.min.css" rel="stylesheet">
+    
+    <!-- CSS inline já que os arquivos CSS não existem -->
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --bg-color: #f5f5f5;
+        }
+    </style>
+    
+    <style>
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+        }
+        .main-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .graph-wrapper {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        #graphContainer {
+            height: 700px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+        }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .example-section {
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1>🔗 Visualização de Grafo de Conhecimento - Integração Real</h1>
+        
+        <div class="graph-wrapper">
+            <div class="controls">
+                <button class="btn btn-primary" onclick="initializeGraph()">🚀 Inicializar Grafo</button>
+                <button class="btn btn-secondary" onclick="loadFromQdrant()">🔍 Carregar do Qdrant</button>
+                <button class="btn btn-secondary" onclick="loadLocalFiles()">📁 Carregar Arquivos Locais</button>
+                <button class="btn btn-secondary" onclick="runSimilarityAnalysis()">🧠 Análise de Similaridade</button>
+                <button class="btn btn-success" onclick="exportVisualization()">💾 Exportar Visualização</button>
+            </div>
+            
+            <div id="graphContainer"></div>
+            
+            <div class="stats-grid" id="statsGrid" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalNodes">0</div>
+                    <div class="stat-label">Total de Nós</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalEdges">0</div>
+                    <div class="stat-label">Total de Conexões</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgConnections">0</div>
+                    <div class="stat-label">Média de Conexões</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="graphDensity">0%</div>
+                    <div class="stat-label">Densidade do Grafo</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="example-section">
+            <h2>📚 Como Funciona a Visualização</h2>
+            
+            <h3>1. Integração com MCP Memory (Quando Disponível)</h3>
+            <div class="code-block">
+// Exemplo de como seria a integração com mcp__memory__read_graph
+async function loadMCPGraph() {
+    try {
+        // Quando o MCP Memory estiver disponível:
+        const graph = await KC.mcp__memory__read_graph();
+        
+        // O grafo retornaria estrutura similar a:
+        const mcpGraph = {
+            nodes: [
+                { id: 'concept1', label: 'Machine Learning', type: 'concept' },
+                { id: 'concept2', label: 'RAG Architecture', type: 'concept' }
+            ],
+            edges: [
+                { from: 'concept1', to: 'concept2', relationship: 'enables' }
+            ]
+        };
+        
+        // Integrar com visualização
+        integrateWithVis(mcpGraph);
+    } catch (error) {
+        console.log('MCP Memory não disponível ainda');
+    }
+}
+            </div>
+
+            <h3>2. Integração com Qdrant (Busca por Similaridade)</h3>
+            <div class="code-block">
+// Exemplo real de busca semântica no Qdrant
+async function searchSimilarNodes(query) {
+    const results = await KC.SimilaritySearchService.searchByText(query, {
+        limit: 10,
+        scoreThreshold: 0.7
+    });
+    
+    // Criar nós baseados em similaridade
+    results.forEach(result => {
+        createNodeFromQdrant(result);
+        createEdgesBySimilarity(result, results);
+    });
+}
+            </div>
+
+            <h3>3. Visualização Estilo Zettelkasten/Obsidian</h3>
+            <p>O sistema cria uma visualização interativa onde:</p>
+            <ul>
+                <li><strong>Nós</strong> representam: Arquivos, Categorias, Conceitos, Entidades</li>
+                <li><strong>Arestas</strong> representam: Relações semânticas, Similaridade, Categorização</li>
+                <li><strong>Tamanho dos nós</strong>: Baseado em relevância ou número de conexões</li>
+                <li><strong>Cores</strong>: Indicam o tipo de nó (arquivo, categoria, conceito)</li>
+                <li><strong>Interatividade</strong>: Clique para detalhes, arraste para reorganizar</li>
+            </ul>
+
+            <h3>4. Exemplo de Uso Prático</h3>
+            <div class="code-block">
+// Criar visualização de conhecimento interconectado
+const knowledgeGraph = new KC.GraphVisualization();
+
+// Adicionar dados de múltiplas fontes
+knowledgeGraph.addLocalFiles(KC.AppState.get('files'));
+knowledgeGraph.addQdrantPoints(await KC.QdrantService.search());
+knowledgeGraph.addCategories(KC.CategoryManager.getAll());
+
+// Quando MCP Memory estiver disponível:
+// knowledgeGraph.addMCPConcepts(await mcp__memory__read_graph());
+
+// Renderizar com análise de clusters
+knowledgeGraph.render({
+    physics: true,
+    clustering: true,
+    showLabels: true
+});
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts do projeto -->
+    <script src="js/utils/Logger.js"></script>
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/managers/AppState.js"></script>
+    <script src="js/services/QdrantService.js"></script>
+    <script src="js/services/EmbeddingService.js"></script>
+    <script src="js/services/SimilaritySearchService.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/components/GraphVisualization.js"></script>
+
+    <script>
+        let graphViz = null;
+        
+        // Inicializar o grafo
+        async function initializeGraph() {
+            try {
+                // Criar container se não existir
+                const container = document.getElementById('graphContainer');
+                if (!container.querySelector('.graph-visualization')) {
+                    container.innerHTML = '<div class="graph-visualization"></div>';
+                }
+                
+                // Inicializar componente
+                if (!graphViz) {
+                    graphViz = new KC.GraphVisualization();
+                    await graphViz.init();
+                    
+                    // Configurar container
+                    graphViz.container = container.querySelector('.graph-visualization');
+                    graphViz.initializeNetwork();
+                }
+                
+                // Mostrar estatísticas
+                document.getElementById('statsGrid').style.display = 'grid';
+                
+                console.log('✅ Grafo inicializado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao inicializar grafo:', error);
+                alert('Erro ao inicializar. Verifique o console.');
+            }
+        }
+        
+        // Carregar dados do Qdrant
+        async function loadFromQdrant() {
+            if (!graphViz) {
+                alert('Inicialize o grafo primeiro!');
+                return;
+            }
+            
+            try {
+                console.log('Carregando dados do Qdrant...');
+                await graphViz.loadQdrantData();
+                updateStats();
+            } catch (error) {
+                console.error('Erro ao carregar Qdrant:', error);
+                alert('Erro ao conectar com Qdrant. Verifique se o serviço está rodando.');
+            }
+        }
+        
+        // Carregar arquivos locais
+        async function loadLocalFiles() {
+            if (!graphViz) {
+                alert('Inicialize o grafo primeiro!');
+                return;
+            }
+            
+            try {
+                console.log('Carregando arquivos locais...');
+                
+                // Simular alguns arquivos para demonstração
+                const mockFiles = [
+                    {
+                        id: 'file1',
+                        name: 'Arquitetura RAG.md',
+                        path: '/docs/arquitetura-rag.md',
+                        relevanceScore: 95,
+                        categories: ['Arquitetura', 'IA/ML'],
+                        preview: 'Implementação de Retrieval Augmented Generation...'
+                    },
+                    {
+                        id: 'file2',
+                        name: 'Decisões Sprint 2.md',
+                        path: '/docs/decisoes-sprint2.md',
+                        relevanceScore: 85,
+                        categories: ['Decisões', 'Sprints'],
+                        preview: 'Decisões tomadas durante a Sprint 2...'
+                    },
+                    {
+                        id: 'file3',
+                        name: 'Integração Ollama.md',
+                        path: '/docs/integracao-ollama.md',
+                        relevanceScore: 90,
+                        categories: ['IA/ML', 'Integração'],
+                        preview: 'Como integrar Ollama para embeddings locais...'
+                    }
+                ];
+                
+                // Adicionar ao AppState para simular dados reais
+                KC.AppState.set('files', mockFiles);
+                
+                // Carregar no grafo
+                await graphViz.loadLocalData();
+                updateStats();
+                
+                console.log('✅ Arquivos locais carregados!');
+            } catch (error) {
+                console.error('Erro ao carregar arquivos:', error);
+            }
+        }
+        
+        // Executar análise de similaridade
+        async function runSimilarityAnalysis() {
+            if (!graphViz) {
+                alert('Inicialize o grafo primeiro!');
+                return;
+            }
+            
+            try {
+                console.log('Executando análise de similaridade...');
+                
+                // Buscar por conceitos relacionados
+                const query = 'arquitetura de software e IA';
+                const results = await KC.SimilaritySearchService.searchByText(query, {
+                    limit: 5,
+                    includeEmbeddings: false
+                });
+                
+                console.log('Resultados de similaridade:', results);
+                
+                // Adicionar resultados ao grafo
+                if (results && results.length > 0) {
+                    results.forEach((result, index) => {
+                        graphViz.nodes.add({
+                            id: `sim_${index}`,
+                            label: result.metadata?.title || `Similar ${index + 1}`,
+                            type: 'similarity',
+                            color: '#8b5cf6',
+                            size: 20 + (result.score * 20),
+                            title: `Score: ${(result.score * 100).toFixed(1)}%`
+                        });
+                    });
+                    
+                    updateStats();
+                    alert(`${results.length} resultados similares adicionados ao grafo!`);
+                } else {
+                    alert('Nenhum resultado similar encontrado. Tente carregar dados primeiro.');
+                }
+            } catch (error) {
+                console.error('Erro na análise de similaridade:', error);
+                alert('Erro ao executar análise. Verifique se os serviços estão rodando.');
+            }
+        }
+        
+        // Exportar visualização
+        function exportVisualization() {
+            if (!graphViz) {
+                alert('Inicialize o grafo primeiro!');
+                return;
+            }
+            
+            try {
+                graphViz.exportGraph();
+                console.log('✅ Grafo exportado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao exportar:', error);
+            }
+        }
+        
+        // Atualizar estatísticas
+        function updateStats() {
+            if (!graphViz || !graphViz.nodes) return;
+            
+            const nodeCount = graphViz.nodes.length;
+            const edgeCount = graphViz.edges.length;
+            const avgConnections = nodeCount > 0 ? (edgeCount * 2 / nodeCount).toFixed(1) : 0;
+            const density = nodeCount > 1 ? ((2 * edgeCount) / (nodeCount * (nodeCount - 1)) * 100).toFixed(1) : 0;
+            
+            document.getElementById('totalNodes').textContent = nodeCount;
+            document.getElementById('totalEdges').textContent = edgeCount;
+            document.getElementById('avgConnections').textContent = avgConnections;
+            document.getElementById('graphDensity').textContent = density + '%';
+        }
+        
+        // Verificar disponibilidade dos serviços ao carregar
+        window.addEventListener('load', async () => {
+            console.log('🔍 Verificando serviços...');
+            
+            // Verificar Ollama
+            if (KC?.EmbeddingService) {
+                const ollamaOk = await KC.EmbeddingService.checkOllamaAvailability();
+                console.log('Ollama:', ollamaOk ? '✅ Disponível' : '❌ Indisponível');
+            }
+            
+            // Verificar Qdrant
+            if (KC?.QdrantService) {
+                const qdrantOk = await KC.QdrantService.checkConnection();
+                console.log('Qdrant:', qdrantOk ? '✅ Conectado' : '❌ Desconectado');
+            }
+            
+            console.log('Para começar, clique em "Inicializar Grafo"');
+        });
+    </script>
+</body>
+</html>

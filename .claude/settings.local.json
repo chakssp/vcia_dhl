@@ -17,7 +17,9 @@
       "Bash(prettier:*)",
       "Bash(eslint:*)",
       "Bash(http:*)",
-      "Bash(http-server:*)"
+      "Bash(http-server:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(echo:*)"
     ],
     "deny": []
   },
