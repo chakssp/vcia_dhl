@@ -164,7 +164,7 @@
                 }
                 return false;
             } catch (error) {
-                logger.warn('AIAPIManager', 'Ollama não disponível localmente', error.message);
+                logger.info('AIAPIManager', 'Ollama não disponível localmente:', error.message);
                 return false;
             }
         }

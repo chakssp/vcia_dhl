@@ -77,6 +77,8 @@
             'RAGExportManager',
             'ExportUI',
             'OrganizationPanel',
+            'GraphVisualization',
+            'GraphVisualizationV2',
             'TripleStoreManager',
             'TripleStoreService',
             'TripleSchema',

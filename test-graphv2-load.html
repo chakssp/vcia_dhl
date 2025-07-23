@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste GraphVisualizationV2</title>
+</head>
+<body>
+    <h1>Teste de Carregamento GraphVisualizationV2</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        // Aguardar carregamento completo
+        window.addEventListener('load', function() {
+            const results = document.getElementById('test-results');
+            let html = '<h2>Resultados do Teste:</h2><ul>';
+            
+            // Verificar se KC existe
+            html += '<li>window.KnowledgeConsolidator existe? ' + (typeof window.KnowledgeConsolidator !== 'undefined' ? '✅ SIM' : '❌ NÃO') + '</li>';
+            
+            // Verificar se GraphVisualization existe
+            if (window.KnowledgeConsolidator) {
+                html += '<li>KC.GraphVisualization existe? ' + (window.KnowledgeConsolidator.GraphVisualization ? '✅ SIM' : '❌ NÃO') + '</li>';
+                html += '<li>KC.GraphVisualizationV2 existe? ' + (window.KnowledgeConsolidator.GraphVisualizationV2 ? '✅ SIM' : '❌ NÃO') + '</li>';
+                
+                // Listar todos os componentes em KC
+                html += '<li>Componentes carregados em KC:<ul>';
+                for (let key in window.KnowledgeConsolidator) {
+                    if (key.includes('Graph')) {
+                        html += '<li>' + key + ': ' + typeof window.KnowledgeConsolidator[key] + '</li>';
+                    }
+                }
+                html += '</ul></li>';
+            }
+            
+            html += '</ul>';
+            
+            // Verificar erros no console
+            html += '<h3>Verificar Console:</h3>';
+            html += '<p>Pressione F12 e verifique se há erros no console.</p>';
+            
+            results.innerHTML = html;
+            
+            // Log no console
+            console.log('=== Teste GraphVisualizationV2 ===');
+            console.log('KC:', window.KnowledgeConsolidator);
+            console.log('KC.GraphVisualization:', window.KnowledgeConsolidator?.GraphVisualization);
+            console.log('KC.GraphVisualizationV2:', window.KnowledgeConsolidator?.GraphVisualizationV2);
+        });
+    </script>
+</body>
+</html>

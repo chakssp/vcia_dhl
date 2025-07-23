@@ -70,15 +70,15 @@ class SimilaritySearchService {
         const qdrantAvailable = await KC.QdrantService.checkConnection();
         
         if (!embeddingAvailable) {
-            KC.Logger?.warn('SimilaritySearchService', 'Ollama não disponível - busca semântica limitada');
+            KC.Logger?.info('SimilaritySearchService', 'Ollama não disponível - busca semântica limitada');
         }
         
         if (!qdrantAvailable) {
-            KC.Logger?.warn('SimilaritySearchService', 'Qdrant não disponível - busca desabilitada');
+            KC.Logger?.info('SimilaritySearchService', 'Qdrant não disponível - busca desabilitada');
             return false;
         }
 
-        KC.Logger?.success('SimilaritySearchService', 'Serviço inicializado com sucesso');
+        KC.Logger?.info('SimilaritySearchService', 'Serviço inicializado com sucesso');
         return true;
     }
 

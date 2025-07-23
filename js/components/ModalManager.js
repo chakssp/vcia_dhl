@@ -19,7 +19,60 @@
         }
 
         /**
-         * Exibe um modal
+         * Exibe um modal com interface mais moderna
+         * @param {Object} config - Configuração do modal
+         */
+        show(config = {}) {
+            const {
+                title = 'Modal',
+                content = '',
+                size = 'medium',
+                buttons = [],
+                onOpen = null,
+                onClose = null
+            } = config;
+            
+            const modalId = 'modal-' + Date.now();
+            
+            // Criar HTML do modal
+            const modalHTML = `
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="KC.ModalManager.closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body ${size === 'fullscreen' ? 'fullscreen' : ''}">
+                    ${content}
+                </div>
+                ${buttons.length > 0 ? `
+                    <div class="modal-footer">
+                        ${buttons.map(btn => {
+                            if (btn.action === 'close') {
+                                return `<button class="${btn.class || 'btn-primary'}" onclick="KC.ModalManager.closeModal('${modalId}')">${btn.text}</button>`;
+                            } else if (typeof btn.action === 'function') {
+                                // Registrar a função globalmente temporariamente
+                                const fnName = `modalAction_${modalId}_${Date.now()}`;
+                                window[fnName] = btn.action;
+                                return `<button class="${btn.class || 'btn-secondary'}" onclick="${fnName}()">${btn.text}</button>`;
+                            }
+                            return '';
+                        }).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            // Usar showModal existente
+            this.showModal(modalId, modalHTML, { size, onClose, fullscreen: size === 'fullscreen' });
+            
+            // Callback onOpen
+            if (onOpen) {
+                setTimeout(() => onOpen(), 100);
+            }
+            
+            return modalId;
+        }
+
+        /**
+         * Exibe um modal (método legado)
          * @param {string} id - ID único do modal
          * @param {string} content - Conteúdo HTML do modal
          * @param {Object} options - Opções do modal
@@ -33,7 +86,7 @@
 
             // Cria overlay
             const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
+            overlay.className = 'modal-overlay' + (options.fullscreen ? ' fullscreen' : '');
             overlay.id = `modal-${id}`;
             
             // Cria modal

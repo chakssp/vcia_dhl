@@ -280,6 +280,11 @@
                         <button class="btn btn-secondary" onclick="KC.AppController.previousStep()">
                             ← Voltar
                         </button>
+                        <!-- NOVO BOTÃO - LEI 3: Adicionar minimamente -->
+                        <button class="btn btn-primary graph-view-btn" onclick="KC.OrganizationPanel.openGraphView()">
+                            <span class="icon">📊</span> 
+                            <span class="text">Visualizar Grafo de Conhecimento</span>
+                        </button>
                         <button class="btn btn-info" onclick="KC.OrganizationPanel.previewExport()">
                             👁️ Visualizar Preview
                         </button>
@@ -778,6 +783,74 @@
             
             // Adiciona classe CSS para estilização
             stageElement.className = `stage stage-${status}`;
+        }
+
+        /**
+         * Abre visualização do grafo de conhecimento
+         * LEI 7: Solicitar aprovação antes de modificar
+         */
+        openGraphView() {
+            console.log('[OrganizationPanel] Abrindo visualização de grafo...');
+            
+            // LEI 12: Transparência - mostrar ao usuário o que está acontecendo
+            KC.EventBus.emit(KC.Events.NOTIFICATION, {
+                type: 'info',
+                message: 'Carregando grafo de conhecimento...'
+            });
+            
+            // Usar GraphVisualizationV2 se disponível, senão fallback para V1
+            const GraphComponent = KC.GraphVisualizationV2 || KC.GraphVisualization;
+            const hasV2 = !!KC.GraphVisualizationV2;
+            
+            // Criar modal fullscreen
+            KC.ModalManager.show({
+                title: hasV2 ? '📊 Grafo de Conhecimento - Visualização Entity-Centric com Verticalização' : '📊 Grafo de Conhecimento - Visualização de Triplas Semânticas',
+                size: 'fullscreen',
+                content: '<div id="graph-container" style="height: 100%; width: 100%;"></div>',
+                buttons: [
+                    {
+                        text: 'Exportar Grafo',
+                        class: 'btn-secondary',
+                        action: () => GraphComponent.exportGraph()
+                    },
+                    {
+                        text: 'Fechar',
+                        class: 'btn-primary',
+                        action: 'close'
+                    }
+                ],
+                onOpen: async () => {
+                    // Renderizar componente
+                    await GraphComponent.render();
+                    
+                    // Se for V2, usar o novo loadFromAppState e definir modo vertical-clusters
+                    if (hasV2) {
+                        // Carregar dados com verticalização
+                        const correlatedData = GraphComponent.loadFromAppState();
+                        
+                        // Definir modo vertical-clusters por padrão
+                        const modeSelect = document.getElementById('visualization-mode');
+                        if (modeSelect) {
+                            modeSelect.value = 'vertical-clusters';
+                        }
+                        
+                        // Carregar visualização vertical
+                        await GraphComponent.loadDataVerticalClusters();
+                        
+                        KC.Logger?.info('OrganizationPanel', 'GraphVisualizationV2 carregado com modo vertical-clusters');
+                    } else {
+                        // Fallback para V1
+                        await GraphComponent.loadData();
+                        KC.Logger?.info('OrganizationPanel', 'Usando GraphVisualization V1 (fallback)');
+                    }
+                    
+                    // Notificar conclusão
+                    KC.EventBus.emit(KC.Events.NOTIFICATION, {
+                        type: 'success',
+                        message: hasV2 ? 'Grafo entity-centric com verticalização carregado!' : 'Grafo carregado com sucesso!'
+                    });
+                }
+            });
         }
 
         /**

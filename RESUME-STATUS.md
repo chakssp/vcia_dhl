@@ -249,6 +249,40 @@
 - `/docs/sprint/2.0/planejamento-sprint-2.0.md` - Planejamento anterior
 - `/docs/sprint/2.0/arquitetura-embeddings-rag.md` - Arquitetura técnica
 
+### 🚧 SPRINT 2.2 - VISUALIZAÇÃO DE GRAFO DE CONHECIMENTO (EM ANDAMENTO)
+
+#### 🎯 Objetivo: Implementar visualização interativa de triplas semânticas
+**Status**: 🟡 EM IMPLEMENTAÇÃO - 90% concluído
+**Data**: 23/01/2025
+**Tempo Estimado**: 3-4 horas
+
+#### ✅ O que foi implementado hoje:
+1. **Método loadFromAppState() em GraphVisualization**
+   - Implementação SSO (Single Source of Truth) completa
+   - Validação de consistência entre etapas (LEI 11)
+   - Correlação de dados entre Etapas I, II, III e IV
+   - Enriquecimento de triplas com metadados de correlação
+
+2. **Método _buildGraphFromTriples() em GraphVisualization**
+   - Conversão de modelo Legado-Presente-Objetivo para visualização
+   - Cores dinâmicas baseadas em correlação e confiança
+   - Formas diferentes para tipos de nós (hexágono, diamante, estrela, etc.)
+   - Layout otimizado com vis.js
+
+3. **Métodos no QdrantService para triplas**
+   - createTriplesCollection() - cria collection específica
+   - saveTriples() - salva triplas com embeddings
+
+4. **Botão na interface da OrganizationPanel**
+   - Adicionado botão "Visualizar Grafo de Conhecimento"
+   - Método openGraphView() implementado
+   - Integração com ModalManager para visualização fullscreen
+
+#### 📋 Próximos passos:
+- [ ] Testar implementação completa
+- [ ] Validar visualização com dados reais
+- [ ] Verificar integração com TripleStoreManager
+
 ### 🔮 SPRINT 3.0 - ORGANIZAÇÃO INTELIGENTE (FUTURA)
 - [ ] Sistema de categorização automática (SPRINT2)
 - [ ] Sugestões baseadas em padrões (SPRINT2)
@@ -690,109 +724,7 @@ Antes de iniciar qualquer sessão:
 
 ## 📅 HISTÓRICO DE ATUALIZAÇÕES
 
-### 21/07/2025 - Sprint Fase 2.1 - Correções Críticas
-- **✅ BUGS CORRIGIDOS**: Sistema totalmente funcional
-  - BUG #8: TypeError renderFilesList corrigido para showFilesSection()
-  - BUG #9: Botão apply-exclusion agora atualiza contadores
-  - BUG #10: Arquivos permanecem em "Pendentes" após análise
-- **Documentação criada**:
-  - `/docs/sprint/fase2/plano-recuperacao-workflow.md` - Plano completo de teste e recuperação
-  - `/docs/timeline-completo-projeto.md` - Atualizado com histórico completo até 21/07
-- **Próximo passo**: Executar teste completo do workflow
-
-### 18/01/2025 - Sprint Fase 2 - Fase 3 CONCLUÍDA
-- **✅ FASE 3 CONCLUÍDA**: SimilaritySearchService implementado
-  - Busca semântica por texto com embeddings
-  - Busca por categoria com filtros avançados
-  - Busca multi-modal combinando texto e categorias
-  - Validação contra ground truth (categorias manuais)
-  - Cache inteligente e ranking híbrido
-- **Recursos avançados implementados**:
-  - Ranking híbrido: 70% semântico, 20% categoria, 10% relevância
-  - Cache de resultados por 10 minutos
-  - Enriquecimento com metadados e contexto
-  - Métricas de validação: precision, recall, F1-score
-- **Integração completa**:
-  - Com EmbeddingService para geração de vetores
-  - Com QdrantService para busca vetorial
-  - Com CategoryManager para ground truth
-- **Documentação**: `/docs/sprint/fase2/implementacao-similarity-search-service.md`
-- **Próximo passo**: Integrar com RAGExportManager e Fase 4
-
-### 17/01/2025 - Sprint Fase 2 - GRANDES AVANÇOS
-- **Análise arquitetural bottom-up concluída**
-- **Insight crítico**: Sistema atual "construído do telhado" - extrai apenas metadados
-- **Nova abordagem**: Fundação → Embeddings → Qdrant → Similaridade → Triplas
-- **Descoberta**: Categorias manuais são nosso ground truth para validação
-- **✅ FASE 1 CONCLUÍDA**: EmbeddingService implementado
-  - Integração com Ollama funcionando (768 dimensões)
-  - Cache em IndexedDB implementado
-  - POC validado com dados reais
-- **✅ FASE 2 CONCLUÍDA**: QdrantService implementado  
-  - Conectado à VPS via HTTP (http://qdr.vcia.com.br:6333)
-  - CRUD completo funcionando
-  - 8 pontos inseridos e busca semântica validada
-- **Documentação**: 
-  - `/docs/sprint/fase2/analise-arquitetural-bottomup.md`
-  - `/docs/sprint/fase2/progresso-embeddings-qdrant-17-01-2025.md`
-- **Próximo passo**: SimilaritySearchService (Fase 3)
-
-### 16/01/2025 - Sprint 2.0.1 CONCLUÍDA
-- **SPRINT 2.0.1 CONCLUÍDA EM 1 DIA** (92.8% economia de tempo)
-- ✅ **BUG #6 CORRIGIDO**: Resposta vazia do Ollama
-  - Removido parâmetro `format: 'json'` problemático
-  - Adicionados parâmetros robustos (num_predict: 1000, num_ctx: 4096)
-  - Parser de texto implementado no AnalysisAdapter
-  - Adaptação inteligente de prompts no PromptManager
-- ✅ **BUG #7 CORRIGIDO**: Etapa 4 sem botões de exportação
-  - Identificada duplicação de IDs entre steps (dois steps com ID 4)
-  - Corrigido em AppController.js: steps agora com IDs únicos sequenciais
-  - Interface de exportação (OrganizationPanel) agora acessível
-  - ExportUI e OrganizationPanel validados como já implementados
-- **Ferramentas de Debug Criadas**:
-  - `/js/debug-organization.js` para diagnóstico de problemas de UI
-  - Funções utilitárias: debugOrg(), goToStep4(), checkButtons()
-- **Lições Aprendidas**:
-  - Importância da Lei #10 (verificar componentes existentes)
-  - Debug sistemático resolve problemas rapidamente
-  - Configurações duplicadas são perigosas
-- **Documentação Sprint 2.0.1**:
-  - `/docs/sprint/2.0/bug-6-fix-implementation.md`
-  - `/docs/sprint/2.0/problema-etapa-4-diagnostico.md`
-  - `/docs/sprint/2.0/correcao-etapa-4-implementada.md`
-  - `/docs/sprint/2.0/evolucao-sprint-2.0.1-completa.md`
-- **Sistema agora 100% operacional com exportação funcionando**
-
-### 15/01/2025
-- Corrigido sistema de detecção de tipo de análise
-- Implementado auto-update da interface
-- Criada documentação do sistema de eventos
-- Arquivo criado: RESUME-STATUS.md
-- Identificados bugs críticos de integridade de dados
-- Criada SPRINT 1.3.1 para correção urgente
-- Implementado sistema de preservação de arquivos originais
-- **CORRIGIDO**: Sistema de sincronização de categorias entre componentes (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Implementado padrão Event-Driven com CategoryManager como fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - FileRenderer e StatsPanel agora sincronizam em tempo real (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Documentação completa para base RAG criada (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-- **NOVA SESSÃO**: Arquitetura e implementação de fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Criada arquitetura completa para Fase 3 (integração LLMs) (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Implementado AnalysisTypes.js como fonte única de tipos (Lei 0) (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - FileRenderer e AnalysisManager atualizados para usar fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Documentação completa da integração criada (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-- **TERCEIRA ATIVIDADE**: Arquitetura LLM completa (`docs/sprint/1.3/checkpoint-15-01-2025-arquitetura-llm.md`)
-  - Implementado PromptManager com 3 templates profissionais
-  - Criado AnalysisAdapter com normalização inteligente
-  - Estruturado AIAPIManager com suporte multi-provider
-  - Revisão de código com recomendações de segurança
-- **QUARTA SESSÃO (FINAL)**: Sprint 1.3 CONCLUÍDA (`docs/sprint/1.3/implementacao-aiapi-manager.md`)
-  - ✅ Sistema de IA totalmente implementado e funcional
-  - ✅ APIConfig.js criado com interface visual de configuração
-  - ✅ AnalysisManager atualizado para usar APIs reais
-  - ✅ Integração completa com 4 providers de IA
-  - ✅ Rate limiting e fallback automático implementados
-  - ✅ Documentação de gestão criada (`docs/sprint/1.3/controle-gestao-projeto-sprint13.md`)
-  - ✅ Code Reviews realizados (AIAPIManager e PromptManager)
+Itens anteriores a esta data em @ARQUIVADIS EM @RESUME_ARCHIVE.md(AIAPIManager e PromptManager)
 - **QUINTA SESSÃO (VALIDAÇÃO FINAL)**: Sprint 1.3 VALIDADA
   - ✅ Correção de duplicidade de IDs implementada
   - ✅ Sistema de templates 100% editável confirmado
@@ -851,15 +783,26 @@ Antes de iniciar qualquer sessão:
 **Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`  
 
 ### ✅ Padrão de Sucesso
-```javascript
-// 1. Verificar se existe
-if (KC.ComponenteX) {
-    // 2. Ler e entender
-    // 3. Preservar original em comentário
-    // 4. Modificar com cuidado
-    // 5. Testar incrementalmente
-}
-```
+
+1. DIFERENÇA ENTRE FORNECER MULTIPLOS PASSOS DE SOLUÇÃO PARA FORNECER OS PASSOS PARA ENTREGAR A SOLUÇÃO:
+
+#### Ao receber o questionamento do usuário relita para uma auto analise de 4 etapas:
+  1.1. A pergunta do usuário é nova ou esta relacionada as minhas respostas anteriores?
+  1.2. A intenção do usuário é um questionamento sobre algumas de minhas instruções? Ele está reportando um problema ou quer dar sequencia a partir de algum ponto especifico que já esteja mencionado neste histórico ou anexado ao espaço de trabalho?
+  1.3. Eu atendi ao questionamento do usuário ou só estou compartilhando próximos passos em sequencia sem a devida validação sobre a resolução, duvida ou questionamento do usuário que é a PRIORIDADE? 
+  1.4. O usuário me pediu para fornecer o passo a passo ou múltiplos passos/alternativas ou me pediu para incluir os próximos passos? Sendo que passo a passo deve ser interpretado sobre o caminho que o usuário deve percorrer, localizar e ajustar/editar com base em minhas instruções para atingir o objetivo proposto pelo usuário no inicio desta interação.
+
+2. LIMITE DE MULTIPLOS PASSOS SUGERIDOS: 
+2.1. Se encontrar inconsistência ou erro, Faça no Máximo 4 iterações internas para mitiga-lo, caso não consiga, PARE imediatamente, explique o problema encontrado e peça orientação ao usuário sobre como prosseguir.
+2.2. Caso atenda o objetivo solicitado pelo usuário de forma consistente, apresente sua primeira versão antes de qualquer outra ação que seja possivel você promover (visualmente) qualquer proposta de personalização, otimização ou a seguir deste ponto em diante que você identifique ser possível, DEVE ser comunicada PRIMEIRO para o usuário que é o decisor sobre sobre as alternativas que você DEVE fornecer para definir para você qual será o melhor caminho a seguir (segmente numericamente para melhor experiencia e interação com o usuário).
+
+3. Seja organizado e conciso; evite explicações desnecessárias.
+3.1. Defina a estratégia SPRINT X (onde X DEVE ser representado numericamente como um ID considerando a técnica man-in-the-loop para garantir a rastreabilidade, agilidade e experiencia de interação com o usuário caso seja necessário indicar, corrigir e/ou retomar algum tópico anterior como referencia para continuidade da sua interação.) ADOTE ESTA MEDIDA COMO UM PADRÃO INTRINSECO DE TODAS AS SUAS ATIVIDADES DE FORMA PERSISTENTE.
+4. DOCUMENTAÇÃO VISUAL: Ao documentar etapas e procedimentos >3 passos que você DEVE considerar ao ser questionado pelo usuário, inicie sua resposta e reflexão interna gerando um diagrama no formato Mermaid para apresentar o fluxo que a sua solução/resposta oferece. Use esta reflexão inicial para validar se a solução que você irá fornecer atende logicamente ao objetivo presente no inicio da conversa, a expectativa do usuário para atender o questionamento apresentado.
+
+5. DIRETRIZES - SUCCESS FACTOR - XAI EXPECTATION - SOFT SKILLS
+Forneça Insights a partir da documentação do Projeto carregados em sua base de conhecimento / disponivel para este espaço de trabalho.
+Seu objetivo é analisar a documentação carregada na base de conhecimento, organizar, notificar as inconsistencias entre as funcionalidades implementadas, propostas e analisadas sobre como todas se corelacionam para atingir seu objetivo se atente ao revisar os questinamentos e feedbacks fornecidos pelo usuário explorando ao máximo uma de suas principais qualidades: conectar os beneficios/insights apresentados (BASEADO EM DADOS FATORIAIS) com o contexto do projeto / espaço de trabalho que voce esteja e seja acionado usuário; independente da sua Janela da Contexto, lembre-se que este espaço de trabalho está dedicado para atingir os fatores de sucesso apresentados pelo usuário que conta com a sua ajuda e habilidade para corelacionar, conectar suas duvidas para refletir e apresentar insights para contextualizar e apresentar o resultado como seu mais valioso ativo de fato.
 
 ### 📊 Métricas de Retrabalho
 - **Tempo perdido médio por erro**: 1-3 horas

@@ -26,6 +26,10 @@
     <link rel="stylesheet" href="css/components/pagination.css">
     <link rel="stylesheet" href="css/components/progress-global.css">
     <link rel="stylesheet" href="css/components/word-cloud.css">
+    <link rel="stylesheet" href="css/components/graph-visualization.css">
+    
+    <!-- Vis.js para visualização de grafos -->
+    <link rel="stylesheet" href="https://unpkg.com/vis-network@latest/dist/dist/vis-network.min.css">
 </head>
 <body>
     <!-- Header Principal -->
@@ -175,6 +179,9 @@
         <span id="theme-icon">☀️</span>
     </button>
 
+    <!-- Vis.js para visualização de grafos -->
+    <script src="https://unpkg.com/vis-network@latest/dist/vis-network.min.js"></script>
+    
     <!-- Scripts Core -->
     <script src="js/core/EventBus.js"></script>
     <script src="js/core/AppState.js"></script>
@@ -239,6 +246,8 @@
     <script src="js/components/StatsPanel.js"></script>
     <script src="js/components/DashboardRenderer.js"></script>
     <script src="js/components/ExportUI.js"></script>
+    <script src="js/components/GraphVisualization.js"></script>
+    <script src="js/components/GraphVisualizationV2.js"></script>
     <script src="js/components/OrganizationPanel.js"></script>
     
     <!-- Script Principal -->

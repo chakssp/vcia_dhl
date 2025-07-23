@@ -478,6 +478,121 @@ class QdrantService {
             vectorSize: this.config.vectorSize
         };
     }
+
+    /**
+     * Cria collection específica para triplas semânticas
+     * LEI 8: Preservar comentário do original caso precise rollback
+     * @returns {Promise<Object>}
+     */
+    async createTriplesCollection() {
+        // AIDEV-NOTE: triple-collection; collection específica para triplas semânticas
+        const collectionName = 'knowledge_triples';
+        const params = {
+            vectors: {
+                size: this.config.vectorSize, // 768 dimensões
+                distance: 'Cosine'
+            },
+            optimizers_config: {
+                default_segment_number: 2
+            },
+            replication_factor: 1,
+            write_consistency_factor: 1
+        };
+        
+        try {
+            const result = await this.request('PUT', `/collections/${collectionName}`, params);
+            Logger.success(`[QdrantService] Collection '${collectionName}' criada com sucesso`);
+            return result;
+        } catch (error) {
+            if (error.message?.includes('already exists')) {
+                Logger.info(`[QdrantService] Collection '${collectionName}' já existe`);
+                return { status: 'already_exists' };
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Salva triplas semânticas no Qdrant
+     * @param {Array} triplas - Array de triplas para salvar
+     * @returns {Promise<Object>}
+     */
+    async saveTriples(triplas) {
+        if (!triplas || triplas.length === 0) {
+            return { status: 'no_triples_to_save' };
+        }
+        
+        Logger.info(`[QdrantService] Salvando ${triplas.length} triplas...`);
+        
+        // Verificar/criar collection se não existir
+        const collections = await this.listCollections();
+        if (!collections.some(c => c.name === 'knowledge_triples')) {
+            await this.createTriplesCollection();
+        }
+        
+        // Converter triplas para pontos Qdrant
+        const points = [];
+        
+        for (let i = 0; i < triplas.length; i++) {
+            const tripla = triplas[i];
+            
+            // Construir texto para embedding
+            const texto = `${tripla.legado.valor} ${tripla.presente.valor} ${tripla.objetivo.valor}`;
+            
+            // Gerar embedding se serviço disponível
+            let vector = null;
+            if (KC.EmbeddingService) {
+                try {
+                    const embedding = await KC.EmbeddingService.generateEmbedding(texto);
+                    vector = embedding.embedding;
+                } catch (error) {
+                    Logger.warn(`[QdrantService] Erro ao gerar embedding para tripla ${i}:`, error);
+                }
+            }
+            
+            // Se não conseguiu gerar embedding, usar vetor aleatório para testes
+            if (!vector) {
+                vector = Array(this.config.vectorSize).fill(0).map(() => Math.random());
+                Logger.warn(`[QdrantService] Usando vetor aleatório para tripla ${i}`);
+            }
+            
+            // Criar ponto para Qdrant
+            points.push({
+                id: `triple-${Date.now()}-${i}`,
+                vector: vector,
+                payload: {
+                    legado: tripla.legado,
+                    presente: tripla.presente,
+                    objetivo: tripla.objetivo,
+                    metadados: tripla.metadados,
+                    texto: texto,
+                    timestamp: new Date().toISOString()
+                }
+            });
+        }
+        
+        // Inserir em batches
+        const batchSize = 100;
+        let totalInserted = 0;
+        
+        for (let i = 0; i < points.length; i += batchSize) {
+            const batch = points.slice(i, i + batchSize);
+            try {
+                const result = await this.insertBatch(batch, 'knowledge_triples');
+                totalInserted += batch.length;
+                Logger.info(`[QdrantService] Inseridas ${totalInserted}/${points.length} triplas`);
+            } catch (error) {
+                Logger.error(`[QdrantService] Erro ao inserir batch ${i/batchSize + 1}:`, error);
+            }
+        }
+        
+        return {
+            status: 'success',
+            totalTriplas: triplas.length,
+            totalInserted: totalInserted,
+            collection: 'knowledge_triples'
+        };
+    }
 }
 
 // Registrar no namespace KC
