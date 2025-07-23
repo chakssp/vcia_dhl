@@ -19,7 +19,9 @@
       "Bash(http:*)",
       "Bash(http-server:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   },

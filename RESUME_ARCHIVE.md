@@ -1,4 +1,4 @@
-### 23/01/2025 - Sprint 2.2.1 - Correção do Grafo CONCLUÍDA
+### 23/07/2025 - Sprint 2.2.1 - Correção do Grafo CONCLUÍDA
 - **✅ SPRINT 2.2.1 CONCLUÍDA**: Correção completa do grafo de conhecimento
   - FASE 1: Análise do fluxo de dados sem modificações
   - FASE 2: Filtros implementados no método combineDataSources()
@@ -29,7 +29,7 @@
   - `/docs/timeline-completo-projeto.md` - Atualizado com histórico completo até 21/07
 - **Próximo passo**: Executar teste completo do workflow
 
-### 18/01/2025 - Sprint Fase 2 - Fase 3 CONCLUÍDA
+### 18/07/2025 - Sprint Fase 2 - Fase 3 CONCLUÍDA
 - **✅ FASE 3 CONCLUÍDA**: SimilaritySearchService implementado
   - Busca semântica por texto com embeddings
   - Busca por categoria com filtros avançados
@@ -48,7 +48,7 @@
 - **Documentação**: `/docs/sprint/fase2/implementacao-similarity-search-service.md`
 - **Próximo passo**: Integrar com RAGExportManager e Fase 4
 
-### 17/01/2025 - Sprint Fase 2 - GRANDES AVANÇOS
+### 17/07/2025 - Sprint Fase 2 - GRANDES AVANÇOS
 - **Análise arquitetural bottom-up concluída**
 - **Insight crítico**: Sistema atual "construído do telhado" - extrai apenas metadados
 - **Nova abordagem**: Fundação → Embeddings → Qdrant → Similaridade → Triplas
@@ -66,7 +66,7 @@
   - `/docs/sprint/fase2/progresso-embeddings-qdrant-17-01-2025.md`
 - **Próximo passo**: SimilaritySearchService (Fase 3)
 
-### 16/01/2025 - Sprint 2.0.1 CONCLUÍDA
+### 16/07/2025 - Sprint 2.0.1 CONCLUÍDA
 - **SPRINT 2.0.1 CONCLUÍDA EM 1 DIA** (92.8% economia de tempo)
 - ✅ **BUG #6 CORRIGIDO**: Resposta vazia do Ollama
   - Removido parâmetro `format: 'json'` problemático
@@ -92,7 +92,7 @@
   - `/docs/sprint/2.0/evolucao-sprint-2.0.1-completa.md`
 - **Sistema agora 100% operacional com exportação funcionando**
 
-### 15/01/2025
+### 15/07/2025
 - Corrigido sistema de detecção de tipo de análise
 - Implementado auto-update da interface
 - Criada documentação do sistema de eventos
@@ -100,15 +100,15 @@
 - Identificados bugs críticos de integridade de dados
 - Criada SPRINT 1.3.1 para correção urgente
 - Implementado sistema de preservação de arquivos originais
-- **CORRIGIDO**: Sistema de sincronização de categorias entre componentes (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Implementado padrão Event-Driven com CategoryManager como fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - FileRenderer e StatsPanel agora sincronizam em tempo real (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Documentação completa para base RAG criada (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-- **NOVA SESSÃO**: Arquitetura e implementação de fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Criada arquitetura completa para Fase 3 (integração LLMs) (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Implementado AnalysisTypes.js como fonte única de tipos (Lei 0) (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - FileRenderer e AnalysisManager atualizados para usar fonte única (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
-  - Documentação completa da integração criada (`docs/sprint/1.3/checkpoint-15-01-2025-sessao2.md`)
+- **CORRIGIDO**: Sistema de sincronização de categorias entre componentes (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - Implementado padrão Event-Driven com CategoryManager como fonte única (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - FileRenderer e StatsPanel agora sincronizam em tempo real (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - Documentação completa para base RAG criada (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+- **NOVA SESSÃO**: Arquitetura e implementação de fonte única (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - Criada arquitetura completa para Fase 3 (integração LLMs) (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - Implementado AnalysisTypes.js como fonte única de tipos (Lei 0) (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - FileRenderer e AnalysisManager atualizados para usar fonte única (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
+  - Documentação completa da integração criada (`docs/sprint/1.3/checkpoint-15-07-2025-sessao2.md`)
 - **TERCEIRA ATIVIDADE**: Arquitetura LLM completa (`docs/sprint/1.3/checkpoint-15-01-2025-arquitetura-llm.md`)
   - Implementado PromptManager com 3 templates profissionais
   - Criado AnalysisAdapter com normalização inteligente
