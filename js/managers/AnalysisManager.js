@@ -548,6 +548,157 @@
                 KC.Logger?.warning('Erro ao salvar resultados:', error);
             }
         }
+
+        /**
+         * NOVO - Enriquece arquivo com metadados Schema.org
+         * FASE 2.3 - POC Schema.org
+         * 
+         * @param {Object} file - Arquivo já analisado com analysisType
+         * @returns {Object} Arquivo enriquecido com schema
+         */
+        enrichWithSchemaOrg(file) {
+            try {
+                // Verifica se SchemaOrgMapper está disponível
+                if (!KC.SchemaOrgMapper) {
+                    KC.Logger?.warn('AnalysisManager', 'SchemaOrgMapper não disponível');
+                    return file;
+                }
+
+                // Só enriquece se tiver analysisType (curadoria humana)
+                if (!file.analysisType) {
+                    KC.Logger?.debug('AnalysisManager', 'Arquivo sem analysisType, pulando enriquecimento', {
+                        file: file.name
+                    });
+                    return file;
+                }
+
+                // Mapeia para Schema.org
+                const schema = KC.SchemaOrgMapper.mapToSchema(file);
+                
+                if (!schema) {
+                    KC.Logger?.warn('AnalysisManager', 'Falha ao mapear schema', {
+                        file: file.name,
+                        type: file.analysisType
+                    });
+                    return file;
+                }
+
+                // Adiciona schema ao arquivo sem modificar estrutura existente
+                const enrichedFile = {
+                    ...file,
+                    schemaOrg: schema,
+                    enrichmentDate: new Date().toISOString(),
+                    semanticMetadata: {
+                        '@context': schema['@context'],
+                        '@type': schema['@type'],
+                        '@id': schema['@id'],
+                        additionalType: schema.additionalType || []
+                    }
+                };
+
+                KC.Logger?.info('AnalysisManager', 'Arquivo enriquecido com Schema.org', {
+                    file: file.name,
+                    schemaType: schema['@type'],
+                    analysisType: file.analysisType
+                });
+
+                return enrichedFile;
+
+            } catch (error) {
+                KC.Logger?.error('AnalysisManager', 'Erro ao enriquecer com Schema.org', {
+                    error: error.message,
+                    file: file?.name
+                });
+                // Retorna arquivo original em caso de erro
+                return file;
+            }
+        }
+
+        /**
+         * NOVO - Enriquece múltiplos arquivos em batch
+         * 
+         * @param {Array} files - Array de arquivos analisados
+         * @returns {Array} Arquivos enriquecidos
+         */
+        enrichBatchWithSchemaOrg(files) {
+            if (!Array.isArray(files)) return [];
+            
+            KC.Logger?.info('AnalysisManager', 'Iniciando enriquecimento em batch', {
+                total: files.length,
+                comAnalysisType: files.filter(f => f.analysisType).length
+            });
+
+            return files.map(file => this.enrichWithSchemaOrg(file));
+        }
+
+        /**
+         * MODIFICADO - Processa resultado da análise
+         * Agora inclui enriquecimento Schema.org após análise IA
+         */
+        async processAnalysisResult(result, item) {
+            // Código original preservado...
+            const files = AppState.get('files') || [];
+            const fileIndex = files.findIndex(f => f.id === item.file.id || f.name === item.file.name);
+            
+            if (fileIndex !== -1) {
+                const file = files[fileIndex];
+                
+                // Parse do tipo de análise
+                const analysisType = result.analysis?.analysisType || 
+                                   result.analysisType || 
+                                   'Aprendizado Geral';
+                
+                // Parse da relevância
+                let relevanceScore = parseFloat(
+                    result.analysis?.relevanceScore || 
+                    result.relevanceScore || 
+                    file.relevanceScore || 
+                    0.5
+                );
+
+                // Calcula boost de relevância baseado no tipo (15-25%)
+                const typeBoosts = {
+                    'Breakthrough Técnico': 0.25,
+                    'Evolução Conceitual': 0.25,
+                    'Momento Decisivo': 0.20,
+                    'Insight Estratégico': 0.15,
+                    'Aprendizado Geral': 0.05
+                };
+                
+                const boost = typeBoosts[analysisType] || 0;
+                relevanceScore = Math.min(1, relevanceScore * (1 + boost));
+                
+                // Atualiza arquivo
+                files[fileIndex] = {
+                    ...file,
+                    analyzed: true,
+                    analysisDate: new Date().toISOString(),
+                    analysisType: analysisType,
+                    relevanceScore: relevanceScore,
+                    analysisResult: result.analysis,
+                    analysisMetadata: result.metadata
+                };
+
+                // NOVO - Enriquece com Schema.org após análise
+                files[fileIndex] = this.enrichWithSchemaOrg(files[fileIndex]);
+                
+                AppState.set('files', files);
+                
+                // Emite eventos
+                EventBus.emit(Events.STATE_CHANGED, {
+                    key: 'files',
+                    newValue: files,
+                    oldValue: files
+                });
+                
+                EventBus.emit(Events.FILES_UPDATED, {
+                    action: 'analysis_completed',
+                    fileId: file.id || file.name,
+                    analysisType: analysisType,
+                    hasSchemaOrg: !!files[fileIndex].schemaOrg // NOVO
+                });
+            }
+        }
     }
 
     // Registra no namespace

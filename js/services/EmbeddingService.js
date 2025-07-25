@@ -112,12 +112,16 @@ class EmbeddingService {
                     embedding = await this.generateWithOllama(enrichedText);
                     model = this.config.ollama.model;
                 } catch (error) {
-                    console.warn('Ollama não disponível, tentando fallback:', error.message);
+                    // FASE 1.1: Ollama é obrigatório - não tentar fallback automático
+                    // AIDEV-NOTE: ollama-required; sem fallback automático para outros serviços
+                    console.error('Erro ao gerar embedding com Ollama:', error.message);
+                    throw new Error(`Ollama é obrigatório mas não está disponível: ${error.message}`);
                 }
             }
 
-            // Fallback para OpenAI se necessário
-            if (!embedding && this.config.openai.enabled && this.config.openai.apiKey) {
+            // Fallback para OpenAI desabilitado por padrão - só com aprovação explícita
+            if (!embedding && this.config.openai.enabled && this.config.openai.apiKey && this.config.openai.explicitlyApproved) {
+                console.warn('Usando OpenAI como fallback (aprovado pelo usuário)');
                 embedding = await this.generateWithOpenAI(enrichedText);
                 model = this.config.openai.model;
             }

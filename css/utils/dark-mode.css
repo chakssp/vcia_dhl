@@ -503,15 +503,67 @@ select[readonly] {
   border: 1px solid var(--border-light) !important;
 }
 
-/* Botão toggle para light/dark mode */
+/* Botão toggle para light/dark mode - sempre visível */
 .theme-toggle {
+  background: var(--primary-color);
+  color: var(--text-primary);
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Go to Top Button - específico */
+.go-to-top {
+  background: var(--secondary-color);
+  color: var(--text-primary);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.go-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.go-to-top:hover {
+  background: var(--secondary-hover);
+  border-color: var(--secondary-hover);
+}
+
+/* Go to Filters Button - sempre visível */
+.go-to-filters {
+  background: var(--info-color);
+  color: white;
+  opacity: 1;
+  visibility: visible;
+}
+
+.go-to-filters:hover {
+  background: var(--info-hover);
+  border-color: var(--info-hover);
+}
+
+/* Coluna de Ações Flutuantes */
+.floating-actions {
   position: fixed;
   bottom: 20px;
   right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+/* Ajuste para todos os botões flutuantes */
+.floating-actions .action-btn {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--bg-tertiary);
   border: var(--border-width-default) solid var(--border-light);
   cursor: pointer;
   display: flex;
@@ -519,12 +571,47 @@ select[readonly] {
   justify-content: center;
   font-size: 1.5rem;
   transition: all 0.3s ease;
-  z-index: 1000;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
 }
 
-.theme-toggle:hover {
+.floating-actions .action-btn:hover {
   transform: scale(1.1);
-  border-color: var(--primary-color);
+}
+
+/* Botão de Filtros Rápidos na floating-actions */
+.quick-filters-toggle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: var(--border-width-default) solid var(--border-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.quick-filters-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Responsividade para floating actions */
+@media (max-width: 480px) {
+  .floating-actions {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .floating-actions .action-btn,
+  .quick-filters-toggle {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
 }
 
 /* FORÇAR CONTRASTE EM LABELS E LEGENDS */

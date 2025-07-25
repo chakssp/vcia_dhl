@@ -21,7 +21,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(echo:*)",
       "Bash(mv:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "mcp__sequence-think__sequentialthinking",
+      "mcp__memory__create_entities",
+      "mcp__memory__create_relations"
     ],
     "deny": []
   },

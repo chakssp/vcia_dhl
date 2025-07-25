@@ -653,7 +653,8 @@
                 stats: KC.StatsManager ? KC.StatsManager.exportStats() : null,
                 configuration: AppState.get('configuration'),
                 files: AppState.get('files') || [],
-                categories: AppState.get('categories') || [],
+                categories: KC.CategoryManager ? KC.CategoryManager.getCategories() : [],
+                customCategories: AppState.get('customCategories') || [],
                 filters: KC.FilterManager ? KC.FilterManager.getConfig() : null
             };
             

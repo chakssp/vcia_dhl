@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Simples - Boost de Relevância</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #059669; font-weight: bold; }
+        .error { color: #dc2626; font-weight: bold; }
+        .info { color: #3b82f6; }
+        .file-info {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border: 2px solid #e5e7eb;
+        }
+        .relevance-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 10px 0;
+        }
+        .boost-indicator {
+            color: #7c3aed;
+            font-size: 18px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Simples - Boost de Relevância</h1>
+    
+    <div class="test-section">
+        <h2>1️⃣ Criar Arquivo de Teste</h2>
+        <button onclick="criarArquivo()">Criar Arquivo com 5% Relevância</button>
+        <div id="arquivo-info" class="file-info" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2️⃣ Aplicar Categoria</h2>
+        <button onclick="aplicarCategoria()" id="btn-categoria" disabled>Aplicar 1 Categoria</button>
+        <button onclick="aplicarDuasCategorias()" id="btn-duas" disabled>Aplicar 2 Categorias</button>
+        <button onclick="removerCategorias()" id="btn-remover" disabled>Remover Todas</button>
+    </div>
+
+    <div class="test-section">
+        <h2>3️⃣ Estado Atual</h2>
+        <div id="estado-atual" class="log">Aguardando criar arquivo...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>4️⃣ Logs do Sistema</h2>
+        <div id="console-log" class="log"></div>
+    </div>
+
+    <!-- Scripts do KC -->
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    <script src="../js/managers/CategoryManager.js"></script>
+    <script src="../js/utils/Logger.js"></script>
+
+    <script>
+        let arquivoTeste = null;
+        const logDiv = document.getElementById('console-log');
+        
+        // Logger
+        function log(message, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<span class="${type}">[${time}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Listener para mudanças
+        KC.EventBus.on(KC.Events.FILES_UPDATED, (data) => {
+            log(`Evento FILES_UPDATED: ${data.action}`, 'info');
+            atualizarEstado();
+        });
+
+        KC.EventBus.on(KC.Events.STATE_CHANGED, (data) => {
+            if (data.key === 'files') {
+                log('Evento STATE_CHANGED: files', 'info');
+                atualizarEstado();
+            }
+        });
+
+        // Inicializar
+        KC.CategoryManager.initialize();
+        
+        // Criar categorias se não existem
+        if (KC.CategoryManager.getCategories().length === 0) {
+            KC.CategoryManager.createCategory({ name: 'Técnico', color: '#3b82f6' });
+            KC.CategoryManager.createCategory({ name: 'Estratégico', color: '#059669' });
+        }
+        
+        log('Sistema inicializado', 'success');
+
+        function criarArquivo() {
+            arquivoTeste = {
+                id: 'test-' + Date.now(),
+                name: 'arquivo-teste.md',
+                relevanceScore: 5, // 5% inicial
+                categories: [],
+                content: 'Conteúdo de teste',
+                archived: false
+            };
+
+            // Salva no AppState
+            KC.AppState.set('files', [arquivoTeste]);
+            
+            // Habilita botões
+            document.getElementById('btn-categoria').disabled = false;
+            document.getElementById('btn-duas').disabled = false;
+            document.getElementById('btn-remover').disabled = false;
+            
+            log('Arquivo criado com 5% de relevância', 'success');
+            atualizarEstado();
+        }
+
+        function aplicarCategoria() {
+            if (!arquivoTeste) return;
+            
+            const categoria = KC.CategoryManager.getCategories()[0];
+            log(`Aplicando categoria "${categoria.name}"...`, 'info');
+            
+            // Aplica categoria
+            const result = KC.CategoryManager.assignCategoryToFile(arquivoTeste.id, categoria.id);
+            
+            if (result) {
+                log('Categoria aplicada com sucesso!', 'success');
+            } else {
+                log('Erro ao aplicar categoria', 'error');
+            }
+        }
+
+        function aplicarDuasCategorias() {
+            if (!arquivoTeste) return;
+            
+            const categorias = KC.CategoryManager.getCategories();
+            log('Aplicando 2 categorias...', 'info');
+            
+            categorias.slice(0, 2).forEach(cat => {
+                KC.CategoryManager.assignCategoryToFile(arquivoTeste.id, cat.id);
+            });
+            
+            log('2 categorias aplicadas!', 'success');
+        }
+
+        function removerCategorias() {
+            if (!arquivoTeste) return;
+            
+            const files = KC.AppState.get('files') || [];
+            const file = files.find(f => f.id === arquivoTeste.id);
+            
+            if (file) {
+                file.categories = [];
+                file.relevanceScore = 5; // Reset para 5%
+                KC.AppState.set('files', files);
+                
+                KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                    action: 'categories_removed',
+                    fileId: file.id
+                });
+                
+                log('Todas as categorias removidas', 'info');
+            }
+        }
+
+        function atualizarEstado() {
+            const files = KC.AppState.get('files') || [];
+            const file = files.find(f => f.id === arquivoTeste?.id);
+            
+            if (!file) {
+                document.getElementById('estado-atual').innerHTML = 'Nenhum arquivo criado';
+                return;
+            }
+
+            // Calcula boost esperado
+            const boostEsperado = file.categories?.length > 0 ? 
+                1.5 + (file.categories.length * 0.1) : 1;
+            const relevanciaEsperada = Math.round(5 * boostEsperado);
+
+            // Mostra estado
+            const html = `
+                <strong>Arquivo:</strong> ${file.name}<br>
+                <strong>ID:</strong> ${file.id}<br>
+                <strong>Categorias:</strong> ${file.categories?.length || 0} [${file.categories?.join(', ') || 'nenhuma'}]<br>
+                <strong>Relevância Atual:</strong> <span class="relevance-display">${file.relevanceScore}%</span>
+                ${file.categories?.length > 0 ? `<span class="boost-indicator">🚀 +${Math.round((boostEsperado - 1) * 100)}%</span>` : ''}<br>
+                <strong>Relevância Esperada:</strong> ${relevanciaEsperada}%<br>
+                <strong>Status:</strong> ${file.relevanceScore === relevanciaEsperada ? 
+                    '<span class="success">✅ CORRETO!</span>' : 
+                    '<span class="error">❌ INCORRETO - Valor não atualizado</span>'}
+            `;
+            
+            document.getElementById('estado-atual').innerHTML = html;
+            
+            // Atualiza info do arquivo
+            if (document.getElementById('arquivo-info').style.display === 'none') {
+                document.getElementById('arquivo-info').style.display = 'block';
+            }
+            document.getElementById('arquivo-info').innerHTML = `
+                <h3>${file.name}</h3>
+                <div class="relevance-display">
+                    Relevância: ${file.relevanceScore}%
+                    ${file.categories?.length > 0 ? `<span class="boost-indicator">🚀 +${Math.round((boostEsperado - 1) * 100)}%</span>` : ''}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

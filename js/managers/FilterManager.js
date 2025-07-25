@@ -357,7 +357,7 @@
                     all: 'Todos',
                     alta: 'Alta Relevância (≥70%)',
                     media: 'Média Relevância (50-69%)',
-                    baixa: 'Baixa Relevância (30-49%)'
+                    baixa: 'Baixa Relevância (<30%)'
                 };
                 
                 return `
@@ -562,7 +562,7 @@
                     case 'media':
                         return relevance >= 50 && relevance < 70;
                     case 'baixa':
-                        return relevance >= 30 && relevance < 50;
+                        return relevance < 30;
                     default:
                         return true;
                 }
@@ -804,6 +804,11 @@
                     countElement.textContent = this.filters[filterType][filterValue].count;
                 }
             });
+            
+            // Atualiza contadores da barra de filtros rápidos também
+            if (KC.updateQuickFilterCounters) {
+                KC.updateQuickFilterCounters();
+            }
         }
 
         /**
@@ -997,6 +1002,11 @@
             if (mediumBadge) mediumBadge.textContent = this.filters.relevance.media.count;
             if (pendingBadge) pendingBadge.textContent = this.filters.status.pendente.count;
             if (analyzedBadge) analyzedBadge.textContent = this.filters.status.analisados.count;
+            
+            // Atualiza contadores da barra de filtros rápidos também
+            if (KC.updateQuickFilterCounters) {
+                KC.updateQuickFilterCounters();
+            }
         }
 
         clearAllCounts() {

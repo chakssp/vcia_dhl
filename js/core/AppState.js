@@ -66,16 +66,9 @@
                     }
                 },
                 files: [],
-                categories: [
-                    { id: 'tech', name: 'Momentos Decisivos/Técnicos', color: '#3b82f6', count: 0 },
-                    { id: 'strategic', name: 'Momentos Decisivos/Estratégicos', color: '#8b5cf6', count: 0 },
-                    { id: 'conceptual', name: 'Momentos Decisivos/Conceituais', color: '#ec4899', count: 0 },
-                    { id: 'development', name: 'Insights/Desenvolvimento', color: '#10b981', count: 0 },
-                    { id: 'business', name: 'Insights/Negócios', color: '#f59e0b', count: 0 },
-                    { id: 'methodological', name: 'Aprendizados/Metodológicos', color: '#14b8a6', count: 0 },
-                    { id: 'breakthrough', name: 'Breakthroughs/Tecnológicos', color: '#ef4444', count: 0 },
-                    { id: 'personal', name: 'Reflexões/Pessoais', color: '#6366f1', count: 0 }
-                ],
+                // AIDEV-NOTE: categories-removal; removido array categories - usar CategoryManager.getCategories()
+                // CategoryManager é a fonte única de verdade para categorias (LEI 11 - SSO)
+                customCategories: [], // Apenas categorias customizadas são salvas aqui
                 stats: {
                     totalFiles: 0,
                     discoveredFiles: 0,
@@ -380,7 +373,8 @@
                 relevanceScore: file.relevanceScore,
                 tokenSavings: file.tokenSavings,
                 status: file.status,
-                category: file.category,
+                categories: file.categories || [], // CORRIGIDO: plural para array de categorias
+                // AIDEV-NOTE: category-persistence; fixed singular vs plural field name issue
                 analyzed: file.analyzed,
                 analysisType: file.analysisType,
                 analysisDate: file.analysisDate,
@@ -402,6 +396,7 @@
                 // Timestamps
                 discoveredAt: file.discoveredAt,
                 analyzedAt: file.analyzedAt,
+                categorizedDate: file.categorizedDate, // ADICIONADO: data de categorização
                 
                 // AIDEV-NOTE: keep-duplicate-detection; maintain fingerprint for cross-session tracking
                 fingerprint: file.fingerprint || this._generateFingerprint(file),
@@ -548,7 +543,7 @@
                         return false;
                 }
             } catch (error) {
-                KC.Logger?.warn('AppState', 'Erro ao gerenciar fingerprints:', error);
+                KC.Logger?.warning('AppState - Erro ao gerenciar fingerprints:', error);
                 return action === 'getAll' ? new Set() : false;
             }
         }
@@ -585,7 +580,7 @@
                         return false;
                 }
             } catch (error) {
-                KC.Logger?.warn('AppState', 'Erro ao gerenciar Qdrant sync:', error);
+                KC.Logger?.warning('AppState - Erro ao gerenciar Qdrant sync:', error);
                 return action === 'getAll' ? new Set() : false;
             }
         }
@@ -614,10 +609,24 @@
                 if (saved) {
                     const { state, version } = JSON.parse(saved);
                     
+                    // AIDEV-NOTE: debug-categories; log para debug de categorias
+                    console.log('[AppState] Estado carregado do localStorage:', {
+                        arquivos: state.files?.length || 0,
+                        categorias: state.categories?.length || 0,
+                        customCategories: state.customCategories?.length || 0
+                    });
+                    
                     // Verifica compatibilidade de versão
                     if (version === '1.0.0') {
                         // Merge com estado inicial para garantir novas propriedades
                         this.state = this._mergeStates(this._getInitialState(), state);
+                        
+                        console.log('[AppState] Estado após merge:', {
+                            arquivos: this.state.files?.length || 0,
+                            categorias: this.state.categories?.length || 0,
+                            customCategories: this.state.customCategories?.length || 0
+                        });
+                        
                         EventBus.emit(Events.STATE_RESTORED, { type: 'load' });
                     }
                 }
@@ -635,7 +644,18 @@
             const result = { ...initial };
             
             Object.keys(saved).forEach(key => {
-                if (saved[key] !== null && typeof saved[key] === 'object' && !Array.isArray(saved[key])) {
+                // AIDEV-NOTE: merge-categories; tratamento especial para arrays de categorias
+                if (key === 'categories' && Array.isArray(saved[key]) && Array.isArray(initial[key])) {
+                    // Para categorias, mantém as padrão e adiciona as customizadas do estado salvo
+                    const defaultIds = initial[key].map(cat => cat.id);
+                    const customCategories = saved[key].filter(cat => !defaultIds.includes(cat.id));
+                    result[key] = [...initial[key], ...customCategories];
+                    console.log('[AppState] Merge de categorias:', {
+                        padrão: initial[key].length,
+                        customizadas: customCategories.length,
+                        total: result[key].length
+                    });
+                } else if (saved[key] !== null && typeof saved[key] === 'object' && !Array.isArray(saved[key])) {
                     result[key] = this._mergeStates(initial[key] || {}, saved[key]);
                 } else {
                     result[key] = saved[key];

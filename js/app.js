@@ -84,7 +84,8 @@
             'TripleSchema',
             'EmbeddingService',
             'QdrantService',
-            'SimilaritySearchService'
+            'SimilaritySearchService',
+            'SchemaOrgMapper'
         ];
 
         components.forEach(name => {
@@ -345,6 +346,63 @@
             const { AppController, EventBus } = KC;
             await AppController.initialize();
 
+            // Inicializa managers que precisam carregar dados salvos
+            if (KC.CategoryManager && typeof KC.CategoryManager.initialize === 'function') {
+                KC.CategoryManager.initialize();
+                console.log('CategoryManager inicializado');
+            }
+
+            // FASE 1.1: Validar Ollama como padrão no carregamento
+            // AIDEV-NOTE: ollama-default; Ollama é o serviço padrão de embeddings
+            if (KC.EmbeddingService && typeof KC.EmbeddingService.checkOllamaAvailability === 'function') {
+                const ollamaAvailable = await KC.EmbeddingService.checkOllamaAvailability();
+                
+                if (!ollamaAvailable) {
+                    // Banner de alerta persistente se Ollama não estiver disponível
+                    showNotification({
+                        type: 'warning',
+                        message: 'Ollama não detectado! Funcionalidade semântica limitada.',
+                        details: 'Instale o Ollama e baixe o modelo nomic-embed-text para embeddings locais.',
+                        duration: 0 // Persistente até ser fechado manualmente
+                    });
+                    
+                    // Emitir evento de alerta do sistema
+                    EventBus.emit(KC.Events.SYSTEM_ALERT || 'SYSTEM_ALERT', {
+                        type: 'warning',
+                        message: 'Ollama não detectado. Funcionalidade semântica limitada.',
+                        persistent: true,
+                        action: {
+                            label: 'Ver guia de instalação',
+                            handler: () => {
+                                // Abrir documentação quando criada
+                                showNotification({
+                                    type: 'info',
+                                    message: 'Guia de instalação do Ollama será criado em breve.',
+                                    details: 'Por enquanto, visite: https://ollama.ai',
+                                    duration: 5000
+                                });
+                            }
+                        }
+                    });
+                    
+                    console.warn('⚠️ Ollama não disponível - sistema operando com funcionalidade reduzida');
+                } else {
+                    console.log('✅ Ollama disponível - embeddings semânticos ativados');
+                    
+                    // Notificação de sucesso
+                    showNotification({
+                        type: 'success',
+                        message: 'Ollama detectado com sucesso!',
+                        details: 'Embeddings semânticos disponíveis localmente.',
+                        duration: 3000
+                    });
+                }
+                
+                // Forçar Ollama como provider padrão
+                KC.EmbeddingService.config.ollama.enabled = true;
+                KC.EmbeddingService.config.openai.enabled = false; // Desabilitar fallback por padrão
+            }
+
             // Ativa modo debug em desenvolvimento
             if (window.location.hostname === 'localhost') {
                 EventBus.setDebugMode(true);
@@ -360,6 +418,14 @@
                 duration: 2000
             });
 
+            // Inicializar botão Go to Top
+            initGoToTopButton();
+            
+            // Inicializar Go to Filters
+            setupGoToFilters();
+            
+            // Inicializar barra de filtros rápidos
+            setupQuickFiltersBar();
 
         } catch (error) {
             console.error('Erro fatal na inicialização:', error);
@@ -371,12 +437,335 @@
         }
     }
 
+    // Função para inicializar o botão Go to Top
+    function initGoToTopButton() {
+        const goToTopBtn = document.getElementById('go-to-top');
+        if (!goToTopBtn) {
+            console.warn('Botão Go to Top não encontrado');
+            return;
+        }
+
+        let isScrolling = false;
+
+        // Mostrar/ocultar botão baseado no scroll
+        function handleScroll() {
+            if (!isScrolling) {
+                window.requestAnimationFrame(() => {
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    
+                    if (scrollTop > 300) {
+                        goToTopBtn.classList.add('visible');
+                    } else {
+                        goToTopBtn.classList.remove('visible');
+                    }
+                    
+                    isScrolling = false;
+                });
+                isScrolling = true;
+            }
+        }
+
+        // Adicionar listener de scroll com throttle
+        window.addEventListener('scroll', handleScroll);
+
+        // Função para ir ao topo com smooth scroll
+        goToTopBtn.addEventListener('click', () => {
+            // Primeiro tenta ir para o topo da lista de arquivos
+            const filesSection = document.getElementById('files-section');
+            const contentSection = document.getElementById('content-section');
+            
+            if (filesSection && filesSection.style.display !== 'none') {
+                // Se a seção de arquivos estiver visível, vai para o topo dela
+                filesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (contentSection) {
+                // Senão, vai para o topo da seção de conteúdo
+                contentSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Fallback: vai para o topo da página
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+
+        // Verificar scroll inicial
+        handleScroll();
+        
+        console.log('Botão Go to Top inicializado');
+    }
+    
+    // Configurar botão Go to Filters
+    function setupGoToFilters() {
+        const goToFiltersBtn = document.getElementById('go-to-filters');
+        if (!goToFiltersBtn) {
+            console.warn('Botão Go to Filters não encontrado');
+            return;
+        }
+        
+        // Função para ir ao painel de filtros com smooth scroll
+        goToFiltersBtn.addEventListener('click', () => {
+            const filterPanel = document.getElementById('filter-panel-container');
+            
+            if (filterPanel) {
+                // Vai para o painel de filtros
+                filterPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                console.warn('Painel de filtros não encontrado');
+            }
+        });
+        
+        console.log('Botão Go to Filters inicializado');
+    }
+
+    // Configurar barra de filtros rápidos
+    function setupQuickFiltersBar() {
+        const quickFiltersToggle = document.getElementById('quick-filters-toggle');
+        const quickFiltersBar = document.getElementById('quick-filters-bar');
+        
+        if (!quickFiltersToggle || !quickFiltersBar) {
+            console.warn('Elementos de filtros rápidos não encontrados');
+            return;
+        }
+        
+        // Estado inicial - fechado
+        let isExpanded = false;
+        
+        // Toggle ao clicar no botão
+        quickFiltersToggle.addEventListener('click', () => {
+            isExpanded = !isExpanded;
+            if (isExpanded) {
+                quickFiltersBar.classList.add('show');
+                quickFiltersToggle.title = 'Ocultar Filtros Rápidos';
+            } else {
+                quickFiltersBar.classList.remove('show');
+                quickFiltersToggle.title = 'Mostrar Filtros Rápidos';
+            }
+        });
+        
+        // ESC fecha a barra
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isExpanded) {
+                isExpanded = false;
+                quickFiltersBar.classList.remove('show');
+                quickFiltersToggle.title = 'Mostrar Filtros Rápidos';
+            }
+        });
+        
+        // NÃO fecha ao clicar fora (mantém aberto para agilizar curadora)
+        
+        // Adicionar listeners aos filtros
+        quickFiltersBar.querySelectorAll('.quick-filter-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Debug
+                console.log('Quick filter clicked:', {
+                    filterType: item.dataset.filter,
+                    filterValue: item.dataset.value,
+                    FilterManagerExists: !!KC.FilterManager
+                });
+                
+                const filterType = item.dataset.filter;
+                const filterValue = item.dataset.value;
+                
+                // Verificar se FilterManager existe
+                if (!KC.FilterManager) {
+                    console.error('FilterManager não está disponível');
+                    KC.showNotification({
+                        type: 'error',
+                        message: 'Sistema de filtros não está carregado',
+                        duration: 3000
+                    });
+                    return;
+                }
+                
+                // Aplicar filtro no FilterManager
+                if (filterType && filterValue) {
+                    // Limpar filtros atuais
+                    KC.FilterManager.clearAllFilters();
+                    
+                    // Tratamento especial para diferentes tipos de filtro
+                    let filterApplied = false;
+                    
+                    if (filterType === 'status') {
+                        // Filtros de status
+                        if (filterValue === 'todos') {
+                            // Mostrar todos - não aplicar filtro
+                            filterApplied = true;
+                        } else if (filterValue === 'pendente') {
+                            KC.FilterManager.filters.approved = false;
+                            KC.FilterManager.filters.archived = false;
+                            filterApplied = true;
+                        } else if (filterValue === 'aprovados') {
+                            KC.FilterManager.filters.approved = true;
+                            KC.FilterManager.filters.archived = false;
+                            filterApplied = true;
+                        }
+                    } else if (filterType === 'relevance') {
+                        // Filtros de relevância
+                        if (filterValue === 'alta') {
+                            KC.FilterManager.filters.relevanceThreshold = 70;
+                            filterApplied = true;
+                        } else if (filterValue === 'media') {
+                            KC.FilterManager.filters.relevanceThreshold = 30;
+                            KC.FilterManager.filters.relevanceMax = 69;
+                            filterApplied = true;
+                        } else if (filterValue === 'baixa') {
+                            KC.FilterManager.filters.relevanceMax = 29;
+                            filterApplied = true;
+                        }
+                    }
+                    
+                    // Aplicar novo filtro - fallback para estrutura antiga
+                    if (!filterApplied && KC.FilterManager.filters[filterType] && KC.FilterManager.filters[filterType][filterValue]) {
+                        KC.FilterManager.filters[filterType][filterValue].active = true;
+                        filterApplied = true;
+                    }
+                    
+                    // Se algum filtro foi aplicado
+                    if (filterApplied) {
+                        // Remover classe active de todos
+                        quickFiltersBar.querySelectorAll('.quick-filter-item').forEach(f => f.classList.remove('active'));
+                        
+                        // Adicionar active ao clicado
+                        item.classList.add('active');
+                        
+                        // Aplicar filtros
+                        KC.FilterManager.applyFilters();
+                        KC.FilterManager.saveFiltersState();
+                        
+                        // Scroll suave para a lista de arquivos
+                        const filesSection = document.getElementById('files-section');
+                        if (filesSection) {
+                            filesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                        
+                        // Notificar aplicação do filtro
+                        KC.showNotification({
+                            type: 'info',
+                            message: `Filtro aplicado: ${item.querySelector('.filter-label').textContent}`,
+                            duration: 2000
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Botão de navegação - Etapa anterior
+        const navPrev = document.getElementById('nav-prev');
+        if (navPrev) {
+            navPrev.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Nav prev clicked');
+                
+                const currentStep = KC.AppState.get('currentStep') || 2;
+                if (currentStep > 1) {
+                    KC.AppController.navigateToStep(currentStep - 1);
+                } else {
+                    console.log('Already at first step');
+                }
+            });
+        }
+        
+        // Botão de navegação - Próxima etapa
+        const navNext = document.getElementById('nav-next');
+        if (navNext) {
+            navNext.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Nav next clicked');
+                
+                const currentStep = KC.AppState.get('currentStep') || 2;
+                if (currentStep < 4) {
+                    KC.AppController.navigateToStep(currentStep + 1);
+                } else {
+                    console.log('Already at last step');
+                }
+            });
+        }
+        
+        // Botão exportar filtro atual
+        const exportFilter = document.getElementById('export-filter');
+        if (exportFilter) {
+            // COMENTADO: Handler duplicado removido
+            // O botão de exportar agora é gerenciado pelo quick-filters-final-fix.js
+            // que suporta exportação de arquivos selecionados e filtrados
+            /*
+            exportFilter.addEventListener('click', (e) => {
+                // Removido - ver quick-filters-final-fix.js linha 126-134
+            });
+            */
+        }
+        
+        // Integrar com FilterManager para atualizar contadores
+        KC.EventBus.on('FILES_UPDATED', updateQuickFilterCounters);
+        KC.EventBus.on('STATE_CHANGED', (data) => {
+            if (data.key === 'files') {
+                updateQuickFilterCounters();
+            }
+        });
+        
+        // Atualizar contadores iniciais
+        updateQuickFilterCounters();
+        
+        console.log('Barra de filtros rápidos inicializada');
+    }
+    
+    // Função para atualizar contadores da barra de filtros rápidos
+    function updateQuickFilterCounters() {
+        const files = KC.AppState.get('files') || [];
+        
+        // Contadores de status
+        const allCount = files.length;
+        const pendingCount = files.filter(f => !f.approved && !f.archived).length;
+        const approvedCount = files.filter(f => f.approved && !f.archived).length;
+        const archivedCount = files.filter(f => f.archived).length;
+        
+        // Contadores de relevância
+        const highCount = files.filter(f => f.relevanceScore >= 70 && !f.archived).length;
+        const mediumCount = files.filter(f => f.relevanceScore >= 30 && f.relevanceScore < 70 && !f.archived).length;
+        const lowCount = files.filter(f => f.relevanceScore < 30 && !f.archived).length;
+        
+        // Atualizar elementos da barra de filtros rápidos
+        const quickCountAll = document.getElementById('quick-count-all');
+        const quickCountPending = document.getElementById('quick-count-pending');
+        const quickCountApproved = document.getElementById('quick-count-approved');
+        const quickCountArchived = document.getElementById('quick-count-archived');
+        const quickCountHigh = document.getElementById('quick-count-high');
+        const quickCountMedium = document.getElementById('quick-count-medium');
+        const quickCountLow = document.getElementById('quick-count-low');
+        
+        if (quickCountAll) quickCountAll.textContent = allCount;
+        if (quickCountPending) quickCountPending.textContent = pendingCount;
+        if (quickCountApproved) quickCountApproved.textContent = approvedCount;
+        if (quickCountArchived) quickCountArchived.textContent = archivedCount;
+        if (quickCountHigh) quickCountHigh.textContent = highCount;
+        if (quickCountMedium) quickCountMedium.textContent = mediumCount;
+        if (quickCountLow) quickCountLow.textContent = lowCount;
+        
+        // Atualizar texto dos botões de navegação baseado na etapa atual
+        const currentStep = KC.AppState.get('currentStep') || 2;
+        const navPrev = document.getElementById('nav-prev');
+        const navNext = document.getElementById('nav-next');
+        
+        if (navPrev) {
+            navPrev.querySelector('span').textContent = currentStep > 1 ? `◀ Etapa ${currentStep - 1}` : '◀ Etapa I';
+            navPrev.disabled = currentStep <= 1;
+        }
+        
+        if (navNext) {
+            navNext.querySelector('span').textContent = currentStep < 4 ? `Etapa ${currentStep + 1} ▶` : 'Etapa III ▶';
+            navNext.disabled = currentStep >= 4;
+        }
+    }
+
     // Inicia quando o script carregar
     initializeApp();
 
     // Exporta função de inicialização para debug
     KC.initializeApp = initializeApp;
     KC.showNotification = showNotification;
+    KC.updateQuickFilterCounters = updateQuickFilterCounters;
     
     // Garante que showNotification esteja disponível mesmo antes da inicialização
     window.KnowledgeConsolidator.showNotification = showNotification;

@@ -244,11 +244,16 @@
                     }
                 }
 
-                // Salva no estado
-                AppState.set('files', finalFiles);
+                // PRESERVA DADOS EXISTENTES: Faz merge com arquivos já salvos
+                // AIDEV-NOTE: category-persistence; merge preserva categorias e campos personalizados (BUG #11 fix)
+                const existingFiles = AppState.get('files') || [];
+                const mergedFiles = this._mergeWithExistingFiles(finalFiles, existingFiles);
+                
+                // Salva no estado preservando campos personalizados
+                AppState.set('files', mergedFiles);
                 AppState.update({
                     'stats.totalFiles': this.stats.totalFiles,
-                    'stats.discoveredFiles': finalFiles.length,
+                    'stats.discoveredFiles': mergedFiles.length,
                     'stats.duplicateStats': duplicateStats,
                     'stats.lastUpdate': new Date().toISOString()
                 });
@@ -276,9 +281,9 @@
                 console.log(`Arquivos pulados: ${this.stats.skippedFiles}`);
                 console.log('==========================================');
                 
-                // Emite evento de conclusão
+                // Emite evento de conclusão com arquivos já merged
                 EventBus.emit(Events.FILES_DISCOVERED, {
-                    files: finalFiles,
+                    files: mergedFiles,
                     stats: { ...this.stats, duplicates: duplicateStats }
                 });
 
@@ -289,7 +294,7 @@
 
                 return {
                     success: true,
-                    files: this.discoveredFiles,
+                    files: mergedFiles,
                     stats: this.stats
                 };
 
@@ -1060,6 +1065,102 @@
         }
 
         // REMOVIDO: _simulateObsidianJson - sem simulações
+
+        /**
+         * Faz merge de arquivos descobertos com arquivos existentes
+         * Preserva campos personalizados como categories, approved, etc.
+         * @private
+         */
+        _mergeWithExistingFiles(newFiles, existingFiles) {
+            KC.Logger.info('Fazendo merge de arquivos descobertos com existentes', {
+                newCount: newFiles.length,
+                existingCount: existingFiles.length
+            });
+            
+            // Cria um mapa dos arquivos existentes por path/name para lookup rápido
+            const existingMap = new Map();
+            existingFiles.forEach(file => {
+                // Usa path como chave primária, name como fallback
+                const key = file.path || file.name;
+                if (key) {
+                    existingMap.set(key, file);
+                }
+            });
+            
+            // Merge dos arquivos
+            const mergedFiles = newFiles.map(newFile => {
+                const key = newFile.path || newFile.name;
+                const existingFile = existingMap.get(key);
+                
+                if (existingFile) {
+                    // PRESERVA campos personalizados do arquivo existente
+                    const merged = {
+                        ...newFile, // Dados atualizados da descoberta
+                        // Preserva campos que o usuário pode ter modificado
+                        categories: existingFile.categories || [],
+                        approved: existingFile.approved || false,
+                        archived: existingFile.archived || false,
+                        analyzed: existingFile.analyzed || false,
+                        analysisType: existingFile.analysisType || null,
+                        tags: existingFile.tags || [],
+                        notes: existingFile.notes || '',
+                        customFields: existingFile.customFields || {},
+                        // Preserva datas importantes
+                        categorizedDate: existingFile.categorizedDate,
+                        approvedDate: existingFile.approvedDate,
+                        archivedDate: existingFile.archivedDate,
+                        analyzedDate: existingFile.analyzedDate
+                    };
+                    
+                    // FASE 1.3: Aplicar boost de relevância por categorização
+                    // AIDEV-NOTE: category-relevance-boost; categorias aumentam relevância (curadoria humana)
+                    if (merged.categories && merged.categories.length > 0) {
+                        const originalScore = merged.relevanceScore || 0;
+                        // Boost base de 50% + 10% por categoria atribuída
+                        const categoryBoost = 1.5 + (merged.categories.length * 0.1);
+                        merged.relevanceScore = Math.min(100, originalScore * categoryBoost);
+                        
+                        KC.Logger.info('Boost de relevância aplicado', {
+                            file: merged.name,
+                            categories: merged.categories.length,
+                            originalScore: originalScore,
+                            boostedScore: merged.relevanceScore,
+                            boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                        });
+                    }
+                    
+                    // AIDEV-NOTE: preserve-user-data; mantém dados do usuário ao re-descobrir
+                    KC.Logger.debug(`Arquivo preservado: ${key}`, {
+                        categories: merged.categories,
+                        approved: merged.approved,
+                        relevanceScore: merged.relevanceScore
+                    });
+                    
+                    return merged;
+                }
+                
+                // Arquivo novo, retorna com campos padrão
+                return {
+                    ...newFile,
+                    categories: [],
+                    approved: false,
+                    archived: false,
+                    tags: [],
+                    notes: '',
+                    customFields: {}
+                };
+            });
+            
+            KC.Logger.success('Merge concluído', {
+                total: mergedFiles.length,
+                preserved: Array.from(existingMap.keys()).filter(key => 
+                    mergedFiles.some(f => (f.path || f.name) === key)
+                ).length,
+                new: mergedFiles.length - existingMap.size
+            });
+            
+            return mergedFiles;
+        }
 
         /**
          * Obtém estatísticas atuais

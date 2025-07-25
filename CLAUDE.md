@@ -253,5 +253,12 @@ if (KC.ComponenteX) {
    - Comandos de troubleshooting
    - Criado em 21/07/2025
 
+3. **Análise de Fontes de Verdade**: `/docs/analise-fontes-verdade/`
+   - **README-EVOLUCAO-SISTEMA.md**: Documento mestre para evolução
+   - **FONTES-UNICAS-VERDADE.md**: Define fonte única para cada tipo de dado
+   - **5 documentos de análise**: Mapeamento completo, fluxos, correlações e problemas
+   - CRÍTICO: SEMPRE consulte antes de implementar
+   - Centralizado em 24/07/2025
+
 **DIRETIVA**: Sempre siga as LEIS do projeto e o protocolo de início de sessão. Leia @CLAUDE.md e @RESUME-STATUS.md antes de fazer qualquer alteração. Consulte o timeline completo em `/docs/timeline-completo-projeto.md` para contexto histórico. Utilize o padrão de sucesso fornecido para garantir a consistência e a qualidade do código. Mantenha a segurança em mente, implementando criptografia de chaves de API, limitação de taxa para chamadas de API e cabeçalhos CSP para produção. Sanitize o conteúdo exibido para evitar vulnerabilidades. Utilize comentários âncora para facilitar a manutenção e a compreensão do código.
 </LEIS>

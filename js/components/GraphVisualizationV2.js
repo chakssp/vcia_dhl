@@ -728,8 +728,8 @@
             
             // Ordenar nós por nível para z-index correto
             const sortedNodes = this.sortNodesByLevel(this.allNodes);
-            this.nodes.add(sortedNodes);
-            this.edges.add(this.allEdges);
+            this.addNodesSafely(sortedNodes);
+            this.addEdgesSafely(this.allEdges);
         }
 
         /**
@@ -842,15 +842,23 @@
             // Entidade -> Categoria
             this.entityMap.forEach((entityData, entityName) => {
                 entityData.categories.forEach(catId => {
-                    this.allEdges.push({
-                        id: `edge-entity-cat-${entityData.id}-${catId}`,
-                        from: entityData.id,
-                        to: `category-${catId}`,
-                        label: 'classificada em',
-                        color: { color: '#10b981' },
-                        width: 3,
-                        arrows: { to: { enabled: true, scaleFactor: 0.8 } }
-                    });
+                    // AIDEV-NOTE: edge-fix; corrigir ID duplicado removendo prefixo redundante
+                    // entityData.id já contém "entity-", não precisa duplicar
+                    const cleanEntityId = entityData.id.replace('entity-', '');
+                    const edgeId = `edge-entity-cat-${cleanEntityId}-${catId}`;
+                    
+                    // Verificar se edge já existe para evitar duplicatas
+                    if (!this.allEdges.find(e => e.id === edgeId)) {
+                        this.allEdges.push({
+                            id: edgeId,
+                            from: entityData.id,
+                            to: `category-${catId}`,
+                            label: 'classificada em',
+                            color: { color: '#10b981' },
+                            width: 3,
+                            arrows: { to: { enabled: true, scaleFactor: 0.8 } }
+                        });
+                    }
                 });
             });
             
@@ -882,12 +890,12 @@
                         this.nodes.add(node);
                     }
                 } catch (e) {
-                    Logger.warn('[GraphVisualizationV2] Erro ao adicionar nó:', e);
+                    Logger.warning('[GraphVisualizationV2] Erro ao adicionar nó:', e);
                 }
             });
             
             // Adicionar arestas
-            this.edges.add(this.allEdges);
+            this.addEdgesSafely(this.allEdges);
         }
 
         /**
@@ -994,8 +1002,8 @@
             
             // Ordenar nós por nível para z-index correto
             const sortedNodes = this.sortNodesByLevel(this.allNodes);
-            this.nodes.add(sortedNodes);
-            this.edges.add(this.allEdges);
+            this.addNodesSafely(sortedNodes);
+            this.addEdgesSafely(this.allEdges);
         }
 
         /**
@@ -1406,8 +1414,8 @@
             const sortedNodes = this.sortNodesByLevel(this.allNodes);
             
             // Aplicar nós ordenados e arestas
-            this.nodes.add(sortedNodes);
-            this.edges.add(this.allEdges);
+            this.addNodesSafely(sortedNodes);
+            this.addEdgesSafely(this.allEdges);
             
             // Forçar layout com physics ajustado para sistema de mass
             // PHYSICS PROPORCIONAL: Configurado para movimento baseado em peso
@@ -1513,11 +1521,11 @@
                 return nodeIds.includes(edge.from) && nodeIds.includes(edge.to);
             });
             
-            // Atualizar visualização
+            // Atualizar visualização usando métodos seguros
             this.nodes.clear();
             this.edges.clear();
-            this.nodes.add(filteredNodes);
-            this.edges.add(filteredEdges);
+            this.addNodesSafely(filteredNodes);
+            this.addEdgesSafely(filteredEdges);
             
             // Atualizar estatísticas
             this.updateStats();
@@ -2074,6 +2082,64 @@
                 // Assim arquivos (level 3) são adicionados primeiro e ficam na frente
                 return (b.level || 0) - (a.level || 0);
             });
+        }
+
+        /**
+         * Adiciona edges ao DataSet com verificação de duplicatas
+         * @param {Array} edgesToAdd - Array de edges para adicionar
+         */
+        addEdgesSafely(edgesToAdd) {
+            if (!edgesToAdd || edgesToAdd.length === 0) return;
+            
+            // AIDEV-NOTE: safe-edge-add; evitar erro de IDs duplicados no vis.js
+            const uniqueEdges = new Map();
+            
+            // Primeiro, adicionar edges existentes ao mapa
+            this.edges.forEach(edge => {
+                uniqueEdges.set(edge.id, edge);
+            });
+            
+            // Depois, adicionar novas edges, evitando duplicatas
+            edgesToAdd.forEach(edge => {
+                if (!uniqueEdges.has(edge.id)) {
+                    uniqueEdges.set(edge.id, edge);
+                } else {
+                    Logger.warning(`[GraphVisualizationV2] Edge duplicada ignorada: ${edge.id}`);
+                }
+            });
+            
+            // Limpar e adicionar todas as edges únicas
+            this.edges.clear();
+            this.edges.add(Array.from(uniqueEdges.values()));
+        }
+
+        /**
+         * Adiciona nós ao DataSet com verificação de duplicatas
+         * @param {Array} nodesToAdd - Array de nós para adicionar
+         */
+        addNodesSafely(nodesToAdd) {
+            if (!nodesToAdd || nodesToAdd.length === 0) return;
+            
+            // AIDEV-NOTE: safe-node-add; evitar erro de IDs duplicados no vis.js
+            const uniqueNodes = new Map();
+            
+            // Primeiro, adicionar nós existentes ao mapa
+            this.nodes.forEach(node => {
+                uniqueNodes.set(node.id, node);
+            });
+            
+            // Depois, adicionar novos nós, evitando duplicatas
+            nodesToAdd.forEach(node => {
+                if (!uniqueNodes.has(node.id)) {
+                    uniqueNodes.set(node.id, node);
+                } else {
+                    Logger.warning(`[GraphVisualizationV2] Nó duplicado ignorado: ${node.id}`);
+                }
+            });
+            
+            // Limpar e adicionar todos os nós únicos
+            this.nodes.clear();
+            this.nodes.add(Array.from(uniqueNodes.values()));
         }
 
         /**

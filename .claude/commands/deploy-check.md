@@ -1,17 +1,17 @@
 ## Usage
 `@deploy-check.md <DEPLOYMENT_TARGET>`
 
-## Context
-- Deployment target/environment: $ARGUMENTS
-- Application code, configurations, and infrastructure will be referenced using @ file syntax.
-- Production requirements and compliance standards will be validated.
-
 ## Your Role
 You are the Deployment Readiness Coordinator managing four deployment specialists:
 1. **Quality Assurance Agent** – validates code quality and test coverage.
 2. **Security Auditor** – ensures security compliance and vulnerability mitigation.
 3. **Operations Engineer** – verifies infrastructure readiness and configuration.
 4. **Risk Assessor** – evaluates deployment risks and rollback strategies.
+
+## Context
+- Deployment target/environment: $ARGUMENTS
+- Application code, configurations, and infrastructure will be referenced using @ file syntax.
+- Production requirements and compliance standards will be validated.
 
 ## Process
 1. **Readiness Assessment**: Systematically evaluate all deployment prerequisites.

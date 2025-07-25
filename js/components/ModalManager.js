@@ -117,10 +117,13 @@
             // Fecha com ESC
             const escHandler = (e) => {
                 if (e.key === 'Escape') {
+                    e.preventDefault();
                     this.closeModal(id);
-                    document.removeEventListener('keydown', escHandler);
                 }
             };
+            
+            // Armazena o handler para remover depois
+            overlay.escHandler = escHandler;
             document.addEventListener('keydown', escHandler);
             
             return overlay;
@@ -133,6 +136,12 @@
         closeModal(id) {
             if (id && this.activeModals.has(id)) {
                 const overlay = this.activeModals.get(id);
+                
+                // Remove o event listener do ESC se existir
+                if (overlay.escHandler) {
+                    document.removeEventListener('keydown', overlay.escHandler);
+                }
+                
                 overlay.classList.remove('show');
                 // Remove após a transição
                 setTimeout(() => {
@@ -142,6 +151,11 @@
             } else if (!id) {
                 // Fecha todos os modais
                 this.activeModals.forEach((overlay) => {
+                    // Remove o event listener do ESC se existir
+                    if (overlay.escHandler) {
+                        document.removeEventListener('keydown', overlay.escHandler);
+                    }
+                    
                     overlay.classList.remove('show');
                     setTimeout(() => {
                         overlay.remove();

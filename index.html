@@ -27,6 +27,9 @@
     <link rel="stylesheet" href="css/components/progress-global.css">
     <link rel="stylesheet" href="css/components/word-cloud.css">
     <link rel="stylesheet" href="css/components/graph-visualization.css">
+    <link rel="stylesheet" href="css/components/quick-filters-bar.css">
+    <link rel="stylesheet" href="css/components/quick-filters-bar-fix.css">
+    <link rel="stylesheet" href="css/components/quick-filters-override.css">
     
     <!-- Vis.js para visualização de grafos -->
     <link rel="stylesheet" href="https://unpkg.com/vis-network@latest/dist/dist/vis-network.min.css">
@@ -127,8 +130,9 @@
 
                     <!-- Lista de Arquivos -->
                     <div class="files-section" id="files-section" style="display: none;">
-                        <div class="files-header">
-                            <h2 class="files-title">Arquivos Descobertos</h2>
+                        <div class="files-header" style="display: none;">
+                            <!-- Header oculto mas preservado para compatibilidade -->
+                            <h2 class="files-title" style="display: none;">Arquivos Descobertos</h2>
                             <div class="files-actions" id="files-actions">
                                 <!-- Ações em lote -->
                             </div>
@@ -174,10 +178,29 @@
         </div>
     </div>
 
-    <!-- Theme Toggle Button -->
-    <button class="theme-toggle" id="theme-toggle" title="Alternar tema">
-        <span id="theme-icon">☀️</span>
-    </button>
+    <!-- Floating Actions Container -->
+    <div class="floating-actions">
+        <!-- Theme Toggle Button (sempre visível, em cima) -->
+        <button class="theme-toggle action-btn" id="theme-toggle" title="Alternar tema">
+            <span id="theme-icon">☀️</span>
+        </button>
+        
+        <!-- Go to Filters Button (sempre visível, meio) -->
+        <button class="go-to-filters action-btn" id="go-to-filters" title="Ir para filtros">
+            <span>🔍</span>
+        </button>
+        
+        <!-- Go to Top Button (aparece/desaparece, embaixo) -->
+        <button class="go-to-top action-btn" id="go-to-top" title="Ir para o topo">
+            <span>⬆️</span>
+        </button>
+        
+        
+        <!-- Botão de Filtros Rápidos -->
+        <button class="action-btn" id="quick-filters-toggle" title="Mostrar/Ocultar Filtros Rápidos">
+            <span>📊</span>
+        </button>
+    </div>
 
     <!-- Vis.js para visualização de grafos -->
     <script src="https://unpkg.com/vis-network@latest/dist/vis-network.min.js"></script>
@@ -215,6 +238,7 @@
     <script src="js/managers/AIAPIManager.js"></script>
     <script src="js/managers/PromptManager.js"></script>
     <script src="js/managers/AnalysisAdapter.js"></script>
+    <script src="js/managers/SchemaOrgMapper.js"></script>
     <script src="js/managers/CategoryManager.js"></script>
     <script src="js/managers/FilterManager.js"></script>
     <script src="js/managers/StatsManager.js"></script>
@@ -275,5 +299,70 @@
     
     <!-- Script de Debug de Handle -->
     <script src="test/debug-handle-type.js"></script>
+    
+    <!-- Correção da barra de filtros rápidos -->
+    <script src="js/quick-filters-final-fix.js"></script>
+    <script src="js/quick-filters-combined-fix.js"></script>
+    
+    <!-- Barra de Filtros Rápidos -->
+    <div class="quick-filters-bar" id="quick-filters-bar">
+        <div class="quick-filters-container">
+            <!-- Navegação Etapas -->
+            <button class="nav-button prev" id="nav-prev" title="Voltar para etapa anterior">
+                <span>◀ Etapa I</span>
+            </button>
+            
+            <!-- Filtros de Status (sem div wrapper) -->
+            <button class="quick-filter-item" data-filter="status" data-value="todos">
+                <span class="filter-label">Total:</span>
+                <span class="filter-count" id="quick-count-all">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="pendente">
+                <span class="filter-label">Pendente:</span>
+                <span class="filter-count pending" id="quick-count-pending">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="aprovados">
+                <span class="filter-label">Aprovado:</span>
+                <span class="filter-count approved" id="quick-count-approved">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="arquivados">
+                <span class="filter-label">Arquivado:</span>
+                <span class="filter-count archived" id="quick-count-archived">0</span>
+            </button>
+            
+            <span class="separator-double">||</span>
+            
+            <!-- Filtros de Relevância (sem div wrapper) -->
+            <button class="quick-filter-item" data-filter="relevance" data-value="alta">
+                <span class="filter-label">Alta:</span>
+                <span class="filter-count high" id="quick-count-high">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="relevance" data-value="media">
+                <span class="filter-label">Média:</span>
+                <span class="filter-count medium" id="quick-count-medium">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="relevance" data-value="baixa">
+                <span class="filter-label">Baixa:</span>
+                <span class="filter-count low" id="quick-count-low">0</span>
+            </button>
+            
+            <span class="separator-double">||</span>
+            
+            <!-- Ações -->
+            <button class="action-button export" id="export-filter" title="Exportar filtro atual">
+                <span>💾 Exportar</span>
+            </button>
+            
+            <!-- Navegação Etapas -->
+            <button class="nav-button next" id="nav-next" title="Ir para próxima etapa">
+                <span>Etapa III ▶</span>
+            </button>
+        </div>
+    </div>
 </body>
 </html>

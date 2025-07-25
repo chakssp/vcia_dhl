@@ -187,22 +187,6 @@
     font-size: 0.8em;
 }
 
-/* Container de Ações em Lote */
-.bulk-actions-container {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
-    padding: 20px;
-    margin-top: 25px;
-}
-
-.bulk-actions-container h4 {
-    margin: 0 0 15px 0;
-    color: var(--text-color);
-    font-size: 1.1em;
-    font-weight: 600;
-}
 
 /* Botões de Ação em Lote */
 .bulk-buttons {
@@ -323,9 +307,6 @@
         padding: 12px;
     }
     
-    .bulk-actions-container {
-        padding: 15px;
-    }
 }
 
 /* Animações */

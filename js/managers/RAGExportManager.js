@@ -71,12 +71,26 @@
             const categories = KC.CategoryManager.getCategories();
             const stats = KC.AppState.get('stats') || {};
 
-            // Filtrar apenas arquivos aprovados pelo usuário
+            // FASE 1.2: Remover threshold mínimo para arquivos categorizados
+            // AIDEV-NOTE: category-threshold; arquivos categorizados sempre válidos para Qdrant
             const approvedFiles = files.filter(file => {
-                // REMOVIDO: Restrição de relevância mínima de 50%
-                // Agora o usuário tem controle total sobre quais arquivos aprovar
+                // Arquivo categorizado = automaticamente válido (curadoria humana)
+                if (file.categories && file.categories.length > 0) {
+                    // FASE 1.2 FIX: Garantir que arquivo categorizado sempre passa
+                    // mesmo sem preview (preview será gerado se necessário)
+                    KC.Logger?.info('RAGExportManager', `Arquivo ${file.name} aprovado por categorização`, {
+                        categories: file.categories,
+                        relevance: file.relevanceScore,
+                        hasPreview: !!file.preview,
+                        archived: file.archived,
+                        approved: file.approved
+                    });
+                    
+                    // Validar apenas que não está arquivado (descartado)
+                    return !file.archived;
+                }
                 
-                // Apenas verificações essenciais:
+                // Para arquivos não categorizados, mantém critérios anteriores
                 return file.preview && // Tem preview extraído (necessário para chunking)
                        !file.archived && // Não está arquivado (arquivado = descartado pelo usuário)
                        file.approved !== false; // Não foi explicitamente rejeitado
@@ -191,6 +205,28 @@
                             isPreviewOnly: true,
                             keywords: this._extractKeywords(previewText),
                             relevanceInheritance: file.relevanceScore
+                        }
+                    });
+                }
+                
+                // FASE 1.2 FIX: Se arquivo categorizado sem chunks, criar chunk mínimo
+                if (chunks.length === 0 && file.categories && file.categories.length > 0) {
+                    KC.Logger?.warn('RAGExportManager', `Arquivo categorizado sem conteúdo/preview: ${file.name}`);
+                    
+                    // Criar chunk com metadados básicos para garantir indexação
+                    const fallbackContent = `${file.name}\nArquivo categorizado como: ${file.categories.join(', ')}\nRelevância: ${file.relevanceScore || 0}%`;
+                    
+                    chunks.push({
+                        id: `${file.id}-category-chunk`,
+                        content: fallbackContent,
+                        position: 0,
+                        metadata: {
+                            fileId: file.id,
+                            fileName: file.name,
+                            isCategoryOnly: true,
+                            categories: file.categories,
+                            keywords: file.categories,
+                            relevanceInheritance: file.relevanceScore || 50 // Mínimo 50% para categorizados
                         }
                     });
                 }
@@ -312,11 +348,44 @@
         async exportData(format = 'qdrant') {
             const consolidatedData = await this.consolidateData();
 
+            // NOVO - Enriquece com Schema.org antes de exportar
+            if (KC.SchemaOrgMapper && KC.AnalysisManager) {
+                consolidatedData.documents = consolidatedData.documents.map(doc => {
+                    // Cria arquivo temporário para enriquecimento
+                    const tempFile = {
+                        id: doc.id,
+                        name: doc.source.fileName,
+                        content: doc.chunks.map(c => c.content).join('\n'),
+                        preview: doc.preview,
+                        analysisType: doc.analysis.type,
+                        categories: doc.analysis.categories.map(c => c.name),
+                        relevanceScore: doc.analysis.relevanceScore,
+                        createdDate: doc.source.createdDate,
+                        modifiedDate: doc.source.lastModified,
+                        analysisDate: doc.analysis.date
+                    };
+                    
+                    // Enriquece com Schema.org
+                    const enriched = KC.AnalysisManager.enrichWithSchemaOrg(tempFile);
+                    
+                    // Adiciona schema ao documento
+                    if (enriched.schemaOrg) {
+                        doc.schemaOrg = enriched.schemaOrg;
+                        doc.semanticMetadata = enriched.semanticMetadata;
+                    }
+                    
+                    return doc;
+                });
+            }
+
             switch (format) {
                 case 'qdrant':
                     return this._exportToQdrant(consolidatedData);
                 case 'json':
                     return JSON.stringify(consolidatedData, null, 2);
+                case 'jsonld':
+                    // NOVO - Exporta como JSON-LD puro
+                    return this._exportToJsonLD(consolidatedData);
                 case 'markdown':
                     return this._exportToMarkdown(consolidatedData);
                 case 'csv':
@@ -342,10 +411,18 @@
             try {
                 // 0. Validação inicial - verifica se há arquivos aprovados
                 const allFiles = KC.AppState?.get('files') || [];
-                const approvedFiles = allFiles.filter(f => f.approved && !f.archived);
+                // FASE 1.2 FIX: Considerar categorizados como aprovados
+                const approvedFiles = allFiles.filter(f => {
+                    // Arquivo categorizado = automaticamente aprovado
+                    if (f.categories && f.categories.length > 0 && !f.archived) {
+                        return true;
+                    }
+                    // Arquivo explicitamente aprovado
+                    return f.approved && !f.archived;
+                });
                 
                 if (approvedFiles.length === 0) {
-                    KC.Logger?.warn('RAGExportManager', 'Nenhum arquivo aprovado encontrado');
+                    KC.Logger?.warning('RAGExportManager - Nenhum arquivo aprovado encontrado');
                     
                     // Notifica o usuário
                     KC.EventBus?.emit(KC.Events.NOTIFICATION_SHOW || 'notification:show', {
@@ -381,7 +458,7 @@
                 const totalDocuments = consolidatedData.documents.length;
                 
                 if (totalDocuments === 0) {
-                    KC.Logger?.warn('RAGExportManager', 'Nenhum arquivo para processar');
+                    KC.Logger?.warning('RAGExportManager - Nenhum arquivo para processar');
                     KC.EventBus?.emit(KC.Events.PIPELINE_COMPLETED || 'pipeline:completed', {
                         success: false,
                         message: 'Nenhum arquivo aprovado encontrado'
@@ -677,6 +754,7 @@
 
         /**
          * Exporta para formato Qdrant
+         * MODIFICADO - Inclui Schema.org quando disponível
          * @private
          */
         _exportToQdrant(data) {
@@ -685,22 +763,40 @@
 
             data.documents.forEach(doc => {
                 doc.chunks.forEach(chunk => {
+                    const payload = {
+                        documentId: doc.id,
+                        fileName: doc.source.fileName,
+                        chunkId: chunk.id,
+                        content: chunk.content,
+                        metadata: {
+                            ...chunk.metadata,
+                            analysisType: doc.analysis.type,
+                            categories: doc.analysis.categories.map(cat => cat.name),
+                            relevanceScore: doc.analysis.relevanceScore,
+                            lastModified: doc.source.lastModified
+                        }
+                    };
+
+                    // NOVO - Adiciona Schema.org se disponível
+                    if (doc.schemaOrg) {
+                        payload.schemaOrg = {
+                            '@context': doc.schemaOrg['@context'],
+                            '@type': doc.schemaOrg['@type'],
+                            '@id': doc.schemaOrg['@id'],
+                            additionalType: doc.schemaOrg.additionalType,
+                            // Adiciona campos semânticos relevantes
+                            ...(doc.schemaOrg.technicalAudience && { technicalAudience: doc.schemaOrg.technicalAudience }),
+                            ...(doc.schemaOrg.proficiencyLevel && { proficiencyLevel: doc.schemaOrg.proficiencyLevel }),
+                            ...(doc.schemaOrg.academicDiscipline && { academicDiscipline: doc.schemaOrg.academicDiscipline }),
+                            ...(doc.schemaOrg.category && { category: doc.schemaOrg.category })
+                        };
+                        payload.hasSemanticEnrichment = true;
+                    }
+
                     points.push({
                         id: pointId++,
                         vector: null, // Será preenchido pelo pipeline de embeddings
-                        payload: {
-                            documentId: doc.id,
-                            fileName: doc.source.fileName,
-                            chunkId: chunk.id,
-                            content: chunk.content,
-                            metadata: {
-                                ...chunk.metadata,
-                                analysisType: doc.analysis.type,
-                                categories: doc.analysis.categories.map(cat => cat.name),
-                                relevanceScore: doc.analysis.relevanceScore,
-                                lastModified: doc.source.lastModified
-                            }
-                        }
+                        payload: payload
                     });
                 });
             });
@@ -911,6 +1007,41 @@
                 nodes: nodes,
                 edges: edges
             };
+        }
+
+        /**
+         * NOVO - Exporta dados como JSON-LD Schema.org
+         * @private
+         */
+        _exportToJsonLD(data) {
+            if (!KC.SchemaOrgMapper) {
+                KC.Logger?.warn('RAGExportManager', 'SchemaOrgMapper não disponível para export JSON-LD');
+                return JSON.stringify(data, null, 2);
+            }
+
+            // Extrai apenas arquivos com Schema.org
+            const enrichedFiles = data.documents
+                .filter(doc => doc.schemaOrg)
+                .map(doc => doc.schemaOrg);
+
+            // Usa SchemaOrgMapper para gerar JSON-LD válido
+            const jsonld = {
+                '@context': 'https://schema.org',
+                '@graph': enrichedFiles,
+                metadata: {
+                    exportDate: data.metadata.exportDate,
+                    totalEnriched: enrichedFiles.length,
+                    totalDocuments: data.documents.length,
+                    enrichmentRate: `${Math.round((enrichedFiles.length / data.documents.length) * 100)}%`
+                }
+            };
+
+            KC.Logger?.info('RAGExportManager', 'JSON-LD exportado', {
+                total: enrichedFiles.length,
+                types: [...new Set(enrichedFiles.map(f => f['@type']))]
+            });
+
+            return JSON.stringify(jsonld, null, 2);
         }
 
         _exportToMarkdown(data) {

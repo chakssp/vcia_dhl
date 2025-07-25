@@ -10,8 +10,8 @@
 **Nome**: Consolidador de Conhecimento Pessoal (Personal Knowledge Consolidator)  
 **Visão**: Transformar conhecimento disperso em insights acionáveis  
 **Sprint Atual**: FASE 2 - Fundação Semântica ✅ CONCLUÍDA  
-**Última Atualização**: 21/07/2025 (Correções críticas aplicadas - Sistema totalmente funcional)  
-**Status Geral**: 🟢 FUNCIONAL - Sistema base operacional / ✅ Busca semântica implementada / ✅ Bugs críticos corrigidos  
+**Última Atualização**: 24/07/2025 (BUG #11 RESOLVIDO - Migração de categorias unificou fontes de dados)  
+**Status Geral**: 🟢 FUNCIONAL - Sistema base operacional / ✅ Busca semântica implementada / ✅ Bugs críticos corrigidos / ✅ Categorias persistindo corretamente  
 
 ### 🌐 Ambiente de Desenvolvimento
 - **Servidor**: Five Server (gerenciado pelo USUÁRIO)
@@ -249,6 +249,32 @@
 - `/docs/sprint/2.0/planejamento-sprint-2.0.md` - Planejamento anterior
 - `/docs/sprint/2.0/arquitetura-embeddings-rag.md` - Arquitetura técnica
 
+### ✅ SPRINT FASE 1 - AÇÕES IMEDIATAS (CONCLUÍDA - 24/07/2025)
+
+#### 🎯 Objetivo: Valorizar curadoria humana através das categorias
+**Status**: ✅ CONCLUÍDA - 3 mudanças críticas implementadas
+**Tempo**: 1 dia (conforme planejado)
+
+#### ✅ Mudanças Implementadas:
+
+1. **Ollama como Padrão Obrigatório**
+   - Validação no carregamento da aplicação
+   - Banner persistente se não disponível
+   - Sem fallback automático para outros serviços
+
+2. **Zero Threshold para Categorizados**
+   - Arquivos com categorias sempre válidos para Qdrant
+   - Categorização = curadoria humana valiosa
+   - Log detalhado de arquivos aprovados por categoria
+
+3. **Boost de Relevância por Categorização**
+   - Fórmula: 1.5 + (número_categorias × 0.1)
+   - Aplicado em 3 pontos: descoberta, atribuição individual e em massa
+   - Máximo de 100% de relevância
+
+#### 📁 Documentação:
+- `/docs/sprint/fase1/mudancas-criticas-implementadas.md` - Detalhamento completo
+
 ### 🚧 SPRINT 2.2 - VISUALIZAÇÃO DE GRAFO DE CONHECIMENTO (EM ANDAMENTO)
 
 #### 🎯 Objetivo: Implementar visualização interativa de triplas semânticas
@@ -411,22 +437,9 @@
     - ✅ NOVO: Modificado removeCategory() para usar CategoryManager
     - ✅ NOVO: Atualizado renderCategories() para usar CategoryManager
   
-### ~~BUG #2: Período não Calculado~~ RESOLVIDO
-- **Solução Implementada**: Fallback de data com validação
-- **Status**: ✅ RESOLVIDO - FilterPanel agora calcula períodos corretamente
-- **Documentação**: `docs/sprint/1.3/fix-contador-data-consistency.md`
+### BUG ANTERIORES MITIGADOS DEVEM SER CONSULTADOS NA ESTRUTURA @docs/04-bugs-resolvidos
 
-### ~~BUG #3: Erro DuplicateDetector~~ RESOLVIDO
-- **Solução**: Registro corrigido em app.js
-- **Status**: ✅ RESOLVIDO - DuplicateDetector funcionando corretamente
-
-### ✅ BUG #4: Sincronização de Categorias (NOVO E RESOLVIDO)
-- **Problema**: Categorias não sincronizavam entre componentes
-- **Solução**: Event-Driven com CategoryManager centralizado
-- **Status**: ✅ RESOLVIDO - Sincronização em tempo real funcionando
-- **Documentação**: `docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`
-
-### ✅ BUG #5: Duplicidade de IDs Template Select (RESOLVIDO)
+### ✅ ~~BUG #5: Duplicidade de IDs Template Select (RESOLVIDO)~~ (TEMPLATE)
 - **Problema**: Dois elementos com mesmo ID impediam atualização de campos
 - **Solução**: Renomeado para `modal-analysis-template` no APIConfig
 - **Status**: ✅ RESOLVIDO - Campos atualizam corretamente
@@ -502,6 +515,12 @@ Atualmente não há bugs conhecidos no sistema. Todos os problemas anteriores fo
 - ✅ **BUG #10**: Arquivos desaparecendo após análise IA - RESOLVIDO (21/07/2025)
   - Corrigida lógica de filtro: approved vs analyzed
   - Arquivos analisados mas não aprovados agora permanecem em "Pendentes"
+- ✅ **BUG #11**: Categorias não persistindo após reload - RESOLVIDO (24/07/2025)
+  - **DESCOBERTA CRÍTICA**: Sistema tinha DUAS listas de categorias padrão diferentes
+  - CategoryManager implementou migração inteligente que unificou as fontes
+  - Categorias customizadas antigas foram preservadas automaticamente
+  - Estabeleceu fonte única de verdade (LEI 11 - SSO)
+  - **Impacto**: Resolveu múltiplos problemas de sincronização e persistência
 
 ---
 
@@ -660,12 +679,18 @@ console.log(`${chunks.length} chunks gerados`);
    - Padrões obrigatórios
    - Restrições críticas
 
-2. **SISTEMA DE EVENTOS**: `/docs/INSTRUCOES-EVENTOS-SISTEMA.md`
+2. **ANÁLISE DE FONTES DE VERDADE**: `/docs/analise-fontes-verdade/`
+   - **README-EVOLUCAO-SISTEMA.md**: Roadmap completo para evolução
+   - **FONTES-UNICAS-VERDADE.md**: Definições e padrões SSO
+   - **5 análises profundas**: Mapeamento, fluxos, correlações, duplicações
+   - NOVO: Centralizado em 24/07/2025
+
+3. **SISTEMA DE EVENTOS**: `/docs/INSTRUCOES-EVENTOS-SISTEMA.md`
    - Fluxo de eventos
    - Problemas comuns
    - Templates
 
-3. **CORREÇÕES IMPORTANTES**: `/docs/sprint/1.3/correcao-tipo-analise-completa.md`
+4. **CORREÇÕES IMPORTANTES**: `/docs/sprint/1.3/correcao-tipo-analise-completa.md`
    - Caso de estudo
    - Lições aprendidas
 
@@ -724,6 +749,20 @@ Antes de iniciar qualquer sessão:
 
 ## 📅 HISTÓRICO DE ATUALIZAÇÕES
 
+### 24/07/2025 - FASE 1 CONCLUÍDA + REORGANIZAÇÃO DOCS
+- ✅ Ollama configurado como padrão obrigatório
+- ✅ Threshold removido para arquivos categorizados
+- ✅ Boost de relevância por categorização implementado
+- ✅ 3 mudanças críticas que valorizam curadoria humana
+- 📄 Documentação reorganizada por temas para facilitar navegação:
+  - `/docs/01-valorizacao-categorias-humanas/` - Fase 1 implementada
+  - `/docs/02-integracao-embeddings-ollama/` - Fundação semântica
+  - `/docs/03-analise-correlacoes-sistema/` - Problemas identificados
+  - `/docs/04-bugs-resolvidos/` - Histórico de correções
+  - `/docs/05-grafos-visualizacao/` - Sistema de visualização
+  - `/docs/06-pipeline-rag-qdrant/` - Pipeline completo
+- 📚 **NOVO**: `/docs/INDICE-DOCUMENTACAO.md` - Índice geral facilitado
+
 Itens anteriores a esta data em @ARQUIVADIS EM @RESUME_ARCHIVE.md(AIAPIManager e PromptManager)
 - **QUINTA SESSÃO (VALIDAÇÃO FINAL)**: Sprint 1.3 VALIDADA
   - ✅ Correção de duplicidade de IDs implementada
@@ -781,6 +820,13 @@ Itens anteriores a esta data em @ARQUIVADIS EM @RESUME_ARCHIVE.md(AIAPIManager e
 **Causa**: Tentativa de extração semântica sem embeddings/vetorização  
 **Solução**: Construir bottom-up: Curadoria → Embeddings → Qdrant → Similaridade → Triplas  
 **Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`  
+
+### 🔴 Problema Recorrente #7: Múltiplas fontes de verdade para mesmos dados
+**Impacto**: Duplicação de categorias padrão em AppState e CategoryManager  
+**Causa**: Falta de coordenação entre componentes na definição de dados padrão  
+**Solução**: CategoryManager como fonte única + migração automática de dados antigos  
+**Documentação**: BUG #11 - Migração inteligente unificou as fontes  
+**LIÇÃO CRÍTICA**: SEMPRE verificar se já existe definição de dados antes de criar nova
 
 ### ✅ Padrão de Sucesso
 

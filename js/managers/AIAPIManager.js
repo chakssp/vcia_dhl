@@ -435,7 +435,7 @@ Forneça sua análise em formato JSON com a estrutura:
             
             // Validar resposta
             if (!data.response || data.response.trim() === '{}' || data.response.trim() === '') {
-                KC.Logger?.warn('AIAPIManager', 'Resposta vazia do Ollama', {
+                KC.Logger?.warning('AIAPIManager - Resposta vazia do Ollama', {
                     model: model,
                     eval_count: data.eval_count,
                     total_duration: data.total_duration

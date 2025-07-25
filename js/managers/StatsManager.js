@@ -174,7 +174,7 @@
                 // Se nenhuma data válida, usa data atual como fallback
                 if (!fileDate) {
                     fileDate = now;
-                    KC.Logger?.warn(`StatsManager: Arquivo sem data válida, usando data atual: ${file.name}`);
+                    KC.Logger?.warning(`StatsManager: Arquivo sem data válida, usando data atual: ${file.name}`);
                 }
                 
                 const daysDiff = Math.floor((now - fileDate) / (1000 * 60 * 60 * 24));

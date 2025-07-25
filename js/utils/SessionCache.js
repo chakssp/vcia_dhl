@@ -23,7 +23,7 @@
                 sessionStorage.setItem('kc_session_files', JSON.stringify(files));
                 KC.Logger?.debug('SessionCache', `${files.length} arquivos salvos na sessão`);
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao salvar na sessão:', error);
+                KC.Logger?.warning('SessionCache - Erro ao salvar na sessão:', error);
                 // Se falhar, não é crítico - dados mínimos estão no localStorage
             }
         }
@@ -37,7 +37,7 @@
                 const cached = sessionStorage.getItem('kc_session_files');
                 return cached ? JSON.parse(cached) : null;
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao recuperar da sessão:', error);
+                KC.Logger?.warning('SessionCache - Erro ao recuperar da sessão:', error);
                 return null;
             }
         }
@@ -79,7 +79,7 @@
             try {
                 sessionStorage.setItem(`kc_analysis_${key}`, JSON.stringify(data));
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao salvar análise:', error);
+                KC.Logger?.warning('SessionCache - Erro ao salvar análise:', error);
             }
         }
 
@@ -93,7 +93,7 @@
                 const data = sessionStorage.getItem(`kc_analysis_${key}`);
                 return data ? JSON.parse(data) : null;
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao recuperar análise:', error);
+                KC.Logger?.warning('SessionCache - Erro ao recuperar análise:', error);
                 return null;
             }
         }
@@ -107,7 +107,7 @@
                 const array = fingerprints instanceof Set ? Array.from(fingerprints) : fingerprints;
                 sessionStorage.setItem('kc_processed_fingerprints', JSON.stringify(array));
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao salvar fingerprints:', error);
+                KC.Logger?.warning('SessionCache - Erro ao salvar fingerprints:', error);
             }
         }
 
@@ -121,7 +121,7 @@
                 const array = data ? JSON.parse(data) : [];
                 return new Set(array);
             } catch (error) {
-                KC.Logger?.warn('SessionCache', 'Erro ao recuperar fingerprints:', error);
+                KC.Logger?.warning('SessionCache - Erro ao recuperar fingerprints:', error);
                 return new Set();
             }
         }

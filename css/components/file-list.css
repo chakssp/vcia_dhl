@@ -39,6 +39,22 @@
     border-color: var(--primary-color);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
+    background: var(--hover-bg);
+}
+
+/* Feedback visual para linha clicável */
+.file-entry {
+    user-select: none; /* Previne seleção de texto ao clicar */
+}
+
+/* Mantém cursor pointer nos botões de ação */
+.file-entry .file-actions button {
+    cursor: pointer;
+}
+
+/* Checkbox mantém seu próprio cursor */
+.file-entry .file-select-checkbox {
+    cursor: pointer;
 }
 
 /* Container da primeira linha - agrupa icon, info, meta e actions */
@@ -61,8 +77,8 @@
 /* NOVO: Barra de ações em lote */
 .bulk-actions-bar {
     position: sticky;
-    top: 0;
-    z-index: 100;
+    top: 64px; /* Posicionado logo abaixo do header (64px) */
+    z-index: 90; /* Abaixo do header (z-index: 100) */
     background: var(--bg-tertiary);
     color: var(--text-primary);
     padding: var(--spacing-md);
@@ -71,6 +87,11 @@
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-md);
     animation: slideDown var(--transition-normal);
+    /* Propriedades do antigo container */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
 }
 
 @keyframes slideDown {
@@ -84,16 +105,41 @@
     }
 }
 
-.bulk-actions-container {
+/* Container removido - propriedades movidas para .bulk-actions-bar */
+
+/* Header com título e contador */
+.bulk-actions-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: var(--spacing-lg);
+}
+
+/* Container para contadores */
+.bulk-counts {
+    display: flex;
+    align-items: center;
     gap: var(--spacing-md);
+    font-size: 0.9rem;
+}
+
+/* Informação de filtros */
+.filter-count {
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
+/* Título "Arquivos Descobertos" */
+.bulk-actions-title {
+    font-size: 1.1rem; /* Fonte reduzida */
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
 }
 
 .selection-count {
     font-weight: 600;
     color: var(--text-primary); /* Garantir texto escuro */
+    font-size: 0.9rem; /* Fonte um pouco menor */
 }
 
 .bulk-actions {
@@ -131,6 +177,17 @@
     border-color: var(--primary-hover);
 }
 
+.bulk-action-btn.success {
+    background: var(--success-color);
+    color: white;
+    border-color: var(--success-color);
+}
+
+.bulk-action-btn.success:hover {
+    background: var(--success-hover);
+    border-color: var(--success-hover);
+}
+
 .bulk-action-btn.secondary {
     background: transparent;
     color: var(--danger-color);
@@ -140,6 +197,39 @@
 .bulk-action-btn.secondary:hover {
     background: var(--danger-color);
     color: white;
+}
+
+.bulk-action-btn.update {
+    background: var(--info-color);
+    color: white;
+    border-color: var(--info-color);
+}
+
+.bulk-action-btn.update:hover {
+    background: var(--info-hover);
+    border-color: var(--info-hover);
+}
+
+.bulk-action-btn.warning {
+    background: var(--warning-color);
+    color: white;
+    border-color: var(--warning-color);
+}
+
+.bulk-action-btn.warning:hover {
+    background: var(--warning-hover);
+    border-color: var(--warning-hover);
+}
+
+.bulk-action-btn.info {
+    background: var(--info-color);
+    color: white;
+    border-color: var(--info-color);
+}
+
+.bulk-action-btn.info:hover {
+    background: var(--info-hover);
+    border-color: var(--info-hover);
 }
 
 /* Ícone do arquivo */

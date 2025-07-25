@@ -32,11 +32,32 @@
         initialize() {
             console.log('CategoryManager inicializado com implementação completa');
             
+            // AIDEV-NOTE: migrate-categories; migrar categorias antigas para novo formato
+            // Verifica se existem categorias customizadas no array principal
+            const allCategories = AppState.get('categories') || [];
+            const defaultIds = this.defaultCategories.map(cat => cat.id);
+            const customFromMain = allCategories.filter(cat => !defaultIds.includes(cat.id));
+            
             // Carrega categorias customizadas se existirem
-            const customCategories = AppState.get('customCategories');
-            if (!customCategories) {
-                AppState.set('customCategories', []);
+            let customCategories = AppState.get('customCategories') || [];
+            
+            // Migra categorias do array principal se necessário
+            if (customFromMain.length > 0 && customCategories.length === 0) {
+                customCategories = customFromMain;
+                AppState.set('customCategories', customCategories);
+                console.log('[CategoryManager] Migradas categorias customizadas do array principal:', customCategories);
             }
+            
+            if (!customCategories || customCategories.length === 0) {
+                AppState.set('customCategories', []);
+                console.log('[CategoryManager] Inicializando customCategories vazio');
+            } else {
+                console.log('[CategoryManager] Categorias customizadas carregadas:', customCategories);
+            }
+            
+            // AIDEV-NOTE: persist-categories; forçar salvamento inicial para garantir persistência
+            // Força um save para garantir que customCategories esteja no localStorage
+            AppState._save();
         }
 
         /**
@@ -98,6 +119,13 @@
             const customCategories = AppState.get('customCategories') || [];
             customCategories.push(newCategory);
             AppState.set('customCategories', customCategories);
+            
+            // AIDEV-NOTE: persist-log; adicionar log para debug de persistência
+            console.log('[CategoryManager] Nova categoria criada:', newCategory);
+            console.log('[CategoryManager] Total de categorias customizadas:', customCategories.length);
+            
+            // Força salvamento imediato
+            AppState._save();
 
             // Emite evento
             EventBus.emit(Events.CATEGORIES_CHANGED, {
@@ -191,6 +219,24 @@
             // Evita duplicatas
             if (!files[fileIndex].categories.includes(categoryId)) {
                 files[fileIndex].categories.push(categoryId);
+                
+                // FASE 1.3: Aplicar boost de relevância ao categorizar (individual)
+                // AIDEV-NOTE: category-boost-single; boost aplicado em atribuição individual
+                const originalScore = files[fileIndex].relevanceScore || 0;
+                const categoryCount = files[fileIndex].categories.length;
+                // Boost base de 50% + 10% por categoria
+                const categoryBoost = 1.5 + (categoryCount * 0.1);
+                files[fileIndex].relevanceScore = Math.min(100, originalScore * categoryBoost);
+                
+                KC.Logger?.info('CategoryManager', 'Boost de relevância aplicado (individual)', {
+                    file: files[fileIndex].name,
+                    category: categoryId,
+                    totalCategories: categoryCount,
+                    originalScore: originalScore,
+                    boostedScore: files[fileIndex].relevanceScore,
+                    boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                });
+                
                 AppState.set('files', files);
 
                 EventBus.emit(Events.FILES_UPDATED, {
@@ -198,6 +244,17 @@
                     fileId: fileId,
                     categoryId: categoryId
                 });
+                
+                // FASE 1.3 FIX: Notificação visual do boost aplicado
+                // AIDEV-NOTE: boost-notification; feedback visual quando boost é aplicado
+                if (KC.showNotification) {
+                    KC.showNotification({
+                        type: 'success',
+                        message: `🚀 Boost aplicado: ${files[fileIndex].name}`,
+                        details: `Relevância: ${originalScore}% → ${files[fileIndex].relevanceScore}% (+${Math.round((categoryBoost - 1) * 100)}% boost)`,
+                        duration: 3000
+                    });
+                }
 
                 return true;
             }
@@ -271,12 +328,41 @@
                     if (!files[fileIndex].categories.includes(categoryId)) {
                         files[fileIndex].categories.push(categoryId);
                         updatedCount++;
+                        
+                        // FASE 1.3: Aplicar boost de relevância ao categorizar
+                        // AIDEV-NOTE: category-boost-on-assign; boost aplicado quando categoria é atribuída
+                        const originalScore = files[fileIndex].relevanceScore || 0;
+                        const categoryCount = files[fileIndex].categories.length;
+                        // Boost base de 50% + 10% por categoria
+                        const categoryBoost = 1.5 + (categoryCount * 0.1);
+                        files[fileIndex].relevanceScore = Math.min(100, originalScore * categoryBoost);
+                        
+                        KC.Logger?.info('CategoryManager', 'Boost de relevância aplicado', {
+                            file: files[fileIndex].name,
+                            category: categoryId,
+                            totalCategories: categoryCount,
+                            originalScore: originalScore,
+                            boostedScore: files[fileIndex].relevanceScore,
+                            boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                        });
                     }
                 }
             });
 
             if (updatedCount > 0) {
                 AppState.set('files', files);
+                
+                // FASE 1.3 FIX: Notificação resumida para bulk
+                // AIDEV-NOTE: bulk-boost-notification; feedback visual para múltiplos arquivos
+                if (KC.showNotification && updatedCount > 0) {
+                    const boostPercentage = Math.round((1.5 + 0.1 - 1) * 100); // Mínimo 1 categoria
+                    KC.showNotification({
+                        type: 'success',
+                        message: `🚀 Boost aplicado em ${updatedCount} arquivo(s)`,
+                        details: `Relevância aumentada em pelo menos ${boostPercentage}% por categoria`,
+                        duration: 3000
+                    });
+                }
 
                 EventBus.emit(Events.FILES_UPDATED, {
                     action: 'bulk_categorization',

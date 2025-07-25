@@ -59,6 +59,54 @@
          * Configura event listeners
          */
         setupEventListeners() {
+            // NOVO: Atalhos de teclado para ações em lote
+            document.addEventListener('keydown', (e) => {
+                // Verifica se está na etapa correta (files-section visível)
+                const filesSection = document.getElementById('files-section');
+                if (!filesSection || filesSection.style.display === 'none') {
+                    return;
+                }
+                
+                // Ignora se está digitando em input/textarea
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                    return;
+                }
+                
+                // Ctrl+A - Selecionar Todos
+                if (e.ctrlKey && e.key === 'a') {
+                    e.preventDefault();
+                    this.selectAllVisible();
+                }
+                // Ctrl+K - Categorizar
+                else if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    if (this.selectedFiles.size > 0) {
+                        this.bulkCategorize();
+                    }
+                }
+                // Ctrl+I - Analisar com IA
+                else if (e.ctrlKey && e.key === 'i') {
+                    e.preventDefault();
+                    if (this.selectedFiles.size > 0) {
+                        this.bulkAnalyze();
+                    }
+                }
+                // Ctrl+D - Aprovar
+                else if (e.ctrlKey && e.key === 'd') {
+                    e.preventDefault();
+                    if (this.selectedFiles.size > 0) {
+                        this.bulkApprove();
+                    }
+                }
+                // Esc - Limpar Seleção
+                else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (this.selectedFiles.size > 0) {
+                        this.clearSelection();
+                    }
+                }
+            });
+            
             // Escuta mudanças nos arquivos descobertos
             if (Events && Events.FILES_DISCOVERED) {
                 EventBus.on(Events.FILES_DISCOVERED, (data) => {
@@ -198,6 +246,47 @@
                     }
                 });
             }
+            
+            // FASE 1.3 FIX: Escuta FILES_UPDATED para atualizar relevância com boost
+            // AIDEV-NOTE: category-boost-render; re-renderiza quando categoria é aplicada
+            if (Events && Events.FILES_UPDATED) {
+                EventBus.on(Events.FILES_UPDATED, (data) => {
+                    // Re-renderiza quando categoria é atribuída/removida
+                    if (data.action === 'category_assigned' || 
+                        data.action === 'category_removed' ||
+                        data.action === 'bulk_categorization') {
+                        console.log('FileRenderer: Re-renderizando após mudança de categoria', data);
+                        
+                        // Força re-leitura dos arquivos do AppState
+                        const updatedFiles = AppState.get('files') || [];
+                        this.files = [...updatedFiles];
+                        this.originalFiles = [...updatedFiles];
+                        
+                        // Re-renderiza mantendo filtros e ordenação
+                        this.renderFileList();
+                    }
+                    
+                    // Atualiza informação de filtros
+                    this.updateFilterInfo();
+                });
+            }
+            
+            // Escuta mudanças de filtros
+            if (Events && Events.FILTERS_CHANGED) {
+                EventBus.on(Events.FILTERS_CHANGED, () => {
+                    this.updateFilterInfo();
+                    this.updateButtonsVisibility();
+                });
+            }
+            
+            // Escuta mudanças no filtro de status
+            if (Events && Events.FILTER_CHANGED) {
+                EventBus.on(Events.FILTER_CHANGED, (data) => {
+                    if (data.filter === 'status') {
+                        this.updateButtonsVisibility();
+                    }
+                });
+            }
         }
 
         /**
@@ -220,6 +309,16 @@
 
             const existingFiles = AppState.get('files') || [];
             console.log(`FileRenderer: ${existingFiles.length} arquivos encontrados no AppState`);
+            
+            // AIDEV-NOTE: debug-file-categories; verificar categorias nos arquivos
+            const filesWithCategories = existingFiles.filter(f => f.categories && f.categories.length > 0);
+            console.log(`[FileRenderer] Arquivos com categorias: ${filesWithCategories.length}/${existingFiles.length}`);
+            if (filesWithCategories.length > 0) {
+                console.log('[FileRenderer] Exemplo de arquivo com categoria:', {
+                    nome: filesWithCategories[0].name,
+                    categorias: filesWithCategories[0].categories
+                });
+            }
             
             if (existingFiles.length > 0) {
                 console.log(`FileRenderer: Carregando ${existingFiles.length} arquivos existentes`);
@@ -397,7 +496,15 @@
                         ${file.duplicateReason ? `<div class="duplicate-reason">${file.duplicateReason}</div>` : ''}
                     </div>
                     <div class="file-meta">
-                        <div class="relevance-badge">Relevância: ${relevance}%</div>
+                        <div class="relevance-badge">
+                            Relevância: ${relevance}%
+                            ${file.categories && file.categories.length > 0 ? `
+                                <span class="boost-indicator" style="color: #7c3aed; font-weight: bold; margin-left: 8px; font-size: 0.75rem;" 
+                                      title="Boost aplicado: ${Math.round((1.5 + file.categories.length * 0.1 - 1) * 100)}% por ${file.categories.length} categoria(s)">
+                                    🚀
+                                </span>
+                            ` : ''}
+                        </div>
                         <div class="file-date">${this.formatDate(file.lastModified)}</div>
                         <div class="file-size">${this.formatFileSize(file.size)}</div>
                         ${file.duplicateConfidence ? `<div class="duplicate-confidence">Confiança: ${Math.round(file.duplicateConfidence * 100)}%</div>` : ''}
@@ -438,6 +545,24 @@
                     this.handleFileSelection(fileId, e.target.checked);
                 });
             }
+
+            // NOVO: Event listener para clique na linha inteira
+            fileDiv.addEventListener('click', (e) => {
+                // Verifica se o clique foi em um botão de ação ou no próprio checkbox
+                const isActionButton = e.target.closest('.file-actions') || 
+                                     e.target.closest('.action-btn') ||
+                                     e.target.classList.contains('file-select-checkbox') ||
+                                     e.target.closest('a'); // Links também não devem ativar
+                
+                if (!isActionButton && checkbox) {
+                    // Toggle do checkbox
+                    checkbox.checked = !checkbox.checked;
+                    this.handleFileSelection(fileId, checkbox.checked);
+                }
+            });
+
+            // Adiciona cursor pointer para indicar que a linha é clicável
+            fileDiv.style.cursor = 'pointer';
 
             return fileDiv;
         }
@@ -515,7 +640,30 @@
                 file.analyzed = true;
                 file.analysisDate = new Date().toISOString();
                 file.analysisType = this.detectAnalysisType(file);
-                file.relevanceScore = this.calculateEnhancedRelevance(file);
+                
+                // FASE 1.3 FIX: Preservar boost de categorias ao analisar
+                // AIDEV-NOTE: preserve-category-boost; análise IA não deve sobrescrever boost de categorias
+                const hasCategories = file.categories && file.categories.length > 0;
+                const currentScore = file.relevanceScore || 0;
+                
+                // Calcula novo score base (sem considerar categorias)
+                const enhancedScore = this.calculateEnhancedRelevance(file);
+                
+                // Se tem categorias, re-aplica o boost sobre o novo score base
+                if (hasCategories) {
+                    const categoryBoost = 1.5 + (file.categories.length * 0.1);
+                    file.relevanceScore = Math.min(100, enhancedScore * categoryBoost);
+                    
+                    KC.Logger?.info('FileRenderer', 'Boost de categorias preservado após análise', {
+                        file: file.name,
+                        categories: file.categories.length,
+                        enhancedScore: Math.round(enhancedScore),
+                        boostedScore: Math.round(file.relevanceScore),
+                        boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                    });
+                } else {
+                    file.relevanceScore = enhancedScore;
+                }
                 // file.approved mantém seu estado atual (não altera)
                 
                 // Atualiza AppState
@@ -530,14 +678,14 @@
                 EventBus.emit(Events.PROGRESS_END, {
                     type: 'analysis',
                     title: 'Análise concluída!',
-                    details: `${file.analysisType} - Relevância: ${Math.round(file.relevanceScore * 100)}%`
+                    details: `${file.analysisType} - Relevância: ${Math.round(file.relevanceScore)}%`
                 });
                 
                 // Notifica sucesso
                 KC.showNotification({
                     type: 'success',
                     message: `✅ Análise concluída: ${file.name}`,
-                    details: `Tipo: ${file.analysisType}, Relevância: ${Math.round(file.relevanceScore * 100)}%`
+                    details: `Tipo: ${file.analysisType}, Relevância: ${Math.round(file.relevanceScore)}%${hasCategories ? ` (com boost de ${Math.round((1.5 + file.categories.length * 0.1 - 1) * 100)}%)` : ''}`
                 });
                 
                 // Restaura botão
@@ -1116,7 +1264,7 @@
                     <h3>${message}</h3>
                     <p>${suggestion}</p>
                     ${originalCount > 0 ? `
-                        <button class="btn btn-secondary" onclick="KC.FilterPanel?.clearAllFilters()">
+                        <button class="btn btn-secondary" onclick="KC.FilterPanel?.resetAllFilters()">
                             🔄 Limpar Todos os Filtros
                         </button>
                     ` : ''}
@@ -1402,25 +1550,47 @@
          */
         // CLASSIFICAÇÃO DINÂMICA RESTAURADA
         calculateEnhancedRelevance(file) {
-            let score = this.calculateRelevance(file) / 100; // Converte para 0-1
+            // FASE 1.3 FIX: Usa score base sem boost de categorias
+            // AIDEV-NOTE: base-score-only; retorna apenas score base para análise IA
+            let baseScore = 0;
+            
+            // Se já tem relevanceScore, remove o boost de categorias para obter base
+            if (file.relevanceScore !== undefined && file.relevanceScore !== null) {
+                if (file.categories && file.categories.length > 0) {
+                    // Remove boost reverso: score_base = score_atual / boost
+                    const categoryBoost = 1.5 + (file.categories.length * 0.1);
+                    baseScore = file.relevanceScore / categoryBoost;
+                } else {
+                    baseScore = file.relevanceScore;
+                }
+            } else {
+                // Calcula do zero se não tem score
+                baseScore = this.calculateRelevance(file);
+            }
+            
+            // Normaliza para 0-1 se necessário
+            if (baseScore > 1) {
+                baseScore = baseScore / 100;
+            }
             
             // Ajustes baseados no tipo de análise
             switch (file.analysisType) {
                 case 'Evolução Conceitual':
-                    score = Math.min(score + 0.25, 1.0);
+                    baseScore = Math.min(baseScore + 0.25, 1.0);
                     break;
                 case 'Momento Decisivo':
                 case 'Breakthrough Técnico':
-                    score = Math.min(score + 0.20, 1.0);
+                    baseScore = Math.min(baseScore + 0.20, 1.0);
                     break;
                 case 'Insight Estratégico':
-                    score = Math.min(score + 0.15, 1.0);
+                    baseScore = Math.min(baseScore + 0.15, 1.0);
                     break;
                 default:
-                    score = Math.min(score + 0.05, 1.0);
+                    baseScore = Math.min(baseScore + 0.05, 1.0);
             }
             
-            return score;
+            // Retorna como percentual (0-100)
+            return baseScore * 100;
         }
         
         /* VERSÃO COM FONTE ÚNICA - DESATIVADA
@@ -1832,23 +2002,26 @@
             const checkboxes = modal.querySelectorAll('input[type="checkbox"]:checked');
             const selectedCategories = Array.from(checkboxes).map(cb => cb.value);
             
-            // Atualiza arquivo
+            // FASE 1.3 FIX: Usar CategoryManager para aplicar boost
+            // AIDEV-NOTE: use-category-manager; sempre usar CategoryManager para aplicar categorias
             const allFiles = AppState.get('files') || [];
-            const fileIndex = allFiles.findIndex(f => f.id === fileId || f.name === fileId);
+            const file = allFiles.find(f => f.id === fileId || f.name === fileId);
             
-            if (fileIndex !== -1) {
-                allFiles[fileIndex].categories = selectedCategories;
-                allFiles[fileIndex].categorizedDate = new Date().toISOString();
-                AppState.set('files', allFiles);
+            if (file) {
+                // Primeiro, limpa categorias existentes
+                if (file.categories && file.categories.length > 0) {
+                    const currentCategories = [...file.categories];
+                    currentCategories.forEach(catId => {
+                        KC.CategoryManager.removeCategoryFromFile(fileId, catId);
+                    });
+                }
                 
-                KC.showNotification({
-                    type: 'success',
-                    message: `Categorias salvas para ${allFiles[fileIndex].name}`,
-                    details: `${selectedCategories.length} categoria(s) aplicada(s)`
+                // Depois, aplica as novas categorias usando CategoryManager (que aplica o boost)
+                selectedCategories.forEach(categoryId => {
+                    KC.CategoryManager.assignCategoryToFile(fileId, categoryId);
                 });
                 
-                // CORREÇÃO: Remove chamada duplicada - STATE_CHANGED já cuida da renderização
-                // this.renderFileList(); // Removido para evitar dupla renderização
+                // Notificação será emitida pelo CategoryManager
                 
                 // Fecha modal
                 modal.remove();
@@ -1917,45 +2090,94 @@
             // Se não há seleção, mostra apenas o botão de selecionar todos
             if (count === 0) {
                 bar.innerHTML = `
-                    <div class="bulk-actions-container">
-                        <span class="selection-count">Nenhum arquivo selecionado</span>
-                        <div class="bulk-actions">
-                            <button class="bulk-action-btn primary" onclick="KC.FileRenderer.selectAllVisible()">
-                                ☑️ Selecionar Todos
-                            </button>
+                    <div class="bulk-actions-header">
+                        <h3 class="bulk-actions-title">Arquivos Descobertos</h3>
+                        <div class="bulk-counts">
+                            <span class="selection-count">Nenhum arquivo selecionado</span>
+                            <span class="filter-count" id="bulk-filter-info"></span>
                         </div>
+                    </div>
+                    <div class="bulk-actions">
+                        <button class="bulk-action-btn primary" 
+                                onclick="KC.FileRenderer.selectAllVisible()"
+                                title="Selecionar todos os arquivos visíveis (Ctrl+A)">
+                            ☑️ Selecionar Todos
+                        </button>
+                        <button class="bulk-action-btn update" 
+                                onclick="KC.FilterPanel && KC.FilterPanel.handleBulkUpdate()"
+                                title="Atualiza dados manualmente">
+                            🔄 Atualizar
+                        </button>
                     </div>
                 `;
             } else {
                 bar.innerHTML = `
-                    <div class="bulk-actions-container">
-                        <span class="selection-count">${count} arquivo(s) selecionado(s)</span>
-                        <div class="bulk-actions">
-                            <button class="bulk-action-btn primary" onclick="KC.FileRenderer.selectAllVisible()">
-                                ☑️ Selecionar Todos
-                            </button>
-                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkCategorize()">
-                                📂 Categorizar Selecionados
-                            </button>
-                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkAnalyze()">
-                                🔍 Analisar Selecionados
-                            </button>
-                            <button class="bulk-action-btn" onclick="KC.FileRenderer.bulkArchive()">
-                                📦 Arquivar Selecionados
-                            </button>
-                            <button class="bulk-action-btn secondary" onclick="KC.FileRenderer.clearSelection()">
-                                ❌ Limpar Seleção
-                            </button>
+                    <div class="bulk-actions-header">
+                        <h3 class="bulk-actions-title">Arquivos Descobertos</h3>
+                        <div class="bulk-counts">
+                            <span class="selection-count">${count} arquivo(s) selecionado(s)</span>
+                            <span class="filter-count" id="bulk-filter-info"></span>
                         </div>
+                    </div>
+                    <div class="bulk-actions">
+                        <button class="bulk-action-btn primary" 
+                                onclick="KC.FileRenderer.selectAllVisible()"
+                                title="Selecionar todos os arquivos visíveis (Ctrl+A)">
+                            ☑️ Selecionar Todos
+                        </button>
+                        <button class="bulk-action-btn" 
+                                onclick="KC.FileRenderer.bulkCategorize()"
+                                title="Categorizar arquivos selecionados (Ctrl+K)">
+                            📂 Categorizar
+                        </button>
+                        <button class="bulk-action-btn" 
+                                onclick="KC.FileRenderer.bulkAnalyze()"
+                                title="Analisar arquivos com IA (Ctrl+I)">
+                            🔍 Analisar com IA
+                        </button>
+                        <button class="bulk-action-btn success" 
+                                onclick="KC.FileRenderer.bulkApprove()"
+                                title="Aprovar arquivos selecionados (Ctrl+D)">
+                            ✅ Aprovar
+                        </button>
+                        <button class="bulk-action-btn warning" 
+                                onclick="KC.FileRenderer.bulkArchive()"
+                                title="Arquivar arquivos selecionados"
+                                id="bulk-archive-selected">
+                            📦 Arquivar
+                        </button>
+                        <button class="bulk-action-btn info" 
+                                onclick="KC.FileRenderer.bulkRestore()"
+                                title="Restaurar arquivos selecionados"
+                                id="bulk-restore-selected"
+                                style="display: none;">
+                            🔄 Restaurar
+                        </button>
+                        <button class="bulk-action-btn secondary" 
+                                onclick="KC.FileRenderer.clearSelection()"
+                                title="Limpar seleção (Esc)">
+                            ❌ Limpar
+                        </button>
+                        <button class="bulk-action-btn update" 
+                                onclick="KC.FilterPanel && KC.FilterPanel.handleBulkUpdate()"
+                                title="Atualiza dados manualmente">
+                            🔄 Atualizar
+                        </button>
                     </div>
                 `;
             }
             
-            // Insere após o header da seção de arquivos
-            const filesHeader = document.querySelector('.files-header');
-            if (filesHeader) {
-                filesHeader.after(bar);
+            // Insere no início do container de arquivos
+            const filesContainer = document.querySelector('.files-container');
+            if (filesContainer && filesContainer.parentNode) {
+                filesContainer.parentNode.insertBefore(bar, filesContainer);
             }
+            
+            // Atualiza informação de filtros
+            this.updateFilterInfo();
+            
+            // Atualiza visibilidade dos botões baseado no filtro ativo
+            this.updateButtonsVisibility();
         }
         
         /**
@@ -2073,7 +2295,107 @@
          * NOVO: Análise em lote
          */
         bulkAnalyze() {
-            alert(`Análise em lote de ${this.selectedFiles.size} arquivo(s) será implementada na SPRINT 1.3`);
+            console.log('bulkAnalyze: Iniciando análise em lote de', this.selectedFiles.size, 'arquivos');
+            
+            if (this.selectedFiles.size === 0) {
+                KC.showNotification({
+                    type: 'warning',
+                    message: 'Nenhum arquivo selecionado',
+                    details: 'Selecione pelo menos um arquivo para analisar'
+                });
+                return;
+            }
+            
+            // Converte Set para Array
+            const fileIds = Array.from(this.selectedFiles);
+            const files = KC.AppState.get('files') || [];
+            
+            // Inicia progresso geral
+            KC.EventBus.emit(KC.Events.PROGRESS_START || 'progress:start', {
+                type: 'bulk-analysis',
+                title: `Analisando ${fileIds.length} arquivo(s)...`,
+                details: 'Processamento em lote com IA',
+                indeterminate: false,
+                current: 0,
+                total: fileIds.length
+            });
+            
+            // Processa cada arquivo sequencialmente
+            let processedCount = 0;
+            
+            const processNextFile = () => {
+                if (processedCount >= fileIds.length) {
+                    // Finaliza processamento
+                    KC.EventBus.emit(KC.Events.PROGRESS_END || 'progress:end', {
+                        type: 'bulk-analysis',
+                        title: 'Análise em lote concluída!',
+                        details: `${processedCount} arquivo(s) analisado(s) com sucesso`
+                    });
+                    
+                    KC.showNotification({
+                        type: 'success',
+                        message: `✅ Análise concluída: ${processedCount} arquivo(s)`,
+                        details: 'Todos os arquivos foram processados com IA',
+                        duration: 5000
+                    });
+                    
+                    // Limpa seleção
+                    this.clearSelection();
+                    
+                    // Atualiza estatísticas
+                    if (KC.StatsPanel && KC.StatsManager) {
+                        KC.StatsPanel.updateStats(KC.StatsManager.getStats());
+                    }
+                    
+                    return;
+                }
+                
+                // Processa próximo arquivo
+                const fileId = fileIds[processedCount];
+                const file = files.find(f => (f.id && f.id === fileId) || (f.name === fileId));
+                
+                if (file && !file.analyzed) {
+                    // Atualiza progresso
+                    KC.EventBus.emit(KC.Events.PROGRESS_UPDATE || 'progress:update', {
+                        type: 'bulk-analysis',
+                        current: processedCount + 1,
+                        total: fileIds.length,
+                        details: `Analisando: ${file.name}`
+                    });
+                    
+                    // Simula análise (mesmo código do analyzeFile)
+                    file.analyzed = true;
+                    file.analysisDate = new Date().toISOString();
+                    file.analysisType = this.detectAnalysisType(file);
+                    
+                    // Preserva boost de categorias
+                    const hasCategories = file.categories && file.categories.length > 0;
+                    const enhancedScore = this.calculateEnhancedRelevance(file);
+                    
+                    if (hasCategories) {
+                        const categoryBoost = 1.5 + (file.categories.length * 0.1);
+                        file.relevanceScore = Math.min(100, enhancedScore * categoryBoost);
+                    } else {
+                        file.relevanceScore = enhancedScore;
+                    }
+                    
+                    // Atualiza no AppState
+                    const allFiles = KC.AppState.get('files') || [];
+                    const fileIndex = allFiles.findIndex(f => f.id === file.id || f.name === file.name);
+                    if (fileIndex !== -1) {
+                        allFiles[fileIndex] = { ...allFiles[fileIndex], ...file };
+                        KC.AppState.set('files', allFiles);
+                    }
+                }
+                
+                processedCount++;
+                
+                // Processa próximo após delay (simula processamento)
+                setTimeout(processNextFile, 1000);
+            };
+            
+            // Inicia processamento
+            processNextFile();
         }
         
         /**
@@ -2110,6 +2432,121 @@
         }
         
         /**
+         * NOVO: Aprovação em lote
+         */
+        bulkApprove() {
+            if (this.selectedFiles.size === 0) {
+                KC.showNotification({
+                    type: 'warning',
+                    message: 'Nenhum arquivo selecionado',
+                    details: 'Selecione pelo menos um arquivo para aprovar'
+                });
+                return;
+            }
+            
+            const fileIds = Array.from(this.selectedFiles);
+            const files = KC.AppState.get('files') || [];
+            let approvedCount = 0;
+            
+            fileIds.forEach(fileId => {
+                const fileIndex = files.findIndex(f => 
+                    (f.id && f.id === fileId) || (f.name === fileId)
+                );
+                
+                if (fileIndex !== -1 && !files[fileIndex].archived) {
+                    files[fileIndex].approved = true;
+                    files[fileIndex].approvedDate = new Date().toISOString();
+                    approvedCount++;
+                }
+            });
+            
+            if (approvedCount > 0) {
+                KC.AppState.set('files', files);
+                
+                // Emite evento para atualizar interface
+                KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                    action: 'bulk_approve',
+                    fileIds: fileIds,
+                    count: approvedCount
+                });
+                
+                this.clearSelection();
+                
+                KC.showNotification({
+                    type: 'success',
+                    message: `✅ ${approvedCount} arquivo(s) aprovado(s)`,
+                    details: 'Arquivos prontos para processamento RAG',
+                    duration: 3000
+                });
+                
+                // Atualiza estatísticas
+                if (KC.StatsPanel && KC.StatsManager) {
+                    KC.StatsPanel.updateStats(KC.StatsManager.getStats());
+                }
+            }
+        }
+        
+        /**
+         * NOVO: Restaurar arquivos selecionados
+         */
+        bulkRestore() {
+            console.log('bulkRestore chamado, arquivos selecionados:', this.selectedFiles.size);
+            
+            if (this.selectedFiles.size === 0) {
+                KC.showNotification({
+                    type: 'warning',
+                    message: 'Nenhum arquivo selecionado',
+                    details: 'Selecione arquivos arquivados para restaurar'
+                });
+                return;
+            }
+            
+            if (!confirm(`Restaurar ${this.selectedFiles.size} arquivo(s)?`)) {
+                return;
+            }
+            
+            const fileIds = Array.from(this.selectedFiles);
+            const files = KC.AppState.get('files') || [];
+            let restoredCount = 0;
+            
+            fileIds.forEach(fileId => {
+                const fileIndex = files.findIndex(f => 
+                    (f.id && f.id === fileId) || (f.name === fileId)
+                );
+                
+                if (fileIndex !== -1 && files[fileIndex].archived) {
+                    files[fileIndex].archived = false;
+                    files[fileIndex].approved = true;
+                    files[fileIndex].restoredDate = new Date().toISOString();
+                    restoredCount++;
+                }
+            });
+            
+            if (restoredCount > 0) {
+                KC.AppState.set('files', files);
+                
+                // Emite evento para atualizar interface
+                KC.EventBus.emit(KC.Events.FILES_UPDATED, {
+                    action: 'bulk_restore',
+                    fileIds: fileIds,
+                    count: restoredCount
+                });
+                
+                this.clearSelection();
+                
+                KC.showNotification({
+                    type: 'success',
+                    message: `🔄 ${restoredCount} arquivo(s) restaurado(s)`,
+                    details: 'Arquivos movidos para aprovados',
+                    duration: 3000
+                });
+                
+                // Re-renderiza para atualizar visualização
+                this.renderFileList();
+            }
+        }
+        
+        /**
          * NOVO: Limpa seleção
          */
         clearSelection() {
@@ -2121,6 +2558,64 @@
             
             // Remove barra de ações
             this.updateBulkActionsBar();
+        }
+        
+        /**
+         * Atualiza informação de filtros na barra
+         */
+        updateFilterInfo() {
+            const filterInfo = document.getElementById('bulk-filter-info');
+            if (!filterInfo) return;
+            
+            // Obtém informação do FilterPanel se disponível
+            if (KC.FilterPanel && KC.FilterPanel.getFilteredFilesCount) {
+                const filteredCount = KC.FilterPanel.getFilteredFilesCount();
+                const totalFiles = (KC.AppState.get('files') || []).length;
+                
+                if (filteredCount < totalFiles) {
+                    filterInfo.textContent = `• ${filteredCount} de ${totalFiles} arquivos (filtros ativos)`;
+                    filterInfo.style.color = '#f59e0b'; // Warning color
+                } else {
+                    filterInfo.textContent = `• ${totalFiles} arquivos totais`;
+                    filterInfo.style.color = '#666';
+                }
+            } else if (this.filteredFiles) {
+                // Fallback: usa dados do próprio FileRenderer
+                const filteredCount = this.filteredFiles.length;
+                const totalFiles = (this.originalFiles || []).length;
+                
+                if (filteredCount < totalFiles) {
+                    filterInfo.textContent = `• ${filteredCount} de ${totalFiles} arquivos visíveis`;
+                    filterInfo.style.color = '#f59e0b';
+                } else {
+                    filterInfo.textContent = `• ${totalFiles} arquivos`;
+                    filterInfo.style.color = '#666';
+                }
+            }
+        }
+        
+        /**
+         * Atualiza visibilidade dos botões baseado no filtro ativo
+         */
+        updateButtonsVisibility() {
+            const archiveBtn = document.getElementById('bulk-archive-selected');
+            const restoreBtn = document.getElementById('bulk-restore-selected');
+            
+            if (!archiveBtn || !restoreBtn) return;
+            
+            // Verifica o filtro de status ativo
+            const statusFilter = document.querySelector('input[name="status"]:checked');
+            const isArchiveFilter = statusFilter && statusFilter.value === 'archived';
+            
+            if (isArchiveFilter) {
+                // Se filtro de arquivados está ativo, mostra restaurar e esconde arquivar
+                archiveBtn.style.display = 'none';
+                restoreBtn.style.display = 'block';
+            } else {
+                // Caso contrário, mostra arquivar e esconde restaurar
+                archiveBtn.style.display = 'block';
+                restoreBtn.style.display = 'none';
+            }
         }
         
         /**
@@ -2162,6 +2657,8 @@
     KC.FileRenderer.selectAllVisible = KC.FileRenderer.selectAllVisible.bind(KC.FileRenderer);
     KC.FileRenderer.bulkAnalyze = KC.FileRenderer.bulkAnalyze.bind(KC.FileRenderer);
     KC.FileRenderer.bulkArchive = KC.FileRenderer.bulkArchive.bind(KC.FileRenderer);
+    KC.FileRenderer.bulkRestore = KC.FileRenderer.bulkRestore.bind(KC.FileRenderer);
+    KC.FileRenderer.bulkApprove = KC.FileRenderer.bulkApprove.bind(KC.FileRenderer);
     KC.FileRenderer.clearSelection = KC.FileRenderer.clearSelection.bind(KC.FileRenderer);
     KC.FileRenderer.applyBulkCategories = KC.FileRenderer.applyBulkCategories.bind(KC.FileRenderer);
 

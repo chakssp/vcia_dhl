@@ -229,31 +229,10 @@
                     ${this.renderSearchGroup()}
                     ${this.renderDuplicateSection()}
                 </div>
-
-                <div class="bulk-actions-container">
-                    <h4>⚡ AÇÕES EM LOTE</h4>
-                    <div class="bulk-buttons">
-                        <button class="bulk-btn update" id="bulk-update" title="Atualiza dados manualmente">
-                            🔄 ATUALIZAR
-                        </button>
-                        <button class="bulk-btn approve" id="bulk-approve" title="Aprova todos os arquivos filtrados">
-                            ✅ APROVAR TODOS
-                        </button>
-                        <button class="bulk-btn archive" id="bulk-archive" title="Arquiva todos os arquivos filtrados">
-                            📦 ARQUIVAR TODOS
-                        </button>
-                        <button class="bulk-btn restore" id="bulk-restore" title="Restaura arquivos arquivados para aprovados" style="display: none;">
-                            🔄 RESTAURAR
-                        </button>
-                    </div>
-                    <div class="bulk-info">
-                        <small id="bulk-info-text">0 arquivos serão afetados pelas ações em lote</small>
-                    </div>
-                </div>
             `;
 
             this.updateAllCounters();
-            this.updateBulkButtonsVisibility();
+            // this.updateBulkButtonsVisibility(); // Removido pois bulk-actions-container foi removido
         }
 
         /**
@@ -430,8 +409,8 @@
                 });
             }
 
-            // Ações em lote
-            this.setupBulkActionListeners();
+            // Ações em lote - Comentado pois bulk-actions-container foi removido
+            // this.setupBulkActionListeners();
             
             // Tamanho customizado
             this.setupCustomSizeListeners();
@@ -587,13 +566,13 @@
             // Aplica filtro usando FilterManager existente
             this.applyFilters();
             
-            // Atualiza info de ações em lote
-            this.updateBulkInfo();
+            // Atualiza info de ações em lote - Comentado
+            // this.updateBulkInfo();
             
-            // Atualiza visibilidade dos botões se foi alteração no status
-            if (group === 'status') {
-                this.updateBulkButtonsVisibility();
-            }
+            // Atualiza visibilidade dos botões se foi alteração no status - Comentado
+            // if (group === 'status') {
+            //     this.updateBulkButtonsVisibility();
+            // }
         }
 
         /**
@@ -605,7 +584,7 @@
             
             // Aplica busca
             this.applyFilters();
-            this.updateBulkInfo();
+            // this.updateBulkInfo(); // Comentado
         }
 
         /**
@@ -910,15 +889,15 @@
             // Atualiza UI
             this.updateCountersUI();
             
-            // Atualiza info de bulk actions
-            const bulkInfo = document.getElementById('bulk-info-text');
-            if (bulkInfo && this.fileRenderer) {
-                const count = this.fileRenderer.filteredFiles?.length || 0;
-                bulkInfo.textContent = `${count} arquivos serão afetados pelas ações em lote`;
-            }
+            // Atualiza info de bulk actions - Comentado pois elemento foi removido
+            // const bulkInfo = document.getElementById('bulk-info-text');
+            // if (bulkInfo && this.fileRenderer) {
+            //     const count = this.fileRenderer.filteredFiles?.length || 0;
+            //     bulkInfo.textContent = `${count} arquivos serão afetados pelas ações em lote`;
+            // }
 
-            // Atualiza info de ações em lote
-            this.updateBulkInfo();
+            // Atualiza info de ações em lote - Comentado
+            // this.updateBulkInfo();
         }
 
         /**

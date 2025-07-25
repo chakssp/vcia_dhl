@@ -74,7 +74,7 @@
             // 1. Garantir campos obrigatórios
             for (const field of this.requiredFileFields) {
                 if (!fixed[field]) {
-                    KC.Logger?.warn('DataIntegrityManager', `Campo obrigatório ausente: ${field} em ${file.name}`);
+                    KC.Logger?.warning(`DataIntegrityManager - Campo obrigatório ausente: ${field} em ${file.name}`);
                     fixed[field] = this.getDefaultValue(field, file);
                 }
             }
@@ -104,7 +104,7 @@
 
             // 5. Validar content
             if (fixed.content && typeof fixed.content !== 'string') {
-                KC.Logger?.warn('DataIntegrityManager', `Content não é string em ${file.name}`);
+                KC.Logger?.warning(`DataIntegrityManager - Content não é string em ${file.name}`);
                 fixed.content = String(fixed.content);
             }
 
@@ -115,7 +115,7 @@
                     fixed.content = await fileObj.text();
                     KC.Logger?.info('DataIntegrityManager', `Conteúdo carregado para ${file.name}`);
                 } catch (error) {
-                    KC.Logger?.warn('DataIntegrityManager', `Não foi possível carregar conteúdo de ${file.name}`);
+                    KC.Logger?.warning(`DataIntegrityManager - Não foi possível carregar conteúdo de ${file.name}`);
                 }
             }
 
@@ -209,7 +209,7 @@
                 
                 // Validações específicas para pipeline
                 if (!fixed.content || fixed.content.trim().length < 10) {
-                    KC.Logger?.warn('DataIntegrityManager', `Arquivo ${file.name} tem conteúdo insuficiente`);
+                    KC.Logger?.warning(`DataIntegrityManager - Arquivo ${file.name} tem conteúdo insuficiente`);
                     continue; // Pular arquivo
                 }
 
