@@ -1,0 +1,432 @@
+{
+  "dashboard": {
+    "name": "ML Confidence Workflow Monitor",
+    "version": "4.0.0",
+    "refreshInterval": 5000,
+    "theme": "dark",
+    "layout": "grid",
+    "sections": [
+      {
+        "id": "overview",
+        "title": "System Overview",
+        "position": { "x": 0, "y": 0, "w": 12, "h": 3 },
+        "widgets": [
+          {
+            "type": "metric",
+            "title": "Average Confidence",
+            "metric": "confidence.average",
+            "format": "percentage",
+            "threshold": {
+              "good": 0.85,
+              "warning": 0.80,
+              "critical": 0.75
+            },
+            "sparkline": true
+          },
+          {
+            "type": "metric",
+            "title": "Processing Rate",
+            "metric": "throughput.itemsPerSecond",
+            "format": "number",
+            "unit": "items/sec",
+            "threshold": {
+              "good": 50,
+              "warning": 30,
+              "critical": 10
+            }
+          },
+          {
+            "type": "metric",
+            "title": "System Health",
+            "metric": "health.score",
+            "format": "percentage",
+            "threshold": {
+              "good": 0.95,
+              "warning": 0.80,
+              "critical": 0.50
+            }
+          },
+          {
+            "type": "metric",
+            "title": "Active Workers",
+            "metric": "workers.active",
+            "format": "number",
+            "unit": "workers",
+            "max": 8
+          }
+        ]
+      },
+      {
+        "id": "confidence-tracking",
+        "title": "Confidence Tracking",
+        "position": { "x": 0, "y": 3, "w": 8, "h": 4 },
+        "widgets": [
+          {
+            "type": "timeseries",
+            "title": "Confidence Trend (24h)",
+            "metrics": [
+              {
+                "name": "Average",
+                "metric": "confidence.average",
+                "color": "#00ff00"
+              },
+              {
+                "name": "Target (85%)",
+                "metric": "confidence.target",
+                "color": "#ffff00",
+                "style": "dashed"
+              },
+              {
+                "name": "P95",
+                "metric": "confidence.p95",
+                "color": "#00ffff"
+              },
+              {
+                "name": "P5",
+                "metric": "confidence.p5",
+                "color": "#ff00ff"
+              }
+            ],
+            "timeRange": "24h",
+            "yAxis": {
+              "min": 0.5,
+              "max": 1.0,
+              "label": "Confidence Score"
+            }
+          }
+        ]
+      },
+      {
+        "id": "convergence-metrics",
+        "title": "Convergence Analysis",
+        "position": { "x": 8, "y": 3, "w": 4, "h": 4 },
+        "widgets": [
+          {
+            "type": "histogram",
+            "title": "Iterations to Converge",
+            "metric": "convergence.iterations",
+            "buckets": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            "colors": {
+              "1-3": "#00ff00",
+              "4-6": "#ffff00",
+              "7-10": "#ff0000"
+            }
+          },
+          {
+            "type": "gauge",
+            "title": "Convergence Rate",
+            "metric": "convergence.successRate",
+            "format": "percentage",
+            "min": 0,
+            "max": 1,
+            "zones": [
+              { "from": 0, "to": 0.7, "color": "#ff0000" },
+              { "from": 0.7, "to": 0.9, "color": "#ffff00" },
+              { "from": 0.9, "to": 1, "color": "#00ff00" }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "performance",
+        "title": "Performance Metrics",
+        "position": { "x": 0, "y": 7, "w": 6, "h": 4 },
+        "widgets": [
+          {
+            "type": "timeseries",
+            "title": "Processing Latency",
+            "metrics": [
+              {
+                "name": "P50",
+                "metric": "latency.p50",
+                "color": "#00ff00"
+              },
+              {
+                "name": "P95",
+                "metric": "latency.p95",
+                "color": "#ffff00"
+              },
+              {
+                "name": "P99",
+                "metric": "latency.p99",
+                "color": "#ff0000"
+              }
+            ],
+            "timeRange": "1h",
+            "yAxis": {
+              "label": "Latency (ms)",
+              "scale": "log"
+            }
+          },
+          {
+            "type": "heatmap",
+            "title": "Worker Utilization",
+            "metric": "workers.utilization",
+            "dimensions": ["worker_id", "time"],
+            "colorScale": {
+              "0": "#001100",
+              "0.5": "#ffff00",
+              "1": "#ff0000"
+            }
+          }
+        ]
+      },
+      {
+        "id": "cache-performance",
+        "title": "Cache Performance",
+        "position": { "x": 6, "y": 7, "w": 6, "h": 4 },
+        "widgets": [
+          {
+            "type": "pie",
+            "title": "Cache Hit Rate",
+            "metrics": [
+              {
+                "name": "Hits",
+                "metric": "cache.hits",
+                "color": "#00ff00"
+              },
+              {
+                "name": "Misses",
+                "metric": "cache.misses",
+                "color": "#ff0000"
+              }
+            ]
+          },
+          {
+            "type": "bar",
+            "title": "Cache Segments",
+            "metrics": [
+              {
+                "name": "Hot",
+                "metric": "cache.segments.hot.usage",
+                "color": "#ff0000"
+              },
+              {
+                "name": "Warm",
+                "metric": "cache.segments.warm.usage",
+                "color": "#ffff00"
+              },
+              {
+                "name": "Predictive",
+                "metric": "cache.segments.predictive.usage",
+                "color": "#00ffff"
+              }
+            ],
+            "yAxis": {
+              "max": 100,
+              "label": "Usage %"
+            }
+          }
+        ]
+      },
+      {
+        "id": "errors-alerts",
+        "title": "Errors & Alerts",
+        "position": { "x": 0, "y": 11, "w": 12, "h": 3 },
+        "widgets": [
+          {
+            "type": "table",
+            "title": "Recent Alerts",
+            "datasource": "alerts.recent",
+            "columns": [
+              { "field": "timestamp", "title": "Time", "format": "time" },
+              { "field": "severity", "title": "Severity", "format": "badge" },
+              { "field": "type", "title": "Type" },
+              { "field": "message", "title": "Message" },
+              { "field": "status", "title": "Status", "format": "status" }
+            ],
+            "limit": 10,
+            "refresh": 10000
+          },
+          {
+            "type": "sparkline",
+            "title": "Error Rate",
+            "metric": "errors.rate",
+            "timeRange": "1h",
+            "threshold": 0.01,
+            "color": "#ff0000"
+          }
+        ]
+      },
+      {
+        "id": "resource-usage",
+        "title": "Resource Usage",
+        "position": { "x": 0, "y": 14, "w": 6, "h": 3 },
+        "widgets": [
+          {
+            "type": "timeseries",
+            "title": "Memory Usage",
+            "metrics": [
+              {
+                "name": "Used",
+                "metric": "memory.used",
+                "color": "#0088ff"
+              },
+              {
+                "name": "Limit",
+                "metric": "memory.limit",
+                "color": "#ff0000",
+                "style": "dashed"
+              }
+            ],
+            "timeRange": "1h",
+            "yAxis": {
+              "label": "Memory (MB)",
+              "max": 100
+            }
+          },
+          {
+            "type": "timeseries",
+            "title": "CPU Usage",
+            "metrics": [
+              {
+                "name": "Average",
+                "metric": "cpu.average",
+                "color": "#00ff00"
+              },
+              {
+                "name": "Max",
+                "metric": "cpu.max",
+                "color": "#ff0000"
+              }
+            ],
+            "timeRange": "1h",
+            "yAxis": {
+              "label": "CPU %",
+              "max": 100
+            }
+          }
+        ]
+      },
+      {
+        "id": "ml-insights",
+        "title": "ML Insights",
+        "position": { "x": 6, "y": 14, "w": 6, "h": 3 },
+        "widgets": [
+          {
+            "type": "scatter",
+            "title": "Confidence vs Iterations",
+            "xMetric": "analysis.iterations",
+            "yMetric": "analysis.confidence",
+            "colorMetric": "analysis.category",
+            "sizeMetric": "analysis.processingTime",
+            "tooltip": ["fileId", "confidence", "iterations", "category"]
+          },
+          {
+            "type": "distribution",
+            "title": "Confidence Distribution",
+            "metric": "confidence.values",
+            "bins": 20,
+            "overlay": "normal",
+            "markers": [
+              { "value": 0.85, "label": "Target", "color": "#00ff00" }
+            ]
+          }
+        ]
+      }
+    ],
+    "dataSources": {
+      "metrics": {
+        "type": "prometheus",
+        "url": "${PROMETHEUS_URL}",
+        "auth": {
+          "type": "bearer",
+          "token": "${PROMETHEUS_TOKEN}"
+        }
+      },
+      "logs": {
+        "type": "elasticsearch",
+        "url": "${ELASTICSEARCH_URL}",
+        "index": "ml-confidence-*",
+        "auth": {
+          "type": "basic",
+          "username": "${ES_USERNAME}",
+          "password": "${ES_PASSWORD}"
+        }
+      },
+      "alerts": {
+        "type": "webhook",
+        "url": "/api/alerts",
+        "method": "GET"
+      }
+    },
+    "variables": {
+      "environment": {
+        "type": "custom",
+        "options": ["production", "staging", "development"],
+        "default": "production"
+      },
+      "timeRange": {
+        "type": "interval",
+        "options": ["5m", "15m", "1h", "6h", "24h", "7d"],
+        "default": "1h"
+      }
+    },
+    "annotations": {
+      "deployments": {
+        "datasource": "logs",
+        "query": "event:deployment",
+        "color": "#0088ff",
+        "icon": "rocket"
+      },
+      "incidents": {
+        "datasource": "alerts",
+        "query": "severity:critical",
+        "color": "#ff0000",
+        "icon": "alert"
+      }
+    },
+    "alerts": {
+      "rules": [
+        {
+          "name": "Low Confidence",
+          "condition": "confidence.average < 0.80",
+          "duration": "5m",
+          "severity": "warning",
+          "notification": ["email", "slack"]
+        },
+        {
+          "name": "Critical Confidence",
+          "condition": "confidence.average < 0.75",
+          "duration": "2m",
+          "severity": "critical",
+          "notification": ["email", "slack", "pagerduty"]
+        },
+        {
+          "name": "High Error Rate",
+          "condition": "errors.rate > 0.05",
+          "duration": "3m",
+          "severity": "critical",
+          "notification": ["email", "slack", "pagerduty"]
+        },
+        {
+          "name": "Cache Performance Degraded",
+          "condition": "cache.hitRate < 0.90",
+          "duration": "10m",
+          "severity": "warning",
+          "notification": ["email"]
+        },
+        {
+          "name": "Worker Pool Exhausted",
+          "condition": "workers.available == 0",
+          "duration": "1m",
+          "severity": "critical",
+          "notification": ["email", "slack"]
+        }
+      ],
+      "channels": {
+        "email": {
+          "to": ["ml-team@company.com"],
+          "from": "alerts@ml-confidence.com"
+        },
+        "slack": {
+          "webhook": "${SLACK_WEBHOOK_URL}",
+          "channel": "#ml-alerts"
+        },
+        "pagerduty": {
+          "serviceKey": "${PAGERDUTY_SERVICE_KEY}"
+        }
+      }
+    }
+  }
+}

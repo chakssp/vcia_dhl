@@ -175,15 +175,34 @@
                     
                     const startTime = Date.now();
                     
+                    // NOVO: Detecta se é refinamento
+                    const isRefinement = item.config.isRefinement || false;
+                    const refinementContext = item.config.refinementContext || null;
+                    
+                    // Prepara contexto do prompt
+                    let promptContext = item.config.context || '';
+                    
+                    // AIDEV-NOTE: refinement-context; adiciona contexto de refinamento ao prompt
+                    if (isRefinement && refinementContext) {
+                        promptContext = this.buildRefinementPromptContext(
+                            promptContext,
+                            refinementContext,
+                            item.config
+                        );
+                    }
+                    
                     // Prepara o prompt usando PromptManager
                     const promptData = KC.PromptManager.prepare(
                         item.file,
                         item.config.template || 'decisiveMoments',
-                        { additionalContext: item.config.context }
+                        { 
+                            additionalContext: promptContext,
+                            isRefinement: isRefinement
+                        }
                     );
                     
                     // Chama API real usando AIAPIManager
-                    KC.Logger?.info(`Analisando arquivo: ${item.file.name}`);
+                    KC.Logger?.info(`Analisando arquivo: ${item.file.name}${isRefinement ? ' (Refinamento)' : ''}`);
                     const rawResponse = await KC.AIAPIManager.analyze(item.file, {
                         model: item.config.model,
                         temperature: promptData.temperature || item.config.temperature,
@@ -203,6 +222,15 @@
                         throw new Error('Resposta da análise inválida');
                     }
                     
+                    // NOVO: Adiciona confiança baseada em refinamento
+                    if (isRefinement) {
+                        normalizedAnalysis.confidence = this.calculateRefinementConfidence(
+                            normalizedAnalysis,
+                            refinementContext,
+                            item.config
+                        );
+                    }
+                    
                     // Calcula métricas
                     const processingTime = Date.now() - startTime;
                     const providerInfo = KC.AIAPIManager.getActiveProviderInfo();
@@ -215,6 +243,8 @@
                             categories: normalizedAnalysis.categories || [],
                             summary: normalizedAnalysis.summary,
                             relevanceScore: normalizedAnalysis.relevanceScore,
+                            // NOVO: Adiciona confiança se disponível
+                            confidence: normalizedAnalysis.confidence || 0,
                             // Campos adicionais baseados no template
                             ...(item.config.template === 'technicalInsights' && {
                                 technicalPoints: normalizedAnalysis.technicalPoints,
@@ -234,9 +264,14 @@
                             provider: providerInfo.id,
                             template: item.config.template,
                             timestamp: new Date().toISOString(),
+                            // NOVO: Marca se é refinamento
+                            isRefinement: isRefinement,
+                            refinementIteration: item.config.refinementIteration || 0,
                             // Estimativa de tokens/custo (ajustar conforme provider)
                             tokensUsed: Math.ceil((item.file.content?.length || 0) / 4) + 500,
-                            cost: providerInfo.isLocal ? 0 : 0.002 // Custo estimado para providers cloud
+                            cost: providerInfo.isLocal ? 0 : 0.002, // Custo estimado para providers cloud
+                            // NOVO: Adiciona confiança nas metadados também
+                            confidence: normalizedAnalysis.confidence || 0
                         }
                     };
                     
@@ -276,6 +311,12 @@
             // Emite eventos
             this.emitItemUpdate(item);
             EventBus.emit(Events.ANALYSIS_ITEM_COMPLETED, {
+                file: item.file,
+                result: result
+            });
+            
+            // NOVO: Emite evento para RefinementService
+            EventBus.emit(Events.FILE_ANALYZED || 'FILE_ANALYZED', {
                 file: item.file,
                 result: result
             });
@@ -629,6 +670,72 @@
             });
 
             return files.map(file => this.enrichWithSchemaOrg(file));
+        }
+
+        /**
+         * NOVO - Constrói contexto de refinamento para o prompt
+         */
+        buildRefinementPromptContext(baseContext, refinementContext, config) {
+            const parts = [baseContext];
+            
+            // Adiciona contexto de categorias
+            if (refinementContext.categories && refinementContext.categories.length > 0) {
+                parts.push(`\n\nCONTEXTO DE REFINAMENTO:`);
+                parts.push(`O arquivo foi categorizado como: ${refinementContext.categories.join(', ')}.`);
+                parts.push(`Por favor, considere estas categorias na análise.`);
+            }
+            
+            // Adiciona contexto de iteração
+            if (config.refinementIteration > 1) {
+                parts.push(`Esta é a iteração ${config.refinementIteration} de refinamento.`);
+                if (config.previousAnalysis?.analysis?.analysisType) {
+                    parts.push(`Análise anterior detectou: ${config.previousAnalysis.analysis.analysisType}`);
+                }
+            }
+            
+            // Adiciona contexto semântico
+            if (refinementContext.semantic && refinementContext.semantic.length > 0) {
+                const patterns = refinementContext.semantic
+                    .filter(s => s.type === 'pattern')
+                    .map(s => s.pattern);
+                if (patterns.length > 0) {
+                    parts.push(`Padrões detectados: ${patterns.join(', ')}`);
+                }
+            }
+            
+            // Instrução final
+            parts.push(`\nForneça uma análise mais precisa e profunda considerando este contexto.`);
+            
+            return parts.join('\n');
+        }
+        
+        /**
+         * NOVO - Calcula confiança para análise refinada
+         */
+        calculateRefinementConfidence(analysis, context, config) {
+            let baseConfidence = 0.5; // Confiança base
+            
+            // Boost por categorias (curadoria humana)
+            if (context && context.categories && context.categories.length > 0) {
+                baseConfidence += 0.3 * Math.min(context.categories.length / 3, 1);
+            }
+            
+            // Boost por iteração (convergência)
+            if (config.refinementIteration) {
+                baseConfidence += 0.1 * Math.min(config.refinementIteration / 5, 1);
+            }
+            
+            // Boost por contexto semântico
+            if (context && context.confidence) {
+                baseConfidence += 0.2 * context.confidence;
+            }
+            
+            // Boost por alinhamento de tipo
+            if (config.expectedType && analysis.analysisType === config.expectedType) {
+                baseConfidence += 0.15;
+            }
+            
+            return Math.min(baseConfidence, 0.95); // Cap em 95%
         }
 
         /**

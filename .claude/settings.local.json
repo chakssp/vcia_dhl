@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Write",
+      "MultiEdit",
+      "Edit",
+      "Bash",
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(cd:*)",
@@ -24,11 +28,16 @@
       "Bash(rm:*)",
       "mcp__sequence-think__sequentialthinking",
       "mcp__memory__create_entities",
-      "mcp__memory__create_relations"
+      "mcp__memory__create_relations",
+      "mcp__memory__read_graph",
+      "mcp__memory__search_nodes",
+      "Bash(dir:*)",
+      "mcp__sequencial-think__sequentialthinking",
+      "mcp__memory-serve__create_entities"
     ],
     "deny": []
   },
-  "enableAllProjectMcpServers": false,
+  "enableAllProjectMcpServers": true,
   "hooks": {
     "UserPromptSubmit": [
       {

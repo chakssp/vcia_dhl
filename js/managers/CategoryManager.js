@@ -245,6 +245,17 @@
                     categoryId: categoryId
                 });
                 
+                // NOVO: Emitir evento específico para refinamento
+                // AIDEV-NOTE: refinement-event; notifica sistema de refinamento
+                if (Events.CATEGORY_ASSIGNED) {
+                    EventBus.emit(Events.CATEGORY_ASSIGNED, {
+                        fileId: fileId,
+                        categoryId: categoryId,
+                        file: files[fileIndex],
+                        totalCategories: categoryCount
+                    });
+                }
+                
                 // FASE 1.3 FIX: Notificação visual do boost aplicado
                 // AIDEV-NOTE: boost-notification; feedback visual quando boost é aplicado
                 if (KC.showNotification) {
@@ -288,6 +299,17 @@
                     fileId: fileId,
                     categoryId: categoryId
                 });
+                
+                // NOVO: Emitir evento específico para refinamento
+                // AIDEV-NOTE: refinement-event-remove; notifica remoção de categoria
+                if (Events.CATEGORY_REMOVED) {
+                    EventBus.emit(Events.CATEGORY_REMOVED, {
+                        fileId: fileId,
+                        categoryId: categoryId,
+                        file: files[fileIndex],
+                        remainingCategories: files[fileIndex].categories.length
+                    });
+                }
 
                 return true;
             }

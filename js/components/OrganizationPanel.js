@@ -187,6 +187,11 @@
                                     <small>Formato otimizado para sistemas RAG</small>
                                 </label>
                                 <label class="checkbox-item">
+                                    <input type="checkbox" name="export-format" value="schemaorg">
+                                    <span>🌐 Schema.org JSON-LD</span>
+                                    <small>Formato universal com chunks e embeddings</small>
+                                </label>
+                                <label class="checkbox-item">
                                     <input type="checkbox" name="export-format" value="markdown">
                                     <span>📝 Markdown</span>
                                     <small>Documentação legível</small>
@@ -290,6 +295,9 @@
                         </button>
                         <button class="btn btn-success btn-lg" onclick="KC.OrganizationPanel.startExport()">
                             📤 Exportar Dados
+                        </button>
+                        <button class="btn btn-primary btn-lg" onclick="KC.OrganizationPanel.exportSchemaOrg()">
+                            🌐 Export Schema.org Completo
                         </button>
                     </div>
 
@@ -851,6 +859,262 @@
                     });
                 }
             });
+        }
+
+        /**
+         * Exporta dados completos em formato Schema.org JSON-LD
+         * FASE 1: Export Schema.org com chunks e embeddings
+         */
+        async exportSchemaOrg() {
+            try {
+                // Mostrar notificação de início
+                console.log('🌐 Iniciando export Schema.org completo...');
+                if (KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'info',
+                        message: '🌐 Iniciando export Schema.org completo...'
+                    });
+                }
+
+                // 1. Coletar arquivos baseado no critério selecionado
+                const criteria = document.getElementById('selection-criteria')?.value || 'all';
+                const files = this._getFilesBasedOnCriteria(criteria);
+                
+                if (files.length === 0) {
+                    console.warn('Nenhum arquivo selecionado para exportar');
+                    alert('⚠️ Nenhum arquivo selecionado para exportar');
+                    if (KC.NotificationSystem?.show) {
+                        KC.NotificationSystem.show({
+                            type: 'warning',
+                            message: 'Nenhum arquivo selecionado para exportar'
+                        });
+                    }
+                    return;
+                }
+
+                KC.Logger?.info('OrganizationPanel', `Exportando ${files.length} arquivos para Schema.org`);
+
+                // 2. Consolidar dados usando RAGExportManager
+                const consolidatedData = await KC.RAGExportManager?.consolidateData();
+                if (!consolidatedData || !consolidatedData.documents) {
+                    throw new Error('Falha ao consolidar dados');
+                }
+
+                // 3. Criar estrutura Schema.org JSON-LD
+                const schemaOrgData = {
+                    '@context': 'https://schema.org',
+                    '@graph': [],
+                    'meta': {
+                        'exportDate': new Date().toISOString(),
+                        'version': '1.0.0',
+                        'generator': 'Knowledge Consolidator',
+                        'totalDocuments': consolidatedData.documents.length,
+                        'categories': KC.CategoryManager?.getCategories()?.map(c => c.name) || [],
+                        'exportCriteria': criteria
+                    }
+                };
+
+                // 4. Processar cada documento consolidado
+                for (const doc of consolidatedData.documents) {
+                    try {
+                        // Criar objeto de arquivo compatível com SchemaOrgMapper
+                        const file = {
+                            id: doc.id,
+                            name: doc.source.fileName,
+                            path: doc.source.path,
+                            content: doc.content?.original || '',
+                            preview: doc.content?.preview || '',
+                            analysisType: doc.analysis?.analysisType || doc.categories?.[0] || 'Aprendizado Geral',
+                            relevanceScore: doc.analysis?.relevanceScore || 0,
+                            categories: doc.categories || [],
+                            analyzed: doc.analysis?.analyzed || false,
+                            analysisDate: doc.analysis?.analysisDate,
+                            createdDate: doc.source?.lastModified,
+                            modifiedDate: doc.source?.lastModified,
+                            size: doc.source?.size || 0
+                        };
+
+                        // Enriquecer com Schema.org
+                        const schemaDoc = await KC.SchemaOrgMapper?.mapToSchema(file);
+                        if (!schemaDoc) continue;
+
+                        // Adicionar chunks e embeddings
+                        schemaDoc['@chunks'] = [];
+                        
+                        // Adicionar chunks do documento
+                        if (doc.chunks && Array.isArray(doc.chunks)) {
+                            for (let i = 0; i < doc.chunks.length; i++) {
+                                const chunk = doc.chunks[i];
+                                const chunkData = {
+                                    '@type': 'TextDigitalDocument',
+                                    '@id': `chunk-${doc.id}-${i}`,
+                                    'position': i,
+                                    'text': chunk.content || chunk.text || '',
+                                    'wordCount': (chunk.content || chunk.text || '').split(/\s+/).length || 0,
+                                    'embedding': {
+                                        '@type': 'PropertyValue',
+                                        'propertyID': 'embedding-vector',
+                                        'value': chunk.embedding || chunk.vector || [],
+                                        'dimension': chunk.embedding?.length || chunk.vector?.length || 0,
+                                        'model': 'nomic-embed-text'
+                                    },
+                                    'metadata': {
+                                        'semanticType': chunk.semanticType || 'general',
+                                        'boundaries': chunk.boundaries || {},
+                                        'keyWords': chunk.keywords || []
+                                    }
+                                };
+                                schemaDoc['@chunks'].push(chunkData);
+                            }
+                        }
+
+                        // Adicionar metadados adicionais
+                        schemaDoc['@metadata'] = {
+                            'relevanceScore': file.relevanceScore || 0,
+                            'analyzed': file.analyzed || false,
+                            'analysisDate': file.analysisDate || null,
+                            'categories': file.categories || [],
+                            'preview': file.preview || '',
+                            'totalChunks': schemaDoc['@chunks'].length
+                        };
+
+                        // Adicionar ao grafo
+                        schemaOrgData['@graph'].push(schemaDoc);
+
+                    } catch (error) {
+                        KC.Logger?.error('OrganizationPanel', 'Erro ao processar arquivo', {
+                            file: file.name,
+                            error: error.message
+                        });
+                    }
+                }
+
+                // 5. Adicionar estatísticas ao JSON-LD
+                schemaOrgData['@stats'] = {
+                    '@type': 'Dataset',
+                    'name': 'Knowledge Consolidator Export Statistics',
+                    'description': 'Estatísticas do processo de exportação',
+                    'totalDocuments': schemaOrgData['@graph'].length,
+                    'totalChunks': schemaOrgData['@graph'].reduce((acc, doc) => 
+                        acc + (doc['@chunks']?.length || 0), 0
+                    ),
+                    'categoriesDistribution': this._calculateCategoryDistribution(schemaOrgData['@graph']),
+                    'analysisTypesDistribution': this._calculateAnalysisTypeDistribution(schemaOrgData['@graph']),
+                    'embeddingStats': {
+                        'model': 'nomic-embed-text',
+                        'dimension': 768,
+                        'totalVectors': schemaOrgData['@graph'].reduce((acc, doc) => 
+                            acc + (doc['@chunks']?.length || 0), 0
+                        )
+                    }
+                };
+
+                // 6. Exportar como arquivo JSON-LD
+                const jsonContent = JSON.stringify(schemaOrgData, null, 2);
+                const blob = new Blob([jsonContent], { type: 'application/ld+json' });
+                const url = URL.createObjectURL(blob);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const filename = `knowledge-base-schema-org-${timestamp}.jsonld`;
+
+                // Download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Mostrar sucesso
+                const successMsg = `✅ Schema.org exportado com sucesso! ${schemaOrgData['@graph'].length} documentos com ${schemaOrgData['@stats'].totalChunks} chunks.`;
+                console.log(successMsg);
+                alert(successMsg);
+                if (KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'success',
+                        message: successMsg
+                    });
+                }
+
+                // Log detalhado
+                KC.Logger?.info('OrganizationPanel', 'Export Schema.org concluído', {
+                    documents: schemaOrgData['@graph'].length,
+                    chunks: schemaOrgData['@stats'].totalChunks,
+                    fileSize: KC.FileUtils?.formatFileSize(blob.size),
+                    filename: filename
+                });
+
+            } catch (error) {
+                KC.Logger?.error('OrganizationPanel', 'Erro no export Schema.org', error);
+                const errorMsg = `❌ Erro ao exportar Schema.org: ${error.message}`;
+                console.error(errorMsg);
+                alert(errorMsg);
+                if (KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'error',
+                        message: errorMsg
+                    });
+                }
+            }
+        }
+
+        /**
+         * Obtém arquivos baseado no critério selecionado
+         */
+        _getFilesBasedOnCriteria(criteria) {
+            const files = KC.AppState?.get('files') || [];
+            
+            switch(criteria) {
+                case 'analyzed':
+                    return files.filter(f => f.analyzed);
+                case 'high-relevance':
+                    return files.filter(f => f.relevanceScore >= 70);
+                case 'medium-relevance':
+                    return files.filter(f => f.relevanceScore >= 30);
+                case 'categorized':
+                    return files.filter(f => f.categories && f.categories.length > 0);
+                case 'all':
+                default:
+                    return files;
+            }
+        }
+
+        /**
+         * Calcula distribuição de categorias
+         */
+        _calculateCategoryDistribution(documents) {
+            const distribution = {};
+            
+            documents.forEach(doc => {
+                const categories = doc['@metadata']?.categories || [];
+                categories.forEach(cat => {
+                    distribution[cat] = (distribution[cat] || 0) + 1;
+                });
+            });
+            
+            return Object.entries(distribution).map(([name, count]) => ({
+                '@type': 'PropertyValue',
+                'name': name,
+                'value': count,
+                'percentage': ((count / documents.length) * 100).toFixed(2) + '%'
+            }));
+        }
+
+        /**
+         * Calcula distribuição de tipos de análise
+         */
+        _calculateAnalysisTypeDistribution(documents) {
+            const distribution = {};
+            
+            documents.forEach(doc => {
+                const analysisType = doc.curatorNote?.text?.match(/"([^"]+)"/)?.[1] || 'Unknown';
+                distribution[analysisType] = (distribution[analysisType] || 0) + 1;
+            });
+            
+            return Object.entries(distribution).map(([type, count]) => ({
+                '@type': 'PropertyValue',
+                'name': type,
+                'value': count,
+                'percentage': ((count / documents.length) * 100).toFixed(2) + '%'
+            }));
         }
 
         /**

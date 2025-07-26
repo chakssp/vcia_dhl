@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste FileRenderer Load</title>
+</head>
+<body>
+    <h1>Teste de Carregamento do FileRenderer</h1>
+    <div id="status"></div>
+    <div id="errors" style="color: red;"></div>
+    
+    <script>
+        // Namespace básico
+        window.KnowledgeConsolidator = {
+            EventBus: {
+                on: () => {},
+                emit: () => {}
+            },
+            Events: {},
+            AppState: {
+                get: () => [],
+                set: () => {}
+            },
+            Logger: {
+                info: console.log,
+                error: console.error,
+                warn: console.warn
+            }
+        };
+        
+        // Captura erros
+        window.addEventListener('error', (e) => {
+            document.getElementById('errors').innerHTML += `<p>Erro: ${e.message} na linha ${e.lineno}</p>`;
+            console.error('Erro capturado:', e);
+        });
+    </script>
+    
+    <!-- Carrega FileRenderer -->
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        // Verifica se carregou
+        const status = document.getElementById('status');
+        
+        if (window.KnowledgeConsolidator.FileRenderer) {
+            status.innerHTML = '<p style="color: green;">✓ FileRenderer carregado com sucesso!</p>';
+            console.log('FileRenderer:', window.KnowledgeConsolidator.FileRenderer);
+        } else {
+            status.innerHTML = '<p style="color: red;">✗ FileRenderer NÃO foi carregado!</p>';
+        }
+    </script>
+</body>
+</html>

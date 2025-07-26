@@ -357,51 +357,68 @@
          * @private
          */
         _compressFilesData(files) {
-            return files.map(file => ({
-                // Metadados essenciais
-                id: file.id,
-                name: file.name,
-                path: file.path,
-                size: file.size,
-                extension: file.extension,
-                lastModified: file.lastModified,
+            return files.map(file => {
+                const compressed = {
+                    // Metadados essenciais
+                    id: file.id,
+                    name: file.name,
+                    path: file.path,
+                    size: file.size,
+                    extension: file.extension,
+                    lastModified: file.lastModified,
+                    
+                    // Preserva handle para re-leitura posterior
+                    handle: file.handle,
+                    
+                    // Análise e relevância (mantém)
+                    relevanceScore: file.relevanceScore,
+                    tokenSavings: file.tokenSavings,
+                    status: file.status,
+                    categories: file.categories || [], // CORRIGIDO: plural para array de categorias
+                    // AIDEV-NOTE: category-persistence; fixed singular vs plural field name issue
+                    analyzed: file.analyzed,
+                    analysisType: file.analysisType,
+                    analysisDate: file.analysisDate,
+                    
+                    // Preview comprimido (apenas segmentos essenciais)
+                    smartPreview: file.smartPreview ? {
+                        relevanceScore: file.smartPreview.relevanceScore,
+                        structureAnalysis: file.smartPreview.structureAnalysis,
+                        stats: file.smartPreview.stats
+                        // Remove content segments pesados
+                    } : null,
+                    
+                    // MANTÉM preview para exibição na lista
+                    preview: file.preview,
+                    
+                    // Timestamps
+                    discoveredAt: file.discoveredAt,
+                    analyzedAt: file.analyzedAt,
+                    categorizedDate: file.categorizedDate, // ADICIONADO: data de categorização
+                    
+                    // AIDEV-NOTE: keep-duplicate-detection; maintain fingerprint for cross-session tracking
+                    fingerprint: file.fingerprint || this._generateFingerprint(file),
+                    inQdrant: file.inQdrant || false,
+                    
+                    // Estados adicionais
+                    approved: file.approved || false,
+                    archived: file.archived || false
+                };
                 
-                // Preserva handle para re-leitura posterior
-                handle: file.handle,
+                // AIDEV-NOTE: content-persistence; mantém conteúdo completo para arquivos pequenos
+                // Mantém conteúdo completo para arquivos de texto < 500KB
+                const MAX_SIZE_FOR_CONTENT = 500 * 1024; // 500KB
+                const isTextFile = ['.md', '.txt', '.markdown'].includes(file.extension?.toLowerCase() || '');
                 
-                // Análise e relevância (mantém)
-                relevanceScore: file.relevanceScore,
-                tokenSavings: file.tokenSavings,
-                status: file.status,
-                categories: file.categories || [], // CORRIGIDO: plural para array de categorias
-                // AIDEV-NOTE: category-persistence; fixed singular vs plural field name issue
-                analyzed: file.analyzed,
-                analysisType: file.analysisType,
-                analysisDate: file.analysisDate,
+                if (file.content && file.size < MAX_SIZE_FOR_CONTENT && isTextFile) {
+                    compressed.content = file.content;
+                    KC.Logger?.debug(`AppState - Mantendo conteúdo completo para: ${file.name} (${(file.size/1024).toFixed(1)}KB)`);
+                } else if (file.content && file.size >= MAX_SIZE_FOR_CONTENT) {
+                    KC.Logger?.debug(`AppState - Removendo conteúdo de arquivo grande: ${file.name} (${(file.size/1024).toFixed(1)}KB)`);
+                }
                 
-                // Preview comprimido (apenas segmentos essenciais)
-                smartPreview: file.smartPreview ? {
-                    relevanceScore: file.smartPreview.relevanceScore,
-                    structureAnalysis: file.smartPreview.structureAnalysis,
-                    stats: file.smartPreview.stats
-                    // Remove content segments pesados
-                } : null,
-                
-                // MANTÉM preview para exibição na lista
-                preview: file.preview,
-                
-                // Remove apenas conteúdo completo
-                // content: REMOVIDO  
-                
-                // Timestamps
-                discoveredAt: file.discoveredAt,
-                analyzedAt: file.analyzedAt,
-                categorizedDate: file.categorizedDate, // ADICIONADO: data de categorização
-                
-                // AIDEV-NOTE: keep-duplicate-detection; maintain fingerprint for cross-session tracking
-                fingerprint: file.fingerprint || this._generateFingerprint(file),
-                inQdrant: file.inQdrant || false
-            }));
+                return compressed;
+            });
         }
 
         /**

@@ -448,6 +448,26 @@
     background: var(--color-success-hover);
 }
 
+/* Estados de refinamento */
+.action-btn.refined {
+    background: linear-gradient(135deg, var(--color-success) 0%, var(--color-primary) 100%);
+    border-color: var(--color-primary);
+    position: relative;
+}
+
+.action-btn.refined::after {
+    content: '🔄';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+}
+
+.action-btn.refined:hover {
+    background: linear-gradient(135deg, var(--color-success-hover) 0%, var(--color-primary-hover) 100%);
+}
+
 /* Responsividade */
 @media (max-width: 768px) {
     .modal {

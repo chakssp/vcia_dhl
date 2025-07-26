@@ -382,6 +382,9 @@ Forneça sua análise em formato JSON com a estrutura:
         async _callOllama(prompt, options) {
             const provider = this.providers.ollama;
             const model = options.model || provider.defaultModel;
+            
+            // DEBUG: Log do prompt enviado
+            console.log('📤 Prompt enviado ao Ollama:', prompt);
 
             // ORIGINAL - Preservado para rollback
             // const response = await fetch(provider.baseUrl + provider.endpoints.generate, {

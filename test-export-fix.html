@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste Export Schema.org - Correção</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 10px 5px; 
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover { background: #45a049; }
+        pre { 
+            background: #f5f5f5; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow: auto;
+            max-height: 500px;
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 10px; 
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Export Schema.org - Correção</h1>
+    
+    <div>
+        <button onclick="checkSystem()">1. Verificar Sistema</button>
+        <button onclick="testRAGExport()">2. Testar RAGExportManager</button>
+        <button onclick="testSchemaOrgExport()">3. Testar Export Completo</button>
+    </div>
+    
+    <div id="results"></div>
+    <pre id="output"></pre>
+
+    <!-- Scripts -->
+    <script src="js/core/Logger.js"></script>
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/managers/SchemaOrgMapper.js"></script>
+    <script src="js/utils/FileUtils.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/utils/ChunkingUtils.js"></script>
+    <script src="js/managers/RAGExportManager.js"></script>
+    <script src="js/components/OrganizationPanel.js"></script>
+
+    <script>
+        const results = document.getElementById('results');
+        const output = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function checkSystem() {
+            results.innerHTML = '';
+            log('Verificando sistema...');
+            
+            const components = {
+                'EventBus': KC.EventBus,
+                'AppState': KC.AppState,
+                'SchemaOrgMapper': KC.SchemaOrgMapper,
+                'RAGExportManager': KC.RAGExportManager,
+                'OrganizationPanel': KC.OrganizationPanel,
+                'CategoryManager': KC.CategoryManager,
+                'ChunkingUtils': KC.ChunkingUtils
+            };
+
+            let allOk = true;
+            for (const [name, component] of Object.entries(components)) {
+                if (component) {
+                    log(`✅ ${name} carregado`, 'success');
+                } else {
+                    log(`❌ ${name} não encontrado`, 'error');
+                    allOk = false;
+                }
+            }
+
+            // Inicializar
+            if (allOk) {
+                if (KC.EventBus?.initialize) KC.EventBus.initialize();
+                if (KC.AppState?.initialize) KC.AppState.initialize();
+                if (KC.CategoryManager?.initialize) KC.CategoryManager.initialize();
+                if (KC.OrganizationPanel?.initialize) KC.OrganizationPanel.initialize();
+                log('Sistema inicializado!', 'success');
+            }
+
+            // Verificar dados
+            const files = KC.AppState?.get('files') || [];
+            log(`Arquivos no AppState: ${files.length}`, files.length > 0 ? 'info' : 'error');
+        }
+
+        async function testRAGExport() {
+            results.innerHTML = '';
+            log('Testando RAGExportManager...');
+            
+            try {
+                const data = await KC.RAGExportManager.consolidateData();
+                log('✅ consolidateData() executado com sucesso', 'success');
+                
+                log(`Estrutura retornada:`, 'info');
+                log(`- version: ${data.version}`, 'info');
+                log(`- metadata: ${data.metadata ? 'presente' : 'ausente'}`, 'info');
+                log(`- documents: ${data.documents ? data.documents.length + ' itens' : 'ausente'}`, 'info');
+                
+                output.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        async function testSchemaOrgExport() {
+            results.innerHTML = '';
+            log('Testando Export Schema.org completo...');
+            
+            try {
+                // Criar mock do select se não existir
+                if (!document.getElementById('selection-criteria')) {
+                    const select = document.createElement('select');
+                    select.id = 'selection-criteria';
+                    select.value = 'all';
+                    document.body.appendChild(select);
+                }
+                
+                // Interceptar o download
+                const originalCreateElement = document.createElement;
+                let capturedBlob = null;
+                
+                document.createElement = function(tagName) {
+                    const element = originalCreateElement.call(document, tagName);
+                    if (tagName === 'a') {
+                        const originalClick = element.click;
+                        element.click = function() {
+                            log('✅ Download interceptado!', 'success');
+                            // Capturar o blob
+                            if (element.href.startsWith('blob:')) {
+                                fetch(element.href)
+                                    .then(r => r.text())
+                                    .then(text => {
+                                        output.textContent = text;
+                                        const data = JSON.parse(text);
+                                        log(`Export contém ${data['@graph'].length} documentos`, 'success');
+                                    });
+                            }
+                        };
+                    }
+                    return element;
+                };
+                
+                // Executar export
+                await KC.OrganizationPanel.exportSchemaOrg();
+                
+                // Restaurar
+                document.createElement = originalCreateElement;
+                
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Inicializar ao carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSystem();
+        });
+    </script>
+</body>
+</html>

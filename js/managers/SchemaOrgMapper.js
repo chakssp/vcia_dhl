@@ -143,10 +143,22 @@
          * @param {Object} file - Arquivo com analysisType definido
          * @returns {Object} Estrutura Schema.org completa
          */
-        mapToSchema(file) {
+        async mapToSchema(file) {
             try {
                 if (!file || !file.analysisType) {
                     throw new Error('Arquivo deve ter analysisType definido');
+                }
+
+                // PERFORMANCE: Verifica cache primeiro
+                if (KC.CacheService) {
+                    const cached = await KC.CacheService.getCachedSchemaOrgMapping(file);
+                    if (cached) {
+                        Logger?.debug('SchemaOrgMapper', 'Schema.org obtido do cache', {
+                            file: file.name,
+                            type: cached['@type']
+                        });
+                        return cached;
+                    }
                 }
 
                 const typeConfig = this.typeMapping[file.analysisType];
@@ -203,6 +215,11 @@
                     file: file.name,
                     type: enrichedSchema['@type']
                 });
+
+                // PERFORMANCE: Armazena no cache
+                if (KC.CacheService) {
+                    await KC.CacheService.cacheSchemaOrgMapping(file, enrichedSchema);
+                }
 
                 return enrichedSchema;
 

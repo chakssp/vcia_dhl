@@ -75,6 +75,11 @@
             'AnalysisAdapter',
             'QdrantSchema',
             'RAGExportManager',
+            // NOVO: Componentes de Refinamento
+            'RefinementService',
+            'ConvergenceCalculator',
+            'RefinementDetector',
+            'RefinementIndicator',
             'ExportUI',
             'OrganizationPanel',
             'GraphVisualization',
@@ -350,6 +355,18 @@
             if (KC.CategoryManager && typeof KC.CategoryManager.initialize === 'function') {
                 KC.CategoryManager.initialize();
                 console.log('CategoryManager inicializado');
+            }
+            
+            // NOVO: Inicializa RefinementService
+            if (KC.RefinementService && typeof KC.RefinementService.initialize === 'function') {
+                await KC.RefinementService.initialize();
+                console.log('RefinementService inicializado');
+            }
+            
+            // NOVO: Inicializa RefinementIndicator
+            if (KC.RefinementIndicator && typeof KC.RefinementIndicator.initialize === 'function') {
+                await KC.RefinementIndicator.initialize();
+                console.log('RefinementIndicator inicializado');
             }
 
             // FASE 1.1: Validar Ollama como padrão no carregamento

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Ciclo de Refinamento com Embeddings</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: var(--font-family);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: var(--bg-secondary);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        .test-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-button:hover {
+            opacity: 0.9;
+        }
+        .test-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .file-test {
+            background: var(--bg-tertiary);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+        }
+        .analysis-history {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: 5px;
+        }
+        .history-entry {
+            padding: 5px;
+            margin: 5px 0;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        pre {
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste - Ciclo de Refinamento com Embeddings</h1>
+        
+        <div class="test-section">
+            <h2>1. Verificação de Serviços</h2>
+            <button class="test-button" onclick="checkServices()">Verificar Serviços</button>
+            <div id="services-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. Criar Arquivo de Teste</h2>
+            <button class="test-button" onclick="createTestFile()">Criar Arquivo</button>
+            <div id="file-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. Análise Inicial (65% confiança)</h2>
+            <button class="test-button" onclick="runInitialAnalysis()" id="initial-analysis-btn" disabled>Executar Análise Inicial</button>
+            <div id="initial-analysis-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. Adicionar Categorias</h2>
+            <button class="test-button" onclick="addCategories()" id="add-categories-btn" disabled>Adicionar Categorias</button>
+            <div id="categories-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>5. Refinamento com Embeddings (92% confiança)</h2>
+            <button class="test-button" onclick="runRefinement()" id="refinement-btn" disabled>Executar Refinamento</button>
+            <div id="refinement-status"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>6. Histórico de Análises</h2>
+            <button class="test-button" onclick="showAnalysisHistory()">Mostrar Histórico</button>
+            <div id="history-display"></div>
+        </div>
+    </div>
+
+    <!-- Scripts principais -->
+    <script src="js/core/Logger.js"></script>
+    <script src="js/utils/BrowserCompatibility.js"></script>
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    <script src="js/services/EmbeddingService.js"></script>
+    <script src="js/services/SimilaritySearchService.js"></script>
+    <script src="js/services/RefinementDetector.js"></script>
+    
+    <script>
+        // Arquivo de teste global
+        let testFile = null;
+        
+        // Verificar serviços
+        async function checkServices() {
+            const statusDiv = document.getElementById('services-status');
+            statusDiv.innerHTML = '<div class="status info">Verificando serviços...</div>';
+            
+            let results = [];
+            
+            // Verificar Ollama
+            if (KC.EmbeddingService) {
+                try {
+                    const ollamaAvailable = await KC.EmbeddingService.checkOllamaAvailability();
+                    results.push(`✅ Ollama: ${ollamaAvailable ? 'Disponível' : 'Não disponível'}`);
+                } catch (error) {
+                    results.push(`❌ Ollama: Erro - ${error.message}`);
+                }
+            } else {
+                results.push('❌ EmbeddingService não carregado');
+            }
+            
+            // Verificar SimilaritySearchService
+            if (KC.SimilaritySearchService) {
+                try {
+                    await KC.SimilaritySearchService.initialize();
+                    results.push('✅ SimilaritySearchService: Inicializado');
+                } catch (error) {
+                    results.push(`❌ SimilaritySearchService: Erro - ${error.message}`);
+                }
+            } else {
+                results.push('❌ SimilaritySearchService não carregado');
+            }
+            
+            // Verificar RefinementDetector
+            if (KC.RefinementDetector) {
+                results.push('✅ RefinementDetector: Disponível');
+            } else {
+                results.push('❌ RefinementDetector não carregado');
+            }
+            
+            statusDiv.innerHTML = results.map(r => 
+                `<div class="status ${r.includes('✅') ? 'success' : 'error'}">${r}</div>`
+            ).join('');
+        }
+        
+        // Criar arquivo de teste
+        function createTestFile() {
+            const statusDiv = document.getElementById('file-status');
+            
+            testFile = {
+                id: 'test-file-' + Date.now(),
+                name: 'teste-refinamento.md',
+                content: `# Análise de Arquitetura de Microserviços
+
+## Introdução
+Este documento apresenta uma solução técnica para implementação de arquitetura de microserviços com foco em escalabilidade e resiliência.
+
+## Problema
+A aplicação monolítica atual apresenta limitações de escalabilidade e dificuldades para deploy independente de funcionalidades.
+
+## Solução Proposta
+Implementar uma arquitetura baseada em microserviços utilizando:
+- Docker e Kubernetes para orquestração
+- API Gateway para roteamento
+- Service Mesh para comunicação entre serviços
+- Event Sourcing para sincronização de dados
+
+## Configuração Técnica
+A configuração proposta inclui pipelines CI/CD automatizados e monitoramento distribuído.
+
+## Conclusão
+Esta arquitetura permitirá maior flexibilidade e escalabilidade para o sistema.`,
+                size: 1024,
+                lastModified: Date.now(),
+                categories: [],
+                analyzed: false
+            };
+            
+            // Adicionar ao AppState
+            const files = KC.AppState.get('files') || [];
+            files.push(testFile);
+            KC.AppState.set('files', files);
+            
+            statusDiv.innerHTML = `
+                <div class="status success">Arquivo criado com sucesso!</div>
+                <div class="file-test">
+                    <strong>Nome:</strong> ${testFile.name}<br>
+                    <strong>ID:</strong> ${testFile.id}<br>
+                    <strong>Tamanho:</strong> ${testFile.content.length} caracteres
+                </div>
+            `;
+            
+            document.getElementById('initial-analysis-btn').disabled = false;
+        }
+        
+        // Executar análise inicial
+        async function runInitialAnalysis() {
+            const statusDiv = document.getElementById('initial-analysis-status');
+            statusDiv.innerHTML = '<div class="status info">Executando análise inicial...</div>';
+            
+            try {
+                // Simular clique no botão de análise
+                const fileRenderer = KC.FileRenderer;
+                await fileRenderer.analyzeFile(testFile, null);
+                
+                // Aguardar processamento
+                setTimeout(() => {
+                    const files = KC.AppState.get('files') || [];
+                    const updatedFile = files.find(f => f.id === testFile.id);
+                    
+                    if (updatedFile && updatedFile.analyzed) {
+                        testFile = updatedFile;
+                        statusDiv.innerHTML = `
+                            <div class="status success">Análise inicial concluída!</div>
+                            <div class="file-test">
+                                <strong>Tipo detectado:</strong> ${updatedFile.analysisType}<br>
+                                <strong>Confiança:</strong> ${Math.round((updatedFile.analysisHistory?.[0]?.confidence || 0.65) * 100)}%<br>
+                                <strong>Schema.org:</strong> ${updatedFile.analysisHistory?.[0]?.schemaOrgEntity || 'N/A'}<br>
+                                <strong>Relevância:</strong> ${Math.round(updatedFile.relevanceScore || 0)}%
+                            </div>
+                        `;
+                        document.getElementById('add-categories-btn').disabled = false;
+                    } else {
+                        statusDiv.innerHTML = '<div class="status error">Erro na análise inicial</div>';
+                    }
+                }, 3000);
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Erro: ${error.message}</div>`;
+            }
+        }
+        
+        // Adicionar categorias
+        function addCategories() {
+            const statusDiv = document.getElementById('categories-status');
+            
+            // Adicionar categorias estratégicas
+            testFile.categories = ['Arquitetura', 'DevOps', 'Estratégia'];
+            
+            // Atualizar no AppState
+            const files = KC.AppState.get('files') || [];
+            const fileIndex = files.findIndex(f => f.id === testFile.id);
+            if (fileIndex !== -1) {
+                files[fileIndex] = testFile;
+                KC.AppState.set('files', files);
+            }
+            
+            statusDiv.innerHTML = `
+                <div class="status success">Categorias adicionadas!</div>
+                <div class="file-test">
+                    <strong>Categorias:</strong> ${testFile.categories.join(', ')}
+                </div>
+            `;
+            
+            document.getElementById('refinement-btn').disabled = false;
+        }
+        
+        // Executar refinamento
+        async function runRefinement() {
+            const statusDiv = document.getElementById('refinement-status');
+            statusDiv.innerHTML = '<div class="status info">Executando refinamento com embeddings...</div>';
+            
+            try {
+                // Executar análise novamente (agora será refinamento)
+                const fileRenderer = KC.FileRenderer;
+                await fileRenderer.analyzeFile(testFile, null);
+                
+                // Aguardar processamento
+                setTimeout(() => {
+                    const files = KC.AppState.get('files') || [];
+                    const updatedFile = files.find(f => f.id === testFile.id);
+                    
+                    if (updatedFile && updatedFile.analysisHistory && updatedFile.analysisHistory.length > 1) {
+                        testFile = updatedFile;
+                        const latestAnalysis = updatedFile.analysisHistory[updatedFile.analysisHistory.length - 1];
+                        
+                        statusDiv.innerHTML = `
+                            <div class="status success">Refinamento concluído!</div>
+                            <div class="file-test">
+                                <strong>Tipo refinado:</strong> ${latestAnalysis.analysisType}<br>
+                                <strong>Confiança:</strong> ${Math.round(latestAnalysis.confidence * 100)}%<br>
+                                <strong>Schema.org:</strong> ${latestAnalysis.schemaOrgEntity}<br>
+                                <strong>Método:</strong> ${latestAnalysis.context.method}<br>
+                                <strong>Versão:</strong> ${latestAnalysis.version}
+                            </div>
+                        `;
+                        
+                        // Mostrar mudança se houve
+                        if (updatedFile.analysisHistory.length >= 2) {
+                            const previousAnalysis = updatedFile.analysisHistory[updatedFile.analysisHistory.length - 2];
+                            if (previousAnalysis.analysisType !== latestAnalysis.analysisType) {
+                                statusDiv.innerHTML += `
+                                    <div class="status info">
+                                        ✨ Tipo mudou de "${previousAnalysis.analysisType}" para "${latestAnalysis.analysisType}"
+                                    </div>
+                                `;
+                            }
+                        }
+                    } else {
+                        statusDiv.innerHTML = '<div class="status error">Erro no refinamento</div>';
+                    }
+                }, 3000);
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Erro: ${error.message}</div>`;
+            }
+        }
+        
+        // Mostrar histórico de análises
+        function showAnalysisHistory() {
+            const historyDiv = document.getElementById('history-display');
+            
+            if (!testFile || !testFile.analysisHistory) {
+                historyDiv.innerHTML = '<div class="status error">Nenhum histórico disponível</div>';
+                return;
+            }
+            
+            const historyHtml = testFile.analysisHistory.map((entry, index) => `
+                <div class="history-entry">
+                    <strong>Versão ${entry.version}</strong> - ${new Date(entry.timestamp).toLocaleString('pt-BR')}<br>
+                    <strong>Tipo:</strong> ${entry.analysisType}<br>
+                    <strong>Confiança:</strong> ${Math.round(entry.confidence * 100)}%<br>
+                    <strong>Schema.org:</strong> ${entry.schemaOrgEntity}<br>
+                    <strong>Método:</strong> ${entry.context.method}<br>
+                    <strong>Categorias:</strong> ${entry.context.categories.join(', ') || 'Nenhuma'}
+                </div>
+            `).join('');
+            
+            historyDiv.innerHTML = `
+                <div class="analysis-history">
+                    <h3>Histórico de Análises</h3>
+                    ${historyHtml}
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>JSON Completo:</h4>
+                    <pre>${JSON.stringify(testFile.analysisHistory, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        // Verificar serviços ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(checkServices, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Direto - Export Schema.org</title>
+    <link rel="stylesheet" href="css/main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Direto - Export Schema.org</h1>
+    
+    <div class="test-section">
+        <h2>1. Criar Dados de Teste</h2>
+        <button onclick="createTestData()">📝 Criar Dados</button>
+        <div id="data-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Testar Export Schema.org</h2>
+        <button onclick="testExport()">🌐 Executar Export</button>
+        <div id="export-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Preview do JSON-LD</h2>
+        <pre id="preview"></pre>
+    </div>
+
+    <!-- Scripts Necessários -->
+    <script src="js/core/Logger.js"></script>
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/managers/SchemaOrgMapper.js"></script>
+    <script src="js/utils/FileUtils.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/utils/ChunkingUtils.js"></script>
+    <script src="js/managers/RAGExportManager.js"></script>
+    <script src="js/components/OrganizationPanel.js"></script>
+
+    <script>
+        // Inicializar
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Iniciando teste direto...');
+            
+            // Inicializar componentes
+            if (KC.EventBus?.initialize) KC.EventBus.initialize();
+            if (KC.AppState?.initialize) KC.AppState.initialize();
+            if (KC.CategoryManager?.initialize) KC.CategoryManager.initialize();
+            if (KC.OrganizationPanel?.initialize) KC.OrganizationPanel.initialize();
+            
+            // Verificar componentes
+            console.log('Componentes carregados:', {
+                EventBus: !!KC.EventBus,
+                AppState: !!KC.AppState,
+                SchemaOrgMapper: !!KC.SchemaOrgMapper,
+                RAGExportManager: !!KC.RAGExportManager,
+                OrganizationPanel: !!KC.OrganizationPanel
+            });
+        });
+
+        function createTestData() {
+            const testFiles = [
+                {
+                    id: 'test-001',
+                    name: 'redis-cache.md',
+                    path: '/docs/redis-cache.md',
+                    content: 'Implementação de cache Redis para otimização de performance da API',
+                    preview: 'Cache Redis para otimização...',
+                    analysisType: 'Breakthrough Técnico',
+                    relevanceScore: 85,
+                    categories: ['DevOps', 'Performance'],
+                    analyzed: true,
+                    createdDate: '2024-10-15T10:00:00Z',
+                    modifiedDate: '2024-11-20T14:30:00Z'
+                },
+                {
+                    id: 'test-002',
+                    name: 'microservices.md',
+                    path: '/docs/microservices.md',
+                    content: 'Evolução da arquitetura de monolito para microserviços',
+                    preview: 'Transformação para microserviços...',
+                    analysisType: 'Evolução Conceitual',
+                    relevanceScore: 90,
+                    categories: ['Arquitetura'],
+                    analyzed: true,
+                    createdDate: '2024-09-10T09:00:00Z',
+                    modifiedDate: '2024-12-05T16:45:00Z'
+                }
+            ];
+
+            // Salvar no AppState
+            KC.AppState.set('files', testFiles);
+            
+            document.getElementById('data-result').innerHTML = 
+                `<div class="result success">✅ ${testFiles.length} arquivos criados!</div>`;
+            
+            console.log('Dados criados:', testFiles);
+        }
+
+        async function testExport() {
+            const resultDiv = document.getElementById('export-result');
+            const previewDiv = document.getElementById('preview');
+            
+            try {
+                resultDiv.innerHTML = '<div class="result">⏳ Processando...</div>';
+                
+                // Simular o export diretamente
+                const files = KC.AppState.get('files') || [];
+                
+                if (files.length === 0) {
+                    throw new Error('Nenhum arquivo disponível. Crie dados primeiro!');
+                }
+
+                // Criar estrutura Schema.org manualmente
+                const schemaOrgData = {
+                    '@context': 'https://schema.org',
+                    '@graph': [],
+                    'meta': {
+                        'exportDate': new Date().toISOString(),
+                        'version': '1.0.0',
+                        'generator': 'Knowledge Consolidator Test',
+                        'totalDocuments': files.length
+                    }
+                };
+
+                // Processar cada arquivo
+                for (const file of files) {
+                    if (KC.SchemaOrgMapper) {
+                        try {
+                            const schemaDoc = await KC.SchemaOrgMapper.mapToSchema(file);
+                            if (schemaDoc) {
+                                // Adicionar chunks simulados
+                                schemaDoc['@chunks'] = [{
+                                    '@type': 'TextDigitalDocument',
+                                    '@id': `chunk-${file.id}-1`,
+                                    'position': 0,
+                                    'text': file.content,
+                                    'wordCount': file.content.split(' ').length
+                                }];
+                                
+                                schemaOrgData['@graph'].push(schemaDoc);
+                            }
+                        } catch (err) {
+                            console.error('Erro ao mapear arquivo:', file.name, err);
+                        }
+                    }
+                }
+
+                // Adicionar estatísticas
+                schemaOrgData['@stats'] = {
+                    '@type': 'Dataset',
+                    'totalDocuments': schemaOrgData['@graph'].length,
+                    'exportTime': new Date().toISOString()
+                };
+
+                // Exibir resultado
+                resultDiv.innerHTML = 
+                    `<div class="result success">✅ Export concluído! ${schemaOrgData['@graph'].length} documentos processados.</div>`;
+                
+                // Mostrar preview
+                previewDiv.textContent = JSON.stringify(schemaOrgData, null, 2);
+                
+                // Criar download
+                const blob = new Blob([JSON.stringify(schemaOrgData, null, 2)], { type: 'application/ld+json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `schema-org-export-${Date.now()}.jsonld`;
+                
+                const downloadBtn = document.createElement('button');
+                downloadBtn.textContent = '💾 Baixar JSON-LD';
+                downloadBtn.onclick = () => a.click();
+                resultDiv.appendChild(downloadBtn);
+                
+                console.log('Export completo:', schemaOrgData);
+                
+            } catch (error) {
+                resultDiv.innerHTML = 
+                    `<div class="result error">❌ Erro: ${error.message}</div>`;
+                console.error('Erro no export:', error);
+            }
+        }
+
+        // Método alternativo se OrganizationPanel estiver disponível
+        async function testExportViaPanel() {
+            try {
+                // Criar mock do elemento selection-criteria
+                if (!document.getElementById('selection-criteria')) {
+                    const mockSelect = document.createElement('select');
+                    mockSelect.id = 'selection-criteria';
+                    mockSelect.value = 'all';
+                    document.body.appendChild(mockSelect);
+                }
+                
+                // Chamar método real
+                await KC.OrganizationPanel.exportSchemaOrg();
+                
+            } catch (error) {
+                console.error('Erro ao usar OrganizationPanel:', error);
+                alert('Erro: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

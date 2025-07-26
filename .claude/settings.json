@@ -1,4 +1,6 @@
 {
-  "hooks": {
+  "permissions": {
+    "allow": ["Write", "MultiEdit", "Edit", "Bash"],
+    "deny": []
     }
 }

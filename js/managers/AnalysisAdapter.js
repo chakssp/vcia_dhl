@@ -178,6 +178,11 @@
         _normalizeOllama(parsed, templateId) {
             const base = this._getBaseStructure(templateId);
 
+            // DEBUG: Log para ver o que Ollama está retornando
+            console.log('🔍 Resposta do Ollama:', parsed);
+            console.log('🔍 analysisType:', parsed.analysisType);
+            console.log('🔍 type:', parsed.type);
+
             return {
                 ...base,
                 analysisType: parsed.analysisType || parsed.type || 'Aprendizado Geral',

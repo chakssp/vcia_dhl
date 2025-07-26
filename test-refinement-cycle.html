@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Ciclo de Refinamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-section h2 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #1976D2;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        button.success {
+            background: #4CAF50;
+        }
+        
+        button.warning {
+            background: #FF9800;
+        }
+        
+        button.danger {
+            background: #F44336;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .status.info {
+            background: #E3F2FD;
+            border: 1px solid #2196F3;
+        }
+        
+        .status.success {
+            background: #E8F5E9;
+            border: 1px solid #4CAF50;
+        }
+        
+        .status.warning {
+            background: #FFF3E0;
+            border: 1px solid #FF9800;
+        }
+        
+        .status.error {
+            background: #FFEBEE;
+            border: 1px solid #F44336;
+        }
+        
+        .file-input {
+            margin-bottom: 15px;
+        }
+        
+        .file-input input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .metric-card h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .analysis-history {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .history-item .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .history-item .details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #2196F3);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .categories {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        
+        .category-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .category-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .category-tag {
+            background: #E0E0E0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .category-tag button {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Teste do Ciclo de Refinamento</h1>
+        
+        <!-- Seção 1: Configuração -->
+        <div class="test-section">
+            <h2>1. Configuração do Teste</h2>
+            
+            <div class="file-input">
+                <input type="file" id="fileInput" accept=".txt,.md,.doc,.docx" />
+            </div>
+            
+            <div class="controls">
+                <button onclick="initializeServices()">Inicializar Serviços</button>
+                <button onclick="checkServicesStatus()">Verificar Status</button>
+                <button onclick="clearAllData()" class="danger">Limpar Dados</button>
+            </div>
+            
+            <div id="initStatus" class="status info">
+                Status dos serviços aparecerá aqui...
+            </div>
+        </div>
+        
+        <!-- Seção 2: Primeira Análise -->
+        <div class="test-section">
+            <h2>2. Primeira Análise (Baseline)</h2>
+            
+            <div class="controls">
+                <button onclick="performInitialAnalysis()" id="btnInitialAnalysis" disabled>
+                    Executar Análise Inicial
+                </button>
+                <button onclick="simulateLowConfidenceAnalysis()" class="warning">
+                    Simular Análise com Baixa Confiança
+                </button>
+            </div>
+            
+            <div id="initialAnalysisStatus" class="status info">
+                Aguardando análise inicial...
+            </div>
+            
+            <div class="metrics" id="initialMetrics" style="display: none;">
+                <div class="metric-card">
+                    <h3>Tipo Detectado</h3>
+                    <div class="value" id="initialType">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Confiança</h3>
+                    <div class="value" id="initialConfidence">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Relevância</h3>
+                    <div class="value" id="initialRelevance">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Seção 3: Curadoria Manual -->
+        <div class="test-section">
+            <h2>3. Curadoria Manual (Contexto)</h2>
+            
+            <div class="category-input">
+                <input type="text" id="categoryInput" placeholder="Adicionar categoria (ex: IA/ML, Decisão, etc)">
+                <button onclick="addCategory()">Adicionar</button>
+            </div>
+            
+            <div class="categories" id="categoriesContainer">
+                <!-- Categorias aparecerão aqui -->
+            </div>
+            
+            <div class="controls">
+                <button onclick="applyCategories()" id="btnApplyCategories" disabled>
+                    Aplicar Categorias ao Arquivo
+                </button>
+            </div>
+            
+            <div id="curationStatus" class="status info">
+                Adicione categorias para fornecer contexto...
+            </div>
+        </div>
+        
+        <!-- Seção 4: Refinamento -->
+        <div class="test-section">
+            <h2>4. Ciclo de Refinamento</h2>
+            
+            <div class="controls">
+                <button onclick="startRefinement()" id="btnStartRefinement" disabled>
+                    Iniciar Refinamento
+                </button>
+                <button onclick="stopRefinement()" class="danger" disabled id="btnStopRefinement">
+                    Parar Refinamento
+                </button>
+                <button onclick="forceIteration()" class="warning">
+                    Forçar Próxima Iteração
+                </button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="refinementProgress" style="width: 0%">
+                    0%
+                </div>
+            </div>
+            
+            <div id="refinementStatus" class="status info">
+                Aguardando início do refinamento...
+            </div>
+            
+            <div class="metrics" id="refinementMetrics" style="display: none;">
+                <div class="metric-card">
+                    <h3>Iteração</h3>
+                    <div class="value" id="currentIteration">0</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Confiança Atual</h3>
+                    <div class="value" id="currentConfidence">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Ganho Total</h3>
+                    <div class="value" id="totalGain">-</div>
+                </div>
+                <div class="metric-card">
+                    <h3>Status</h3>
+                    <div class="value" id="convergenceStatus">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Seção 5: Histórico de Análises -->
+        <div class="test-section">
+            <h2>5. Histórico de Análises</h2>
+            
+            <div class="controls">
+                <button onclick="refreshHistory()">Atualizar Histórico</button>
+                <button onclick="exportHistory()">Exportar JSON</button>
+            </div>
+            
+            <div class="analysis-history" id="analysisHistory">
+                <!-- Histórico aparecerá aqui -->
+            </div>
+        </div>
+        
+        <!-- Seção 6: Convergência -->
+        <div class="test-section">
+            <h2>6. Resultado da Convergência</h2>
+            
+            <div id="convergenceResult" class="status success" style="display: none;">
+                Resultado da convergência aparecerá aqui...
+            </div>
+            
+            <div class="controls">
+                <button onclick="calculateConvergence()" id="btnCalculateConvergence" disabled>
+                    Calcular Convergência
+                </button>
+                <button onclick="establishSchemaOrg()" id="btnSchemaOrg" disabled>
+                    Estabelecer Schema.org
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/core/Logger.js"></script>
+    
+    <!-- NOVO: Scripts para Schema.org e Cache -->
+    <script src="js/managers/SchemaOrgMapper.js"></script>
+    <script src="js/services/CacheService.js"></script>
+    
+    <!-- NOVO: Scripts para Embeddings (se disponíveis) -->
+    <script src="js/services/EmbeddingService.js"></script>
+    <script src="js/services/SimilaritySearchService.js"></script>
+    
+    <!-- Scripts de Refinamento -->
+    <script src="js/services/RefinementService.js"></script>
+    <script src="js/services/ConvergenceCalculator.js"></script>
+    <script src="js/services/RefinementDetector.js"></script>
+    <script src="js/components/RefinementIndicator.js"></script>
+    
+    <script>
+        // Variáveis globais para o teste
+        let testFile = null;
+        let currentFileId = null;
+        let categories = [];
+        let refinementProcess = null;
+        
+        // Inicializa serviços
+        async function initializeServices() {
+            const status = document.getElementById('initStatus');
+            status.className = 'status info';
+            status.textContent = 'Inicializando serviços...';
+            
+            try {
+                // Inicializa EventBus e Events se não existirem
+                if (!KC.Events) {
+                    KC.Events = {
+                        FILE_ANALYZED: 'file:analyzed',
+                        CATEGORY_ASSIGNED: 'category:assigned',
+                        CATEGORY_REMOVED: 'category:removed',
+                        FILES_UPDATED: 'files:updated'
+                    };
+                }
+                
+                // Inicializa RefinementService
+                await KC.RefinementService.initialize();
+                status.textContent += '\n✅ RefinementService inicializado';
+                
+                // Inicializa RefinementIndicator
+                await KC.RefinementIndicator.initialize();
+                status.textContent += '\n✅ RefinementIndicator inicializado';
+                
+                // Configura listeners de teste
+                setupTestListeners();
+                status.textContent += '\n✅ Listeners configurados';
+                
+                status.className = 'status success';
+                status.textContent += '\n\n🎉 Todos os serviços inicializados com sucesso!';
+                
+                // Habilita botões
+                document.getElementById('btnInitialAnalysis').disabled = false;
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Erro ao inicializar: ${error.message}`;
+                console.error(error);
+            }
+        }
+        
+        // Verifica status dos serviços
+        function checkServicesStatus() {
+            const status = document.getElementById('initStatus');
+            status.className = 'status info';
+            
+            const refinementStatus = KC.RefinementService?.getStatus() || { isInitialized: false };
+            const indicatorStatus = KC.RefinementIndicator?.getStatus() || { isInitialized: false };
+            const convergenceStats = KC.ConvergenceCalculator?.getStats() || {};
+            const detectorStats = KC.RefinementDetector?.getStats() || {};
+            
+            status.textContent = `STATUS DOS SERVIÇOS:
+            
+RefinementService:
+- Inicializado: ${refinementStatus.isInitialized ? '✅' : '❌'}
+- Refinamentos ativos: ${refinementStatus.activeRefinements || 0}
+- Fila: ${refinementStatus.queueSize || 0}
+- Processando: ${refinementStatus.isProcessing ? '🔄' : '⏸️'}
+
+RefinementIndicator:
+- Inicializado: ${indicatorStatus.isInitialized ? '✅' : '❌'}
+- Indicadores ativos: ${indicatorStatus.activeIndicators || 0}
+
+ConvergenceCalculator:
+- Cache: ${convergenceStats.cacheSize || 0} entradas
+- Padrões: ${convergenceStats.patterns || 0}
+
+RefinementDetector:
+- Cache: ${detectorStats.cacheSize || 0} entradas
+- Tipos relacionais: ${detectorStats.relationalTypes || 0}`;
+        }
+        
+        // Configura listeners de teste
+        function setupTestListeners() {
+            // Escuta início de refinamento
+            KC.EventBus.on('REFINEMENT_STARTED', (data) => {
+                console.log('🚀 Refinamento iniciado:', data);
+                refinementProcess = data.process;
+                updateRefinementUI();
+                document.getElementById('btnStopRefinement').disabled = false;
+            });
+            
+            // Escuta progresso
+            KC.EventBus.on('REFINEMENT_PROGRESS', (data) => {
+                console.log('📈 Progresso:', data);
+                updateProgress(data.progress);
+            });
+            
+            // Escuta conclusão
+            KC.EventBus.on('REFINEMENT_COMPLETED', (data) => {
+                console.log('✅ Refinamento completo:', data);
+                refinementProcess = data.process;
+                showCompletionResult(data);
+                document.getElementById('btnStopRefinement').disabled = true;
+                document.getElementById('btnCalculateConvergence').disabled = false;
+            });
+            
+            // Escuta erros
+            KC.EventBus.on('REFINEMENT_ERROR', (data) => {
+                console.error('❌ Erro no refinamento:', data);
+                showError(data.error);
+            });
+            
+            // Escuta histórico
+            KC.EventBus.on('ANALYSIS_HISTORY_UPDATED', (data) => {
+                console.log('📚 Histórico atualizado:', data);
+                refreshHistory();
+            });
+        }
+        
+        // Manipula seleção de arquivo
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                testFile = file;
+                currentFileId = `test_${Date.now()}`;
+                
+                // Cria objeto de arquivo simulado
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Adiciona ao AppState
+                    const fileObj = {
+                        id: currentFileId,
+                        name: file.name,
+                        size: file.size,
+                        lastModified: file.lastModified,
+                        content: e.target.result,
+                        preview: e.target.result.substring(0, 500),
+                        relevanceScore: 0,
+                        categories: [],
+                        analyzed: false
+                    };
+                    
+                    const files = KC.AppState.get('files') || [];
+                    files.push(fileObj);
+                    KC.AppState.set('files', files);
+                    
+                    document.getElementById('btnInitialAnalysis').disabled = false;
+                    document.getElementById('btnApplyCategories').disabled = false;
+                };
+                reader.readAsText(file);
+            }
+        });
+        
+        // Executa análise inicial
+        async function performInitialAnalysis() {
+            if (!currentFileId) {
+                alert('Selecione um arquivo primeiro!');
+                return;
+            }
+            
+            const status = document.getElementById('initialAnalysisStatus');
+            status.className = 'status info';
+            status.textContent = 'Executando análise inicial...';
+            
+            try {
+                // Simula análise com confiança média-baixa
+                const result = {
+                    analysis: {
+                        analysisType: 'Aprendizado Geral',
+                        confidence: 0.65,
+                        relevanceScore: 0.7,
+                        summary: 'Análise inicial com confiança média',
+                        categories: ['Geral'],
+                        moments: []
+                    },
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        model: 'test-model',
+                        provider: 'test',
+                        confidence: 0.65
+                    }
+                };
+                
+                // Emite evento de análise
+                KC.EventBus.emit('FILE_ANALYZED', {
+                    file: { id: currentFileId },
+                    result: result
+                });
+                
+                // Atualiza UI
+                document.getElementById('initialType').textContent = result.analysis.analysisType;
+                document.getElementById('initialConfidence').textContent = `${Math.round(result.analysis.confidence * 100)}%`;
+                document.getElementById('initialRelevance').textContent = `${Math.round(result.analysis.relevanceScore * 100)}%`;
+                document.getElementById('initialMetrics').style.display = 'grid';
+                
+                status.className = 'status success';
+                status.textContent = '✅ Análise inicial concluída!';
+                
+                document.getElementById('btnStartRefinement').disabled = false;
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+        
+        // Simula análise com baixa confiança
+        function simulateLowConfidenceAnalysis() {
+            if (!currentFileId) {
+                alert('Selecione um arquivo primeiro!');
+                return;
+            }
+            
+            const result = {
+                analysis: {
+                    analysisType: 'Aprendizado Geral',
+                    confidence: 0.45,
+                    relevanceScore: 0.5,
+                    summary: 'Análise com baixa confiança para teste',
+                    categories: [],
+                    moments: []
+                },
+                metadata: {
+                    timestamp: new Date().toISOString(),
+                    confidence: 0.45
+                }
+            };
+            
+            KC.EventBus.emit('FILE_ANALYZED', {
+                file: { id: currentFileId },
+                result: result
+            });
+            
+            // Atualiza UI
+            document.getElementById('initialType').textContent = result.analysis.analysisType;
+            document.getElementById('initialConfidence').textContent = `${Math.round(result.analysis.confidence * 100)}%`;
+            document.getElementById('initialRelevance').textContent = `${Math.round(result.analysis.relevanceScore * 100)}%`;
+            document.getElementById('initialMetrics').style.display = 'grid';
+            
+            const status = document.getElementById('initialAnalysisStatus');
+            status.className = 'status warning';
+            status.textContent = '⚠️ Análise com baixa confiança - refinamento recomendado!';
+            
+            document.getElementById('btnStartRefinement').disabled = false;
+        }
+        
+        // Adiciona categoria
+        function addCategory() {
+            const input = document.getElementById('categoryInput');
+            const category = input.value.trim();
+            
+            if (category && !categories.includes(category)) {
+                categories.push(category);
+                input.value = '';
+                renderCategories();
+                
+                const status = document.getElementById('curationStatus');
+                status.className = 'status info';
+                status.textContent = `${categories.length} categoria(s) adicionada(s). Clique em "Aplicar" para atualizar o arquivo.`;
+            }
+        }
+        
+        // Renderiza categorias
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            categories.forEach((cat, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'category-tag';
+                tag.innerHTML = `
+                    ${cat}
+                    <button onclick="removeCategory(${index})">×</button>
+                `;
+                container.appendChild(tag);
+            });
+        }
+        
+        // Remove categoria
+        function removeCategory(index) {
+            categories.splice(index, 1);
+            renderCategories();
+        }
+        
+        // Aplica categorias ao arquivo
+        function applyCategories() {
+            if (!currentFileId || categories.length === 0) {
+                alert('Adicione pelo menos uma categoria!');
+                return;
+            }
+            
+            const files = KC.AppState.get('files') || [];
+            const fileIndex = files.findIndex(f => f.id === currentFileId);
+            
+            if (fileIndex !== -1) {
+                files[fileIndex].categories = [...categories];
+                KC.AppState.set('files', files);
+                
+                // Emite evento de categoria
+                KC.EventBus.emit('CATEGORY_ASSIGNED', {
+                    fileId: currentFileId,
+                    categories: categories
+                });
+                
+                const status = document.getElementById('curationStatus');
+                status.className = 'status success';
+                status.textContent = `✅ ${categories.length} categoria(s) aplicada(s) ao arquivo!`;
+                
+                // Aguarda um pouco para o refinamento automático
+                setTimeout(() => {
+                    status.textContent += '\n🔄 Refinamento automático será iniciado em breve...';
+                }, 1000);
+            }
+        }
+        
+        // Inicia refinamento manual
+        async function startRefinement() {
+            if (!currentFileId) {
+                alert('Nenhum arquivo selecionado!');
+                return;
+            }
+            
+            const status = document.getElementById('refinementStatus');
+            status.className = 'status info';
+            status.textContent = 'Iniciando ciclo de refinamento...';
+            
+            try {
+                await KC.RefinementService.requestRefinement(currentFileId, {
+                    reason: 'manual_test',
+                    immediateProcessing: true
+                });
+                
+                status.textContent += '\n✅ Refinamento solicitado!';
+                
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = `❌ Erro: ${error.message}`;
+            }
+        }
+        
+        // Para refinamento
+        function stopRefinement() {
+            if (currentFileId) {
+                KC.RefinementService.stopRefinement(currentFileId);
+                document.getElementById('refinementStatus').textContent = '⏹️ Refinamento parado.';
+                document.getElementById('btnStopRefinement').disabled = true;
+            }
+        }
+        
+        // Força próxima iteração
+        function forceIteration() {
+            if (refinementProcess && refinementProcess.status === 'active') {
+                // Simula resultado melhorado
+                const newConfidence = Math.min(
+                    (refinementProcess.metrics.currentConfidence || 0.65) + 0.15,
+                    0.95
+                );
+                
+                const result = {
+                    analysis: {
+                        analysisType: categories.includes('IA/ML') ? 'Breakthrough Técnico' : 'Evolução Conceitual',
+                        confidence: newConfidence,
+                        relevanceScore: 0.85,
+                        categories: [...categories, 'Refinado']
+                    },
+                    metadata: {
+                        confidence: newConfidence,
+                        isRefinement: true
+                    }
+                };
+                
+                // Simula análise completa
+                KC.EventBus.emit('FILE_ANALYZED', {
+                    file: { id: currentFileId },
+                    result: result
+                });
+            }
+        }
+        
+        // Atualiza UI de refinamento
+        function updateRefinementUI() {
+            if (!refinementProcess) return;
+            
+            document.getElementById('refinementMetrics').style.display = 'grid';
+            document.getElementById('currentIteration').textContent = refinementProcess.iteration || 0;
+            document.getElementById('currentConfidence').textContent = 
+                `${Math.round((refinementProcess.metrics.currentConfidence || 0) * 100)}%`;
+            document.getElementById('totalGain').textContent = 
+                `+${Math.round((refinementProcess.metrics.confidenceGain || 0) * 100)}%`;
+            document.getElementById('convergenceStatus').textContent = refinementProcess.status;
+            
+            const progress = (refinementProcess.iteration / 5) * 100;
+            updateProgress(progress / 100);
+        }
+        
+        // Atualiza barra de progresso
+        function updateProgress(progress) {
+            const progressBar = document.getElementById('refinementProgress');
+            const percentage = Math.round(progress * 100);
+            progressBar.style.width = `${percentage}%`;
+            progressBar.textContent = `${percentage}%`;
+        }
+        
+        // Mostra resultado de conclusão
+        function showCompletionResult(data) {
+            const status = document.getElementById('refinementStatus');
+            status.className = 'status success';
+            
+            const process = data.process;
+            status.textContent = `✅ REFINAMENTO CONCLUÍDO!
+
+Iterações: ${process.iteration}
+Duração: ${(process.duration / 1000).toFixed(1)}s
+Confiança inicial: ${Math.round(process.metrics.initialConfidence * 100)}%
+Confiança final: ${Math.round(process.metrics.currentConfidence * 100)}%
+Ganho total: +${Math.round(process.metrics.confidenceGain * 100)}%
+
+${process.convergence ? '🎯 CONVERGÊNCIA ATINGIDA!' : '📈 Melhoria significativa obtida'}`;
+            
+            updateRefinementUI();
+        }
+        
+        // Mostra erro
+        function showError(error) {
+            const status = document.getElementById('refinementStatus');
+            status.className = 'status error';
+            status.textContent = `❌ Erro no refinamento: ${error.message || error}`;
+        }
+        
+        // Atualiza histórico
+        function refreshHistory() {
+            const historyContainer = document.getElementById('analysisHistory');
+            const history = KC.AppState.get('analysisHistory') || {};
+            
+            if (!currentFileId || !history.byFile || !history.byFile[currentFileId]) {
+                historyContainer.innerHTML = '<p style="color: #666;">Nenhuma análise no histórico.</p>';
+                return;
+            }
+            
+            const fileHistory = history.byFile[currentFileId];
+            historyContainer.innerHTML = '';
+            
+            fileHistory.forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+                
+                const confidence = entry.analysis?.confidence || entry.metadata?.confidence || 0;
+                const type = entry.analysis?.analysisType || 'Desconhecido';
+                const isRefinement = entry.metadata?.isRefinement || false;
+                
+                // NOVO: Validação Schema.org
+                const hasSchemaOrg = !!(entry.analysis?.schemaOrgEntity || entry.schemaOrgEntity);
+                const schemaOrgType = entry.analysis?.schemaOrgEntity?.['@type'] || 
+                                     entry.schemaOrgEntity?.['@type'] || 'N/A';
+                
+                item.innerHTML = `
+                    <div class="header">
+                        <span>Análise #${index + 1} ${isRefinement ? '(Refinamento)' : ''}</span>
+                        <span>${new Date(entry.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <div class="details">
+                        Tipo: ${type}<br>
+                        Confiança: ${Math.round(confidence * 100)}%<br>
+                        ${isRefinement ? `Iteração: ${entry.metadata.refinementIteration || 0}<br>` : ''}
+                        Categorias: ${(entry.analysis?.categories || []).join(', ') || 'Nenhuma'}<br>
+                        <strong>Schema.org:</strong> ${hasSchemaOrg ? 
+                            `<span style="color: green;">✅ ${schemaOrgType}</span>` : 
+                            '<span style="color: red;">❌ Não mapeado</span>'}
+                    </div>
+                `;
+                
+                historyContainer.appendChild(item);
+            });
+        }
+        
+        // Calcula convergência
+        async function calculateConvergence() {
+            if (!currentFileId) return;
+            
+            const history = KC.RefinementService.getAnalysisHistory(currentFileId);
+            const convergence = await KC.ConvergenceCalculator.calculate(currentFileId, history);
+            
+            const resultDiv = document.getElementById('convergenceResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = convergence.isConverged ? 'status success' : 'status warning';
+            
+            // NOVO: Validação Schema.org detalhada
+            let schemaOrgValidation = '';
+            if (history.length >= 2) {
+                const lastTwo = history.slice(-2);
+                const schemas = lastTwo.map(h => h.analysisHistory?.[h.analysisHistory.length - 1]?.schemaOrgEntity);
+                
+                if (schemas[0] && schemas[1]) {
+                    const type1 = schemas[0]['@type'];
+                    const type2 = schemas[1]['@type'];
+                    const isStable = type1 === type2;
+                    
+                    schemaOrgValidation = `
+
+VALIDAÇÃO SCHEMA.ORG:
+- Tipo Anterior: ${type1}
+- Tipo Atual: ${type2}
+- Estabilidade: ${isStable ? '✅ ESTÁVEL' : '⚠️ MUDOU'}
+- Confiança Schema: ${isStable ? '92%+' : 'Em refinamento'}`;
+                }
+            }
+            
+            resultDiv.textContent = `RESULTADO DA CONVERGÊNCIA:
+
+Status: ${convergence.isConverged ? '✅ CONVERGIDO' : '⚠️ NÃO CONVERGIDO'}
+Score: ${(convergence.score * 100).toFixed(1)}%
+Confiança: ${(convergence.confidence * 100).toFixed(1)}%
+
+Componentes:
+- Confiança: ${(convergence.components.confidence * 100).toFixed(1)}%
+- Estabilidade: ${(convergence.components.stability * 100).toFixed(1)}%
+- Consistência de Tipo: ${(convergence.components.typeConsistency * 100).toFixed(1)}%
+- Alinhamento com Categorias: ${(convergence.components.categoryAlignment * 100).toFixed(1)}%
+- Melhoria Contínua: ${(convergence.components.improvement * 100).toFixed(1)}%
+
+${convergence.recommendation}
+
+Schema.org: ${convergence.schemaOrgReady ? '✅ Pronto para mapeamento' : '❌ Requer mais refinamento'}${schemaOrgValidation}`;
+            
+            if (convergence.isConverged && convergence.schemaOrgReady) {
+                document.getElementById('btnSchemaOrg').disabled = false;
+            }
+        }
+        
+        // Estabelece Schema.org
+        async function establishSchemaOrg() {
+            if (!currentFileId || !KC.SchemaOrgMapper) {
+                alert('SchemaOrgMapper não está carregado ou nenhum arquivo selecionado!');
+                return;
+            }
+            
+            try {
+                // Busca arquivo atual
+                const files = KC.AppState.get('files') || [];
+                const file = files.find(f => f.id === currentFileId);
+                
+                if (!file || !file.analysisType) {
+                    alert('Arquivo deve ter um analysisType estabelecido!');
+                    return;
+                }
+                
+                // Mapeia para Schema.org
+                const schemaEntity = await KC.SchemaOrgMapper.mapToSchema(file);
+                
+                // Mostra resultado em modal
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                    max-width: 600px;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                    z-index: 1000;
+                `;
+                
+                modal.innerHTML = `
+                    <h2>Schema.org Mapeado</h2>
+                    <div style="margin: 20px 0;">
+                        <strong>Tipo:</strong> <span style="color: green;">${schemaEntity['@type']}</span><br>
+                        <strong>ID:</strong> ${schemaEntity['@id']}<br>
+                        <strong>Confiança:</strong> ${file.analysisHistory?.[file.analysisHistory.length - 1]?.confidence 
+                            ? Math.round(file.analysisHistory[file.analysisHistory.length - 1].confidence * 100) + '%' 
+                            : 'N/A'}
+                    </div>
+                    <h3>JSON-LD Completo:</h3>
+                    <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;">
+${JSON.stringify(schemaEntity, null, 2)}
+                    </pre>
+                    <div style="margin-top: 20px; text-align: right;">
+                        <button onclick="this.parentElement.parentElement.remove()">Fechar</button>
+                        <button onclick="navigator.clipboard.writeText(JSON.stringify(${JSON.stringify(schemaEntity)}, null, 2))">
+                            Copiar JSON
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Log estatísticas do cache
+                if (KC.CacheService) {
+                    const stats = KC.CacheService.getStats();
+                    console.log('📊 Cache Stats:', stats);
+                }
+                
+            } catch (error) {
+                alert('Erro ao mapear Schema.org: ' + error.message);
+            }
+        }
+        
+        // Exporta histórico
+        function exportHistory() {
+            const history = KC.AppState.get('analysisHistory') || {};
+            const dataStr = JSON.stringify(history, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `refinement_history_${Date.now()}.json`;
+            link.click();
+        }
+        
+        // Limpa todos os dados
+        function clearAllData() {
+            if (confirm('Tem certeza? Isso limpará todos os dados de teste.')) {
+                KC.AppState.reset();
+                KC.RefinementService.stopAllRefinements();
+                KC.RefinementIndicator.clearAll();
+                KC.ConvergenceCalculator.clearCache();
+                KC.RefinementDetector.clearCache();
+                
+                // Reset variáveis
+                testFile = null;
+                currentFileId = null;
+                categories = [];
+                refinementProcess = null;
+                
+                // Reset UI
+                document.getElementById('fileInput').value = '';
+                document.getElementById('categoriesContainer').innerHTML = '';
+                document.getElementById('analysisHistory').innerHTML = '';
+                document.getElementById('initialMetrics').style.display = 'none';
+                document.getElementById('refinementMetrics').style.display = 'none';
+                document.getElementById('convergenceResult').style.display = 'none';
+                
+                // Reset status
+                document.querySelectorAll('.status').forEach(el => {
+                    el.className = 'status info';
+                    el.textContent = 'Aguardando...';
+                });
+                
+                alert('Dados limpos com sucesso!');
+            }
+        }
+        
+        // Permite adicionar categoria com Enter
+        document.getElementById('categoryInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addCategory();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppState Versioning Demo - ML Confidence System</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            padding: 1.5rem 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .state-editor {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .button-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .button-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .button-secondary:hover {
+            background: #475569;
+        }
+
+        .button-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .button-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .version-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .version-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .version-item:hover {
+            background: var(--bg-secondary);
+        }
+
+        .version-item.active {
+            background: #eff6ff;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .version-id {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .version-metadata {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-box {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .change-preview {
+            background: #fefce8;
+            border: 1px solid #fef3c7;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .addition {
+            color: #10b981;
+        }
+
+        .modification {
+            color: #f59e0b;
+        }
+
+        .deletion {
+            color: #ef4444;
+        }
+
+        .log-output {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin-bottom: 0.5rem;
+        }
+
+        .log-success {
+            color: #10b981;
+        }
+
+        .log-error {
+            color: #ef4444;
+        }
+
+        .log-info {
+            color: #3b82f6;
+        }
+
+        .performance-chart {
+            height: 200px;
+            margin-top: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-button {
+            padding: 0.25rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>AppState Versioning Demo</h1>
+            <p class="subtitle">ML Confidence System - Version Control & State Management</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- State Editor -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Estado Atual</h2>
+                    <button class="button button-primary" onclick="Demo.createSnapshot()">
+                        📸 Criar Snapshot
+                    </button>
+                </div>
+                <textarea id="stateEditor" class="state-editor" placeholder="Digite o estado JSON aqui...">{
+  "files": [
+    {
+      "id": "file-001",
+      "name": "test.md",
+      "content": "Test content",
+      "confidence": 0.85
+    }
+  ],
+  "analysis": {
+    "model": "gpt-4",
+    "timestamp": "2025-01-27T12:00:00Z"
+  }
+}</textarea>
+                <div class="controls">
+                    <button class="button button-secondary" onclick="Demo.updateState()">
+                        ✏️ Atualizar Estado
+                    </button>
+                    <button class="button button-secondary" onclick="Demo.addRandomFile()">
+                        ➕ Add Arquivo
+                    </button>
+                    <button class="button button-secondary" onclick="Demo.modifyRandomFile()">
+                        🔄 Modificar Arquivo
+                    </button>
+                    <button class="button button-warning" onclick="Demo.clearState()">
+                        🗑️ Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Version History -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Histórico de Versões</h2>
+                    <span id="versionCount" class="stat-label">0 versões</span>
+                </div>
+                <div id="versionList" class="version-list">
+                    <p style="padding: 1rem; text-align: center; color: var(--text-secondary);">
+                        Nenhuma versão ainda. Crie um snapshot!
+                    </p>
+                </div>
+                <div class="controls">
+                    <button class="button button-success" onclick="Demo.autoSnapshot()">
+                        🤖 Auto-Snapshot (5 mudanças)
+                    </button>
+                    <button class="button button-secondary" onclick="Demo.exportHistory()">
+                        📤 Exportar Histórico
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Estatísticas de Versionamento</h2>
+                <button class="button button-secondary" onclick="Demo.refreshStats()">
+                    🔄 Atualizar
+                </button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalVersions">0</div>
+                    <div class="stat-label">Total de Versões</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="storageUsed">0 KB</div>
+                    <div class="stat-label">Armazenamento Usado</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="compressionRatio">0%</div>
+                    <div class="stat-label">Taxa de Compressão</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="avgSnapshotTime">0 ms</div>
+                    <div class="stat-label">Tempo Médio Snapshot</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison View -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Comparação de Versões</h2>
+                <div class="toggle-group">
+                    <button class="toggle-button active" onclick="Demo.setCompareMode('visual')">
+                        Visual
+                    </button>
+                    <button class="toggle-button" onclick="Demo.setCompareMode('json')">
+                        JSON
+                    </button>
+                </div>
+            </div>
+            <div id="comparisonView">
+                <p style="text-align: center; color: var(--text-secondary);">
+                    Selecione duas versões para comparar
+                </p>
+            </div>
+        </div>
+
+        <!-- Performance Monitor -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Monitor de Performance</h2>
+            </div>
+            <div id="performanceChart" class="performance-chart">
+                <canvas id="perfCanvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Log Output -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Console de Depuração</h2>
+                <button class="button button-secondary" onclick="Demo.clearLog()">
+                    🧹 Limpar
+                </button>
+            </div>
+            <div id="logOutput" class="log-output">
+                <div class="log-entry log-info">🚀 Demo iniciado...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="DeltaCompression.js"></script>
+    <script src="VersionedAppState.js"></script>
+    <script src="AppStateExtension.js"></script>
+    <script>
+        // Demo Controller
+        const Demo = {
+            versioning: null,
+            selectedVersions: [],
+            compareMode: 'visual',
+            
+            init() {
+                // Initialize versioning system
+                this.versioning = new VersionedAppState('demo-state');
+                
+                // Mock KC.AppState if not available
+                if (!window.KC) {
+                    window.KC = {
+                        AppState: {
+                            state: {},
+                            get(path) { return this.state[path]; },
+                            set(path, value) { this.state[path] = value; },
+                            update(updates) { Object.assign(this.state, updates); },
+                            export() { return { state: this.state }; },
+                            import(data) { this.state = data.state; },
+                            createSnapshot: (metadata) => Demo.createSnapshot(metadata),
+                            getAllVersions: () => Demo.versioning.getAllVersions(),
+                            restoreVersion: (versionId) => Demo.restoreVersion(versionId),
+                            compareVersions: (v1, v2) => Demo.versioning.compareVersions(v1, v2),
+                            getVersioningStats: () => Demo.getStats()
+                        },
+                        EventBus: {
+                            on() {},
+                            emit() {}
+                        },
+                        Events: {},
+                        Logger: {
+                            success: (msg, data) => Demo.log('success', msg, data),
+                            info: (msg, data) => Demo.log('info', msg, data),
+                            error: (msg, data) => Demo.log('error', msg, data)
+                        }
+                    };
+                }
+                
+                // Initialize with current state
+                this.updateState();
+                
+                // Setup performance monitoring
+                this.setupPerformanceMonitor();
+                
+                this.log('info', 'Sistema de versionamento inicializado');
+            },
+            
+            getState() {
+                try {
+                    return JSON.parse(document.getElementById('stateEditor').value);
+                } catch (e) {
+                    this.log('error', 'Estado JSON inválido');
+                    return null;
+                }
+            },
+            
+            setState(state) {
+                document.getElementById('stateEditor').value = JSON.stringify(state, null, 2);
+            },
+            
+            updateState() {
+                const state = this.getState();
+                if (state) {
+                    KC.AppState.state = state;
+                    this.log('info', 'Estado atualizado');
+                }
+            },
+            
+            createSnapshot(metadata = {}) {
+                const state = this.getState();
+                if (!state) return;
+                
+                const versionId = this.versioning.createSnapshot(state, {
+                    ...metadata,
+                    manual: true,
+                    timestamp: Date.now()
+                });
+                
+                this.log('success', `Snapshot criado: ${versionId}`);
+                this.refreshVersionList();
+                this.refreshStats();
+                
+                return versionId;
+            },
+            
+            restoreVersion(versionId) {
+                try {
+                    const state = this.versioning.restoreVersion(versionId);
+                    this.setState(state);
+                    this.updateState();
+                    this.log('success', `Versão restaurada: ${versionId}`);
+                    this.refreshVersionList();
+                } catch (error) {
+                    this.log('error', `Erro ao restaurar versão: ${error.message}`);
+                }
+            },
+            
+            refreshVersionList() {
+                const versions = this.versioning.getAllVersions();
+                const container = document.getElementById('versionList');
+                document.getElementById('versionCount').textContent = `${versions.length} versões`;
+                
+                if (versions.length === 0) {
+                    container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">Nenhuma versão ainda. Crie um snapshot!</p>';
+                    return;
+                }
+                
+                container.innerHTML = versions.reverse().map(version => `
+                    <div class="version-item ${version.isCurrent ? 'active' : ''}" 
+                         onclick="Demo.selectVersion('${version.versionId}')"
+                         data-version-id="${version.versionId}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Versão ${new Date(version.timestamp).toLocaleTimeString()}</strong>
+                                <div class="version-id">${version.versionId}</div>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="button button-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;"
+                                        onclick="event.stopPropagation(); Demo.restoreVersion('${version.versionId}')">
+                                    ↩️ Restaurar
+                                </button>
+                                ${this.selectedVersions.includes(version.versionId) ? 
+                                    '<span style="color: var(--primary-color);">✓ Selecionado</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="version-metadata">
+                            <span>Tipo: ${version.type}</span>
+                            <span>Tamanho: ${(version.size / 1024).toFixed(1)} KB</span>
+                            ${version.metadata.reason ? `<span>Razão: ${version.metadata.reason}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            },
+            
+            selectVersion(versionId) {
+                if (this.selectedVersions.includes(versionId)) {
+                    this.selectedVersions = this.selectedVersions.filter(v => v !== versionId);
+                } else {
+                    this.selectedVersions.push(versionId);
+                    if (this.selectedVersions.length > 2) {
+                        this.selectedVersions.shift();
+                    }
+                }
+                
+                this.refreshVersionList();
+                
+                if (this.selectedVersions.length === 2) {
+                    this.compareVersions();
+                }
+            },
+            
+            compareVersions() {
+                if (this.selectedVersions.length !== 2) return;
+                
+                const [v1, v2] = this.selectedVersions;
+                const changeSet = this.versioning.compareVersions(v1, v2);
+                
+                const container = document.getElementById('comparisonView');
+                
+                if (this.compareMode === 'visual') {
+                    container.innerHTML = `
+                        <div class="change-preview">
+                            <h4 style="margin-bottom: 1rem;">${changeSet.summary}</h4>
+                            
+                            ${changeSet.additions.length > 0 ? `
+                                <div style="margin-bottom: 1rem;">
+                                    <strong class="addition">➕ Adições (${changeSet.additions.length}):</strong>
+                                    ${changeSet.additions.map(add => `
+                                        <div style="margin-left: 1rem;">
+                                            <code>${add.path}</code>: ${JSON.stringify(add.value)}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            ${changeSet.modifications.length > 0 ? `
+                                <div style="margin-bottom: 1rem;">
+                                    <strong class="modification">🔄 Modificações (${changeSet.modifications.length}):</strong>
+                                    ${changeSet.modifications.map(mod => `
+                                        <div style="margin-left: 1rem;">
+                                            <code>${mod.path}</code>: 
+                                            <span style="text-decoration: line-through; color: #ef4444;">${JSON.stringify(mod.oldValue)}</span> → 
+                                            <span style="color: #10b981;">${JSON.stringify(mod.newValue)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            ${changeSet.deletions.length > 0 ? `
+                                <div>
+                                    <strong class="deletion">🗑️ Exclusões (${changeSet.deletions.length}):</strong>
+                                    ${changeSet.deletions.map(del => `
+                                        <div style="margin-left: 1rem;">
+                                            <code>${del.path}</code>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <pre class="change-preview">${JSON.stringify(changeSet, null, 2)}</pre>
+                    `;
+                }
+            },
+            
+            setCompareMode(mode) {
+                this.compareMode = mode;
+                document.querySelectorAll('.toggle-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                if (this.selectedVersions.length === 2) {
+                    this.compareVersions();
+                }
+            },
+            
+            refreshStats() {
+                const stats = this.getStats();
+                
+                document.getElementById('totalVersions').textContent = 
+                    this.versioning.getAllVersions().length;
+                
+                document.getElementById('storageUsed').textContent = 
+                    `${(stats.storageUsed / 1024).toFixed(1)} KB`;
+                
+                document.getElementById('compressionRatio').textContent = 
+                    `${(stats.compressionRatio * 100).toFixed(1)}%`;
+                
+                document.getElementById('avgSnapshotTime').textContent = 
+                    `${stats.avgSnapshotTime.toFixed(1)} ms`;
+            },
+            
+            getStats() {
+                const metadata = this.versioning.metadata;
+                const compression = this.versioning.compression.getStats();
+                const performance = this.versioning.getPerformanceStats();
+                
+                return {
+                    storageUsed: metadata.storageUsed,
+                    compressionRatio: compression.averageRatio || 0,
+                    avgSnapshotTime: metadata.averageSnapshotTime || 0,
+                    performance
+                };
+            },
+            
+            addRandomFile() {
+                const state = this.getState();
+                if (!state) return;
+                
+                const newFile = {
+                    id: `file-${Date.now()}`,
+                    name: `document-${Math.random().toString(36).substr(2, 6)}.md`,
+                    content: `Random content ${Math.random()}`,
+                    confidence: Math.random(),
+                    timestamp: new Date().toISOString()
+                };
+                
+                if (!state.files) state.files = [];
+                state.files.push(newFile);
+                
+                this.setState(state);
+                this.updateState();
+                this.log('info', `Arquivo adicionado: ${newFile.name}`);
+            },
+            
+            modifyRandomFile() {
+                const state = this.getState();
+                if (!state || !state.files || state.files.length === 0) return;
+                
+                const index = Math.floor(Math.random() * state.files.length);
+                state.files[index].confidence = Math.random();
+                state.files[index].modified = new Date().toISOString();
+                
+                this.setState(state);
+                this.updateState();
+                this.log('info', `Arquivo modificado: ${state.files[index].name}`);
+            },
+            
+            clearState() {
+                this.setState({ files: [], analysis: {} });
+                this.updateState();
+                this.log('warning', 'Estado limpo');
+            },
+            
+            autoSnapshot() {
+                this.log('info', 'Iniciando auto-snapshot com 5 mudanças...');
+                
+                let changes = 0;
+                const interval = setInterval(() => {
+                    if (Math.random() > 0.5) {
+                        this.addRandomFile();
+                    } else {
+                        this.modifyRandomFile();
+                    }
+                    
+                    changes++;
+                    
+                    if (changes >= 5) {
+                        clearInterval(interval);
+                        this.createSnapshot({ reason: 'auto-snapshot', changes: 5 });
+                    }
+                }, 500);
+            },
+            
+            exportHistory() {
+                const history = this.versioning.exportHistory();
+                const blob = new Blob([JSON.stringify(history, null, 2)], 
+                    { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `version-history-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.log('success', 'Histórico exportado');
+            },
+            
+            setupPerformanceMonitor() {
+                const canvas = document.getElementById('perfCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                
+                // Simple performance visualization
+                const data = [];
+                const maxPoints = 50;
+                
+                const draw = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    if (data.length < 2) return;
+                    
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    
+                    const xStep = canvas.width / (maxPoints - 1);
+                    const yScale = canvas.height / 100;
+                    
+                    data.forEach((point, i) => {
+                        const x = i * xStep;
+                        const y = canvas.height - (point * yScale);
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    
+                    ctx.stroke();
+                    
+                    // Draw labels
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '12px sans-serif';
+                    ctx.fillText('0ms', 5, canvas.height - 5);
+                    ctx.fillText('100ms', 5, 15);
+                    ctx.fillText('Tempo de Snapshot', canvas.width / 2 - 50, canvas.height - 5);
+                };
+                
+                // Update performance data periodically
+                setInterval(() => {
+                    const stats = this.versioning.getPerformanceStats();
+                    if (stats.snapshotTimes && stats.snapshotTimes.samples > 0) {
+                        data.push(stats.snapshotTimes.average);
+                        if (data.length > maxPoints) {
+                            data.shift();
+                        }
+                        draw();
+                    }
+                }, 1000);
+            },
+            
+            log(level, message, data = null) {
+                const output = document.getElementById('logOutput');
+                const timestamp = new Date().toLocaleTimeString();
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    info: 'ℹ️',
+                    warning: '⚠️'
+                };
+                
+                const entry = document.createElement('div');
+                entry.className = `log-entry log-${level}`;
+                entry.textContent = `[${timestamp}] ${icons[level]} ${message}`;
+                
+                if (data) {
+                    entry.textContent += ` ${JSON.stringify(data)}`;
+                }
+                
+                output.appendChild(entry);
+                output.scrollTop = output.scrollHeight;
+                
+                // Keep only last 100 entries
+                while (output.children.length > 100) {
+                    output.removeChild(output.firstChild);
+                }
+            },
+            
+            clearLog() {
+                document.getElementById('logOutput').innerHTML = 
+                    '<div class="log-entry log-info">🧹 Console limpo</div>';
+            }
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', () => {
+            Demo.init();
+        });
+    </script>
+</body>
+</html>

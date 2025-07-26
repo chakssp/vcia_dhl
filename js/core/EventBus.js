@@ -296,6 +296,10 @@
         FILE_ANALYZED: 'file:analyzed',
         FILE_CATEGORIZED: 'file:categorized',
         
+        // NOVO: Eventos de categorias para refinamento
+        CATEGORY_ASSIGNED: 'category:assigned',
+        CATEGORY_REMOVED: 'category:removed',
+        
         // Discovery
         DISCOVERY_STARTED: 'discovery:started',
         DISCOVERY_PROGRESS: 'discovery:progress',

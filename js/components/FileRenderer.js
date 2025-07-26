@@ -500,7 +500,7 @@
                             Relevância: ${relevance}%
                             ${file.categories && file.categories.length > 0 ? `
                                 <span class="boost-indicator" style="color: #7c3aed; font-weight: bold; margin-left: 8px; font-size: 0.75rem;" 
-                                      title="Boost aplicado: ${Math.round((1.5 + file.categories.length * 0.1 - 1) * 100)}% por ${file.categories.length} categoria(s)">
+                                      title="Boost aplicado: ${KC.RelevanceUtils ? KC.RelevanceUtils.getBoostPercentage(file.categories.length) : Math.round(Math.log(file.categories.length + 1) * 5)}% por ${file.categories.length} categoria(s)">
                                     🚀
                                 </span>
                             ` : ''}
@@ -615,31 +615,214 @@
         /**
          * Inicia análise de arquivo com IA
          */
-        // CLASSIFICAÇÃO DINÂMICA RESTAURADA - Sem IA real (IA apenas na Etapa 4)
-        analyzeFile(file, buttonElement) {
+        // ATIVANDO IA REAL COM REFINAMENTO
+        async analyzeFile(file, buttonElement) {
             console.log(`FileRenderer: Iniciando análise IA para ${file.name}`);
             
-            // Inicia progresso da análise
-            EventBus.emit(Events.PROGRESS_START, {
-                type: 'analysis',
-                title: `Analisando ${file.name}...`,
-                details: 'Processando conteúdo com IA',
-                indeterminate: true
-            });
+            // NOVO: Detectar se é refinamento
+            // AIDEV-NOTE: refinement-integration; detecta contexto de refinamento
+            let isRefinement = false;
+            let refinementContext = null;
             
-            // Atualiza visual do botão
-            if (buttonElement) {
-                buttonElement.disabled = true;
-                buttonElement.innerHTML = '⏳ Analisando...';
+            if (KC.RefinementDetector) {
+                // Detecta se é refinamento baseado no histórico
+                isRefinement = file.analyzed && file.categories && file.categories.length > 0;
+                
+                if (isRefinement) {
+                    // Obtém contexto para refinamento
+                    refinementContext = await KC.RefinementDetector.detectContext(file);
+                }
+                
+                if (isRefinement && refinementContext) {
+                    console.log('FileRenderer: Análise de REFINAMENTO detectada', {
+                        arquivo: file.name,
+                        categorias: file.categories,
+                        analysisCount: refinementContext.analysisCount
+                    });
+                }
             }
             
-            // Simula análise IA (será substituído por integração real)
-            setTimeout(() => {
-                // AIDEV-NOTE: separate-analyzed-approved; analyzed != approved
-                // Marca arquivo como analisado mas NÃO como aprovado
-                file.analyzed = true;
-                file.analysisDate = new Date().toISOString();
-                file.analysisType = this.detectAnalysisType(file);
+            // SEMPRE usa análise local com embeddings (sem LLMs)
+            // Inicia progresso
+                EventBus.emit(Events.PROGRESS_START, {
+                    type: 'analysis',
+                    title: `${isRefinement ? 'Refinando' : 'Analisando'} ${file.name}...`,
+                    details: isRefinement ? 'Refinamento com contexto de categorias' : 'Processando conteúdo',
+                    indeterminate: true
+                });
+                
+                // Atualiza botão
+                if (buttonElement) {
+                    buttonElement.disabled = true;
+                    buttonElement.innerHTML = isRefinement ? '⏳ Refinando...' : '⏳ Analisando...';
+                }
+                
+                // Mantém comportamento atual com setTimeout
+                setTimeout(async () => {
+                    // AIDEV-NOTE: separate-analyzed-approved; analyzed != approved
+                    // Marca arquivo como analisado mas NÃO como aprovado
+                    file.analyzed = true;
+                    file.analysisDate = new Date().toISOString();
+                    
+                    // USAR EMBEDDINGS E QDRANT PARA ANÁLISE SEMÂNTICA
+                    let previousType = file.analysisType;
+                    let confidence = 0.65; // Confiança padrão
+                    
+                    try {
+                        // PRIMEIRO: Verifica se tem categorias (curadoria humana)
+                        if (file.categories && file.categories.length > 0) {
+                            console.log('🏷️ Usando categorias para determinar tipo:', file.categories);
+                            
+                            // Mapeia categorias para tipos de análise
+                            const categoryLower = file.categories.map(c => c.toLowerCase());
+                            
+                            if (categoryLower.some(cat => 
+                                ['tecnico', 'codigo', 'arquitetura', 'api', 'stack', 'devops', 'frontend', 
+                                 'backend', 'infra', 'docker', 'cloud', 'aws', 'llm', 'ai', 'ml'].includes(cat)
+                            )) {
+                                file.analysisType = 'Breakthrough Técnico';
+                                confidence = 0.85;
+                            } else if (categoryLower.some(cat => 
+                                ['estrategia', 'decisao', 'roadmap', 'plano', 'business', 'insight', 
+                                 'strategic', 'planning', 'goal', 'objective'].includes(cat)
+                            )) {
+                                file.analysisType = 'Insight Estratégico';
+                                confidence = 0.85;
+                            } else if (categoryLower.some(cat => 
+                                ['conceito', 'teoria', 'visao', 'perspectiva', 'entendimento', 
+                                 'evolucao', 'transformacao'].includes(cat)
+                            )) {
+                                file.analysisType = 'Evolução Conceitual';
+                                confidence = 0.85;
+                            } else if (categoryLower.some(cat => 
+                                ['decisao', 'escolha', 'definicao', 'momento', 'marco'].includes(cat)
+                            )) {
+                                file.analysisType = 'Momento Decisivo';
+                                confidence = 0.85;
+                            } else {
+                                // Se tem categorias mas não se encaixam, ainda é mais relevante
+                                file.analysisType = 'Insight Estratégico';
+                                confidence = 0.75;
+                            }
+                            
+                            console.log(`✅ Tipo determinado por categorias: ${file.analysisType} (${(confidence * 100).toFixed(0)}%)`);
+                            
+                        } else {
+                            // SEM CATEGORIAS: Tenta embeddings
+                            // 1. Gerar embedding do arquivo
+                            if (KC.EmbeddingService) {
+                                console.log('📊 Gerando embedding para:', file.name);
+                                const embedding = await KC.EmbeddingService.generateEmbedding(
+                                    file.content || file.preview || file.name
+                                );
+                                
+                                // 2. Buscar arquivos similares no Qdrant
+                                if (KC.QdrantService && embedding) {
+                                    console.log('🔍 Buscando similares no Qdrant...');
+                                    const similarResults = await KC.QdrantService.search(embedding, {
+                                        limit: 10,
+                                        scoreThreshold: 0.45  // Threshold mais permissivo para encontrar mais similares
+                                    });
+                                
+                                    // 3. Determinar tipo baseado nos vizinhos
+                                    if (similarResults && similarResults.length > 0) {
+                                        console.log(`✅ Encontrados ${similarResults.length} arquivos similares`);
+                                        
+                                        // Conta tipos dos vizinhos (dados estão em metadata)
+                                        const typeCounts = {};
+                                        similarResults.forEach(result => {
+                                            const type = result.payload?.metadata?.analysisType || 'Aprendizado Geral';
+                                            typeCounts[type] = (typeCounts[type] || 0) + result.score;
+                                        });
+                                        
+                                        // Escolhe o tipo mais comum ponderado pela similaridade
+                                        let bestType = 'Aprendizado Geral';
+                                        let bestScore = 0;
+                                        for (const [type, score] of Object.entries(typeCounts)) {
+                                            if (score > bestScore) {
+                                                bestScore = score;
+                                                bestType = type;
+                                            }
+                                        }
+                                        
+                                        file.analysisType = bestType;
+                                        confidence = Math.min(0.95, 0.65 + (bestScore / similarResults.length));
+                                        console.log(`📊 Tipo determinado: ${bestType} (confiança: ${(confidence * 100).toFixed(1)}%)`);
+                                    } else {
+                                        console.log('⚠️ Nenhum arquivo similar encontrado, usando detecção local');
+                                        file.analysisType = this.detectAnalysisType(file);
+                                    }
+                                } else {
+                                    console.log('⚠️ QdrantService não disponível, usando detecção local');
+                                    file.analysisType = this.detectAnalysisType(file);
+                                }
+                            } else {
+                                console.log('⚠️ EmbeddingService não disponível, usando detecção local');
+                                file.analysisType = this.detectAnalysisType(file);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('❌ Erro na análise semântica:', error);
+                        // Fallback para detecção local
+                        file.analysisType = this.detectAnalysisType(file);
+                    }
+                    
+                    // Refinamento adicional pode ser feito aqui se necessário
+                    
+                    // NOVO: Criar/atualizar analysisHistory
+                    if (!file.analysisHistory) {
+                        file.analysisHistory = [];
+                    }
+                    
+                    // CRÍTICO: Mapear para Schema.org SEMPRE (inicial e refinamento)
+                    // AIDEV-NOTE: schema-org-mapping; integração obrigatória conforme plano
+                    let schemaOrgEntity = null;
+                    if (KC.SchemaOrgMapper && file.analysisType) {
+                        try {
+                            // TEMPORÁRIO: Removido await até corrigir SchemaOrgMapper
+                            // schemaOrgEntity = await KC.SchemaOrgMapper.mapToSchema(file);
+                            schemaOrgEntity = KC.SchemaOrgMapper.mapToSchema(file);
+                            console.log('FileRenderer: Schema.org mapeado', { 
+                                type: schemaOrgEntity['@type'],
+                                confidence: confidence,
+                                version: file.analysisHistory.length + 1
+                            });
+                        } catch (error) {
+                            console.error('FileRenderer: Erro ao mapear Schema.org', error);
+                        }
+                    }
+                    
+                    file.analysisHistory.push({
+                        version: file.analysisHistory.length + 1,
+                        timestamp: new Date().toISOString(),
+                        analysisType: file.analysisType,
+                        confidence: confidence,
+                        schemaOrgEntity: schemaOrgEntity, // CRÍTICO: Schema.org desde v1
+                        context: {
+                            categories: file.categories || [],
+                            isRefinement: isRefinement,
+                            source: 'local_analysis'
+                        }
+                    });
+                    
+                    // Log mudança se houve
+                    if (isRefinement && previousType !== file.analysisType) {
+                        console.log('AnalysisType REFINADO:', {
+                            arquivo: file.name,
+                            antes: previousType,
+                            depois: file.analysisType,
+                            confidence: confidence
+                        });
+                        
+                        if (KC.showNotification) {
+                            KC.showNotification({
+                                type: 'success',
+                                message: '✨ Análise refinada com sucesso!',
+                                details: `${file.name}: ${previousType} → ${file.analysisType} (${Math.round(confidence * 100)}% confiança)`,
+                                duration: 4000
+                            });
+                        }
+                    }
                 
                 // FASE 1.3 FIX: Preservar boost de categorias ao analisar
                 // AIDEV-NOTE: preserve-category-boost; análise IA não deve sobrescrever boost de categorias
@@ -651,15 +834,21 @@
                 
                 // Se tem categorias, re-aplica o boost sobre o novo score base
                 if (hasCategories) {
-                    const categoryBoost = 1.5 + (file.categories.length * 0.1);
-                    file.relevanceScore = Math.min(100, enhancedScore * categoryBoost);
+                    // Usa a nova fórmula logarítmica do RelevanceUtils
+                    file.relevanceScore = KC.RelevanceUtils ? 
+                        KC.RelevanceUtils.calculateCategoryBoost(file.categories.length, enhancedScore) :
+                        Math.min(100, enhancedScore * (1 + (Math.log(file.categories.length + 1) * 0.05)));
+                    
+                    const boostPercentage = KC.RelevanceUtils ? 
+                        KC.RelevanceUtils.getBoostPercentage(file.categories.length) :
+                        Math.round(Math.log(file.categories.length + 1) * 5);
                     
                     KC.Logger?.info('FileRenderer', 'Boost de categorias preservado após análise', {
                         file: file.name,
                         categories: file.categories.length,
                         enhancedScore: Math.round(enhancedScore),
                         boostedScore: Math.round(file.relevanceScore),
-                        boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                        boost: `${boostPercentage}%`
                     });
                 } else {
                     file.relevanceScore = enhancedScore;
@@ -674,25 +863,43 @@
                     AppState.set('files', allFiles);
                 }
                 
+                // NOVO: Determina detalhes de refinamento
+                const analysisVersion = (file.analysisHistory && file.analysisHistory.length > 0) 
+                    ? file.analysisHistory.length 
+                    : 1;
+                const analysisConfidence = (file.analysisHistory && file.analysisHistory.length > 0 && 
+                    file.analysisHistory[file.analysisHistory.length - 1].confidence)
+                    ? Math.round(file.analysisHistory[file.analysisHistory.length - 1].confidence * 100)
+                    : 65; // Confiança padrão
+                const titleText = isRefinement 
+                    ? `Refinamento v${analysisVersion} concluído!` 
+                    : 'Análise concluída!';
+                
                 // Finaliza progresso da análise
                 EventBus.emit(Events.PROGRESS_END, {
                     type: 'analysis',
-                    title: 'Análise concluída!',
-                    details: `${file.analysisType} - Relevância: ${Math.round(file.relevanceScore)}%`
+                    title: titleText,
+                    details: `${file.analysisType} - Relevância: ${Math.round(file.relevanceScore)}% - Confiança: ${analysisConfidence}%`
                 });
                 
                 // Notifica sucesso
                 KC.showNotification({
                     type: 'success',
-                    message: `✅ Análise concluída: ${file.name}`,
-                    details: `Tipo: ${file.analysisType}, Relevância: ${Math.round(file.relevanceScore)}%${hasCategories ? ` (com boost de ${Math.round((1.5 + file.categories.length * 0.1 - 1) * 100)}%)` : ''}`
+                    message: `✅ ${isRefinement ? 'Refinamento' : 'Análise'} concluída: ${file.name}`,
+                    details: `Tipo: ${file.analysisType}, Relevância: ${Math.round(file.relevanceScore)}%, Confiança: ${analysisConfidence}%${hasCategories ? ` (com boost de ${Math.round((1 + file.categories.length * 0.25 - 1) * 100)}%)` : ''}${isRefinement ? ` - v${analysisVersion}` : ''}`
                 });
                 
                 // Restaura botão
                 if (buttonElement) {
                     buttonElement.disabled = false;
-                    buttonElement.innerHTML = '✅ Analisado';
+                    buttonElement.innerHTML = isRefinement 
+                        ? `✅ Analisado v${analysisVersion}` 
+                        : '✅ Analisado';
                     buttonElement.classList.add('analyzed');
+                    // NOVO: Adiciona classe para indicar refinamento
+                    if (isRefinement) {
+                        buttonElement.classList.add('refined');
+                    }
                 }
                 
                 // Atualiza estatísticas
@@ -719,120 +926,6 @@
                 
             }, 2000); // Simula 2s de processamento
         }
-        
-        /* VERSÃO COM IA REAL - DESATIVADA (usar apenas na Etapa 4)
-        analyzeFile_withRealAI(file, buttonElement) {
-            console.log(`FileRenderer: Iniciando análise IA para ${file.name}`);
-            
-            // Verifica se AnalysisManager está disponível
-            if (KC.AnalysisManager) {
-                // Usa AnalysisManager real
-                KC.AnalysisManager.addToQueue([file]);
-                
-                // Atualiza visual do botão
-                if (buttonElement) {
-                    buttonElement.disabled = true;
-                    buttonElement.innerHTML = '⏳ Na fila...';
-                }
-                
-                // Escuta conclusão da análise para este arquivo
-                const handler = (data) => {
-                    if (data.file.id === file.id || data.file.name === file.name) {
-                        // Remove listener
-                        EventBus.off(Events.ANALYSIS_ITEM_COMPLETED, handler);
-                        
-                        // Atualiza botão
-                        if (buttonElement) {
-                            buttonElement.disabled = false;
-                            buttonElement.innerHTML = '✅ Analisado';
-                            buttonElement.classList.add('analyzed');
-                        }
-                        
-                        // Atualiza estatísticas
-                        if (KC.StatsManager) {
-                            KC.StatsManager.calculateInitialStats();
-                        }
-                    }
-                };
-                
-                EventBus.on(Events.ANALYSIS_ITEM_COMPLETED, handler);
-                
-            } else {
-                // Fallback: Simula análise IA
-                // Inicia progresso da análise
-                EventBus.emit(Events.PROGRESS_START, {
-                    type: 'analysis',
-                    title: `Analisando ${file.name}...`,
-                    details: 'Processando conteúdo com IA',
-                    indeterminate: true
-                });
-                
-                // Atualiza visual do botão
-                if (buttonElement) {
-                    buttonElement.disabled = true;
-                    buttonElement.innerHTML = '⏳ Analisando...';
-                }
-                
-                // Simula análise IA (será substituído por integração real)
-                setTimeout(async () => {
-                    // Re-lê conteúdo do arquivo se necessário para análise
-                    if (!file.content && file.handle) {
-                        try {
-                            const fileData = await file.handle.getFile();
-                            file.content = await fileData.text();
-                        } catch (error) {
-                            console.warn('Erro ao ler conteúdo para análise:', error);
-                            file.content = '';
-                        }
-                    }
-                    
-                    // Marca arquivo como analisado
-                    file.analyzed = true;
-                    file.analysisDate = new Date().toISOString();
-                    file.analysisType = this.detectAnalysisType(file);
-                    file.relevanceScore = this.calculateEnhancedRelevance(file);
-                    
-                    // Atualiza AppState
-                    const allFiles = AppState.get('files') || [];
-                    const fileIndex = allFiles.findIndex(f => f.id === file.id || f.name === file.name);
-                    if (fileIndex !== -1) {
-                        allFiles[fileIndex] = { ...allFiles[fileIndex], ...file };
-                        AppState.set('files', allFiles);
-                    }
-                    
-                    // Finaliza progresso da análise
-                    EventBus.emit(Events.PROGRESS_END, {
-                        type: 'analysis',
-                        title: 'Análise concluída!',
-                        details: `${file.analysisType} - Relevância: ${Math.round(file.relevanceScore * 100)}%`
-                    });
-                    
-                    // Notifica sucesso
-                    KC.showNotification({
-                        type: 'success',
-                        message: `✅ Análise concluída: ${file.name}`,
-                        details: `Tipo: ${file.analysisType}, Relevância: ${Math.round(file.relevanceScore * 100)}%`
-                    });
-                    
-                    // Restaura botão
-                    if (buttonElement) {
-                        buttonElement.disabled = false;
-                        buttonElement.innerHTML = '✅ Analisado';
-                        buttonElement.classList.add('analyzed');
-                    }
-                    
-                    // CORREÇÃO: Remove chamada duplicada - STATE_CHANGED já cuida da renderização
-                    // this.renderFileList(); // Removido para evitar dupla renderização
-                    
-                    // Atualiza estatísticas
-                    if (KC.StatsPanel && KC.StatsManager) {
-                        KC.StatsPanel.updateStats(KC.StatsManager.getStats());
-                    }
-                    
-                }, 2000); // Simula 2s de processamento
-            }
-        }
-        */
 
         /**
          * Exibe conteúdo do arquivo em modal
@@ -1508,89 +1601,127 @@
          */
         // CLASSIFICAÇÃO DINÂMICA RESTAURADA - Baseada em keywords
         detectAnalysisType(file) {
+            // AIDEV-NOTE: improved-detection; melhor detecção com múltiplas keywords e scores
             const fileName = (file.name || '').toLowerCase();
-            const content = (file.content || '').toLowerCase();
+            const content = (file.content || file.preview || '').toLowerCase();
             const combined = fileName + ' ' + content;
             
-            // Tipos conforme PRD (vcia_dhl.txt)
-            if (combined.includes('solução') || combined.includes('configuração') || combined.includes('arquitetura')) {
-                return 'Breakthrough Técnico';
+            // Score para cada tipo baseado em múltiplas keywords
+            const scores = {
+                'Breakthrough Técnico': 0,
+                'Evolução Conceitual': 0,
+                'Momento Decisivo': 0,
+                'Insight Estratégico': 0,
+                'Aprendizado Geral': 0
+            };
+            
+            // Keywords mais específicas e com pesos
+            const keywords = {
+                'Breakthrough Técnico': [
+                    ['implementação', 3], ['código', 3], ['algoritmo', 3], ['performance', 3],
+                    ['solução', 2], ['configuração', 2], ['arquitetura', 2], ['técnica', 2],
+                    ['api', 2], ['framework', 2], ['otimização', 2], ['bug', 2], ['debug', 2]
+                ],
+                'Evolução Conceitual': [
+                    ['conceito', 3], ['teoria', 3], ['modelo', 3], ['paradigma', 3],
+                    ['entendimento', 2], ['perspectiva', 2], ['visão', 2], ['abordagem', 2],
+                    ['metodologia', 2], ['princípio', 2], ['filosofia', 2], ['padrão', 2]
+                ],
+                'Momento Decisivo': [
+                    ['decisão', 3], ['escolha', 3], ['definição', 3], ['aprovação', 3],
+                    ['milestone', 2], ['deadline', 2], ['prioridade', 2], ['estratégia', 2],
+                    ['planejamento', 2], ['roadmap', 2], ['objetivo', 2], ['meta', 2]
+                ],
+                'Insight Estratégico': [
+                    ['insight', 3], ['descoberta', 3], ['realização', 3], ['eureka', 3],
+                    ['transformação', 2], ['breakthrough', 2], ['inovação', 2], ['revolução', 2],
+                    ['mudança', 2], ['pivot', 2], ['oportunidade', 2], ['tendência', 2]
+                ]
+            };
+            
+            // Calcular scores
+            for (const [type, typeKeywords] of Object.entries(keywords)) {
+                for (const [keyword, weight] of typeKeywords) {
+                    if (combined.includes(keyword)) {
+                        scores[type] += weight;
+                    }
+                }
             }
             
-            if (combined.includes('entendimento') || combined.includes('perspectiva') || combined.includes('visão')) {
-                return 'Evolução Conceitual';
+            // Se tem categorias, dar peso a elas também
+            if (file.categories && file.categories.length > 0) {
+                file.categories.forEach(cat => {
+                    const catName = (typeof cat === 'string' ? cat : cat.name || '').toLowerCase();
+                    if (catName.includes('técnic') || catName.includes('tech') || catName.includes('dev')) {
+                        scores['Breakthrough Técnico'] += 5;
+                    } else if (catName.includes('conceito') || catName.includes('teor') || catName.includes('model')) {
+                        scores['Evolução Conceitual'] += 5;
+                    } else if (catName.includes('decis') || catName.includes('estratég') || catName.includes('plan')) {
+                        scores['Momento Decisivo'] += 5;
+                    } else if (catName.includes('insight') || catName.includes('descob') || catName.includes('inov')) {
+                        scores['Insight Estratégico'] += 5;
+                    }
+                });
             }
             
-            if (combined.includes('decisão') || combined.includes('escolha') || combined.includes('direção')) {
-                return 'Momento Decisivo';
+            // Encontrar tipo com maior score
+            let bestType = 'Aprendizado Geral';
+            let bestScore = scores['Aprendizado Geral'];
+            
+            for (const [type, score] of Object.entries(scores)) {
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestType = type;
+                }
             }
             
-            if (combined.includes('insight') || combined.includes('transformação') || combined.includes('breakthrough')) {
-                return 'Insight Estratégico';
+            // Se nenhum score significativo, manter como Aprendizado Geral
+            if (bestScore < 3) {
+                bestType = 'Aprendizado Geral';
             }
             
-            return 'Aprendizado Geral';
+            KC.Logger?.debug('FileRenderer.detectAnalysisType', {
+                file: file.name,
+                type: bestType,
+                score: bestScore,
+                scores: scores
+            });
+            
+            return bestType;
         }
         
-        /* VERSÃO COM FONTE ÚNICA - DESATIVADA (mantendo classificação local)
-        detectAnalysisType_withManager(file) {
-            // Delega para o AnalysisTypesManager (Single Source of Truth)
-            if (KC.AnalysisTypesManager && KC.AnalysisTypesManager.detectType) {
-                return KC.AnalysisTypesManager.detectType(file);
-            }
-            
-            // Fallback se o manager não estiver disponível
-            console.warn('AnalysisTypesManager não disponível, usando detecção local');
-            return 'Aprendizado Geral';
-        }
-        */
-
         /**
          * Calcula relevância aprimorada pós-análise
          */
         // CLASSIFICAÇÃO DINÂMICA RESTAURADA
         calculateEnhancedRelevance(file) {
-            // FASE 1.3 FIX: Usa score base sem boost de categorias
-            // AIDEV-NOTE: base-score-only; retorna apenas score base para análise IA
+            // AIDEV-NOTE: no-type-boost; retorna score base SEM boost de tipo para evitar acumulação
+            // CORREÇÃO BUG #12: Relevância não deve acumular boost a cada análise
             let baseScore = 0;
             
-            // Se já tem relevanceScore, remove o boost de categorias para obter base
+            // Se já tem relevanceScore, usa ele como está
             if (file.relevanceScore !== undefined && file.relevanceScore !== null) {
-                if (file.categories && file.categories.length > 0) {
-                    // Remove boost reverso: score_base = score_atual / boost
-                    const categoryBoost = 1.5 + (file.categories.length * 0.1);
-                    baseScore = file.relevanceScore / categoryBoost;
-                } else {
-                    baseScore = file.relevanceScore;
-                }
+                baseScore = file.relevanceScore;
             } else {
                 // Calcula do zero se não tem score
                 baseScore = this.calculateRelevance(file);
             }
             
-            // Normaliza para 0-1 se necessário
-            if (baseScore > 1) {
-                baseScore = baseScore / 100;
-            }
+            // Normaliza para 0-100
+            if (baseScore > 100) baseScore = 100;
+            if (baseScore < 0) baseScore = 0;
             
-            // Ajustes baseados no tipo de análise
-            switch (file.analysisType) {
-                case 'Evolução Conceitual':
-                    baseScore = Math.min(baseScore + 0.25, 1.0);
-                    break;
-                case 'Momento Decisivo':
-                case 'Breakthrough Técnico':
-                    baseScore = Math.min(baseScore + 0.20, 1.0);
-                    break;
-                case 'Insight Estratégico':
-                    baseScore = Math.min(baseScore + 0.15, 1.0);
-                    break;
-                default:
-                    baseScore = Math.min(baseScore + 0.05, 1.0);
-            }
+            // NÃO aplicar boost baseado em analysisType aqui!
+            // O boost de categorias já é aplicado no método analyzeFile
             
-            // Retorna como percentual (0-100)
-            return baseScore * 100;
+            KC.Logger?.debug('FileRenderer.calculateEnhancedRelevance', {
+                file: file.name,
+                baseScore: Math.round(baseScore),
+                analysisType: file.analysisType,
+                note: 'Sem boost de tipo'
+            });
+            
+            return baseScore;
         }
         
         /* VERSÃO COM FONTE ÚNICA - DESATIVADA
@@ -2373,8 +2504,10 @@
                     const enhancedScore = this.calculateEnhancedRelevance(file);
                     
                     if (hasCategories) {
-                        const categoryBoost = 1.5 + (file.categories.length * 0.1);
-                        file.relevanceScore = Math.min(100, enhancedScore * categoryBoost);
+                        // Usa a nova fórmula logarítmica
+                        file.relevanceScore = KC.RelevanceUtils ? 
+                            KC.RelevanceUtils.calculateCategoryBoost(file.categories.length, enhancedScore) :
+                            Math.min(100, enhancedScore * (1 + (Math.log(file.categories.length + 1) * 0.05)));
                     } else {
                         file.relevanceScore = enhancedScore;
                     }

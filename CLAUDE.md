@@ -72,8 +72,14 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
     - Controlável (permitir desativar filtros/exclusões)
     - Reversível (permitir ver arquivos excluídos
     - NUNCA remover dados silenciosamente sem conhecimento do usuário
+13. FLUXO DE ANÁLISE SEMÂNTICA OBRIGATÓRIO:
+    - FASE 1: Curadoria → Categorias → Embeddings → Qdrant
+    - FASE 2: Novo arquivo → Embedding → Busca similares → Herda tipo
+    - FASE 3: Perguntas → Busca contextual → LLM com contexto curado
+    - NUNCA usar LLM direto para classificação
+    - SEMPRE respeitar categorias como ground truth
 
-### 🚀 SPRINT FASE 2 - NOVOS SERVIÇOS IMPLEMENTADOS (17-18/01/2025)
+### 🚀 SPRINT FASE 2 - NOVOS SERVIÇOS IMPLEMENTADOS (17-18/07/2025)
 
 #### ✅ EmbeddingService.js
 
@@ -95,6 +101,25 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 - **Features**: Busca por texto, categoria e multi-modal
 - **Ranking**: Híbrido (70% semântico, 20% categoria, 10% relevância)
 - **Localização**: `/js/services/SimilaritySearchService.js`
+
+### 🎯 ARQUITETURA CORRETA DO SISTEMA
+
+#### Fluxo de Curadoria e Análise:
+1. **Descoberta**: Arquivos encontrados com pré-análise local
+2. **Curadoria**: Usuário adiciona categorias (ground truth)
+3. **Aprovação**: Arquivos curados na Etapa 4
+4. **Indexação**: Gerar embeddings → Enviar para Qdrant
+5. **Análise**: Novos arquivos → Embedding → Busca similares → Herda classificação
+
+#### ❌ NÃO FAZER:
+- FileRenderer → AnalysisManager → Ollama (análise genérica)
+- Ignorar categorias manuais
+- Gerar payload sem enviar para Qdrant
+
+#### ✅ FAZER:
+- Respeitar curadoria humana como fonte primária
+- Usar embeddings + Qdrant para classificação
+- LLM apenas para perguntas contextuais complexas
 
 ### 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO ler /RESUME-STATUS.md
 
@@ -163,6 +188,13 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 **Causa**: Falta de emissão de eventos após operações
 **Solução**: SEMPRE emitir eventos apropriados após modificar estado
 **Documentação**: updateAllCounters() após exclusões (21/07/2025)
+
+#### 🔴 Problema Recorrente #11: Sistema não usa conhecimento curado
+
+**Impacto**: 4+ horas perdidas (25/07/2025), todos arquivos classificados como "Aprendizado Geral"
+**Causa**: Análise usa LLM direto em vez de busca semântica no Qdrant
+**Solução**: Seguir fluxo: Embedding → Qdrant → Classificação por vizinhança
+**Documentação**: /docs/11-pendencias-revisao/plano-recuperacao-projeto-qdrant.md
 
 ### ✅ Padrão de Sucesso
 
@@ -259,6 +291,62 @@ if (KC.ComponenteX) {
    - **5 documentos de análise**: Mapeamento completo, fluxos, correlações e problemas
    - CRÍTICO: SEMPRE consulte antes de implementar
    - Centralizado em 24/07/2025
+
+4. **Plano de Recuperação Qdrant**: `/docs/11-pendencias-revisao/plano-recuperacao-projeto-qdrant.md`
+   - Correção do fluxo de análise semântica
+   - 5 fases de implementação
+   - Validações sem páginas de teste
+   - Criado em 25/07/2025
+
+5. **Contexto do Sistema Quebrado**: `/docs/analise-fluxo-arquivos-contexto.md`
+   - Estado atual do sistema
+   - Problemas identificados
+   - Fluxo correto vs incorreto
+   - Criado em 25/07/2025
+
+## 🔍 COMANDOS DE VERIFICAÇÃO
+
+### Comandos Básicos
+```javascript
+kcdiag()  // Diagnóstico completo do sistema
+KC.AppState.get('files')  // Ver arquivos no estado
+```
+
+### Verificar Integração Qdrant
+```javascript
+// Verificar se Qdrant está populado
+KC.QdrantService.getCollectionStats()
+
+// Verificar conexão com Qdrant
+KC.QdrantService.checkConnection()
+
+// Ver informações da collection
+KC.QdrantService.getCollectionInfo()
+
+// Buscar pontos no Qdrant
+KC.QdrantService.searchByText('termo de busca')
+```
+
+### Verificar Fluxo de Análise
+```javascript
+// Verificar se análise usa Qdrant (correto) ou AnalysisManager (errado)
+KC.FileRenderer.analyzeFile // deve mostrar busca no Qdrant
+
+// Verificar payload gerado para Qdrant
+KC.RAGExportManager.consolidateData()
+
+// Verificar embeddings
+KC.EmbeddingService.checkOllamaAvailability()
+KC.EmbeddingService.generateEmbedding('texto teste')
+```
+
+### Verificar Busca Semântica
+```javascript
+// Testar busca por similaridade
+KC.SimilaritySearchService.searchByText('query')
+KC.SimilaritySearchService.searchByCategory('categoria')
+KC.SimilaritySearchService.getStats()
+```
 
 **DIRETIVA**: Sempre siga as LEIS do projeto e o protocolo de início de sessão. Leia @CLAUDE.md e @RESUME-STATUS.md antes de fazer qualquer alteração. Consulte o timeline completo em `/docs/timeline-completo-projeto.md` para contexto histórico. Utilize o padrão de sucesso fornecido para garantir a consistência e a qualidade do código. Mantenha a segurança em mente, implementando criptografia de chaves de API, limitação de taxa para chamadas de API e cabeçalhos CSP para produção. Sanitize o conteúdo exibido para evitar vulnerabilidades. Utilize comentários âncora para facilitar a manutenção e a compreensão do código.
 </LEIS>

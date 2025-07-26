@@ -1116,16 +1116,21 @@
                     // AIDEV-NOTE: category-relevance-boost; categorias aumentam relevância (curadoria humana)
                     if (merged.categories && merged.categories.length > 0) {
                         const originalScore = merged.relevanceScore || 0;
-                        // Boost base de 50% + 10% por categoria atribuída
-                        const categoryBoost = 1.5 + (merged.categories.length * 0.1);
-                        merged.relevanceScore = Math.min(100, originalScore * categoryBoost);
+                        // Usa fórmula logarítmica para boost mais equilibrado
+                        merged.relevanceScore = KC.RelevanceUtils ? 
+                            KC.RelevanceUtils.calculateCategoryBoost(merged.categories.length, originalScore) :
+                            Math.min(95, originalScore * (1 + (Math.log(merged.categories.length + 1) * 0.05)));
+                        
+                        const boostPercentage = KC.RelevanceUtils ? 
+                            KC.RelevanceUtils.getBoostPercentage(merged.categories.length) :
+                            Math.round(Math.log(merged.categories.length + 1) * 5);
                         
                         KC.Logger.info('Boost de relevância aplicado', {
                             file: merged.name,
                             categories: merged.categories.length,
                             originalScore: originalScore,
                             boostedScore: merged.relevanceScore,
-                            boost: `${Math.round((categoryBoost - 1) * 100)}%`
+                            boost: `${boostPercentage}%`
                         });
                     }
                     
