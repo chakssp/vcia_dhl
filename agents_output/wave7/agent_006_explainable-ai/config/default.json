@@ -1,0 +1,162 @@
+{
+  "agent": {
+    "name": "agent_006_explainable-ai",
+    "version": "1.0.0",
+    "wave": 7,
+    "focus": "Explainable AI Enhancements"
+  },
+  "explainability": {
+    "defaultLevel": "standard",
+    "levels": {
+      "minimal": {
+        "enableSHAP": false,
+        "enableLIME": false,
+        "generateNaturalLanguage": true,
+        "counterfactualsEnabled": false,
+        "visualizationEnabled": false
+      },
+      "standard": {
+        "enableSHAP": true,
+        "enableLIME": false,
+        "generateNaturalLanguage": true,
+        "counterfactualsEnabled": true,
+        "visualizationEnabled": true
+      },
+      "full": {
+        "enableSHAP": true,
+        "enableLIME": true,
+        "generateNaturalLanguage": true,
+        "counterfactualsEnabled": true,
+        "visualizationEnabled": true,
+        "attentionAnalysis": true,
+        "interactiveExplanations": true
+      }
+    }
+  },
+  "performance": {
+    "caching": {
+      "enabled": true,
+      "maxSize": 100,
+      "ttl": 300000,
+      "compression": true
+    },
+    "parallel": {
+      "enabled": true,
+      "maxWorkers": 4,
+      "queueSize": 100
+    },
+    "batching": {
+      "enabled": true,
+      "maxBatchSize": 50,
+      "timeout": 5000
+    }
+  },
+  "shap": {
+    "nSamples": 100,
+    "maxFeatures": 20,
+    "kernelWidth": 0.75,
+    "useKernelSHAP": true,
+    "cacheSize": 1000
+  },
+  "lime": {
+    "nSamples": 500,
+    "featureSelection": "forward",
+    "maxFeatures": 10,
+    "discretizeMethod": "quartile",
+    "ridgeAlpha": 1.0
+  },
+  "counterfactuals": {
+    "method": "genetic",
+    "maxIterations": 1000,
+    "populationSize": 50,
+    "mutationRate": 0.1,
+    "crossoverRate": 0.7,
+    "maxScenarios": 3,
+    "diversityWeight": 0.2
+  },
+  "attention": {
+    "method": "integrated_gradients",
+    "nSteps": 50,
+    "baseline": "zero",
+    "smoothing": true,
+    "smoothingWindow": 3,
+    "topK": 10
+  },
+  "naturalLanguage": {
+    "defaultLanguage": "en",
+    "style": "professional",
+    "maxLength": 500,
+    "includeRecommendations": true,
+    "includeUncertainty": true,
+    "templates": {
+      "en": {
+        "confidence": {
+          "high": "The analysis shows high confidence",
+          "medium": "The analysis indicates moderate confidence",
+          "low": "The analysis reveals low confidence"
+        }
+      }
+    }
+  },
+  "visualization": {
+    "decisionTree": {
+      "maxDepth": 5,
+      "layout": "vertical",
+      "interactive": true,
+      "animations": true
+    },
+    "charts": {
+      "colorScheme": "viridis",
+      "quality": "high",
+      "responsive": true
+    }
+  },
+  "transparency": {
+    "mode": "full",
+    "auditTrail": {
+      "enabled": true,
+      "retention": 2592000000,
+      "encryption": true
+    },
+    "reporting": {
+      "frequency": "daily",
+      "format": "json",
+      "includeMetrics": true
+    }
+  },
+  "integration": {
+    "kcSystem": {
+      "autoRegister": true,
+      "eventIntegration": true,
+      "namespace": "ExplainableML"
+    },
+    "api": {
+      "endpoint": "/api/v1/explain",
+      "rateLimit": 100,
+      "timeout": 30000
+    }
+  },
+  "security": {
+    "sanitization": {
+      "enabled": true,
+      "removePersonalInfo": true,
+      "maskSensitiveData": true
+    },
+    "access": {
+      "requireAuth": true,
+      "roles": ["admin", "analyst", "viewer"]
+    }
+  },
+  "monitoring": {
+    "metrics": {
+      "enabled": true,
+      "interval": 60000,
+      "collectors": ["performance", "usage", "errors"]
+    },
+    "logging": {
+      "level": "info",
+      "format": "json",
+      "destination": "console"
+    }
+  }
+}

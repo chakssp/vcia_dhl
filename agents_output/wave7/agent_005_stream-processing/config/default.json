@@ -1,0 +1,129 @@
+{
+  "streaming": {
+    "enabled": true,
+    "mode": "hybrid",
+    "partitions": 4,
+    "replicationFactor": 2,
+    "checkpointInterval": 5000,
+    "snapshotThreshold": 10000
+  },
+  "windows": {
+    "default": {
+      "type": "hopping",
+      "size": 1000,
+      "hop": 100
+    },
+    "analytics": {
+      "type": "tumbling",
+      "size": 60000
+    },
+    "session": {
+      "type": "session",
+      "gap": 300000
+    }
+  },
+  "performance": {
+    "maxEventRate": 50000,
+    "backpressureThreshold": 0.8,
+    "workerCount": 4,
+    "batchSize": 100,
+    "flushInterval": 100,
+    "ringBufferSize": 10000,
+    "eventStoreSize": 1000000
+  },
+  "calculator": {
+    "weights": {
+      "semantic": 0.35,
+      "categorical": 0.30,
+      "structural": 0.20,
+      "temporal": 0.15
+    },
+    "cache": {
+      "enabled": true,
+      "ttl": 300000,
+      "maxSize": 10000
+    }
+  },
+  "tracker": {
+    "convergence": {
+      "threshold": 0.85,
+      "stabilityWindow": 3,
+      "maxDelta": 0.02,
+      "adaptiveThreshold": true
+    },
+    "persistence": {
+      "enabled": true,
+      "backend": "indexeddb",
+      "compression": true
+    }
+  },
+  "shadow": {
+    "enabled": true,
+    "samplingRate": 0.1,
+    "divergenceThreshold": 0.05,
+    "circuitBreaker": {
+      "enabled": true,
+      "threshold": 0.95,
+      "timeout": 30000,
+      "resetTime": 60000
+    },
+    "abTest": {
+      "groups": ["control", "shadow", "full"],
+      "allocation": [0.8, 0.1, 0.1]
+    }
+  },
+  "orchestrator": {
+    "coordination": {
+      "leaderElection": true,
+      "heartbeatInterval": 1000,
+      "sessionTimeout": 5000
+    },
+    "failover": {
+      "enabled": true,
+      "detectionTime": 3000,
+      "gracePeriod": 1000
+    }
+  },
+  "monitoring": {
+    "metrics": {
+      "enabled": true,
+      "interval": 1000,
+      "retention": 3600000
+    },
+    "alerts": {
+      "highDivergence": {
+        "threshold": 0.1,
+        "window": 60000
+      },
+      "lowConvergence": {
+        "threshold": 0.7,
+        "window": 300000
+      },
+      "highLatency": {
+        "threshold": 100,
+        "percentile": 0.99
+      }
+    }
+  },
+  "integration": {
+    "kafka": {
+      "enabled": false,
+      "brokers": ["localhost:9092"],
+      "topics": {
+        "events": "ml-confidence-events",
+        "results": "ml-confidence-results"
+      }
+    },
+    "redis": {
+      "enabled": false,
+      "host": "localhost",
+      "port": 6379,
+      "db": 0
+    },
+    "prometheus": {
+      "enabled": true,
+      "port": 9090,
+      "path": "/metrics"
+    }
+  }
+}

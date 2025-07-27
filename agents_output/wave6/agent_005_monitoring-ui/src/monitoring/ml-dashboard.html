@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Monitoring Dashboard - Knowledge Consolidator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>
+                    <span class="icon">📊</span>
+                    ML Monitoring Dashboard
+                </h1>
+                <div class="header-controls">
+                    <button id="refreshBtn" class="btn btn-icon" title="Refresh">
+                        <span class="icon">🔄</span>
+                    </button>
+                    <button id="alertConfigBtn" class="btn btn-primary">
+                        <span class="icon">🔔</span>
+                        Configure Alerts
+                    </button>
+                    <button id="themeToggleBtn" class="btn btn-icon" title="Toggle Theme">
+                        <span class="icon">🌓</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Health Overview -->
+            <section class="health-overview">
+                <h2>System Health</h2>
+                <div id="healthIndicators" class="health-grid">
+                    <!-- Health indicators will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Alert Center -->
+            <section class="alert-center">
+                <div class="section-header">
+                    <h2>Active Alerts</h2>
+                    <span id="alertCount" class="badge">0</span>
+                </div>
+                <div id="alertContainer" class="alert-container">
+                    <!-- Alerts will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Metrics Grid -->
+            <section class="metrics-section">
+                <h2>ML Performance Metrics</h2>
+                <div class="metrics-grid">
+                    <!-- Confidence Score Trend -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Confidence Score Trend</h3>
+                            <span class="metric-value" id="avgConfidence">--</span>
+                        </div>
+                        <div class="chart-container" id="confidenceChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Processing Rate -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Processing Rate</h3>
+                            <span class="metric-value" id="processingRate">-- files/min</span>
+                        </div>
+                        <div class="chart-container" id="processingChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Error Rate -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Error Rate</h3>
+                            <span class="metric-value" id="errorRate">--%</span>
+                        </div>
+                        <div class="chart-container" id="errorChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Memory Usage -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Memory Usage</h3>
+                            <span class="metric-value" id="memoryUsage">-- MB</span>
+                        </div>
+                        <div class="chart-container" id="memoryChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ML Specific Metrics -->
+            <section class="ml-metrics-section">
+                <h2>ML Model Insights</h2>
+                <div class="ml-metrics-grid">
+                    <!-- Convergence Rate -->
+                    <div class="metric-card wide">
+                        <div class="metric-header">
+                            <h3>Model Convergence</h3>
+                            <div class="convergence-indicators">
+                                <span class="indicator" id="convergenceStatus">--</span>
+                                <span class="metric-value" id="convergenceRate">--%</span>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="convergenceChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Feature Distribution -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Feature Distribution</h3>
+                        </div>
+                        <div class="chart-container" id="featureChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Prediction Distribution -->
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3>Prediction Categories</h3>
+                        </div>
+                        <div class="chart-container" id="predictionChart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Feature Flags Status -->
+            <section class="feature-flags-section">
+                <h2>Feature Flags Status</h2>
+                <div id="featureFlagsGrid" class="feature-flags-grid">
+                    <!-- Feature flags will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Performance Timeline -->
+            <section class="timeline-section">
+                <h2>Performance Timeline</h2>
+                <div class="timeline-controls">
+                    <select id="timeRange" class="time-range-select">
+                        <option value="1h">Last Hour</option>
+                        <option value="6h" selected>Last 6 Hours</option>
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                    </select>
+                </div>
+                <div class="chart-container large" id="timelineChart">
+                    <!-- Timeline chart will be rendered here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Notification Center -->
+        <div id="notificationCenter" class="notification-center">
+            <!-- Notifications will appear here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dashboard.js"></script>
+    <script src="MetricsVisualizer.js"></script>
+    <script src="AlertManager.js"></script>
+    <script src="ChartComponents.js"></script>
+    <script src="HealthIndicators.js"></script>
+    <script src="../alerts/AlertConfigUI.js"></script>
+    <script src="../alerts/NotificationCenter.js"></script>
+</body>
+</html>
