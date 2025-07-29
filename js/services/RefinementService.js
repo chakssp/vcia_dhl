@@ -26,6 +26,10 @@
             this.refinementQueue = [];
             this.isProcessing = false;
             
+            // AIDEV-NOTE: debounce-control; Maps para controle de debounce
+            this.pendingRefinements = new Map(); // fileId -> timeout
+            this.processingFiles = new Set(); // fileIds sendo processados
+            
             // Configurações do serviço
             this.config = {
                 maxIterations: 5,                    // Máximo de iterações de refinamento
@@ -105,28 +109,20 @@
                 });
             }
 
-            // Escuta quando categoria é adicionada/removida
-            if (Events.CATEGORY_ASSIGNED) {
-                EventBus.on(Events.CATEGORY_ASSIGNED, (data) => {
-                    this.handleCategoryChange(data);
-                });
-            }
+            // AIDEV-NOTE: unified-listeners; removido listeners duplicados CATEGORY_ASSIGNED/REMOVED
+            // Agora usa apenas FILES_UPDATED que captura todas as mudanças de categoria
             
-            if (Events.CATEGORY_REMOVED) {
-                EventBus.on(Events.CATEGORY_REMOVED, (data) => {
-                    this.handleCategoryChange(data);
-                });
-            }
-
             // Escuta solicitações manuais de refinamento
             EventBus.on('REFINEMENT_REQUESTED', (data) => {
                 this.requestRefinement(data.fileId, data.options);
             });
 
-            // AIDEV-NOTE: files-updated-listener; escuta atualizações gerais de arquivos
+            // AIDEV-NOTE: files-updated-listener; listener unificado para mudanças de categoria
             if (Events.FILES_UPDATED) {
                 EventBus.on(Events.FILES_UPDATED, (data) => {
-                    if (data.action === 'category_added' || data.action === 'category_removed') {
+                    if (data.action === 'category_added' || 
+                        data.action === 'category_removed' ||
+                        data.action === 'categories_updated') {
                         this.handleCategoryChange(data);
                     }
                 });
@@ -161,12 +157,26 @@
 
         /**
          * Manipula mudanças em categorias
+         * AIDEV-NOTE: debounce-implementation; implementação de debounce para evitar loops
          */
         async handleCategoryChange(data) {
             if (!this.config.autoRefinementEnabled) return;
             
             const fileId = data.fileId;
             if (!fileId) return;
+
+            // Cancela timeout anterior se existir
+            if (this.pendingRefinements.has(fileId)) {
+                const timeout = this.pendingRefinements.get(fileId);
+                clearTimeout(timeout);
+                Logger?.debug('RefinementService', 'Cancelando refinamento anterior', { fileId });
+            }
+            
+            // Se já está processando este arquivo, ignora
+            if (this.processingFiles.has(fileId)) {
+                Logger?.debug('RefinementService', 'Arquivo já em processamento', { fileId });
+                return;
+            }
 
             // Busca arquivo atual
             const files = AppState.get('files') || [];
@@ -181,14 +191,26 @@
                 action: data.action
             });
 
-            // Agenda refinamento após delay
-            setTimeout(() => {
+            // Agenda refinamento após delay com debounce
+            const timeout = setTimeout(() => {
+                // Remove do map de pendentes
+                this.pendingRefinements.delete(fileId);
+                
+                // Marca como em processamento
+                this.processingFiles.add(fileId);
+                
                 this.requestRefinement(fileId, {
                     reason: 'manual_context_added',
                     contextType: 'categories',
                     immediateProcessing: true
+                }).finally(() => {
+                    // Remove da lista de processamento após conclusão
+                    this.processingFiles.delete(fileId);
                 });
             }, this.config.refinementDelay);
+            
+            // Armazena timeout
+            this.pendingRefinements.set(fileId, timeout);
         }
 
         /**
@@ -220,13 +242,21 @@
 
         /**
          * Solicita refinamento para um arquivo
+         * AIDEV-NOTE: queue-control; controle aprimorado de fila
          */
         async requestRefinement(fileId, options = {}) {
             if (!fileId) return;
 
-            // Verifica se já está em refinamento
+            // Verifica se já está em refinamento ativo
             if (this.activeRefinements.has(fileId)) {
-                Logger?.warning('RefinementService', 'Arquivo já em refinamento', { fileId });
+                Logger?.warning('RefinementService', 'Arquivo já em refinamento ativo', { fileId });
+                return;
+            }
+            
+            // Verifica se já está na fila
+            const inQueue = this.refinementQueue.some(item => item.fileId === fileId);
+            if (inQueue) {
+                Logger?.warning('RefinementService', 'Arquivo já na fila de refinamento', { fileId });
                 return;
             }
 
@@ -1188,6 +1218,35 @@
             } catch (error) {
                 Logger?.warning('RefinementService', 'Erro ao salvar métricas', error);
             }
+        }
+        
+        /**
+         * Limpa refinamentos pendentes
+         * AIDEV-NOTE: cleanup-method; método para limpar timeouts pendentes
+         */
+        clearPendingRefinements() {
+            this.pendingRefinements.forEach(timeout => clearTimeout(timeout));
+            this.pendingRefinements.clear();
+            this.processingFiles.clear();
+            Logger?.info('RefinementService', 'Refinamentos pendentes limpos');
+        }
+        
+        /**
+         * Obtém status atual do serviço
+         * AIDEV-NOTE: status-method; método para monitoramento
+         */
+        getRefinementStatus() {
+            return {
+                pendingCount: this.pendingRefinements.size,
+                pendingFiles: Array.from(this.pendingRefinements.keys()),
+                processingCount: this.processingFiles.size,
+                processingFiles: Array.from(this.processingFiles),
+                activeCount: this.activeRefinements.size,
+                activeFiles: Array.from(this.activeRefinements.keys()),
+                queueSize: this.refinementQueue.length,
+                config: this.config,
+                metrics: this.metrics
+            };
         }
     }
 

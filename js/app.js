@@ -89,8 +89,17 @@
             'TripleSchema',
             'EmbeddingService',
             'QdrantService',
+            'QdrantExplorer',
             'SimilaritySearchService',
-            'SchemaOrgMapper'
+            'SchemaOrgMapper',
+            // Wave 10 Production Components
+            'SystemIntegrationOrchestrator',
+            'CompleteSystemDeployment',
+            'CanaryController',
+            'ProductionMonitor',
+            'RollbackManager',
+            'ABTestingFramework',
+            'ProductionChecklist'
         ];
 
         components.forEach(name => {
@@ -368,6 +377,61 @@
                 await KC.RefinementIndicator.initialize();
                 console.log('RefinementIndicator inicializado');
             }
+            
+            // WAVE 10: Inicializar Sistema de Produção
+            console.log('🚀 Inicializando componentes Wave 10...');
+            
+            // 1. SystemIntegrationOrchestrator (coordenador principal)
+            if (KC.SystemIntegrationOrchestrator && typeof KC.SystemIntegrationOrchestrator.initialize === 'function') {
+                await KC.SystemIntegrationOrchestrator.initialize();
+                console.log('✅ SystemIntegrationOrchestrator inicializado');
+            }
+            
+            // 2. CompleteSystemDeployment
+            if (KC.CompleteSystemDeployment && typeof KC.CompleteSystemDeployment.initialize === 'function') {
+                await KC.CompleteSystemDeployment.initialize();
+                console.log('✅ CompleteSystemDeployment inicializado');
+            }
+            
+            // 3. CanaryController
+            if (KC.CanaryController && typeof KC.CanaryController.initialize === 'function') {
+                await KC.CanaryController.initialize();
+                console.log('✅ CanaryController inicializado');
+            }
+            
+            // 4. ProductionMonitor
+            if (KC.ProductionMonitor && typeof KC.ProductionMonitor.initialize === 'function') {
+                await KC.ProductionMonitor.initialize();
+                console.log('✅ ProductionMonitor inicializado');
+            }
+            
+            // 5. RollbackManager
+            if (KC.RollbackManager && typeof KC.RollbackManager.initialize === 'function') {
+                await KC.RollbackManager.initialize();
+                console.log('✅ RollbackManager inicializado');
+            }
+            
+            // 6. ABTestingFramework
+            if (KC.ABTestingFramework && typeof KC.ABTestingFramework.initialize === 'function') {
+                await KC.ABTestingFramework.initialize();
+                console.log('✅ ABTestingFramework inicializado');
+            }
+            
+            // 7. ProductionChecklist
+            if (KC.ProductionChecklist && typeof KC.ProductionChecklist.initialize === 'function') {
+                await KC.ProductionChecklist.initialize();
+                console.log('✅ ProductionChecklist inicializado');
+            }
+            
+            console.log('🎉 Wave 10 Production System ativo!');
+            
+            // Notificação do sistema Wave 10
+            showNotification({
+                type: 'success',
+                message: 'Wave 10 Production System ativado!',
+                details: '7 componentes de produção carregados com sucesso.',
+                duration: 4000
+            });
 
             // FASE 1.1: Validar Ollama como padrão no carregamento
             // AIDEV-NOTE: ollama-default; Ollama é o serviço padrão de embeddings

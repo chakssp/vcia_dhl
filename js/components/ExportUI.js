@@ -137,19 +137,37 @@
                     message: `Processando exportação ${format.toUpperCase()}...`
                 });
 
-                // Usa RAGExportManager para consolidar e exportar
-                const exportData = await KC.RAGExportManager?.exportData(format);
-
-                // Gera arquivo para download
-                if (exportData) {
-                    this._downloadFile(exportData, format);
+                // Verifica se RAGExportManager está disponível
+                if (!KC.RAGExportManager) {
+                    throw new Error('RAGExportManager não está disponível');
                 }
 
-                KC.EventBus?.emit(Events.EXPORT_PROGRESS, {
-                    format: format,
-                    status: 'completed',
-                    message: `${format.toUpperCase()} exportado com sucesso!`
-                });
+                // Usa o método correto baseado no formato
+                switch(format) {
+                    case 'json':
+                        await KC.RAGExportManager.exportToJSON();
+                        KC.EventBus?.emit(Events.EXPORT_PROGRESS, {
+                            format: format,
+                            status: 'completed',
+                            message: `${format.toUpperCase()} exportado com sucesso!`
+                        });
+                        break;
+                    
+                    case 'csv':
+                        // CSV ainda não implementado no RAGExportManager
+                        // Por enquanto, vamos exportar como JSON
+                        KC.Logger?.warning('ExportUI', 'CSV ainda não implementado, exportando como JSON');
+                        await KC.RAGExportManager.exportToJSON();
+                        KC.EventBus?.emit(Events.EXPORT_PROGRESS, {
+                            format: 'json',
+                            status: 'completed',
+                            message: `Exportado como JSON (CSV em desenvolvimento)`
+                        });
+                        break;
+                    
+                    default:
+                        throw new Error(`Formato não suportado: ${format}`);
+                }
 
             } catch (error) {
                 KC.Logger?.error('ExportUI', `Erro ao exportar ${format}`, error);

@@ -111,8 +111,9 @@
             
             // ORIGINAL - Preservado para rollback
             // this.exclusionPatterns = ['temp', 'cache', 'backup', '.git', '.trash', '.obsidian'];
-            // NOVO - Padrões de exclusão atualizados
-            this.exclusionPatterns = ['temp', 'cache', 'backup', '.git', '.trash', '.obsidian', 'ThirdPartyNoticeText.txt', 'CHANGELOG.md', 'README.md', '.excalidraw.md'];
+            // NOVO - Sincroniza com AppState para padrões de exclusão
+            const savedPatterns = KC.AppState.get('configuration.discovery.excludePatterns');
+            this.exclusionPatterns = savedPatterns || ['temp', 'cache', 'backup', '.git', '.trash', '.obsidian', 'ThirdPartyNoticeText.txt', 'CHANGELOG.md', 'README.md', '.excalidraw.md'];
         }
 
         /**
@@ -511,6 +512,14 @@
                         
                         this.exclusionPatterns = patterns;
                         
+                        // Salva também no AppState para persistir
+                        KC.AppState.set('configuration.discovery.excludePatterns', patterns);
+                        
+                        // Atualiza também no DiscoveryManager se existir
+                        if (KC.DiscoveryManager && KC.DiscoveryManager.defaultConfig) {
+                            KC.DiscoveryManager.defaultConfig.excludePatterns = patterns;
+                        }
+                        
                         console.log('FilterPanel: Aplicando padrões de exclusão', patterns);
                         this.applyFilters();
                         
@@ -794,13 +803,23 @@
             return files.filter(file => {
                 const fileName = file.name || '';
                 const filePath = file.path || file.relativePath || '';
-                const fullPath = `${filePath}/${fileName}`.toLowerCase();
                 
-                // Verifica se algum padrão está presente no nome ou caminho
-                return !this.exclusionPatterns.some(pattern => {
-                    const patternLower = pattern.toLowerCase();
-                    return fullPath.includes(patternLower) || fileName.toLowerCase().includes(patternLower);
-                });
+                // Usa PatternUtils para suportar wildcards
+                if (KC.PatternUtils && KC.PatternUtils.matchesFilePattern) {
+                    const shouldExclude = KC.PatternUtils.matchesFilePattern(
+                        filePath || fileName,
+                        fileName,
+                        this.exclusionPatterns
+                    );
+                    return !shouldExclude; // Retorna true para manter, false para excluir
+                } else {
+                    // Fallback para método antigo se PatternUtils não estiver disponível
+                    const fullPath = `${filePath}/${fileName}`.toLowerCase();
+                    return !this.exclusionPatterns.some(pattern => {
+                        const patternLower = pattern.toLowerCase();
+                        return fullPath.includes(patternLower) || fileName.toLowerCase().includes(patternLower);
+                    });
+                }
             });
         }
 

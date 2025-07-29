@@ -123,7 +123,8 @@
                 // Adicionar análise IA se disponível
                 if (file.analyzed && file.analysisType) {
                     enrichedFile.aiAnalysis = {
-                        type: file.analysisType,
+                        type: file.analysisType || 'Aprendizado Geral', // CRÍTICO: Default para convergência
+                        analysisType: file.analysisType || 'Aprendizado Geral', // Duplicar para compatibilidade
                         moments: file.moments || [],
                         insights: file.insights || [],
                         summary: file.summary || '',
@@ -317,7 +318,8 @@
                         handle: file.handle ? 'available' : 'not_available'
                     },
                     analysis: {
-                        type: file.analysisType || 'pending',
+                        type: file.analysisType || 'Aprendizado Geral', // CRÍTICO: Usar default consistente
+                        analysisType: file.analysisType || 'Aprendizado Geral', // Duplicar campo para garantir
                         relevanceScore: file.relevanceScore,
                         moments: file.aiAnalysis?.moments || [],
                         insights: file.aiAnalysis?.insights || [],
@@ -590,9 +592,11 @@
                                         fileName: doc.source.fileName,
                                         chunkId: chunk.id,
                                         content: chunk.content,
+                                        // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
+                                        analysisType: doc.analysis.type || 'Aprendizado Geral',
                                         metadata: {
                                             ...chunk.metadata,
-                                            analysisType: doc.analysis.type,
+                                            analysisType: doc.analysis.type || 'Aprendizado Geral', // Mantém compatibilidade
                                             categories: doc.analysis.categories.map(cat => cat.name),
                                             relevanceScore: doc.analysis.relevanceScore,
                                             lastModified: doc.source.lastModified,
@@ -1102,6 +1106,294 @@
             ].join('\n');
             
             return csv;
+        }
+
+        /**
+         * NOVO - Padroniza estrutura de dados de arquivo para garantir consistência entre exports
+         * @param {Object} file - Arquivo a ser padronizado
+         * @returns {Object} Arquivo com estrutura padronizada
+         */
+        standardizeFileData(file) {
+            return {
+                // Identificação
+                id: file.id || KC.FileUtils?.generateFileId(file) || Date.now().toString(),
+                name: file.name || 'Sem nome',
+                path: file.path || '',
+                
+                // Análise IA - CAMPO CRÍTICO para convergência semântica
+                analysisType: file.analysisType || 'Aprendizado Geral',
+                relevanceScore: file.relevanceScore || 0,
+                
+                // Status
+                analyzed: file.analyzed || false,
+                approved: file.approved || false,
+                archived: file.archived || false,
+                
+                // Categorização - Ground Truth para convergência
+                categories: file.categories || [],
+                
+                // Conteúdo
+                content: file.content || '',
+                preview: file.preview || '',
+                
+                // Metadados
+                size: file.size || 0,
+                modified: file.modified || file.modifiedDate || file.lastModified,
+                created: file.created || file.createdDate || file.lastModified,
+                
+                // Análise adicional
+                aiAnalysis: file.aiAnalysis || null,
+                moments: file.moments || [],
+                insights: file.insights || [],
+                
+                // Embedding e Qdrant
+                hasEmbedding: file.hasEmbedding || false,
+                qdrantId: file.qdrantId || null,
+                
+                // Timestamp de padronização
+                standardizedAt: new Date().toISOString()
+            };
+        }
+
+        /**
+         * Padroniza array de arquivos
+         * @param {Array} files - Array de arquivos
+         * @returns {Array} Array de arquivos padronizados
+         */
+        standardizeFilesData(files) {
+            if (!Array.isArray(files)) {
+                KC.Logger?.warn('RAGExportManager', 'standardizeFilesData recebeu dados não-array');
+                return [];
+            }
+            
+            return files.map(file => this.standardizeFileData(file));
+        }
+
+        /**
+         * Valida e processa arquivos categorizados que ainda não foram enviados ao Qdrant
+         * CRÍTICO: Garante que analysisType seja enviado como campo primário
+         */
+        async validateAndProcessCategorizedFiles() {
+            console.log('[RAGExportManager] Iniciando validação de arquivos categorizados...');
+            
+            try {
+                // 1. Buscar arquivos do AppState
+                const files = KC.AppState.get('files') || [];
+                
+                // 2. Filtrar arquivos categorizados mas não processados
+                const categorizedFiles = files.filter(file => {
+                    const hasCategorias = file.categories && file.categories.length > 0;
+                    const hasAnalysisType = file.analysisType && file.analysisType !== 'Aprendizado Geral';
+                    const notProcessed = !file.qdrantProcessed; // Flag para controlar se já foi enviado
+                    
+                    return (hasCategorias || hasAnalysisType) && notProcessed;
+                });
+                
+                console.log(`[RAGExportManager] ${categorizedFiles.length} arquivos categorizados encontrados para processar`);
+                
+                if (categorizedFiles.length === 0) {
+                    return {
+                        success: true,
+                        message: 'Nenhum arquivo categorizado pendente de processamento',
+                        processed: 0
+                    };
+                }
+                
+                // 3. Verificar conexões
+                const embeddingAvailable = await KC.EmbeddingService?.checkOllamaAvailability();
+                if (!embeddingAvailable) {
+                    throw new Error('Serviço de embeddings (Ollama) não disponível');
+                }
+                
+                const qdrantConnected = await KC.QdrantService?.checkConnection();
+                if (!qdrantConnected) {
+                    throw new Error('Qdrant não está acessível');
+                }
+                
+                // 4. Processar cada arquivo
+                const results = [];
+                let processedCount = 0;
+                
+                for (const file of categorizedFiles) {
+                    try {
+                        console.log(`[RAGExportManager] Processando: ${file.name}`);
+                        
+                        // Padronizar dados do arquivo
+                        const standardFile = this.standardizeFileData(file);
+                        
+                        // Gerar chunks semânticos
+                        const chunks = KC.ChunkingUtils.getSemanticChunks(
+                            standardFile.content || standardFile.preview || ''
+                        );
+                        
+                        // Processar cada chunk
+                        for (let i = 0; i < chunks.length; i++) {
+                            const chunk = chunks[i];
+                            
+                            // Gerar embedding
+                            const embedding = await KC.EmbeddingService.generateEmbedding(chunk.text);
+                            
+                            // Criar ponto para Qdrant com analysisType como campo primário
+                            const point = {
+                                id: `${file.id}-chunk-${i}`,
+                                vector: embedding.embedding,
+                                payload: {
+                                    // CRÍTICO: analysisType como campo de primeira classe
+                                    analysisType: standardFile.analysisType,
+                                    fileId: file.id,
+                                    fileName: file.name,
+                                    filePath: file.path,
+                                    chunkIndex: i,
+                                    chunkText: chunk.text,
+                                    chunkType: chunk.type,
+                                    categories: standardFile.categories.map(c => c.name || c),
+                                    relevanceScore: standardFile.relevanceScore,
+                                    analyzed: standardFile.analyzed,
+                                    approved: standardFile.approved,
+                                    preview: standardFile.preview,
+                                    timestamp: new Date().toISOString(),
+                                    metadata: {
+                                        analysisType: standardFile.analysisType, // Backup em metadata
+                                        originalRelevance: file.relevanceScore || 0,
+                                        categorizedAt: new Date().toISOString()
+                                    }
+                                }
+                            };
+                            
+                            // Inserir no Qdrant
+                            await KC.QdrantService.insertPoint(point);
+                        }
+                        
+                        // Marcar arquivo como processado
+                        file.qdrantProcessed = true;
+                        file.qdrantProcessedAt = new Date().toISOString();
+                        
+                        processedCount++;
+                        results.push({
+                            fileId: file.id,
+                            fileName: file.name,
+                            chunks: chunks.length,
+                            analysisType: standardFile.analysisType,
+                            success: true
+                        });
+                        
+                    } catch (error) {
+                        console.error(`[RAGExportManager] Erro ao processar ${file.name}:`, error);
+                        results.push({
+                            fileId: file.id,
+                            fileName: file.name,
+                            error: error.message,
+                            success: false
+                        });
+                    }
+                }
+                
+                // 5. Salvar estado atualizado
+                KC.AppState.set('files', files);
+                
+                // 6. Emitir evento de processamento concluído
+                KC.EventBus.emit('CATEGORIZED_FILES_PROCESSED', {
+                    total: categorizedFiles.length,
+                    processed: processedCount,
+                    results: results
+                });
+                
+                return {
+                    success: true,
+                    message: `${processedCount} de ${categorizedFiles.length} arquivos processados com sucesso`,
+                    processed: processedCount,
+                    total: categorizedFiles.length,
+                    results: results
+                };
+                
+            } catch (error) {
+                console.error('[RAGExportManager] Erro na validação e processamento:', error);
+                return {
+                    success: false,
+                    error: error.message,
+                    processed: 0
+                };
+            }
+        }
+
+        /**
+         * Busca arquivos similares no Qdrant e recalcula relevância
+         * Implementa convergência semântica baseada em categorias e analysisType
+         */
+        async recalculateRelevanceWithSemanticConvergence(fileId) {
+            try {
+                const file = KC.AppState.get('files')?.find(f => f.id === fileId);
+                if (!file) {
+                    throw new Error('Arquivo não encontrado');
+                }
+                
+                // Buscar arquivos similares no Qdrant
+                const results = await KC.QdrantService.searchByText(
+                    file.preview || file.content || file.name,
+                    {
+                        limit: 20,
+                        filter: {
+                            must: [
+                                {
+                                    key: 'analysisType',
+                                    match: { value: file.analysisType }
+                                }
+                            ]
+                        }
+                    }
+                );
+                
+                // Calcular nova relevância baseada em convergência semântica
+                let newRelevance = file.relevanceScore || 0;
+                
+                // Boost por categorias compartilhadas
+                const fileCategorias = new Set(file.categories?.map(c => c.name || c) || []);
+                
+                results.forEach(result => {
+                    const resultCategorias = new Set(result.payload.categories || []);
+                    const sharedCategories = [...fileCategorias].filter(c => resultCategorias.has(c));
+                    
+                    if (sharedCategories.length > 0) {
+                        // Boost de 5% por categoria compartilhada
+                        newRelevance += sharedCategories.length * 5;
+                        
+                        // Boost adicional se tem o mesmo analysisType
+                        if (result.payload.analysisType === file.analysisType) {
+                            newRelevance += 10;
+                        }
+                    }
+                });
+                
+                // Limitar a 100%
+                newRelevance = Math.min(100, newRelevance);
+                
+                // Atualizar arquivo
+                file.relevanceScore = newRelevance;
+                file.semanticConvergenceApplied = true;
+                file.similarDocuments = results.length;
+                
+                // Salvar mudanças
+                const files = KC.AppState.get('files');
+                KC.AppState.set('files', files);
+                
+                console.log(`[RAGExportManager] Relevância recalculada para ${file.name}: ${newRelevance}%`);
+                
+                return {
+                    success: true,
+                    fileId: fileId,
+                    fileName: file.name,
+                    oldRelevance: file.relevanceScore,
+                    newRelevance: newRelevance,
+                    similarDocuments: results.length
+                };
+                
+            } catch (error) {
+                console.error('[RAGExportManager] Erro ao recalcular relevância:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
         }
     }
 

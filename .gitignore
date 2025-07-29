@@ -2,6 +2,9 @@
 node_modules/
 package-lock.json
 CLAUDE.*
+GEMINI.*
+RESUME-STATUS.md
+INICIO-SESSAI.md
 
 # Logs
 *.log
@@ -28,6 +31,7 @@ docs/
 imagens/
 claude/
 templates/
+specs/
 
 # Temporary files
 temp/
@@ -35,15 +39,39 @@ tmp/
 *.tmp
 *.temp
 
+# Debug and Fix files
+fix-*.js
+debug-*.js
+test-*.html
+verificar-*.js
+diagnosticar-*.js
+aprovar-*.js
+reprocessar-*.js
+corrigir-*.js
+melhorar-*.js
+limpar-*.js
+ensure-*.js
+monitor-*.js
+apply-*.js
+validate-*.js
+verify-*.js
+
+# POC files
+poc-*.html
+poc-*.js
+qdrant-*.html
+
 # Local config
 config/local.json
 config/credentials.json
+ai_*
 
 
 # Test coverage
 coverage/
 .nyc_output/
 tests/
+status/
 
 # Cache
 .cache/
@@ -52,3 +80,5 @@ tests/
 .claude/
 analise-prd.md
 docs/export-schema-intelligence.md
+.space/
+.devcontainer/

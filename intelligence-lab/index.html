@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Lab - Knowledge Consolidator</title>
+    
+    <!-- CSS Base -->
+    <style>
+        :root {
+            /* Cores principais ajustadas para dark mode com cinza suave */
+            --primary: #5b8def;
+            --secondary: #4ade80;
+            --accent: #fbbf24;
+            --danger: #f87171;
+            
+            /* Tons de cinza para fotossensibilidade */
+            --bg-base: #2a2d33;        /* Cinza escuro suave (não preto) */
+            --bg-elevated: #33373f;    /* Cards e elementos elevados */
+            --bg-hover: #3d424b;       /* Hover states */
+            --bg-modal: #373b44;       /* Modals e overlays */
+            
+            /* Bordas e divisores */
+            --border-default: #484d58;
+            --border-light: #3d424b;
+            --border-focus: #5b8def;
+            
+            /* Texto */
+            --text-primary: #e2e4e9;
+            --text-secondary: #a3a8b3;
+            --text-muted: #787f8d;
+            
+            /* Cores por categoria */
+            --cat-breakthrough: #7c3aed;    /* Roxo */
+            --cat-evolution: #2563eb;       /* Azul */
+            --cat-moment: #dc2626;          /* Vermelho */
+            --cat-insight: #059669;         /* Verde */
+            --cat-learning: #d97706;        /* Laranja */
+            
+            /* Sombras suaves */
+            --shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-elevated);
+            border-bottom: 2px solid var(--border-default);
+            box-shadow: var(--shadow);
+            padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-indicator.connected {
+            background: var(--secondary);
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            min-height: calc(100vh - 50px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-default);
+            border-radius: 6px;
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 60px;
+        }
+
+        .sidebar h3 {
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 0.375rem;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.25rem;
+            border-radius: 4px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-size: 0.875rem;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--primary);
+            border-color: var(--border-light);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: var(--bg-base);
+            border-color: var(--primary);
+        }
+
+        /* Content Area */
+        .content {
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-default);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .content-header {
+            margin-bottom: 0.75rem;
+        }
+
+        .content-header h2 {
+            font-size: 1.125rem;
+            margin-bottom: 0.125rem;
+        }
+
+        .content-header p {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-hover);
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s;
+        }
+        
+        .card:hover {
+            border-color: var(--border-default);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card h3 {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 0.875rem;
+        }
+
+        .metric-card {
+            background: var(--bg-hover);
+            border: 2.5px solid var(--border-light);
+            padding: 0.625rem;
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .metric-label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+            margin-top: 0.125rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 0.875rem;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg-base);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-secondary {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 2px solid var(--border-default);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-base);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Visualization Container */
+        #visualization-container {
+            height: 700px;
+            border: 2px solid var(--border-default);
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            position: relative;
+            background: var(--bg-base);
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--bg-hover);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-light);
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.5rem 0.875rem;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            font-size: 0.8125rem;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            background: var(--bg-hover);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .filter-group label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.375rem 0.5rem;
+            border: 2px solid var(--border-light);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--bg-base);
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .result-card {
+            background: var(--bg-hover);
+            padding: 0.625rem;
+            border-radius: 6px;
+            border: 2px solid var(--border-light);
+            transition: all 0.2s;
+        }
+
+        .result-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-modal);
+            border: 2px solid var(--border-default);
+            border-radius: 8px;
+            padding: 1rem;
+            max-width: 700px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+        
+        /* Category badges */
+        .category-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            margin: 0.125rem;
+            border-radius: 12px;
+            font-size: 0.625rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .cat-breakthrough {
+            background: var(--bg-hover);
+            border: 2px solid var(--cat-breakthrough);
+            color: var(--cat-breakthrough);
+        }
+        
+        .cat-evolution {
+            background: var(--bg-hover);
+            border: 2px solid var(--cat-evolution);
+            color: var(--cat-evolution);
+        }
+        
+        .cat-moment {
+            background: var(--bg-hover);
+            border: 2px solid var(--cat-moment);
+            color: var(--cat-moment);
+        }
+        
+        .cat-insight {
+            background: var(--bg-hover);
+            border: 2px solid var(--cat-insight);
+            color: var(--cat-insight);
+        }
+        
+        .cat-learning {
+            background: var(--bg-hover);
+            border: 2px solid var(--cat-learning);
+            color: var(--cat-learning);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span>🧠</span>
+                    <span>Intelligence Lab</span>
+                </div>
+                <div class="status">
+                    <span>Status:</span>
+                    <div class="status-indicator" id="status-indicator"></div>
+                    <span id="status-text">Desconectado</span>
+                    <span>|</span>
+                    <span id="data-stats">0 arquivos • 0 entidades</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-layout">
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar">
+                <h3>Análises</h3>
+                <nav>
+                    <a class="nav-item active" data-view="overview">
+                        <span>📊 Visão Geral</span>
+                    </a>
+                    <a class="nav-item" data-view="ontology">
+                        <span>🧬 Ontologia</span>
+                    </a>
+                    <a class="nav-item" data-view="clusters">
+                        <span>🔗 Clusters</span>
+                    </a>
+                    <a class="nav-item" data-view="temporal">
+                        <span>📈 Análise Temporal</span>
+                    </a>
+                    <a class="nav-item" data-view="influence">
+                        <span>💫 Mapa de Influência</span>
+                    </a>
+                    <a class="nav-item" data-view="patterns">
+                        <span>🔍 Padrões</span>
+                    </a>
+                </nav>
+
+                <h3 style="margin-top: 1rem;">Negócios</h3>
+                <nav>
+                    <a class="nav-item" data-view="due-diligence">
+                        <span>📋 Due Diligence</span>
+                    </a>
+                    <a class="nav-item" data-view="innovation">
+                        <span>💡 Inovação</span>
+                    </a>
+                    <a class="nav-item" data-view="gaps">
+                        <span>🎯 Análise de Gaps</span>
+                    </a>
+                    <a class="nav-item" data-view="succession">
+                        <span>👥 Sucessão</span>
+                    </a>
+                </nav>
+
+                <h3 style="margin-top: 1rem;">Ações</h3>
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.25rem;" onclick="IntelligenceLab.initialize()">
+                    🔄 Conectar ao Qdrant
+                </button>
+                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0.25rem;" onclick="IntelligenceLab.exportInsights()">
+                    💾 Exportar Insights
+                </button>
+                <button class="btn btn-secondary" style="width: 100%;" onclick="IntelligenceLab.debugAggregation()">
+                    🐛 Debug Agregação
+                </button>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content" id="content-area">
+                <!-- Overview View (Default) -->
+                <div class="view" id="overview-view">
+                    <div class="content-header">
+                        <h2>Visão Geral do Knowledge Base</h2>
+                        <p>Análise consolidada dos dados processados no Qdrant</p>
+                    </div>
+
+                    <!-- Metrics -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-files">0</div>
+                            <div class="metric-label">Arquivos Únicos</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-entities">0</div>
+                            <div class="metric-label">Entidades</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-categories">0</div>
+                            <div class="metric-label">Categorias</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-chunks">0</div>
+                            <div class="metric-label">Chunks</div>
+                        </div>
+                    </div>
+
+                    <!-- Analysis Cards -->
+                    <div class="card">
+                        <h3>
+                            <span>🎯</span>
+                            <span>Insights Principais</span>
+                        </h3>
+                        <div id="main-insights" class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>
+                            <span>📊</span>
+                            <span>Distribuição por Tipo de Análise</span>
+                        </h3>
+                        <div id="analysis-distribution" class="loading">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other Views (Hidden by default) -->
+                <div class="view" id="ontology-view" style="display: none;">
+                    <div class="content-header">
+                        <h2>Ontologia Emergente</h2>
+                        <p>Hierarquia: Entidades → Categorias → Arquivos</p>
+                    </div>
+
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Modo de Visualização:</label>
+                            <select id="ontology-mode">
+                                <option value="standard">Padrão</option>
+                                <option value="entity-centric">Centrado em Entidades</option>
+                                <option value="vertical-clusters">Clusters Verticais</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Influência Mínima:</label>
+                            <input type="range" id="min-influence" min="0" max="100" value="30">
+                            <span id="influence-value">30%</span>
+                        </div>
+                    </div>
+
+                    <div id="visualization-container"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Details -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Detalhes</h3>
+                <button class="close-btn" onclick="IntelligenceLab.closeModal()">×</button>
+            </div>
+            <div id="modal-body">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Load vis.js for graph visualization -->
+    <script src="https://unpkg.com/vis-network@latest/dist/vis-network.min.js"></script>
+    
+    <!-- Load Intelligence Lab modules -->
+    <script type="module" src="./IntelligenceLab.js"></script>
+    
+    <!-- Scripts -->
+    <script type="module">
+        // Import the IntelligenceLab after module loads
+        import IntelligenceLab from './IntelligenceLab.js';
+        
+        // Create lab instance
+        const lab = new IntelligenceLab();
+        
+        // Merge with existing UI object
+        window.IntelligenceLab = {
+            ...window.IntelligenceLab,
+            
+            // State
+            connected: false,
+            data: null,
+            currentView: 'overview',
+            lab: lab, // Reference to actual lab instance
+            
+            // Initialize connection to Qdrant
+            async initialize() {
+                console.log('🚀 Initializing Intelligence Lab...');
+                
+                // Update UI
+                document.getElementById('status-text').textContent = 'Conectando...';
+                
+                try {
+                    // Use real IntelligenceLab initialization
+                    await this.lab.initialize({
+                        qdrantUrl: 'http://qdr.vcia.com.br:6333',
+                        collection: 'knowledge_consolidator'
+                    });
+                    
+                    // Update status
+                    this.connected = true;
+                    document.getElementById('status-indicator').classList.add('connected');
+                    document.getElementById('status-text').textContent = 'Conectado';
+                    
+                    // Get real data
+                    this.data = this.lab.getStatus();
+                    
+                    // Update metrics with real data
+                    this.updateMetrics();
+                    
+                    // Show success message
+                    this.showNotification('Conectado ao Qdrant com sucesso!', 'success');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize:', error);
+                    this.showNotification('Erro ao conectar: ' + error.message, 'error');
+                }
+            },
+            
+            
+            // Update metrics display
+            async updateMetrics() {
+                // Get real data from lab
+                const status = this.lab.getStatus();
+                const aggregatedData = this.lab.data;
+                
+                document.getElementById('total-files').textContent = status.totalFiles || 0;
+                document.getElementById('total-entities').textContent = status.totalEntities || 0;
+                document.getElementById('total-categories').textContent = aggregatedData?.categories?.length || 0;
+                document.getElementById('total-chunks').textContent = status.totalPoints || 0;
+                
+                // Update stats display
+                document.getElementById('data-stats').textContent = 
+                    `${status.totalFiles} arquivos • ${status.totalEntities} entidades`;
+                
+                // Update insights with real calculations
+                if (aggregatedData && aggregatedData.stats) {
+                    const stats = aggregatedData.stats;
+                    document.getElementById('main-insights').innerHTML = `
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="margin-bottom: 0.5rem;">
+                                <strong>🎯 Densidade de Conhecimento:</strong> 
+                                ${(stats.totalEntities / stats.totalFiles).toFixed(2)} entidades/arquivo
+                            </li>
+                            <li style="margin-bottom: 0.5rem;">
+                                <strong>📊 Taxa de Fragmentação:</strong> 
+                                ${stats.avgChunksPerFile} chunks/arquivo
+                            </li>
+                            <li style="margin-bottom: 0.5rem;">
+                                <strong>🔗 Relevância Média:</strong> 
+                                ${stats.avgRelevance}%
+                            </li>
+                            <li style="margin-bottom: 0.5rem;">
+                                <strong>🏆 Top Entidades:</strong> 
+                                ${stats.topEntities.slice(0, 3).map(e => e.name).join(', ')}
+                            </li>
+                        </ul>
+                    `;
+                    
+                    // Update distribution with real data
+                    const dist = stats.analysisDistribution || {};
+                    const total = Object.values(dist).reduce((sum, count) => sum + count, 0);
+                    
+                    document.getElementById('analysis-distribution').innerHTML = `
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div style="padding: 1rem; background: var(--bg-hover); border: 2.5px solid var(--cat-breakthrough); border-radius: 8px;">
+                                <strong style="color: var(--cat-breakthrough);">Breakthrough Técnico</strong><br>
+                                <span style="font-size: 1.5rem; color: var(--text-primary);">${dist['Breakthrough Técnico'] || 0} (${total > 0 ? ((dist['Breakthrough Técnico'] || 0) / total * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div style="padding: 1rem; background: var(--bg-hover); border: 2.5px solid var(--cat-evolution); border-radius: 8px;">
+                                <strong style="color: var(--cat-evolution);">Evolução Conceitual</strong><br>
+                                <span style="font-size: 1.5rem; color: var(--text-primary);">${dist['Evolução Conceitual'] || 0} (${total > 0 ? ((dist['Evolução Conceitual'] || 0) / total * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div style="padding: 1rem; background: var(--bg-hover); border: 2.5px solid var(--cat-moment); border-radius: 8px;">
+                                <strong style="color: var(--cat-moment);">Momento Decisivo</strong><br>
+                                <span style="font-size: 1.5rem; color: var(--text-primary);">${dist['Momento Decisivo'] || 0} (${total > 0 ? ((dist['Momento Decisivo'] || 0) / total * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div style="padding: 1rem; background: var(--bg-hover); border: 2.5px solid var(--cat-insight); border-radius: 8px;">
+                                <strong style="color: var(--cat-insight);">Insight Estratégico</strong><br>
+                                <span style="font-size: 1.5rem; color: var(--text-primary);">${dist['Insight Estratégico'] || 0} (${total > 0 ? ((dist['Insight Estratégico'] || 0) / total * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('main-insights').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                    document.getElementById('analysis-distribution').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+                }
+            },
+            
+            // Show notification
+            showNotification(message, type = 'info') {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+                // TODO: Implement proper notification UI
+            },
+            
+            // Export insights
+            async exportInsights() {
+                console.log('💾 Exporting insights...');
+                this.showNotification('Exportando insights...', 'info');
+                
+                try {
+                    await this.lab.exportInsights('json');
+                    this.showNotification('Insights exportados com sucesso!', 'success');
+                } catch (error) {
+                    console.error('Erro ao exportar:', error);
+                    this.showNotification('Erro ao exportar insights: ' + error.message, 'error');
+                }
+            },
+            
+            // Close modal
+            closeModal() {
+                document.getElementById('detail-modal').classList.remove('active');
+            },
+            
+            // Initialize UI
+            initUI() {
+                // Navigation handling
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const view = item.dataset.view;
+                        this.switchView(view);
+                        
+                        // Update active state
+                        document.querySelectorAll('.nav-item').forEach(nav => {
+                            nav.classList.remove('active');
+                        });
+                        item.classList.add('active');
+                    });
+                });
+                
+                // Filter handlers
+                const influenceSlider = document.getElementById('min-influence');
+                const influenceValue = document.getElementById('influence-value');
+                if (influenceSlider) {
+                    influenceSlider.addEventListener('input', (e) => {
+                        influenceValue.textContent = e.target.value + '%';
+                    });
+                }
+            },
+            
+            // Switch between views
+            async switchView(viewName) {
+                console.log(`Switching to view: ${viewName}`);
+                
+                // Hide all views
+                document.querySelectorAll('.view').forEach(view => {
+                    view.style.display = 'none';
+                });
+                
+                // Show selected view
+                const selectedView = document.getElementById(`${viewName}-view`);
+                if (selectedView) {
+                    selectedView.style.display = 'block';
+                    
+                    // Handle special views that need data loading
+                    if (viewName === 'ontology' && this.lab.initialized) {
+                        await this.renderOntologyView();
+                    }
+                } else {
+                    // Create placeholder for missing views
+                    this.createPlaceholderView(viewName);
+                }
+                
+                this.currentView = viewName;
+            },
+            
+            // Render ontology visualization
+            async renderOntologyView() {
+                const container = document.getElementById('visualization-container');
+                
+                if (!this.lab.ontology) {
+                    container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando ontologia...</p></div>';
+                    return;
+                }
+                
+                try {
+                    // Get visualization data
+                    const visData = this.lab.visualize('entity-centric', {
+                        filters: {
+                            minInfluence: 0.3
+                        },
+                        visualization: {
+                            type: 'gravity-force'
+                        }
+                    });
+                    
+                    // Create vis.js network
+                    const options = {
+                        nodes: {
+                            shape: 'dot',
+                            scaling: {
+                                min: 10,
+                                max: 50,
+                                label: {
+                                    min: 8,
+                                    max: 30,
+                                    drawThreshold: 12,
+                                    maxVisible: 20
+                                }
+                            },
+                            font: {
+                                size: 12,
+                                face: 'Arial'
+                            }
+                        },
+                        edges: {
+                            width: 1,
+                            color: { inherit: 'from' },
+                            smooth: {
+                                type: 'continuous'
+                            }
+                        },
+                        physics: {
+                            forceAtlas2Based: {
+                                gravitationalConstant: -150,
+                                centralGravity: 0.01,
+                                springLength: 200,
+                                springConstant: 0.05,
+                                avoidOverlap: 0.5
+                            },
+                            stabilization: {
+                                iterations: 1000
+                            }
+                        },
+                        interaction: {
+                            hover: true,
+                            tooltipDelay: 200,
+                            hideEdgesOnDrag: true
+                        }
+                    };
+                    
+                    // Initialize network
+                    this.network = new vis.Network(container, visData, options);
+                    
+                    // Add event listeners
+                    this.network.on('click', (params) => {
+                        if (params.nodes.length > 0) {
+                            const nodeId = params.nodes[0];
+                            const entity = this.lab.ontology.entities.get(nodeId);
+                            if (entity) {
+                                this.showEntityDetails(entity);
+                            }
+                        }
+                    });
+                    
+                    // Update influence slider
+                    const slider = document.getElementById('min-influence');
+                    if (slider) {
+                        slider.addEventListener('input', async (e) => {
+                            const minInfluence = parseFloat(e.target.value) / 100;
+                            await this.updateOntologyFilter(minInfluence);
+                        });
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro ao renderizar ontologia:', error);
+                    container.innerHTML = '<div class="loading"><p>Erro ao carregar visualização</p></div>';
+                }
+            },
+            
+            // Update ontology filter
+            async updateOntologyFilter(minInfluence) {
+                if (!this.network) return;
+                
+                const visData = this.lab.visualize('entity-centric', {
+                    filters: { minInfluence },
+                    visualization: { type: 'gravity-force' }
+                });
+                
+                this.network.setData(visData);
+            },
+            
+            // Show entity details in modal
+            showEntityDetails(entity) {
+                const modal = document.getElementById('detail-modal');
+                const title = document.getElementById('modal-title');
+                const body = document.getElementById('modal-body');
+                
+                title.textContent = entity.name;
+                body.innerHTML = `
+                    <div style="display: grid; gap: 1rem;">
+                        <div>
+                            <strong>Tipo:</strong> ${entity.type}
+                        </div>
+                        <div>
+                            <strong>Influência:</strong> ${(entity.influence * 100).toFixed(1)}%
+                        </div>
+                        <div>
+                            <strong>Ocorrências:</strong> ${entity.occurrences}
+                        </div>
+                        <div>
+                            <strong>Categorias:</strong><br>
+                            ${entity.categories.map(cat => {
+                                let catClass = 'category-badge';
+                                if (cat.includes('Breakthrough') || cat.includes('Técnico')) catClass += ' cat-breakthrough';
+                                else if (cat.includes('Evolução') || cat.includes('Conceitual')) catClass += ' cat-evolution';
+                                else if (cat.includes('Momento') || cat.includes('Decisivo')) catClass += ' cat-moment';
+                                else if (cat.includes('Insight') || cat.includes('Estratégico')) catClass += ' cat-insight';
+                                else if (cat.includes('Aprendizado') || cat.includes('Geral')) catClass += ' cat-learning';
+                                else catClass += ' cat-insight'; // default
+                                
+                                return `<span class="${catClass}">${cat}</span>`;
+                            }).join('')}
+                        </div>
+                        <div>
+                            <strong>Métricas:</strong><br>
+                            - Degree: ${entity.metrics.degree}<br>
+                            - PageRank: ${entity.metrics.pagerank.toFixed(3)}<br>
+                            - Betweenness: ${entity.metrics.betweenness.toFixed(3)}
+                        </div>
+                        <div>
+                            <strong>Arquivos relacionados:</strong> ${entity.files.length}
+                        </div>
+                    </div>
+                `;
+                
+                modal.classList.add('active');
+            },
+            
+            // Create placeholder for unimplemented views
+            createPlaceholderView(viewName) {
+                const contentArea = document.getElementById('content-area');
+                const viewTitles = {
+                    'clusters': 'Análise de Clusters',
+                    'temporal': 'Análise Temporal',
+                    'influence': 'Mapa de Influência',
+                    'patterns': 'Detecção de Padrões',
+                    'due-diligence': 'Due Diligence Automatizada',
+                    'innovation': 'Rastreamento de Inovação',
+                    'gaps': 'Análise de Gaps',
+                    'succession': 'Mapeamento de Sucessão'
+                };
+                
+                const placeholderHTML = `
+                    <div class="view" id="${viewName}-view">
+                        <div class="content-header">
+                            <h2>${viewTitles[viewName] || viewName}</h2>
+                            <p>Esta visualização será implementada em breve</p>
+                        </div>
+                        <div class="card">
+                            <div class="loading">
+                                <p>🚧 Em desenvolvimento...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add placeholder to content area
+                contentArea.insertAdjacentHTML('beforeend', placeholderHTML);
+                document.getElementById(`${viewName}-view`).style.display = 'block';
+            },
+            
+            // Debug aggregation
+            async debugAggregation() {
+                if (!this.lab.initialized) {
+                    this.showNotification('Conecte ao Qdrant primeiro!', 'error');
+                    return;
+                }
+                
+                console.log('=== DEBUG AGGREGATION ===');
+                console.log('Lab data:', this.lab.data);
+                console.log('Aggregator:', this.lab.aggregator);
+                
+                // Create debug modal
+                const modalBody = document.getElementById('modal-body');
+                const stats = this.lab.data.stats;
+                
+                modalBody.innerHTML = `
+                    <div style="font-family: monospace; font-size: 0.875rem;">
+                        <h4>📊 Estatísticas de Agregação</h4>
+                        <p>Total de arquivos únicos: <strong>${stats.totalFiles}</strong></p>
+                        <p>Total de chunks: <strong>${stats.totalChunks}</strong></p>
+                        <p>Média chunks/arquivo: <strong>${stats.avgChunksPerFile}</strong></p>
+                        <p>Total de entidades: <strong>${stats.totalEntities}</strong></p>
+                        <p>Total de categorias: <strong>${stats.totalCategories}</strong></p>
+                        
+                        <h4 style="margin-top: 1rem;">📈 Distribuição de Análise</h4>
+                        ${Object.entries(stats.analysisDistribution).map(([type, count]) => 
+                            `<p>${type}: <strong>${count}</strong></p>`
+                        ).join('')}
+                        
+                        <h4 style="margin-top: 1rem;">🏆 Top Entidades</h4>
+                        ${stats.topEntities.slice(0, 10).map(e => 
+                            `<p>${e.name}: <strong>${e.count} ocorrências</strong></p>`
+                        ).join('')}
+                        
+                        <p style="margin-top: 1rem; color: #6b7280;">
+                            Verifique o console para mais detalhes...
+                        </p>
+                    </div>
+                `;
+                
+                document.getElementById('modal-title').textContent = 'Debug de Agregação';
+                document.getElementById('detail-modal').classList.add('active');
+                
+                // Also run aggregator debug
+                this.lab.aggregator.debugAggregation();
+            }
+        };
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            IntelligenceLab.initUI();
+            console.log('🧠 Intelligence Lab ready');
+        });
+    </script>
+</body>
+</html>

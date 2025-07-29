@@ -634,6 +634,10 @@
             const chunksInfo = document.getElementById('chunks-info');
             const chunksCount = document.getElementById('chunks-count');
             
+            // Obter critério selecionado
+            const criteria = document.getElementById('selection-criteria')?.value || 'all';
+            KC.Logger?.info('OrganizationPanel', `Processando com critério: ${criteria}`);
+            
             // Desabilita botão e mostra status
             if (button) button.disabled = true;
             if (detailsContainer) detailsContainer.style.display = 'block';
@@ -645,9 +649,10 @@
             }
 
             // Configura listeners de progresso
-            const removeProgressListener = KC.EventBus?.on(KC.Events.PIPELINE_PROGRESS, (data) => {
+            const removeProgressListener = KC.EventBus?.on('QDRANT_PROCESSING_PROGRESS', (data) => {
                 if (progressBar) progressBar.style.width = `${data.percentage}%`;
-                if (progressText) progressText.textContent = `${data.percentage}% (${data.current}/${data.total})`;
+                if (progressText) progressText.textContent = `${data.percentage}%`;
+                if (statusText) statusText.textContent = data.message || 'Processando...';
                 
                 // Atualiza arquivo atual e chunks
                 if (data.currentFile) {
@@ -667,7 +672,7 @@
             });
 
             // Configura listener de conclusão
-            const removeCompletedListener = KC.EventBus?.once(KC.Events.PIPELINE_COMPLETED, (data) => {
+            const removeCompletedListener = KC.EventBus?.once('QDRANT_PROCESSING_COMPLETED', (result) => {
                 // Remove listener de progresso
                 if (removeProgressListener) removeProgressListener();
                 
@@ -675,7 +680,7 @@
                 if (button) button.disabled = false;
                 if (progressContainer) progressContainer.style.display = 'none';
                 
-                if (data.success) {
+                if (result.processed > 0) {
                     if (statusText) statusText.textContent = 'Processamento concluído!';
                     
                     // Atualiza status final dos estágios
@@ -687,21 +692,21 @@
                     if (dataLocation) dataLocation.style.display = 'block';
                     
                     // Mostra resultados
-                    if (resultsContainer && data.results) {
+                    if (resultsContainer) {
                         resultsContainer.innerHTML = `
                             <div class="results-success">
                                 <h4>✅ Processamento Concluído</h4>
                                 <ul>
-                                    <li>Documentos processados: <strong>${data.results.processed}</strong></li>
-                                    <li>Chunks gerados: <strong>${data.results.totalChunks}</strong></li>
-                                    <li>Falhas: <strong>${data.results.failed}</strong></li>
+                                    <li>Documentos processados: <strong>${result.processed}</strong></li>
+                                    <li>Chunks gerados: <strong>${result.chunks}</strong></li>
+                                    <li>Tempo total: <strong>${Math.round(result.duration / 1000)}s</strong></li>
                                 </ul>
-                                ${data.results.errors.length > 0 ? `
+                                ${result.errors && result.errors.length > 0 ? `
                                     <details>
-                                        <summary>Ver erros (${data.results.errors.length})</summary>
+                                        <summary>Ver erros (${result.errors.length})</summary>
                                         <ul class="error-list">
-                                            ${data.results.errors.map(err => `
-                                                <li>${err.documentId}: ${err.error}</li>
+                                            ${result.errors.map(err => `
+                                                <li>Batch ${err.batch}: ${err.error}</li>
                                             `).join('')}
                                         </ul>
                                     </details>
@@ -711,14 +716,14 @@
                         resultsContainer.style.display = 'block';
                     }
                 } else {
-                    if (statusText) statusText.textContent = 'Erro no processamento';
+                    if (statusText) statusText.textContent = 'Nenhum arquivo processado';
                     
-                    // Mostra erro
+                    // Mostra aviso
                     if (resultsContainer) {
                         resultsContainer.innerHTML = `
-                            <div class="results-error">
-                                <h4>❌ Erro no Processamento</h4>
-                                <p>${data.error || data.message || 'Erro desconhecido'}</p>
+                            <div class="results-warning">
+                                <h4>⚠️ Nenhum arquivo processado</h4>
+                                <p>Verifique se há arquivos que atendem ao critério selecionado.</p>
                             </div>
                         `;
                         resultsContainer.style.display = 'block';
@@ -727,25 +732,58 @@
             });
 
             try {
-                // Inicia processamento
-                const result = await KC.RAGExportManager?.processApprovedFiles({
-                    batchSize: 10
+                // Configurar opções baseadas no critério selecionado
+                const processingOptions = {
+                    onlyApproved: false,
+                    onlyHighRelevance: false,
+                    onlyLowRelevance: false,
+                    onlyAnalyzed: false,
+                    requiredCategories: []
+                };
+                
+                // Aplicar filtro baseado no critério
+                switch(criteria) {
+                    case 'analyzed':
+                        processingOptions.onlyAnalyzed = true;
+                        break;
+                    case 'high-relevance':
+                        processingOptions.onlyHighRelevance = true;
+                        break;
+                    case 'medium-relevance':
+                        processingOptions.minRelevance = 30;
+                        break;
+                    case 'categorized':
+                        // Obter todas as categorias disponíveis
+                        const categories = KC.CategoryManager?.getCategories() || [];
+                        processingOptions.requiredCategories = categories.map(c => c.name);
+                        break;
+                    case 'all':
+                    default:
+                        // Processar todos os arquivos aprovados
+                        processingOptions.onlyApproved = true;
+                        break;
+                }
+                
+                // Definir callback de progresso
+                KC.QdrantProcessorWithFilters?.setProgressCallback((percentage, message) => {
+                    KC.EventBus?.emit('QDRANT_PROCESSING_PROGRESS', {
+                        percentage: percentage,
+                        message: message
+                    });
                 });
                 
-                // Se não houver evento de conclusão, atualiza manualmente
-                if (!KC.EventBus?.hasListeners(KC.Events.PIPELINE_COMPLETED)) {
+                // Usar QdrantProcessorWithFilters com as opções corretas
+                const result = await KC.QdrantProcessorWithFilters?.processFilesToQdrant(processingOptions);
+                
+                // Se o resultado foi retornado diretamente (sem evento)
+                if (result && !KC.EventBus?.hasListeners('QDRANT_PROCESSING_COMPLETED')) {
+                    if (removeProgressListener) removeProgressListener();
+                    if (removeCompletedListener) removeCompletedListener();
+                    
                     if (button) button.disabled = false;
                     if (progressContainer) progressContainer.style.display = 'none';
-                    
-                    if (result.success) {
-                        if (statusText) statusText.textContent = 'Processamento concluído!';
-                    } else {
-                        if (statusText) statusText.textContent = 'Erro no processamento';
-                        KC.showNotification?.({
-                            type: 'error',
-                            message: result.error || result.message
-                        });
-                    }
+                    if (statusText) statusText.textContent = 'Processamento concluído!';
+                    if (dataLocation) dataLocation.style.display = 'block';
                 }
                 
             } catch (error) {
@@ -968,14 +1006,26 @@
                             }
                         }
 
-                        // Adicionar metadados adicionais
+                        // IMPORTANTE: Adicionar campos essenciais diretamente no documento Schema.org
+                        // Não apenas em @metadata, mas como propriedades de primeira classe
+                        schemaDoc['analysisType'] = file.analysisType || 'Aprendizado Geral';
+                        schemaDoc['relevanceScore'] = file.relevanceScore || 0;
+                        schemaDoc['approved'] = file.approved || false;
+                        schemaDoc['analyzed'] = file.analyzed || false;
+                        schemaDoc['archived'] = file.archived || false;
+                        schemaDoc['preview'] = file.preview || '';
+                        
+                        // Adicionar metadados adicionais (mantendo compatibilidade)
                         schemaDoc['@metadata'] = {
                             'relevanceScore': file.relevanceScore || 0,
                             'analyzed': file.analyzed || false,
                             'analysisDate': file.analysisDate || null,
                             'categories': file.categories || [],
                             'preview': file.preview || '',
-                            'totalChunks': schemaDoc['@chunks'].length
+                            'totalChunks': schemaDoc['@chunks'].length,
+                            'analysisType': file.analysisType || 'Aprendizado Geral',
+                            'approved': file.approved || false,
+                            'archived': file.archived || false
                         };
 
                         // Adicionar ao grafo

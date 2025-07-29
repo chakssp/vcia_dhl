@@ -6,8 +6,12 @@
 
 ## 📋 COMANDO DE INÍCIO OBRIGATÓRIO
 
-**COPIE E COLE EXATAMENTE ESTE COMANDO NO INÍCIO DE CADA SESSÃO:**
+### 🚀 NOVO - Comando Ultra-Rápido (Recomendado):
+```
+Leia @CLAUDE.md seção "ESTADO ATUAL DO PROJETO" e "CARREGAMENTO RÁPIDO". Validar sistema com @docs/10-guias-operacionais/validacao-rapida-sistema.md.
+```
 
+### Comando Completo (se precisar contexto detalhado):
 ```
 Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
 ```
@@ -16,20 +20,22 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 
 ## 📖 ORDEM DE LEITURA OBRIGATÓRIA
 
-### 1️⃣ PRIMEIRO: CLAUDE.md
-- Contém as LEIS invioláveis do projeto
-- Define padrões de desenvolvimento
-- Explica o que NUNCA fazer
+### 1️⃣ PRIMEIRO: CLAUDE.md (Seções Essenciais)
+- **"ESTADO ATUAL DO PROJETO"** - Status atualizado em 28/01/2025
+- **"CARREGAMENTO RÁPIDO"** - Guia de início rápido
+- **"LEIS do projeto"** - Regras invioláveis
+- **Tempo estimado**: 1 minuto (leitura focada)
+
+### 2️⃣ SEGUNDO: Validação Rápida
+- **docs/10-guias-operacionais/validacao-rapida-sistema.md**
+- Checklist de 5 minutos para validar sistema
+- Comandos prontos para copiar/colar
 - **Tempo estimado**: 2 minutos
 
-### 2️⃣ SEGUNDO: RESUME-STATUS.md  
-- Estado atual do projeto
-- O que foi implementado
-- O que está pendente
-- Bugs conhecidos
-- **Tempo estimado**: 3 minutos
-
-### 3️⃣ TERCEIRO: Verificações do Sistema
+### 3️⃣ TERCEIRO: Contexto Adicional (se necessário)
+- **RESUME-STATUS.md** - Para detalhes de sprints e bugs
+- **docs/10-guias-operacionais/estrutura-atualizada-projeto.md** - Nova estrutura
+- **docs/INDICE-DOCUMENTACAO.md** - Índice completo
 ```bash
 # Servidor Five Server - Gerenciado pelo USUÁRIO
 # Porta: 5500 (com Live Reload ativo)

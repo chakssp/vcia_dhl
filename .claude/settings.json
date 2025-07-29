@@ -1,6 +1,76 @@
 {
   "permissions": {
-    "allow": ["Write", "MultiEdit", "Edit", "Bash"],
+    "allow": ["Write", "MultiEdit", "Edit", "Bash",
+      "Bash(grep:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(ls:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(cd:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(cat:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(find:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(touch:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(mkdir:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(node:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(curl:*)",
+      "Bash(playwright:*)",
+      "Bash(http-server:*)",
+      "Bash(prettier:*)",
+      "Bash(eslint:*)",
+      "Bash(http:*)",
+      "Bash(http-server:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(echo:*)",
+      "Bash(mv:mnt/f/vcia-1307/vcia_dhl/*)",
+      "Bash(rm:mnt/f/vcia-1307/vcia_dhl/*)",
+      "mcp__sequence-think__sequentialthinking",
+      "mcp__memory__create_entities",
+      "mcp__memory__create_relations",
+      "mcp__memory__read_graph",
+      "mcp__memory__search_nodes",
+      "Bash(dir:mnt/f/vcia-1307/vcia_dhl/*)",
+      "mcp__sequencial-think__sequentialthinking",
+      "mcp__memory-serve__create_entities",
+      "mcp__puppeteer__puppeteer_evaluate",
+      "mcp__memory-serve__create_relations",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__memory-serve__add_observations",
+      "mcp__memory-serve__search_nodes",
+      "mcp__time__get_current_time",
+      "mcp__memory-serve__read_graph",
+      "mcp__puppeteer__puppeteer_click"
+      "cmd(dir:F:\\vcia-1307\\vcia_dhl\\*)"
+      "Bash(dir:F:\\vcia-1307\\vcia_dhl\\*)"
+    ],
     "deny": []
-    }
+  },
+  "enableAllProjectMcpServers": true,
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/tool ./run-playwright-mcp.sh.navigate http://127.0.0.1:5500"
+          },
+          {
+            "type": "command",
+            "command": "/gpto ./.Claude/commands/gpto.md"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/tool ./run-playwright-mcp.sh.navigate http://localhost:8080"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -382,6 +382,10 @@
                 this.applyFilters();
             } else {
                 console.log('FileRenderer: Usando dados filtrados do FilterManager');
+                // Quando skipFilters=true, usa os dados já filtrados
+                if (this.filteredFiles && this.filteredFiles.length >= 0) {
+                    console.log(`FileRenderer: Usando ${this.filteredFiles.length} arquivos filtrados`);
+                }
             }
             
             // Sempre aplica ordenação
@@ -435,6 +439,14 @@
             const fileDiv = document.createElement('div');
             fileDiv.className = 'file-entry';
             fileDiv.setAttribute('data-file-id', file.id || file.name);
+            
+            // AIDEV-NOTE: content-storage-dom; armazena conteúdo para acesso posterior
+            // Armazena conteúdo no DOM para ContentAccessUtils
+            if (file.content || file.preview) {
+                const contentToStore = file.content || file.preview || '';
+                // Limita a 100KB para não sobrecarregar o DOM
+                fileDiv.setAttribute('data-full-content', contentToStore.substring(0, 100000));
+            }
 
             // Calcula relevância (placeholder por enquanto)
             const relevance = this.calculateRelevance(file);
@@ -2370,6 +2382,108 @@
             }, 10);
         }
         
+        /**
+         * Aplica filtros aos arquivos
+         * NOTA: Este método existe apenas para compatibilidade
+         * Os filtros reais são aplicados pelo FilterPanel
+         */
+        applyFilters() {
+            console.log('FileRenderer: applyFilters() desativado - usando dados do FilterManager');
+            
+            // Se não temos filteredFiles, usa todos os files
+            if (!this.filteredFiles) {
+                this.filteredFiles = this.files || [];
+            }
+        }
+
+        /**
+         * Aplica ordenação aos arquivos filtrados
+         */
+        applySorting() {
+            if (!this.filteredFiles || this.filteredFiles.length === 0) return;
+            
+            const sortBy = this.currentSort || 'relevance';
+            
+            this.filteredFiles.sort((a, b) => {
+                switch (sortBy) {
+                    case 'relevance':
+                        const relevanceA = this.calculateRelevance(a);
+                        const relevanceB = this.calculateRelevance(b);
+                        return relevanceB - relevanceA; // Maior relevância primeiro
+                        
+                    case 'date':
+                        return (b.lastModified || 0) - (a.lastModified || 0); // Mais recente primeiro
+                        
+                    case 'size':
+                        return (b.size || 0) - (a.size || 0); // Maior primeiro
+                        
+                    case 'name':
+                        return (a.name || '').localeCompare(b.name || '');
+                        
+                    default:
+                        return 0;
+                }
+            });
+            
+            console.log(`FileRenderer: Arquivos ordenados por ${sortBy}`);
+        }
+
+        /**
+         * Atualiza informações de paginação
+         */
+        updatePagination() {
+            const totalFiles = this.filteredFiles ? this.filteredFiles.length : 0;
+            this.pagination.totalItems = totalFiles;
+            this.pagination.totalPages = Math.ceil(totalFiles / this.pagination.itemsPerPage);
+            
+            // Ajusta página atual se necessário
+            if (this.pagination.currentPage > this.pagination.totalPages) {
+                this.pagination.currentPage = Math.max(1, this.pagination.totalPages);
+            }
+            
+            console.log(`FileRenderer: Paginação atualizada - ${totalFiles} itens, página ${this.pagination.currentPage}/${this.pagination.totalPages}`);
+        }
+
+        /**
+         * Renderiza informações sobre os filtros aplicados
+         */
+        renderFilterInfo() {
+            // Cria ou encontra elemento de info de filtros
+            let filterInfo = document.getElementById('file-filter-info');
+            if (!filterInfo) {
+                filterInfo = document.createElement('div');
+                filterInfo.id = 'file-filter-info';
+                filterInfo.className = 'filter-info-bar';
+                
+                // Insere antes do container de arquivos
+                if (this.container && this.container.parentNode) {
+                    this.container.parentNode.insertBefore(filterInfo, this.container);
+                }
+            }
+            
+            if (!filterInfo) return;
+            
+            // Conta arquivos excluídos
+            const totalFiles = this.files ? this.files.length : 0;
+            const filteredFiles = this.filteredFiles ? this.filteredFiles.length : 0;
+            const excludedCount = totalFiles - filteredFiles;
+            
+            if (excludedCount > 0) {
+                filterInfo.innerHTML = `
+                    <div class="filter-info-content">
+                        <span class="filter-info-icon">🔍</span>
+                        <span class="filter-info-text">
+                            Mostrando <strong>${filteredFiles}</strong> de <strong>${totalFiles}</strong> arquivos
+                            (${excludedCount} arquivo${excludedCount > 1 ? 's' : ''} excluído${excludedCount > 1 ? 's' : ''})
+                        </span>
+                    </div>
+                `;
+                filterInfo.style.display = 'block';
+            } else {
+                filterInfo.style.display = 'none';
+            }
+        }
+
         /**
          * NOVO: Aplica categorias em lote
          */

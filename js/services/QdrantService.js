@@ -214,6 +214,11 @@ class QdrantService {
         const cached = this.getFromCache(cacheKey);
         if (cached) return cached;
 
+        // Verificar se vector é válido
+        if (!vector || !Array.isArray(vector)) {
+            throw new Error('Vector inválido para busca');
+        }
+
         const params = {
             vector: vector,
             limit: options.limit || this.config.defaultLimit,
@@ -221,6 +226,9 @@ class QdrantService {
             with_vector: options.withVector || false,
             score_threshold: options.scoreThreshold || this.config.scoreThreshold
         };
+        
+        // Debug temporário
+        console.log('Search params:', JSON.stringify(params, null, 2));
 
         // Adicionar filtros se especificados
         if (options.filter) {
@@ -250,10 +258,19 @@ class QdrantService {
         }
 
         // Gerar embedding do texto
-        const embedding = await KC.EmbeddingService.generateEmbedding(text);
+        const embeddingResult = await KC.EmbeddingService.generateEmbedding(text);
+        
+        // O EmbeddingService retorna o embedding diretamente como array
+        const embedding = embeddingResult;
+        
+        // Debug - verificar se embedding é válido
+        if (!embedding || !Array.isArray(embedding)) {
+            console.error('Embedding inválido:', embedding);
+            throw new Error('Falha ao gerar embedding do texto');
+        }
         
         // Buscar por similaridade
-        return this.search(embedding.embedding, {
+        return this.search(embedding, {
             ...options,
             searchText: text // Adicionar texto original para referência
         });
@@ -330,6 +347,39 @@ class QdrantService {
     }
 
     /**
+     * Verifica pontos diretamente sem cache (para debug)
+     */
+    async debugGetPoints(limit = 5) {
+        try {
+            const response = await fetch(`${this.baseUrl}/collections/${this.collectionName}/points/scroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    limit: limit,
+                    with_payload: true,
+                    with_vector: false
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Erro ao buscar pontos: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            // Log detalhado para debug
+            KC.Logger?.info('QdrantService', `Debug: ${data.result.points.length} pontos recuperados`);
+            
+            return data.result.points;
+        } catch (error) {
+            KC.Logger?.error('QdrantService', 'Erro em debugGetPoints', error);
+            throw error;
+        }
+    }
+
+    /**
      * Obtém estatísticas da coleção
      */
     async getCollectionStats() {
@@ -344,6 +394,41 @@ class QdrantService {
             status: info.status,
             config: info.config
         };
+    }
+
+    /**
+     * Percorre pontos da coleção (scroll)
+     */
+    async scrollPoints(options = {}) {
+        if (!this.initialized) await this.initialize();
+
+        try {
+            const params = {
+                limit: options.limit || 10,
+                with_payload: options.with_payload !== undefined ? options.with_payload : true,
+                with_vector: options.with_vector || false
+            };
+
+            // Se with_payload for um array, incluir apenas campos específicos
+            if (Array.isArray(options.with_payload)) {
+                params.with_payload = options.with_payload;
+            }
+
+            // Adicionar offset se fornecido
+            if (options.offset !== undefined) {
+                params.offset = options.offset;
+            }
+
+            const response = await this.request('POST', `/collections/${this.config.collectionName}/points/scroll`, params);
+            
+            return {
+                points: response.result?.points || [],
+                next_page_offset: response.result?.next_page_offset
+            };
+        } catch (error) {
+            KC.Logger?.error('QdrantService', 'Erro em scrollPoints', error);
+            throw error;
+        }
     }
 
     /**
@@ -418,6 +503,10 @@ class QdrantService {
      * Gera chave de cache para busca
      */
     generateCacheKey(vector, options) {
+        // Verificar se vector existe antes de fazer slice
+        if (!vector || !Array.isArray(vector)) {
+            return `no-vector_${JSON.stringify(options)}`;
+        }
         // Usar primeiros valores do vetor + options como chave
         const vectorKey = vector.slice(0, 5).join(',');
         const optionsKey = JSON.stringify(options);

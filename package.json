@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/inspector": "^0.16.1",
+    "node.js": "^0.0.1-security",
     "playwright": "^1.54.1"
   }
 }

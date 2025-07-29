@@ -262,10 +262,13 @@
                     name: f.name,
                     path: f.path,
                     relevanceScore: f.relevanceScore,
+                    analysisType: f.analysisType || 'Aprendizado Geral', // ADICIONADO - Cluster/Insight principal
                     categories: f.categories || [],
                     approved: f.approved || false,
                     archived: f.archived || false,
-                    content: f.content || '' // Incluir conteúdo se disponível
+                    analyzed: f.analyzed || false, // ADICIONADO - Status de análise
+                    content: f.content || '', // Incluir conteúdo se disponível
+                    preview: f.preview || '' // ADICIONADO - Preview do conteúdo
                 }))
             };
             
@@ -307,9 +310,13 @@
                     name: f.name,
                     path: f.path,
                     relevanceScore: f.relevanceScore,
+                    analysisType: f.analysisType || 'Aprendizado Geral', // ADICIONADO - Cluster/Insight principal
                     categories: f.categories || [],
                     approved: f.approved || false,
-                    archived: f.archived || false
+                    archived: f.archived || false,
+                    analyzed: f.analyzed || false, // ADICIONADO - Status de análise
+                    content: f.content || '', // Incluir conteúdo se disponível
+                    preview: f.preview || '' // ADICIONADO - Preview do conteúdo
                 }))
             };
             

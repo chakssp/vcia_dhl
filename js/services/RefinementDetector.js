@@ -75,17 +75,32 @@
          * Detecta contexto em um arquivo
          * @param {Object} file - Arquivo para análise
          * @returns {Object} Contexto detectado
+         * AIDEV-NOTE: robust-validation; validação robusta com estrutura mínima garantida
          */
         async detectContext(file) {
             try {
-                // Validação básica
+                // Validação robusta do arquivo
                 if (!file) {
-                    Logger?.warning('RefinementDetector', 'Arquivo nulo fornecido');
+                    Logger?.debug('RefinementDetector', 'Arquivo nulo, retornando contexto vazio');
                     return this.createEmptyContext();
                 }
                 
+                // Garante estrutura mínima do arquivo
+                const validFile = {
+                    id: file.id || file.name || `temp_${Date.now()}`,
+                    name: file.name || 'unknown',
+                    content: file.content || '',
+                    preview: file.preview || '',
+                    categories: file.categories || [],
+                    relevanceScore: file.relevanceScore || 0,
+                    lastModified: file.lastModified || Date.now(),
+                    analysisType: file.analysisType || null,
+                    size: file.size || 0,
+                    ...file // preserva outros campos
+                };
+                
                 // Verifica cache
-                const cacheKey = file.id || file.name || `temp_${Date.now()}`;
+                const cacheKey = validFile.id;
                 const cached = this.getFromCache(cacheKey);
                 if (cached) return cached;
 
@@ -151,6 +166,15 @@
             try {
                 // Validação básica
                 if (!file) return null;
+                
+                // AIDEV-NOTE: content-access-integration; usa KC.getFileContent se disponível
+                // Se KC.getFileContent existe (do fix-content-access), usa ele primeiro
+                if (KC.getFileContent && typeof KC.getFileContent === 'function') {
+                    const content = await KC.getFileContent(file);
+                    if (content && content.length > 10) {
+                        return content;
+                    }
+                }
                 
                 // Prioridade: content > preview > re-leitura
                 if (file.content && typeof file.content === 'string') {
@@ -631,14 +655,21 @@
          * Útil para identificar quando re-análise é necessária
          */
         detectSignificantChanges(previousAnalysis, currentFile) {
-            const changes = {
-                hasChanges: false,
-                factors: []
-            };
-            
-            // 1. Mudança nas categorias
-            const prevCategories = previousAnalysis?.analysis?.categories || [];
-            const currCategories = currentFile.categories || [];
+            try {
+                // AIDEV-NOTE: robust-validation; validação adicional para evitar erros
+                const changes = {
+                    hasChanges: false,
+                    factors: []
+                };
+                
+                // Validações básicas
+                if (!currentFile) {
+                    return changes;
+                }
+                
+                // 1. Mudança nas categorias
+                const prevCategories = previousAnalysis?.analysis?.categories || [];
+                const currCategories = currentFile.categories || [];
             
             if (prevCategories.length !== currCategories.length ||
                 !prevCategories.every(cat => currCategories.includes(cat))) {
@@ -676,6 +707,11 @@
             }
             
             return changes;
+            
+            } catch (error) {
+                Logger?.debug('RefinementDetector.detectSignificantChanges: Erro tratado', error.message);
+                return { hasChanges: false, factors: [] };
+            }
         }
 
         // === Métodos de Cache ===

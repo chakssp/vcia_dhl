@@ -449,10 +449,12 @@
                 }
 
                 // Verifica padrões de exclusão
-                const shouldExclude = config.excludePatterns.some(pattern => {
-                    const regex = new RegExp(pattern, 'i');
-                    return regex.test(file.name) || regex.test(file.path);
-                });
+                const shouldExclude = config.excludePatterns && config.excludePatterns.length > 0 && 
+                    KC.PatternUtils && KC.PatternUtils.matchesFilePattern(
+                        file.path || file.name, 
+                        file.name, 
+                        config.excludePatterns
+                    );
 
                 if (shouldExclude) {
                     this.stats.skippedFiles++;
@@ -595,12 +597,25 @@
                         
                         // Verifica se é um tipo de arquivo suportado
                         if (supportedExtensions.includes(extension)) {
-                            this.stats.matchedFiles++;
-                            // SPRINT 1.3.1: DESATIVADO - Sem filtros automáticos
-                            // Aplica filtros de data e tamanho
-                            // if (this._passesFilters(file, config)) {
-                                const metadata = await this._extractRealMetadata(file, entry, directoryHandle.name);
-                                files.push(metadata);
+                            // Verifica padrões de exclusão antes de processar
+                            const filePath = `${directoryHandle.name}/${file.name}`;
+                            const shouldExclude = configParam.excludePatterns && configParam.excludePatterns.length > 0 && 
+                                KC.PatternUtils && KC.PatternUtils.matchesFilePattern(
+                                    filePath, 
+                                    file.name, 
+                                    configParam.excludePatterns
+                                );
+
+                            if (shouldExclude) {
+                                this.stats.skippedFiles++;
+                                KC.Logger.debug(`Arquivo excluído por padrão: ${file.name}`);
+                            } else {
+                                this.stats.matchedFiles++;
+                                // SPRINT 1.3.1: DESATIVADO - Sem filtros automáticos
+                                // Aplica filtros de data e tamanho
+                                // if (this._passesFilters(file, config)) {
+                                    const metadata = await this._extractRealMetadata(file, entry, directoryHandle.name);
+                                    files.push(metadata);
                                 
                                 // Atualiza estatísticas
                                 // this.stats.totalFiles++; // JÁ INCREMENTADO ACIMA
@@ -618,9 +633,10 @@
                                         details: `${files.length} arquivos encontrados`
                                     });
                                 }
-                            // } else {
-                            //     this.stats.skippedFiles++;
-                            // }
+                                // } else {
+                                //     this.stats.skippedFiles++;
+                                // }
+                            }
                         }
                         
                     } else if (entry.kind === 'directory') {

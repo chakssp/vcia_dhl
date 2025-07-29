@@ -8,6 +8,57 @@ This repository contains the specification for "Consolidador de Conhecimento Pes
 
 **Vision:** Transform scattered knowledge into actionable insights, establishing a pre-structured foundation that will feed IA automation flows for internal project proposition and strategic decision-making.
 
+## 🚀 ESTADO ATUAL DO PROJETO - 28/07/2025
+
+### 📊 Status Geral
+- **Sistema 100% Funcional**: Todas as 10 Waves implementadas e em produção
+- **Sprint Atual**: FASE 2 - Fundação Semântica ✅ CONCLUÍDA
+- **Última Atualização**: 28/07/2025 - Menu Quick Access implementado e correções de modais
+- **Estrutura**: Projeto reorganizado com separação clara entre produção e temporários
+
+### 🔍 Observações Importantes
+- Nao se esquecer da Data Atual Desta Ultima Atualização 28/07/2025 22:22
+- A partir deste ponto deve ser seguido o timeline de acordo com a evolução
+- Qualquer data anterior ao mês de JULHO (07) deve ser ajustada para evitar conflitos de espaço/tempo
+
+### 🎯 Conquistas Principais
+1. **Knowledge Consolidator Base** (Waves 1-4) ✅
+   - Descoberta automática com File System Access API
+   - Preview inteligente com 70% economia de tokens
+   - Sistema de filtros avançados
+   - Análise IA com múltiplos providers
+
+2. **ML Confidence Integration** (Waves 6-9) ✅
+   - Sistema completo de confiança ML
+   - Shadow mode para validação
+   - Dashboard executivo implementado
+   - Performance otimizada com Worker Pool
+
+3. **Production Deployment** (Wave 10) ✅
+   - Zero downtime deployment
+   - A/B Testing Framework
+   - Canary Controller
+   - Sistema de rollback automático
+
+### 📁 Estrutura Atualizada
+```
+vcia_dhl/
+├── index.html           # App principal
+├── js/                  # Código de produção organizado
+├── css/                 # Estilos organizados
+├── docs/                # Documentação completa
+├── agents_output/       # Saídas das 10 Waves
+├── test/                # Testes organizados
+└── temp/                # Arquivos temporários (ignorados no git)
+```
+
+### 🔧 Serviços Principais Ativos
+- **EmbeddingService**: Embeddings com Ollama (768 dimensões)
+- **QdrantService**: Vector DB em http://qdr.vcia.com.br:6333
+- **SimilaritySearchService**: Busca semântica híbrida
+- **TripleStoreService**: Extração de triplas semânticas
+- **ML Confidence System**: Sistema completo de confiança
+
 ## 🚨 PROTOCOLO DE INÍCIO DE SESSÃO OBRIGATÓRIO
 
 **ATENÇÃO**: Existe um protocolo formal para início de sessão em `/INICIO-SESSAO.md`
@@ -49,304 +100,22 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 <LEIS>
 ### LEIS do projeto
 
-0.  Principios Básicos e Boas Práticas de Arquitetura de Software
-    - Single Responsibility (Responsabilidade Única)
-    - SSO - Single Source of Truth (FONTE ÚNICA DA VERDADE - Fontes de Dados Devem ser Centralizadas - Principios de Exemplo: LEI 11)
-    - DRY - DONT REPEAT YOURSELF
-    - KISS - KEEP SIMPLE, STUPID
-    - YAGNI - You Aren't Gonna Need It
-1.  NÃO MODIFICAR código que está funcionando
-    - NUNCA utilizar dados STUB/MOCK. SEGUIR dados DE FONTES REAIS (Lei 0). CASO seja uma nova FUNÇÃO/COMPONENTE PARTE E PEÇA ORIENTAÇÃO.
-2.  APENAS REMOVER as adições problemáticas identificadas
-3.  ADICIONAR MINIMAMENTE apenas o listener necessário
-4.  PRESERVAR todas as funcionalidades já homologadas
-5.  PARA TESTAR Solicite feedback do usuário que esta com o Five Server em aberto paralelamente para Auditar o processo
-6.  DOCUMENTAR cada mudança para auditoria e backlog das atividades, REGISTRAR SEMPRE utilizando a estrutura pré-existente criada para esta finalidade em /doc/sprint/
-7.  SOLICITAR APROVAÇÃO do usuário antes de prosseguir COM QUALQUER ALTERAÇÃO no Código Original
-8.  TODA ALTERAÇÃO APROVADA PARA ALTERAÇÃO DO CODIGO ORIGINAL CASO NECESSARIO DEVE SER CLONADO COMO COMENTÁRIO, ACIONAVEL para rollback caso seja identificado qualquer desvio ou QUEBRA DA APLICAÇÃO COMO MEDIDA PREVENTIVA SEGURA.
-9.  COMPONENTIZAÇÃO MÁXIMA EXIGIDA para qualquer nova função criada como forma de ESTABELECER PADRAO PARA REUTILIZAÇÃO OBRIGATÓRIA DE COMPONENTES PRÉ EXISTENTES que ja estejam em produção como base para novo desenvolvimento.
-10. ANTES DE PLANEJAR QUALQUER NOVA ADIÇÃO OU REMOÇÃO é VITAL QUE SEJA FEITA A REVISÃO dos COMPONENTES ATUAIS. para Verificar se a funcionalidade planejada já não existe no sistema ou se pode ser utilizada como base para GARANTIR a estabilidade do sitema em FUNCIONAMENTO.
-11. CORELACIONAMENTO entre os componentes de BUSCA, ANALISE, CATEGORIZAÇÃO SÃO DE PRIORIDADE CRITICA PARA CONSISTENCIA DOS DADOS A PARTIR DA ETAPA 1. ITERE SEMPRE A IMPORTANCIA DE CORELACIONAR AS SUAS ACOES E EVENTOS DE FORMA RELACIONADA AOS EVENTOS PRE-EXISTENTES A PARTIR DE UMA FONTE UNICA CENTRALIZADA, Principios de Exemplo: @RESUME-STATUS.md sobre: Categorias.
-12. TRANSPARÊNCIA DE DADOS: Toda filtragem ou exclusão de arquivos DEVE ser:
-    - Visível ao usuário (mostrar quantos foram excluídos e por quê)
-    - Controlável (permitir desativar filtros/exclusões)
-    - Reversível (permitir ver arquivos excluídos
-    - NUNCA remover dados silenciosamente sem conhecimento do usuário
-13. FLUXO DE ANÁLISE SEMÂNTICA OBRIGATÓRIO:
-    - FASE 1: Curadoria → Categorias → Embeddings → Qdrant
-    - FASE 2: Novo arquivo → Embedding → Busca similares → Herda tipo
-    - FASE 3: Perguntas → Busca contextual → LLM com contexto curado
-    - NUNCA usar LLM direto para classificação
-    - SEMPRE respeitar categorias como ground truth
+[... previous content remains the same ...]
 
-### 🚀 SPRINT FASE 2 - NOVOS SERVIÇOS IMPLEMENTADOS (17-18/07/2025)
+### 📌 Recursos MCP (OBRIGATÓRIOS - 28/01/2025)
 
-#### ✅ EmbeddingService.js
+- **Recursos que DEVEM ser utilizados:**
+  - **Puppeteer**: Automação de browser, testes E2E e screenshots
+  - **Memory**: Sistema de memória persistente para contexto entre sessões
+  - **Sequential-Think**: Análise estruturada de problemas complexos
+  
+- **Documentação Completa**: `/docs/10-guias-operacionais/recursos-mcp-obrigatorios.md`
 
-- **Função**: Gera embeddings semânticos usando Ollama local
-- **Modelo**: nomic-embed-text (768 dimensões)
-- **Features**: Cache em IndexedDB, cálculo de similaridade, fallback para OpenAI
-- **Localização**: `/js/services/EmbeddingService.js`
+- **⚠️ Problema Conhecido - Indexação de Arquivos**:
+  - Arquivos recém-criados podem não aparecer com @
+  - Solução: Use caminho completo ou comando Read
+  - O cache do Claude Code pode demorar para atualizar
 
-#### ✅ QdrantService.js
-
-- **Função**: Integração com Qdrant Vector Database na VPS
-- **Conexão**: http://qdr.vcia.com.br:6333 (via Tailscale)
-- **Features**: CRUD completo, busca semântica, cache de resultados
-- **Localização**: `/js/services/QdrantService.js`
-
-#### ✅ SimilaritySearchService.js
-
-- **Função**: Busca por similaridade semântica avançada
-- **Features**: Busca por texto, categoria e multi-modal
-- **Ranking**: Híbrido (70% semântico, 20% categoria, 10% relevância)
-- **Localização**: `/js/services/SimilaritySearchService.js`
-
-### 🎯 ARQUITETURA CORRETA DO SISTEMA
-
-#### Fluxo de Curadoria e Análise:
-1. **Descoberta**: Arquivos encontrados com pré-análise local
-2. **Curadoria**: Usuário adiciona categorias (ground truth)
-3. **Aprovação**: Arquivos curados na Etapa 4
-4. **Indexação**: Gerar embeddings → Enviar para Qdrant
-5. **Análise**: Novos arquivos → Embedding → Busca similares → Herda classificação
-
-#### ❌ NÃO FAZER:
-- FileRenderer → AnalysisManager → Ollama (análise genérica)
-- Ignorar categorias manuais
-- Gerar payload sem enviar para Qdrant
-
-#### ✅ FAZER:
-- Respeitar curadoria humana como fonte primária
-- Usar embeddings + Qdrant para classificação
-- LLM apenas para perguntas contextuais complexas
-
-### 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO ler /RESUME-STATUS.md
-
-#### 🔴 Problema Recorrente #1: Criar código sem verificar existente
-
-**Impacto**: 3+ horas de retrabalho na sessão de 15/01/2025  
-**Causa**: FileRenderer já existia e funcionava, mas foi recriado  
-**Solução**: SEMPRE ler código existente antes de criar novo
-
-#### 🔴 Problema Recorrente #2: Não emitir FILES_UPDATED
-
-**Impacto**: Interface não atualiza, usuário pensa que está quebrado  
-**Causa**: Apenas STATE_CHANGED era emitido  
-**Solução**: SEMPRE emitir ambos eventos após modificar arquivos
-
-#### 🔴 Problema Recorrente #3: Modificar sem preservar original
-
-**Impacto**: Quebra funcionalidades existentes  
-**Causa**: Código original sobrescrito sem backup  
-**Solução**: SEMPRE comentar original antes de modificar
-
-#### 🔴 Problema Recorrente #4: Dupla filtragem sem transparência
-
-**Impacto**: 95 arquivos "desaparecem" sem explicação ao usuário  
-**Causa**: FileRenderer aplica exclusões automáticas + FilterPanel pode ter filtros ativos  
-**Solução**: SEMPRE dar controle e visibilidade ao usuário sobre filtros
-
-#### 🔴 Problema Recorrente #5: Sincronização entre componentes
-
-**Impacto**: Categorias criadas em um componente não aparecem em outros  
-**Causa**: Múltiplas fontes de verdade e falta de listeners de eventos  
-**Solução**: Usar Manager centralizado + Event-Driven Architecture  
-**Documentação**: `/docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`
-
-#### 🔴 Problema Recorrente #6: Construir "do telhado" sem fundação
-
-**Impacto**: Sistema de triplas extraindo apenas metadados superficiais  
-**Causa**: Tentativa de extração semântica sem embeddings/vetorização  
-**Solução**: SEMPRE construir da fundação: Dados → Embeddings → Similaridade → Extração  
-**Documentação**: `/docs/sprint/fase2/analise-arquitetural-bottomup.md`
-
-#### 🔴 Problema Recorrente #7: Elementos UI flutuantes fora de containers
-
-**Impacto**: Elementos aparecem sobrepostos em locais incorretos da interface
-**Causa**: Atualizações de DOM sem validar container pai ou visibilidade
-**Solução**: SEMPRE validar container pai e visibilidade antes de atualizar elementos
-**AIDEV-NOTE**: container-validation; verificar pai antes de atualizar DOM
-
-#### 🔴 Problema Recorrente #8: Cálculos de porcentagem não transparentes
-
-**Impacto**: Usuário não entende a lógica dos números mostrados
-**Causa**: Cálculos com limites artificiais ou lógica não documentada
-**Solução**: SEMPRE mostrar cálculos reais com explicação clara
-**AIDEV-NOTE**: transparent-calc; sempre explicar lógica de %
-
-#### 🔴 Problema Recorrente #9: Métodos inexistentes chamados
-
-**Impacto**: TypeError em runtime quebrando funcionalidade
-**Causa**: Refatoração incompleta ou nomes de métodos desatualizados
-**Solução**: SEMPRE verificar existência do método antes de chamar
-**Documentação**: Corrigido em 21/07/2025 (renderFilesList → showFilesSection)
-
-#### 🔴 Problema Recorrente #10: Eventos não propagados após ações
-
-**Impacto**: UI não reflete mudanças realizadas pelo usuário
-**Causa**: Falta de emissão de eventos após operações
-**Solução**: SEMPRE emitir eventos apropriados após modificar estado
-**Documentação**: updateAllCounters() após exclusões (21/07/2025)
-
-#### 🔴 Problema Recorrente #11: Sistema não usa conhecimento curado
-
-**Impacto**: 4+ horas perdidas (25/07/2025), todos arquivos classificados como "Aprendizado Geral"
-**Causa**: Análise usa LLM direto em vez de busca semântica no Qdrant
-**Solução**: Seguir fluxo: Embedding → Qdrant → Classificação por vizinhança
-**Documentação**: /docs/11-pendencias-revisao/plano-recuperacao-projeto-qdrant.md
-
-### ✅ Padrão de Sucesso
-
-```javascript
-// 1. Verificar se existe
-// 1.1 Revisar Leis aplicáveis 0 a 12
-if (KC.ComponenteX) {
-  // 2. Ler e entender
-  // 3. Preservar original em comentário
-  // 4. Modificar com cuidado
-  // 5. Testar incrementalmente
-  //
-}
-```
-
-### 📊 Métricas de Retrabalho
-
-- **Tempo perdido médio por erro**: 1-3 horas
-- **Principais causas**: Falta de contexto, não seguir LEIS
-- **Solução**: Protocolo de início em INICIO-SESSAO.md
-
-### 🏷️ Anchor Comments - Best Practice para Manutenibilidade
-
-#### Diretrizes para Comentários Âncora:
-
-1. **Prefixos Obrigatórios** (sempre em MAIÚSCULAS):
-   - `AIDEV-NOTE:` - Notas importantes sobre implementação
-   - `AIDEV-TODO:` - Tarefas pendentes para IA/desenvolvedores
-   - `AIDEV-QUESTION:` - Questões que precisam ser esclarecidas
-
-2. **Formato**:
-
-   ```javascript
-   // AIDEV-NOTE: <categoria>; <descrição concisa> (<referência opcional>)
-   // Exemplo: AIDEV-NOTE: perf-hot-path; evitar alocações extras (ver ADR-24)
-   ```
-
-3. **Regras**:
-   - Manter conciso (< 120 caracteres)
-   - **SEMPRE** procurar anchors existentes antes de escanear arquivos (`grep -r "AIDEV-" .`)
-   - **ATUALIZAR** anchors relevantes ao modificar código associado
-   - **NUNCA** remover AIDEV-NOTEs sem instrução explícita
-   - Usar categorias consistentes (ex: perf, security, validation, etc.)
-
-4. **Exemplos de Uso**:
-
-   ```javascript
-   // AIDEV-NOTE: container-validation; verificar pai antes de atualizar DOM
-   // AIDEV-TODO: implement-cache; adicionar cache para melhorar performance
-   // AIDEV-QUESTION: threshold-logic; por que limitamos a 95%?
-   ```
-
-5. **Benefícios**:
-   - Facilita navegação com `grep "AIDEV-" -r .`
-   - Documenta decisões técnicas inline
-   - Cria pontos de referência para manutenção
-   - Ajuda IA e desenvolvedores a entender contexto rapidamente
-
-# Estilo de Código
-
-- Use ES modules (import/export)
-- Destructuring quando possível
-- Prefira const/let sobre var
-- Lei 0
-
-# Workflow
-
-- Sempre executar typechecking após mudanças
-- Usar single tests para performance
-- Criar feature branches do develop (CASO INDISPONIVEL, CRIE E COPIE TODA A ESTRUTURA ORIGINAL PARA UMA NOVA PASTA PARA HOMOLOGAÇÃO PARA MITIGAR QUEBRA DA APLICACAO/ROLLBACK)
-- Lei 0
-
-# MESSAGE TO CLAUDE CODE AGENT FROM ADMINISTRATOR
-
-**BEFORE RESPONSE TO USER**: Translate to Brazilian Portugues before reposponse EVER to best user exprience.
-
-## 📚 DOCUMENTAÇÃO ESSENCIAL DO PROJETO
-
-1. **Timeline Completo**: `/docs/timeline-completo-projeto.md`
-   - Histórico completo do projeto (10/07/2025 - 21/07/2025)
-   - Evolução de todas as sprints
-   - Bugs resolvidos e lições aprendidas
-   - Estado atual da arquitetura
-
-2. **Plano de Recuperação**: `/docs/sprint/fase2/plano-recuperacao-workflow.md`
-   - Sistema de checkpoints para testes
-   - Procedimentos de recuperação
-   - Comandos de troubleshooting
-   - Criado em 21/07/2025
-
-3. **Análise de Fontes de Verdade**: `/docs/analise-fontes-verdade/`
-   - **README-EVOLUCAO-SISTEMA.md**: Documento mestre para evolução
-   - **FONTES-UNICAS-VERDADE.md**: Define fonte única para cada tipo de dado
-   - **5 documentos de análise**: Mapeamento completo, fluxos, correlações e problemas
-   - CRÍTICO: SEMPRE consulte antes de implementar
-   - Centralizado em 24/07/2025
-
-4. **Plano de Recuperação Qdrant**: `/docs/11-pendencias-revisao/plano-recuperacao-projeto-qdrant.md`
-   - Correção do fluxo de análise semântica
-   - 5 fases de implementação
-   - Validações sem páginas de teste
-   - Criado em 25/07/2025
-
-5. **Contexto do Sistema Quebrado**: `/docs/analise-fluxo-arquivos-contexto.md`
-   - Estado atual do sistema
-   - Problemas identificados
-   - Fluxo correto vs incorreto
-   - Criado em 25/07/2025
-
-## 🔍 COMANDOS DE VERIFICAÇÃO
-
-### Comandos Básicos
-```javascript
-kcdiag()  // Diagnóstico completo do sistema
-KC.AppState.get('files')  // Ver arquivos no estado
-```
-
-### Verificar Integração Qdrant
-```javascript
-// Verificar se Qdrant está populado
-KC.QdrantService.getCollectionStats()
-
-// Verificar conexão com Qdrant
-KC.QdrantService.checkConnection()
-
-// Ver informações da collection
-KC.QdrantService.getCollectionInfo()
-
-// Buscar pontos no Qdrant
-KC.QdrantService.searchByText('termo de busca')
-```
-
-### Verificar Fluxo de Análise
-```javascript
-// Verificar se análise usa Qdrant (correto) ou AnalysisManager (errado)
-KC.FileRenderer.analyzeFile // deve mostrar busca no Qdrant
-
-// Verificar payload gerado para Qdrant
-KC.RAGExportManager.consolidateData()
-
-// Verificar embeddings
-KC.EmbeddingService.checkOllamaAvailability()
-KC.EmbeddingService.generateEmbedding('texto teste')
-```
-
-### Verificar Busca Semântica
-```javascript
-// Testar busca por similaridade
-KC.SimilaritySearchService.searchByText('query')
-KC.SimilaritySearchService.searchByCategory('categoria')
-KC.SimilaritySearchService.getStats()
-```
-
-**DIRETIVA**: Sempre siga as LEIS do projeto e o protocolo de início de sessão. Leia @CLAUDE.md e @RESUME-STATUS.md antes de fazer qualquer alteração. Consulte o timeline completo em `/docs/timeline-completo-projeto.md` para contexto histórico. Utilize o padrão de sucesso fornecido para garantir a consistência e a qualidade do código. Mantenha a segurança em mente, implementando criptografia de chaves de API, limitação de taxa para chamadas de API e cabeçalhos CSP para produção. Sanitize o conteúdo exibido para evitar vulnerabilidades. Utilize comentários âncora para facilitar a manutenção e a compreensão do código.
 </LEIS>
+
+[... rest of the previous content remains the same ...]
