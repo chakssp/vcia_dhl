@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Pipeline de Processamento RAG</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .test-output {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: var(--success-color); }
+        .status-offline { background: var(--danger-color); }
+        .status-checking { background: var(--warning-color); }
+        .sample-data {
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid var(--border-color);
+        }
+        .log-success { border-color: var(--success-color); }
+        .log-error { border-color: var(--danger-color); }
+        .log-info { border-color: var(--info-color); }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste do Pipeline de Processamento RAG</h1>
+    
+    <!-- Status dos Serviços -->
+    <div class="test-section">
+        <h2>🔌 Status dos Serviços</h2>
+        <div>
+            <span id="ollama-status" class="status-indicator status-checking"></span>
+            <strong>Ollama:</strong> <span id="ollama-text">Verificando...</span>
+        </div>
+        <div>
+            <span id="qdrant-status" class="status-indicator status-checking"></span>
+            <strong>Qdrant:</strong> <span id="qdrant-text">Verificando...</span>
+        </div>
+        <div class="test-controls">
+            <button onclick="checkServices()">Verificar Serviços</button>
+        </div>
+    </div>
+
+    <!-- Dados de Teste -->
+    <div class="test-section">
+        <h2>📄 Dados de Teste</h2>
+        <div class="test-controls">
+            <button onclick="createTestData()">Criar Dados de Teste</button>
+            <button onclick="loadExistingData()">Carregar Dados Existentes</button>
+            <button onclick="clearTestData()">Limpar Dados</button>
+        </div>
+        <div id="data-status" class="test-output">
+            <p>Nenhum dado carregado</p>
+        </div>
+    </div>
+
+    <!-- Pipeline de Processamento -->
+    <div class="test-section">
+        <h2>🚀 Pipeline de Processamento</h2>
+        <div class="test-controls">
+            <button id="btn-process" onclick="runPipeline()" disabled>Executar Pipeline</button>
+            <button onclick="testConsolidation()">Testar Consolidação</button>
+            <button onclick="testChunking()">Testar Chunking</button>
+            <button onclick="testEmbedding()">Testar Embeddings</button>
+            <button onclick="testQdrantInsert()">Testar Inserção Qdrant</button>
+        </div>
+        <div id="pipeline-progress" style="display: none; margin: 10px 0;">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <span id="progress-text">0%</span>
+        </div>
+        <div id="pipeline-output" class="test-output">
+            <p>Aguardando execução...</p>
+        </div>
+    </div>
+
+    <!-- Busca Semântica -->
+    <div class="test-section">
+        <h2>🔍 Teste de Busca Semântica</h2>
+        <div class="test-controls">
+            <input type="text" id="search-query" placeholder="Digite sua busca..." style="flex: 1;">
+            <button onclick="searchSemantic()">Buscar</button>
+        </div>
+        <div id="search-results" class="test-output">
+            <p>Digite algo para buscar...</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    <script src="../js/core/Logger.js"></script>
+    <script src="../js/utils/PreviewUtils.js"></script>
+    <script src="../js/utils/ChunkingUtils.js"></script>
+    <script src="../js/managers/CategoryManager.js"></script>
+    <script src="../js/managers/RAGExportManager.js"></script>
+    <script src="../js/services/EmbeddingService.js"></script>
+    <script src="../js/services/QdrantService.js"></script>
+    <script src="../js/utils/fix-relevance-scores.js"></script>
+
+    <script>
+        const KC = window.KnowledgeConsolidator;
+        let testData = null;
+
+        // Inicialização
+        window.onload = async () => {
+            log('info', 'Página de teste carregada');
+            await checkServices();
+            setupEventListeners();
+        };
+
+        // Configura listeners
+        function setupEventListeners() {
+            KC.EventBus.on(KC.Events.PIPELINE_PROGRESS, (data) => {
+                updateProgress(data.percentage, `${data.current}/${data.total}`);
+            });
+
+            KC.EventBus.on(KC.Events.PIPELINE_COMPLETED, (data) => {
+                if (data.success) {
+                    log('success', 'Pipeline concluído com sucesso!');
+                    log('info', `Processados: ${data.results.processed} documentos`);
+                    log('info', `Chunks: ${data.results.totalChunks}`);
+                    if (data.results.failed > 0) {
+                        log('error', `Falhas: ${data.results.failed}`);
+                    }
+                } else {
+                    log('error', `Pipeline falhou: ${data.error}`);
+                }
+                hideProgress();
+            });
+        }
+
+        // Verifica serviços
+        async function checkServices() {
+            // Verifica Ollama
+            updateServiceStatus('ollama', 'checking');
+            const ollamaOk = await KC.EmbeddingService.checkOllamaAvailability();
+            updateServiceStatus('ollama', ollamaOk ? 'online' : 'offline');
+            
+            // Verifica Qdrant
+            updateServiceStatus('qdrant', 'checking');
+            const qdrantOk = await KC.QdrantService.checkConnection();
+            updateServiceStatus('qdrant', qdrantOk ? 'online' : 'offline');
+
+            // Habilita botão se ambos estão OK
+            document.getElementById('btn-process').disabled = !(ollamaOk && qdrantOk);
+            
+            if (!ollamaOk) {
+                log('error', 'Ollama não está disponível. Verifique se está rodando em http://127.0.0.1:11434');
+            }
+            if (!qdrantOk) {
+                log('error', 'Qdrant não está acessível. Verifique a conexão com http://qdr.vcia.com.br:6333');
+            }
+        }
+
+        // Atualiza status do serviço
+        function updateServiceStatus(service, status) {
+            const indicator = document.getElementById(`${service}-status`);
+            const text = document.getElementById(`${service}-text`);
+            
+            indicator.className = `status-indicator status-${status}`;
+            text.textContent = status === 'online' ? 'Online' : 
+                              status === 'offline' ? 'Offline' : 'Verificando...';
+        }
+
+        // Cria dados de teste
+        function createTestData() {
+            testData = [
+                {
+                    id: 'test-doc-1',
+                    name: 'Case Ambev - Transformação Digital.md',
+                    path: '/test/Case_Ambev.md',
+                    content: `# Case Ambev: Transformação Digital na Indústria de Bebidas\n\n## Contexto\nA Ambev, maior cervejaria da América Latina, enfrentava desafios significativos em 2018. Com mais de 100 marcas e operações em 19 países, a empresa precisava modernizar suas operações para manter a competitividade.\n\n## O Desafio\nO principal desafio era integrar toda a cadeia de suprimentos, desde a produção até a entrega final. Os sistemas legados não conversavam entre si, causando:\n- Atrasos nas entregas\n- Excesso de estoque\n- Perda de vendas por falta de produto\n\n## A Solução\nA empresa implementou uma plataforma digital integrada que conectava:\n1. Fábricas\n2. Centros de distribuição\n3. Pontos de venda\n4. Consumidores finais\n\n## Resultados\n- Redução de 30% no tempo de entrega\n- Aumento de 25% na satisfação do cliente\n- Economia de R$ 50 milhões em logística\n\n## Lições Aprendidas\nA transformação digital não é apenas sobre tecnologia, mas sobre pessoas e processos.`,
+                    size: 1523,
+                    lastModified: new Date('2024-03-15').toISOString(),
+                    relevanceScore: 85,
+                    categories: ['transformação-digital', 'cases'],
+                    analyzed: true,
+                    analysisType: 'Breakthrough Técnico'
+                },
+                {
+                    id: 'test-doc-2',
+                    name: 'Estratégia de Inovação 2024.txt',
+                    path: '/test/Estrategia_Inovacao.txt',
+                    content: `Documento Estratégico - Inovação 2024\n\nObjetivo: Estabelecer as diretrizes para o programa de inovação corporativa.\n\n1. Foco em IA e Machine Learning\n   - Implementar IA em todos os processos críticos\n   - Desenvolver modelos preditivos para demanda\n   - Automatizar tarefas repetitivas\n\n2. Cultura de Inovação\n   - Programa de ideias com recompensas\n   - Hackathons trimestrais\n   - Parcerias com startups\n\n3. Métricas de Sucesso\n   - ROI de projetos de inovação > 200%\n   - Tempo de implementação < 6 meses\n   - Engajamento de colaboradores > 70%\n\n4. Orçamento\n   - R$ 10 milhões para 2024\n   - Distribuição: 40% IA, 30% Pessoas, 30% Infraestrutura`,
+                    size: 892,
+                    lastModified: new Date('2024-01-10').toISOString(),
+                    relevanceScore: 92,
+                    categories: ['estratégia', 'inovação'],
+                    analyzed: true,
+                    analysisType: 'Insight Estratégico'
+                },
+                {
+                    id: 'test-doc-3',
+                    name: 'Notas de Reunião - Projeto Alpha.md',
+                    path: '/test/Notas_Projeto_Alpha.md',
+                    content: `# Reunião Projeto Alpha - 15/02/2024\n\n## Participantes\n- João Silva (Gerente de Projeto)\n- Maria Santos (Tech Lead)\n- Pedro Oliveira (Arquiteto de Soluções)\n\n## Decisões Tomadas\n\n### 1. Arquitetura\n**DECISÃO CRÍTICA**: Migrar de monolito para microserviços\n- Prazo: 6 meses\n- Investment: R$ 2M\n- Equipe: 15 desenvolvedores\n\n### 2. Tecnologias\n- Backend: Node.js + TypeScript\n- Frontend: React + Next.js\n- Database: PostgreSQL + Redis\n- Mensageria: RabbitMQ\n\n### 3. Próximos Passos\n1. POC em 30 dias\n2. MVP em 90 dias\n3. Produção em 180 dias\n\n## Riscos Identificados\n- Resistência da equipe legada\n- Complexidade da migração de dados\n- Dependência de fornecedores externos`,
+                    size: 756,
+                    lastModified: new Date('2024-02-15').toISOString(),
+                    relevanceScore: 78,
+                    categories: ['projetos', 'decisões'],
+                    analyzed: true,
+                    analysisType: 'Momento Decisivo'
+                }
+            ];
+
+            // Adiciona preview aos dados
+            testData.forEach(doc => {
+                doc.preview = KC.PreviewUtils.extractPreview(doc.content);
+            });
+
+            // Salva no AppState
+            KC.AppState.set('files', testData);
+            
+            updateDataStatus();
+            log('success', `${testData.length} arquivos de teste criados`);
+        }
+
+        // Carrega dados existentes
+        function loadExistingData() {
+            const files = KC.AppState.get('files') || [];
+            if (files.length === 0) {
+                log('error', 'Nenhum arquivo encontrado no AppState');
+                return;
+            }
+            
+            testData = files;
+            updateDataStatus();
+            log('success', `${files.length} arquivos carregados do AppState`);
+        }
+
+        // Limpa dados
+        function clearTestData() {
+            testData = null;
+            KC.AppState.set('files', []);
+            updateDataStatus();
+            log('info', 'Dados limpos');
+        }
+
+        // Atualiza status dos dados
+        function updateDataStatus() {
+            const statusDiv = document.getElementById('data-status');
+            if (!testData || testData.length === 0) {
+                statusDiv.innerHTML = '<p>Nenhum dado carregado</p>';
+                return;
+            }
+
+            // Corrige valores de relevância se necessário (converte decimal para percentual)
+            testData.forEach(doc => {
+                if (doc.relevanceScore && doc.relevanceScore < 1) {
+                    doc.relevanceScore = doc.relevanceScore * 100;
+                }
+            });
+            
+            // Separa arquivos aprovados e arquivados
+            const approved = testData.filter(f => !f.archived && f.relevanceScore >= 50);
+            const archived = testData.filter(f => f.archived);
+            const lowRelevance = testData.filter(f => !f.archived && f.relevanceScore < 50);
+
+            let html = `<p><strong>${testData.length} arquivos carregados:</strong></p>`;
+            
+            // Arquivos aprovados
+            if (approved.length > 0) {
+                html += `<h4 style="color: var(--success-color);">✅ Aprovados (${approved.length}):</h4><ul>`;
+                approved.forEach(doc => {
+                    html += `<li style="color: var(--success-color);">${doc.name} - Relevância: ${doc.relevanceScore}% - ${doc.analysisType || 'Não analisado'}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            // Arquivos com baixa relevância
+            if (lowRelevance.length > 0) {
+                html += `<h4 style="color: var(--warning-color);">⚠️ Baixa Relevância (${lowRelevance.length}):</h4><ul>`;
+                lowRelevance.forEach(doc => {
+                    html += `<li style="color: var(--warning-color);">${doc.name} - Relevância: ${doc.relevanceScore}% - ${doc.analysisType || 'Não analisado'}</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            // Arquivos arquivados
+            if (archived.length > 0) {
+                html += `<h4 style="color: var(--danger-color);">🗄️ Arquivados/Descartados (${archived.length}):</h4><ul>`;
+                archived.forEach(doc => {
+                    html += `<li style="color: var(--danger-color); text-decoration: line-through;">${doc.name} - Relevância: ${doc.relevanceScore}% - ARQUIVADO</li>`;
+                });
+                html += '</ul>';
+            }
+            
+            // Resumo
+            html += `<hr><p><strong>Resumo:</strong> ${approved.length} aprovados para processamento, ${archived.length} arquivados, ${lowRelevance.length} com baixa relevância</p>`;
+            
+            statusDiv.innerHTML = html;
+        }
+
+        // Executa pipeline completo
+        async function runPipeline() {
+            if (!testData || testData.length === 0) {
+                log('error', 'Carregue dados antes de executar o pipeline');
+                return;
+            }
+
+            // Verifica se há arquivos aprovados
+            const approved = testData.filter(f => !f.archived && f.relevanceScore >= 50);
+            if (approved.length === 0) {
+                log('error', 'Nenhum arquivo aprovado encontrado! Arquivos devem ter relevância >= 50% e não estar arquivados.');
+                return;
+            }
+
+            log('info', `Iniciando pipeline de processamento com ${approved.length} arquivos aprovados...`);
+            showProgress();
+
+            try {
+                const result = await KC.RAGExportManager.processApprovedFiles({
+                    batchSize: 5
+                });
+
+                if (result.success) {
+                    log('success', result.message);
+                    log('info', `Detalhes: ${result.results.processed} processados, ${result.results.failed} falharam, ${result.results.totalChunks} chunks criados`);
+                } else {
+                    log('error', result.message || result.error);
+                }
+            } catch (error) {
+                log('error', `Erro no pipeline: ${error.message}`);
+                hideProgress();
+            }
+        }
+
+        // Testa consolidação
+        async function testConsolidation() {
+            log('info', 'Testando consolidação de dados...');
+            
+            try {
+                const data = await KC.RAGExportManager.consolidateData();
+                log('success', `Consolidados ${data.documents.length} documentos`);
+                log('info', `Total de chunks: ${data.documents.reduce((acc, doc) => acc + doc.chunks.length, 0)}`);
+                console.log('Dados consolidados:', data);
+            } catch (error) {
+                log('error', `Erro na consolidação: ${error.message}`);
+            }
+        }
+
+        // Testa chunking
+        function testChunking() {
+            if (!testData || testData.length === 0) {
+                log('error', 'Carregue dados primeiro');
+                return;
+            }
+
+            log('info', 'Testando chunking...');
+            const doc = testData[0];
+            const chunks = KC.ChunkingUtils.getSemanticChunks(doc.content);
+            
+            log('success', `${chunks.length} chunks gerados para "${doc.name}"`);
+            chunks.forEach((chunk, i) => {
+                log('info', `Chunk ${i + 1}: ${chunk.content.substring(0, 50)}...`);
+            });
+        }
+
+        // Testa embeddings
+        async function testEmbedding() {
+            log('info', 'Testando geração de embeddings...');
+            
+            try {
+                const text = "Este é um teste de geração de embeddings para busca semântica";
+                const embedding = await KC.EmbeddingService.generateEmbedding(text);
+                
+                if (embedding && embedding.length > 0) {
+                    log('success', `Embedding gerado com ${embedding.length} dimensões`);
+                    log('info', `Primeiros 5 valores: [${embedding.slice(0, 5).join(', ')}...]`);
+                } else {
+                    log('error', 'Embedding vazio ou inválido');
+                }
+            } catch (error) {
+                log('error', `Erro ao gerar embedding: ${error.message}`);
+            }
+        }
+
+        // Testa inserção no Qdrant
+        async function testQdrantInsert() {
+            log('info', 'Testando inserção no Qdrant...');
+            
+            try {
+                const testPoint = {
+                    id: 'test-' + Date.now(),
+                    vector: await KC.EmbeddingService.generateEmbedding('Teste de inserção no Qdrant'),
+                    payload: {
+                        content: 'Teste de inserção no Qdrant',
+                        timestamp: new Date().toISOString()
+                    }
+                };
+
+                const result = await KC.QdrantService.insertBatch([testPoint]);
+                
+                if (result.success) {
+                    log('success', 'Ponto inserido com sucesso no Qdrant');
+                } else {
+                    log('error', `Erro ao inserir: ${result.error}`);
+                }
+            } catch (error) {
+                log('error', `Erro ao testar Qdrant: ${error.message}`);
+            }
+        }
+
+        // Busca semântica
+        async function searchSemantic() {
+            const query = document.getElementById('search-query').value;
+            if (!query) {
+                log('error', 'Digite algo para buscar');
+                return;
+            }
+
+            log('info', `Buscando por: "${query}"...`);
+            
+            try {
+                const results = await KC.QdrantService.searchByText(query, 5);
+                
+                const resultsDiv = document.getElementById('search-results');
+                if (results && results.length > 0) {
+                    let html = `<p><strong>Encontrados ${results.length} resultados:</strong></p>`;
+                    results.forEach((result, i) => {
+                        html += `
+                            <div class="sample-data">
+                                <strong>${i + 1}. Score: ${result.score.toFixed(3)}</strong><br>
+                                <strong>Arquivo:</strong> ${result.payload.fileName || 'N/A'}<br>
+                                <strong>Conteúdo:</strong> ${result.payload.content.substring(0, 200)}...
+                            </div>
+                        `;
+                    });
+                    resultsDiv.innerHTML = html;
+                } else {
+                    resultsDiv.innerHTML = '<p>Nenhum resultado encontrado</p>';
+                }
+            } catch (error) {
+                log('error', `Erro na busca: ${error.message}`);
+            }
+        }
+
+        // Funções auxiliares
+        function log(type, message) {
+            const output = document.getElementById('pipeline-output');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            output.appendChild(entry);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function showProgress() {
+            document.getElementById('pipeline-progress').style.display = 'block';
+            updateProgress(0, '0/0');
+        }
+
+        function hideProgress() {
+            document.getElementById('pipeline-progress').style.display = 'none';
+        }
+
+        function updateProgress(percentage, text) {
+            document.getElementById('progress-fill').style.width = percentage + '%';
+            document.getElementById('progress-text').textContent = `${percentage}% - ${text}`;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+
+📊 RELATÓRIO DE ANCHOR COMMENTS
+
+================================
+
+📌 Total de AIDEV-NOTEs: 56
+📝 Total de AIDEV-TODOs: 4
+❓ Total de AIDEV-QUESTIONs: 1
+❌ Comentários inválidos: 0
+
+
+🔧 AIDEV-TODOs Pendentes:
+
+1. js/core/AppState.js:574
+   update-file-flag; mark file.inQdrant = true
+
+2. js/managers/DiscoveryManager.js:1169
+   make throttle delay configurable for different file counts
+
+3. js/utils/SessionCache.js:194
+   integrate-with-discovery; hook into discovery process to cache full file data
+
+4. js/utils/SessionCache.js:195
+   integrate-with-export; use cached data for export operations
+
+
+❓ AIDEV-QUESTIONs:
+
+1. js/managers/DiscoveryManager.js:1217
+   why-95-limit; qual o motivo do limite de 95% durante scanning?

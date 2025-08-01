@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test - TripleStoreService</title>
+    <style>
+        body {
+            font-family: monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        pre {
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Test - TripleStoreService</h1>
+    <pre id="output"></pre>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(text) {
+            output.textContent += text + '\n';
+        }
+        
+        // Verificar o que está disponível
+        log('🔍 Verificando ambiente...\n');
+        
+        // Verificar window.KnowledgeConsolidator
+        if (typeof window.KnowledgeConsolidator !== 'undefined') {
+            log('✅ window.KnowledgeConsolidator existe');
+            
+            const KC = window.KnowledgeConsolidator;
+            
+            // Listar componentes disponíveis
+            log('\n📋 Componentes disponíveis:');
+            for (const key in KC) {
+                if (KC.hasOwnProperty(key)) {
+                    log(`  - KC.${key}: ${typeof KC[key]}`);
+                }
+            }
+            
+            // Verificar componentes críticos
+            log('\n🔍 Verificando componentes críticos:');
+            log(`  - Logger: ${typeof KC.Logger}`);
+            log(`  - EventBus: ${typeof KC.EventBus}`);
+            log(`  - AppState: ${typeof KC.AppState}`);
+            log(`  - TripleStoreManager: ${typeof KC.TripleStoreManager}`);
+            log(`  - TripleStoreService: ${typeof KC.TripleStoreService}`);
+            log(`  - RelationshipExtractor: ${typeof KC.RelationshipExtractor}`);
+            
+            // Verificar se o TripleStoreService está disponível
+            if (KC.TripleStoreService) {
+                log('\n✅ TripleStoreService está disponível');
+                
+                // Tentar criar uma instância
+                try {
+                    const service = new KC.TripleStoreService();
+                    log('✅ Instância criada com sucesso');
+                    
+                    // Verificar propriedades
+                    log('\n📋 Propriedades da instância:');
+                    log(`  - initialized: ${service.initialized}`);
+                    log(`  - manager: ${service.manager}`);
+                    log(`  - extractor: ${service.extractor}`);
+                    log(`  - stats: ${JSON.stringify(service.stats)}`);
+                    
+                } catch (error) {
+                    log(`❌ Erro ao criar instância: ${error.message}`);
+                }
+            } else {
+                log('❌ TripleStoreService NÃO está disponível');
+            }
+            
+            // Verificar se testTripleStoreService está disponível
+            if (typeof testTripleStoreService === 'function') {
+                log('\n✅ Função testTripleStoreService está disponível');
+            } else {
+                log('\n❌ Função testTripleStoreService NÃO está disponível');
+            }
+            
+        } else {
+            log('❌ window.KnowledgeConsolidator NÃO existe');
+        }
+        
+        // Verificar scripts carregados
+        log('\n📋 Scripts carregados:');
+        const scripts = document.querySelectorAll('script[src]');
+        scripts.forEach(script => {
+            log(`  - ${script.src.split('/').pop()}`);
+        });
+    </script>
+</body>
+</html>

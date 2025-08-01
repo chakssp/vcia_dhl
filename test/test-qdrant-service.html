@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - QdrantService</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #3a3a3a;
+        }
+        h1, h2 {
+            color: #00ffcc;
+        }
+        button {
+            background: #00ffcc;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00ddb3;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success { background: #1a3a1a; color: #00ff00; }
+        .status.error { background: #3a1a1a; color: #ff0000; }
+        .status.info { background: #1a2a3a; color: #0099ff; }
+        .result {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            color: #e0e0e0;
+            border-radius: 4px;
+        }
+        .search-result {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #3a3a3a;
+        }
+        .search-result.high-score { border-color: #00ff00; }
+        .search-result.medium-score { border-color: #ffaa00; }
+        .search-result.low-score { border-color: #ff6666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Teste do QdrantService</h1>
+        
+        <div class="section">
+            <h2>1️⃣ Conexão e Inicialização</h2>
+            <button onclick="testConnection()">Testar Conexão</button>
+            <button onclick="initialize()">Inicializar Serviço</button>
+            <button onclick="getStats()">Ver Estatísticas</button>
+            <div id="connection-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>2️⃣ Inserir Dados de Teste</h2>
+            <button onclick="insertTestData()">Inserir Exemplos do Case Ambev</button>
+            <button onclick="insertCustom()">Inserir Ponto Customizado</button>
+            <div id="insert-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>3️⃣ Busca por Similaridade</h2>
+            <input type="text" id="search-text" placeholder="Digite sua busca..." value="Machine Learning no marketing">
+            <button onclick="searchSimilar()">Buscar</button>
+            <button onclick="searchWithFilter()">Buscar com Filtro</button>
+            <div id="search-results"></div>
+        </div>
+
+        <div class="section">
+            <h2>4️⃣ Operações CRUD</h2>
+            <button onclick="listPoints()">Listar Pontos</button>
+            <button onclick="updatePoint()">Atualizar Payload</button>
+            <button onclick="deletePoints()">Deletar Pontos</button>
+            <div id="crud-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Estatísticas da Coleção</h2>
+            <button onclick="getCollectionStats()">Atualizar Stats</button>
+            <div id="stats-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Namespace
+        window.KC = window.KC || {};
+
+        // Carregar serviços necessários
+        const scripts = [
+            '../js/services/EmbeddingService.js',
+            '../js/services/QdrantService.js'
+        ];
+
+        scripts.forEach(src => {
+            const script = document.createElement('script');
+            script.src = src;
+            document.head.appendChild(script);
+        });
+
+        // Dados de exemplo
+        const testData = [
+            {
+                id: 1,
+                text: "Ambev implementou Machine Learning para análise preditiva resultando em +32% de brand awareness",
+                category: "IA/ML",
+                tags: ["machine-learning", "marketing", "ambev"]
+            },
+            {
+                id: 2,
+                text: "Projeto 2Litros revolucionou marketing digital com algoritmos de personalização",
+                category: "Marketing Digital",
+                tags: ["personalização", "algoritmos", "2litros"]
+            },
+            {
+                id: 3,
+                text: "Análise de dados permitiu otimizar campanhas publicitárias com IA",
+                category: "Analytics",
+                tags: ["dados", "otimização", "ia"]
+            },
+            {
+                id: 4,
+                text: "Integração de IA aumentou conversão em vendas em 45%",
+                category: "Vendas",
+                tags: ["vendas", "conversão", "ia"]
+            },
+            {
+                id: 5,
+                text: "Computer vision aplicada em PDVs para análise de comportamento",
+                category: "Computer Vision",
+                tags: ["visão-computacional", "pdv", "comportamento"]
+            }
+        ];
+
+        // Helper para mostrar resultados
+        function showResult(elementId, content, type = 'info') {
+            document.getElementById(elementId).innerHTML = 
+                `<div class="status ${type}">${content}</div>`;
+        }
+
+        // 1. Testar conexão
+        async function testConnection() {
+            try {
+                showResult('connection-result', '⏳ Testando conexão com Qdrant...', 'info');
+                
+                if (!KC.QdrantService) {
+                    showResult('connection-result', '❌ QdrantService não carregado', 'error');
+                    return;
+                }
+
+                const connected = await KC.QdrantService.checkConnection();
+                
+                if (connected) {
+                    showResult('connection-result', 
+                        '✅ Conectado ao Qdrant em ' + KC.QdrantService.config.baseUrl, 
+                        'success'
+                    );
+                } else {
+                    showResult('connection-result', 
+                        '❌ Não foi possível conectar ao Qdrant. Verifique se está acessível.', 
+                        'error'
+                    );
+                }
+            } catch (error) {
+                showResult('connection-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. Inicializar
+        async function initialize() {
+            try {
+                showResult('connection-result', '⏳ Inicializando QdrantService...', 'info');
+                
+                await KC.QdrantService.initialize();
+                
+                showResult('connection-result', 
+                    `✅ Serviço inicializado! Coleção: ${KC.QdrantService.config.collectionName}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('connection-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. Inserir dados de teste
+        async function insertTestData() {
+            try {
+                showResult('insert-result', '⏳ Gerando embeddings e inserindo dados...', 'info');
+                
+                if (!KC.EmbeddingService) {
+                    showResult('insert-result', '❌ EmbeddingService não disponível', 'error');
+                    return;
+                }
+
+                const points = [];
+                
+                // Gerar embeddings para cada exemplo
+                for (const item of testData) {
+                    const embedding = await KC.EmbeddingService.generateEmbedding(item.text, {
+                        category: item.category
+                    });
+                    
+                    points.push({
+                        id: item.id,
+                        vector: embedding.embedding,
+                        payload: {
+                            text: item.text,
+                            category: item.category,
+                            tags: item.tags,
+                            timestamp: Date.now()
+                        }
+                    });
+                }
+
+                // Inserir em batch
+                await KC.QdrantService.insertBatch(points);
+                
+                showResult('insert-result', 
+                    `✅ ${points.length} pontos inseridos com sucesso!`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult('insert-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. Buscar por similaridade
+        async function searchSimilar() {
+            try {
+                const searchText = document.getElementById('search-text').value;
+                if (!searchText) {
+                    showResult('search-results', '❌ Digite um texto para buscar', 'error');
+                    return;
+                }
+
+                showResult('search-results', '⏳ Buscando...', 'info');
+
+                // Buscar usando texto (gera embedding automaticamente)
+                const results = await KC.QdrantService.searchByText(searchText, {
+                    limit: 5
+                });
+
+                // Mostrar resultados
+                let html = `<h3>Resultados para: "${searchText}"</h3>`;
+                
+                results.forEach((result, index) => {
+                    const score = Math.round(result.score * 100);
+                    const scoreClass = score > 80 ? 'high-score' : 
+                                     score > 60 ? 'medium-score' : 'low-score';
+                    
+                    html += `
+                        <div class="search-result ${scoreClass}">
+                            <strong>#${index + 1}</strong> - Score: ${score}%<br>
+                            <strong>ID:</strong> ${result.id}<br>
+                            <strong>Texto:</strong> ${result.payload.text}<br>
+                            <strong>Categoria:</strong> ${result.payload.category}<br>
+                            <strong>Tags:</strong> ${result.payload.tags?.join(', ')}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('search-results').innerHTML = html;
+
+            } catch (error) {
+                showResult('search-results', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. Buscar com filtro
+        async function searchWithFilter() {
+            try {
+                const searchText = document.getElementById('search-text').value;
+                if (!searchText) {
+                    showResult('search-results', '❌ Digite um texto para buscar', 'error');
+                    return;
+                }
+                
+                showResult('search-results', '⏳ Buscando com filtro...', 'info');
+
+                // Gerar embedding para busca
+                const embedding = await KC.EmbeddingService.generateEmbedding(searchText);
+
+                // Buscar apenas em categorias específicas
+                const results = await KC.QdrantService.search(embedding.embedding, {
+                    limit: 5,
+                    filter: {
+                        must: [
+                            {
+                                key: "category",
+                                match: {
+                                    value: "IA/ML"
+                                }
+                            }
+                        ]
+                    }
+                });
+
+                // Mostrar resultados
+                let html = `<h3>Resultados filtrados (categoria: IA/ML):</h3>`;
+                
+                if (results.length === 0) {
+                    html += '<p>Nenhum resultado encontrado com o filtro aplicado.</p>';
+                } else {
+                    results.forEach((result, index) => {
+                        const score = Math.round(result.score * 100);
+                        html += `
+                            <div class="search-result">
+                                <strong>#${index + 1}</strong> - Score: ${score}%<br>
+                                ${result.payload?.text || 'Sem texto'}<br>
+                                Categoria: ${result.payload?.category || 'Sem categoria'}
+                            </div>
+                        `;
+                    });
+                }
+
+                document.getElementById('search-results').innerHTML = html;
+
+            } catch (error) {
+                showResult('search-results', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro na busca com filtro:', error);
+            }
+        }
+
+        // 6. Estatísticas da coleção
+        async function getCollectionStats() {
+            try {
+                showResult('stats-result', '⏳ Obtendo estatísticas...', 'info');
+                
+                const stats = await KC.QdrantService.getCollectionStats();
+                
+                const html = `
+                    <h3>📊 Estatísticas da Coleção</h3>
+                    <strong>Nome:</strong> ${KC.QdrantService.config.collectionName}<br>
+                    <strong>Total de Pontos:</strong> ${stats.pointsCount}<br>
+                    <strong>Vetores Indexados:</strong> ${stats.indexedVectorsCount}<br>
+                    <strong>Status:</strong> ${stats.status}<br>
+                    <strong>Dimensões:</strong> ${stats.config?.params?.vectors?.size || 768}<br>
+                    <strong>Distância:</strong> ${stats.config?.params?.vectors?.distance || 'Cosine'}
+                `;
+                
+                document.getElementById('stats-result').innerHTML = 
+                    `<div class="result">${html}</div>`;
+                    
+            } catch (error) {
+                showResult('stats-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // 7. Ver estatísticas do serviço
+        async function getStats() {
+            const stats = KC.QdrantService.getStats();
+            
+            const html = `
+                <h3>📈 Estatísticas do Serviço</h3>
+                <strong>Pontos Inseridos:</strong> ${stats.pointsInserted}<br>
+                <strong>Buscas Realizadas:</strong> ${stats.searchesPerformed}<br>
+                <strong>Erros:</strong> ${stats.errors}<br>
+                <strong>Cache de Buscas:</strong> ${stats.cacheSize} itens<br>
+                <strong>Inicializado:</strong> ${stats.initialized ? 'Sim' : 'Não'}
+            `;
+            
+            document.getElementById('connection-result').innerHTML = 
+                `<div class="result">${html}</div>`;
+        }
+
+        // Funções CRUD adicionais
+        async function insertCustom() {
+            try {
+                const text = prompt('Digite o texto para inserir:');
+                if (!text) return;
+
+                showResult('insert-result', '⏳ Inserindo ponto customizado...', 'info');
+
+                const embedding = await KC.EmbeddingService.generateEmbedding(text);
+                
+                await KC.QdrantService.insertPoint({
+                    id: Date.now(),
+                    vector: embedding.embedding,
+                    payload: {
+                        text: text,
+                        category: 'custom',
+                        timestamp: Date.now()
+                    }
+                });
+
+                showResult('insert-result', '✅ Ponto customizado inserido!', 'success');
+            } catch (error) {
+                showResult('insert-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function listPoints() {
+            try {
+                showResult('crud-result', '⏳ Listando pontos...', 'info');
+                
+                // Usar o novo método scrollPoints
+                const result = await KC.QdrantService.scrollPoints({
+                    limit: 100,
+                    withPayload: true,
+                    withVector: false
+                });
+
+                const points = result?.points || [];
+
+                let html = '<h3>Pontos na coleção:</h3>';
+                if (points.length === 0) {
+                    html += '<p>Nenhum ponto encontrado.</p>';
+                } else {
+                    html += `<p>Total: ${points.length} pontos</p>`;
+                    points.forEach(point => {
+                        const text = point.payload?.text || 'Sem texto';
+                        const category = point.payload?.category || 'Sem categoria';
+                        html += `
+                            <div class="search-result">
+                                <strong>ID: ${point.id}</strong><br>
+                                Texto: ${text.substring(0, 100)}...<br>
+                                Categoria: ${category}
+                            </div>
+                        `;
+                    });
+                }
+
+                document.getElementById('crud-result').innerHTML = html;
+            } catch (error) {
+                showResult('crud-result', `❌ Erro: ${error.message}`, 'error');
+                console.error('Erro ao listar pontos:', error);
+            }
+        }
+
+        async function updatePoint() {
+            try {
+                const id = prompt('ID do ponto para atualizar:');
+                if (!id) return;
+
+                showResult('crud-result', '⏳ Atualizando...', 'info');
+
+                await KC.QdrantService.updatePayload(parseInt(id), {
+                    updated: true,
+                    updatedAt: new Date().toISOString()
+                });
+
+                showResult('crud-result', '✅ Payload atualizado!', 'success');
+            } catch (error) {
+                showResult('crud-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function deletePoints() {
+            try {
+                const ids = prompt('IDs para deletar (separados por vírgula):');
+                if (!ids) return;
+
+                showResult('crud-result', '⏳ Deletando...', 'info');
+
+                const idArray = ids.split(',').map(id => parseInt(id.trim()));
+                await KC.QdrantService.deletePoints(idArray);
+
+                showResult('crud-result', '✅ Pontos deletados!', 'success');
+            } catch (error) {
+                showResult('crud-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Verificar quando carregado
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (KC.QdrantService && KC.EmbeddingService) {
+                    showResult('connection-result', 
+                        '✅ Serviços carregados! Teste a conexão para começar.', 
+                        'success'
+                    );
+                } else {
+                    showResult('connection-result', 
+                        '❌ Erro ao carregar serviços. Recarregue a página.', 
+                        'error'
+                    );
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

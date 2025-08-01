@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Extraction Debug Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Extraction Debug Test</h1>
+    <div id="output"></div>
+
+    <script>
+        // Mock KC namespace
+        window.KnowledgeConsolidator = window.KnowledgeConsolidator || {};
+        
+        // Mock Logger
+        window.KnowledgeConsolidator.Logger = {
+            info: console.log,
+            warn: console.warn,
+            error: console.error,
+            debug: console.log
+        };
+        
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            output.appendChild(div);
+            console.log(message);
+        }
+    </script>
+
+    <!-- Load dependencies in order -->
+    <script src="js/schemas/TripleSchema.js"></script>
+    <script src="js/extractors/RelationshipExtractor.js"></script>
+    
+    <script>
+        // Comprehensive test
+        async function runTests() {
+            log('=== EXTRACTION DEBUG TEST ===', 'info');
+            
+            const KC = window.KnowledgeConsolidator;
+            
+            // Check dependencies
+            log(`KC namespace: ${typeof KC}`, KC ? 'success' : 'error');
+            log(`KC.TripleSchema: ${typeof KC.TripleSchema}`, KC.TripleSchema ? 'success' : 'error');
+            log(`KC.RelationshipExtractor: ${typeof KC.RelationshipExtractor}`, KC.RelationshipExtractor ? 'success' : 'error');
+            
+            if (!KC.RelationshipExtractor) {
+                log('RelationshipExtractor not found!', 'error');
+                return;
+            }
+            
+            // Create extractor
+            let extractor;
+            try {
+                extractor = new KC.RelationshipExtractor();
+                log('✓ Extractor created successfully', 'success');
+            } catch (err) {
+                log(`✗ Error creating extractor: ${err.message}`, 'error');
+                return;
+            }
+            
+            // Check patterns
+            log('\n=== CHECKING PATTERNS ===', 'info');
+            if (extractor.padroes) {
+                log(`✓ Patterns object exists`, 'success');
+                log(`Keywords categories: ${Object.keys(extractor.padroes.keywords).join(', ')}`, 'info');
+                
+                // Show keywords for each category
+                for (const [cat, keywords] of Object.entries(extractor.padroes.keywords)) {
+                    log(`  ${cat}: ${keywords.join(', ')}`, 'info');
+                }
+            } else {
+                log(`✗ Patterns object missing`, 'error');
+            }
+            
+            // Test file with rich content
+            const testFile = {
+                id: 'test_001',
+                name: 'test-project.md',
+                content: `Este projeto utiliza Machine Learning e Python para análise de dados.
+                Implementamos algoritmos de Deep Learning com TensorFlow.
+                O sistema integra com React e Node.js para a interface.
+                Decisão importante: migrar para microserviços.
+                Insight: a modularização permitiu deploy independente.
+                O código está organizado em módulos com arquitetura limpa.
+                Usamos implementação baseada em API REST.
+                Foi um breakthrough técnico importante.`,
+                type: 'text/markdown',
+                size: 500,
+                createdAt: '2024-01-15T10:00:00Z',
+                modifiedAt: '2024-01-16T15:30:00Z'
+            };
+            
+            log('\n=== TESTING BASIC EXTRACTION ===', 'info');
+            try {
+                const basicas = extractor.extrairRelacionamentosBasicos(testFile);
+                log(`✓ Basic relationships extracted: ${basicas.length}`, 'success');
+                basicas.forEach((t, i) => {
+                    log(`  ${i+1}. ${t.legado.valor} → ${t.presente.valor} → ${t.objetivo.valor}`, 'info');
+                });
+            } catch (err) {
+                log(`✗ Basic extraction error: ${err.message}`, 'error');
+            }
+            
+            log('\n=== TESTING CONTENT EXTRACTION ===', 'info');
+            try {
+                const conteudo = await extractor.extrairRelacionamentosDeConteudo(testFile);
+                log(`✓ Content relationships extracted: ${conteudo.length}`, 'success');
+                
+                if (conteudo.length === 0) {
+                    log('⚠ No content relationships found - checking why...', 'error');
+                    
+                    // Debug keyword detection
+                    log('\n--- Testing keyword detection manually ---', 'info');
+                    const testKeywords = ['machine learning', 'python', 'decisão', 'insight', 'código'];
+                    testKeywords.forEach(kw => {
+                        const found = testFile.content.toLowerCase().includes(kw.toLowerCase());
+                        log(`  Keyword "${kw}": ${found ? '✓ FOUND' : '✗ NOT FOUND'}`, found ? 'success' : 'error');
+                    });
+                    
+                    // Test detectarKeywords method directly
+                    if (typeof extractor.detectarKeywords === 'function') {
+                        log('\n--- Testing detectarKeywords method ---', 'info');
+                        const tecnicas = extractor.detectarKeywords(testFile.content, extractor.padroes.keywords.tecnico);
+                        log(`  Technical keywords found: ${tecnicas.join(', ') || 'NONE'}`, tecnicas.length > 0 ? 'success' : 'error');
+                    }
+                } else {
+                    conteudo.slice(0, 5).forEach((t, i) => {
+                        log(`  ${i+1}. ${t.legado.valor} → ${t.presente.valor} → ${t.objetivo.valor}`, 'info');
+                    });
+                }
+            } catch (err) {
+                log(`✗ Content extraction error: ${err.message}`, 'error');
+                console.error(err);
+            }
+            
+            log('\n=== TESTING FULL EXTRACTION ===', 'info');
+            try {
+                const todas = await extractor.extrairDeArquivo(testFile);
+                log(`✓ Total relationships extracted: ${todas.length}`, 'success');
+                
+                // Group by type
+                const byType = {};
+                todas.forEach(t => {
+                    const type = t.presente.valor;
+                    byType[type] = (byType[type] || 0) + 1;
+                });
+                
+                log('\nRelationships by type:', 'info');
+                Object.entries(byType).forEach(([type, count]) => {
+                    log(`  ${type}: ${count}`, 'info');
+                });
+            } catch (err) {
+                log(`✗ Full extraction error: ${err.message}`, 'error');
+            }
+        }
+        
+        // Run tests after page loads
+        setTimeout(runTests, 500);
+    </script>
+</body>
+</html>

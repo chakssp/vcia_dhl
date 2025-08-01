@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Template Select</title>
+</head>
+<body>
+    <h1>Teste de Seleção de Template</h1>
+    
+    <p>Execute os seguintes comandos no console após abrir o modal de configuração:</p>
+    
+    <pre>
+// 1. Verificar se o select existe e tem as opções corretas
+const select = document.getElementById('analysis-template');
+console.log('Select encontrado:', !!select);
+console.log('Opções disponíveis:');
+Array.from(select.options).forEach(opt => {
+    console.log(`- ${opt.value}: ${opt.text} (selected: ${opt.selected})`);
+});
+
+// 2. Ver qual valor está selecionado
+console.log('Valor atual:', select.value);
+
+// 3. Tentar mudar programaticamente
+select.value = 'technicalInsights';
+console.log('Novo valor após mudança:', select.value);
+
+// 4. Disparar evento change manualmente
+select.dispatchEvent(new Event('change'));
+
+// 5. Verificar se o handler foi chamado
+// Deve aparecer nos logs: "APIConfig: Template alterado para: technicalInsights"
+    </pre>
+    
+    <h2>Solução Alternativa</h2>
+    <p>Se o problema persistir, execute este código para forçar a atualização:</p>
+    
+    <pre>
+// Forçar atualização dos campos com um template específico
+KC.APIConfig.config.analysis.template = 'technicalInsights';
+KC.APIConfig.loadTemplateDetails();
+    </pre>
+</body>
+</html>

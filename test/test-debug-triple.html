@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Debug Triple Extraction</title>
+</head>
+<body>
+    <h1>Debug Triple Extraction Test</h1>
+    <button onclick="runDebug()">Run debugTripleExtraction()</button>
+    <pre id="output"></pre>
+
+    <script type="module">
+        // Importar os módulos necessários
+        import './js/extractors/RelationshipExtractor.js';
+        import './js/managers/TripleStoreManager.js';
+        import './js/schemas/TripleSchema.js';
+        import './js/services/TripleStoreService.js';
+        import './test/debug-triple-extraction.js';
+        
+        window.runDebug = async function() {
+            const output = document.getElementById('output');
+            output.textContent = 'Executando debug...\n\n';
+            
+            // Capturar console.log
+            const logs = [];
+            const originalLog = console.log;
+            const originalError = console.error;
+            
+            console.log = (...args) => {
+                const msg = args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                logs.push(msg);
+                originalLog(...args);
+            };
+            
+            console.error = (...args) => {
+                const msg = 'ERROR: ' + args.map(arg => 
+                    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+                ).join(' ');
+                logs.push(msg);
+                originalError(...args);
+            };
+            
+            try {
+                if (typeof debugTripleExtraction === 'function') {
+                    await debugTripleExtraction();
+                } else {
+                    logs.push('ERROR: debugTripleExtraction não está definida');
+                }
+            } catch (error) {
+                logs.push('ERROR: ' + error.toString());
+                console.error(error);
+            }
+            
+            // Restaurar console
+            console.log = originalLog;
+            console.error = originalError;
+            
+            // Mostrar resultado
+            output.textContent = logs.join('\n');
+        };
+        
+        // Auto-executar ao carregar
+        window.addEventListener('load', () => {
+            setTimeout(runDebug, 1000);
+        });
+    </script>
+</body>
+</html>

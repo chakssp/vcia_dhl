@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Debug Content Extraction</title>
+</head>
+<body>
+    <h1>Debug Content Extraction Test</h1>
+    <pre id="output"></pre>
+
+    <script>
+        // Capture console output
+        const output = document.getElementById('output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            output.textContent += args.join(' ') + '\n';
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            output.textContent += '❌ ERROR: ' + args.join(' ') + '\n';
+        };
+    </script>
+
+    <!-- Load required dependencies -->
+    <script src="js/utils/Logger.js"></script>
+    <script src="js/schemas/TripleSchema.js"></script>
+    <script src="js/extractors/RelationshipExtractor.js"></script>
+    
+    <!-- Load debug script -->
+    <script src="test/debug-content-extraction.js"></script>
+    
+    <script>
+        // Execute debug function
+        setTimeout(() => {
+            console.log('Starting debug...\n');
+            if (typeof debugContentExtraction === 'function') {
+                debugContentExtraction();
+            } else {
+                console.error('debugContentExtraction not found!');
+            }
+        }, 500);
+    </script>
+</body>
+</html>

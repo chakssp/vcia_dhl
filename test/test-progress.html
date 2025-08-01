@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Barra de Progresso - UX Melhorada</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/progress-global.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    
+    <style>
+        body {
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.discovery { background: #06b6d4; }
+        .test-button.analysis { background: #f59e0b; }
+        .test-button.filter { background: #10b981; }
+        .test-button.export { background: #8b5cf6; }
+        
+        .log-output {
+            background: #f3f4f6;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .progress-info {
+            background: #e0f2fe;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .simulation-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Barra de Progresso Global</h1>
+    
+    <div class="test-section">
+        <h2>1. Status da Barra de Progresso</h2>
+        <button class="test-button" onclick="updateProgressInfo()">Atualizar Status</button>
+        <div id="progress-info" class="progress-info"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Simulações de Progresso</h2>
+        <div class="simulation-controls">
+            <button class="test-button discovery" onclick="simulateDiscovery()">🔍 Simular Descoberta</button>
+            <button class="test-button analysis" onclick="simulateAnalysis()">🧠 Simular Análise</button>
+            <button class="test-button filter" onclick="simulateFilter()">🔧 Simular Filtros</button>
+            <button class="test-button export" onclick="simulateExport()">📤 Simular Export</button>
+        </div>
+        <div class="simulation-controls">
+            <button class="test-button" onclick="simulateQuickProgress()">⚡ Progresso Rápido</button>
+            <button class="test-button" onclick="simulateIndeterminate()">🔄 Indeterminado</button>
+            <button class="test-button" onclick="simulateLongOperation()">⏳ Operação Longa</button>
+            <button class="test-button" onclick="forceStop()">⛔ Parar Forçado</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Teste de Operações Reais</h2>
+        <button class="test-button" onclick="testRealAnalysis()">Testar Análise Real</button>
+        <button class="test-button" onclick="testRealFilters()">Testar Filtros Reais</button>
+        <button class="test-button" onclick="testProgressEvents()">Testar Eventos de Progresso</button>
+        <div id="real-operations-log" class="log-output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Configurações de Progresso</h2>
+        <label>
+            <input type="checkbox" id="show-overlay" checked> Mostrar overlay de informações
+        </label><br>
+        <label>
+            <input type="checkbox" id="auto-hide" checked> Auto-esconder
+        </label><br>
+        <label>
+            Delay de esconder: <input type="range" id="hide-delay" min="0" max="2000" value="500" step="100">
+            <span id="hide-delay-value">500ms</span>
+        </label><br>
+        <label>
+            Tempo mínimo: <input type="range" id="min-time" min="500" max="3000" value="1000" step="100">
+            <span id="min-time-value">1000ms</span>
+        </label>
+        <button class="test-button" onclick="applySettings()">Aplicar Configurações</button>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/utils/ProgressManager.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        // Inicialização
+        const KC = window.KnowledgeConsolidator;
+        let logElement = document.getElementById('real-operations-log');
+        let progressInfo = document.getElementById('progress-info');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function updateProgressInfo() {
+            if (!KC.ProgressManager) {
+                progressInfo.innerHTML = '❌ ProgressManager não disponível';
+                return;
+            }
+            
+            const status = KC.ProgressManager.getStatus();
+            progressInfo.innerHTML = `
+                <strong>Status do ProgressManager:</strong><br>
+                Ativo: ${status.isActive ? '✅ Sim' : '❌ Não'}<br>
+                Operação atual: ${status.operation?.type || 'Nenhuma'}<br>
+                Tempo decorrido: ${status.elapsed}ms<br>
+                Configuração: ${JSON.stringify(KC.ProgressManager.config, null, 2)}
+            `;
+        }
+        
+        // Simulações de progresso
+        function simulateDiscovery() {
+            log('🔍 Simulando descoberta de arquivos...');
+            
+            KC.EventBus.emit(KC.Events.PROGRESS_START, {
+                type: 'discovery',
+                title: 'Descobrindo arquivos...',
+                details: 'Iniciando varredura de diretórios'
+            });
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                
+                KC.EventBus.emit(KC.Events.PROGRESS_UPDATE, {
+                    type: 'discovery',
+                    progress: Math.min(progress, 100),
+                    title: 'Descobrindo arquivos...',
+                    details: `${Math.floor(progress)}% - Processando diretório ${Math.floor(progress/10) + 1}`
+                });
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    KC.EventBus.emit(KC.Events.PROGRESS_END, {
+                        type: 'discovery',
+                        title: 'Descoberta concluída!',
+                        details: `${Math.floor(Math.random() * 500) + 100} arquivos encontrados`
+                    });
+                    log('✅ Simulação de descoberta concluída');
+                }
+            }, 200);
+        }
+        
+        function simulateAnalysis() {
+            log('🧠 Simulando análise IA...');
+            
+            KC.EventBus.emit(KC.Events.PROGRESS_START, {
+                type: 'analysis',
+                title: 'Analisando arquivo...',
+                details: 'Processando conteúdo com IA',
+                indeterminate: true
+            });
+            
+            setTimeout(() => {
+                KC.EventBus.emit(KC.Events.PROGRESS_END, {
+                    type: 'analysis',
+                    title: 'Análise concluída!',
+                    details: 'Breakthrough Técnico - Relevância: 87%'
+                });
+                log('✅ Simulação de análise concluída');
+            }, 3000);
+        }
+        
+        function simulateFilter() {
+            log('🔧 Simulando aplicação de filtros...');
+            
+            KC.EventBus.emit(KC.Events.PROGRESS_START, {
+                type: 'filter',
+                title: 'Aplicando filtros...',
+                details: 'Processando 1250 arquivos',
+                indeterminate: true
+            });
+            
+            setTimeout(() => {
+                KC.EventBus.emit(KC.Events.PROGRESS_END, {
+                    type: 'filter',
+                    title: 'Filtros aplicados!',
+                    details: '89 arquivos encontrados'
+                });
+                log('✅ Simulação de filtros concluída');
+            }, 800);
+        }
+        
+        function simulateExport() {
+            log('📤 Simulando exportação...');
+            
+            KC.EventBus.emit(KC.Events.PROGRESS_START, {
+                type: 'export',
+                title: 'Exportando dados...',
+                details: 'Preparando formato Qdrant'
+            });
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                
+                KC.EventBus.emit(KC.Events.PROGRESS_UPDATE, {
+                    type: 'export',
+                    progress: Math.min(progress, 100),
+                    title: 'Exportando dados...',
+                    details: `${Math.floor(progress)}% - Processando embeddings`
+                });
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    KC.EventBus.emit(KC.Events.PROGRESS_END, {
+                        type: 'export',
+                        title: 'Exportação concluída!',
+                        details: 'Arquivo export.json criado (2.3 MB)'
+                    });
+                    log('✅ Simulação de exportação concluída');
+                }
+            }, 300);
+        }
+        
+        function simulateQuickProgress() {
+            log('⚡ Simulando progresso rápido...');
+            KC.ProgressManager.quickProgress({
+                type: 'filter',
+                title: 'Operação rápida...',
+                details: 'Processamento instantâneo',
+                duration: 800
+            });
+        }
+        
+        function simulateIndeterminate() {
+            log('🔄 Simulando progresso indeterminado...');
+            KC.ProgressManager.start({
+                type: 'analysis',
+                title: 'Processando...',
+                details: 'Aguarde, operação em andamento',
+                indeterminate: true
+            });
+            
+            setTimeout(() => {
+                KC.ProgressManager.end({
+                    title: 'Processamento concluído!',
+                    details: 'Operação finalizada com sucesso'
+                });
+                log('✅ Progresso indeterminado finalizado');
+            }, 4000);
+        }
+        
+        function simulateLongOperation() {
+            log('⏳ Simulando operação longa...');
+            KC.ProgressManager.start({
+                type: 'discovery',
+                title: 'Operação longa em andamento...',
+                details: 'Esta operação pode demorar alguns segundos'
+            });
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                KC.ProgressManager.update({
+                    progress: progress,
+                    details: `${progress}% - Processando dados...`
+                });
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    KC.ProgressManager.end({
+                        title: 'Operação longa concluída!',
+                        details: 'Processamento finalizado'
+                    });
+                    log('✅ Operação longa finalizada');
+                }
+            }, 150);
+        }
+        
+        function forceStop() {
+            log('⛔ Parando progresso forçadamente...');
+            KC.ProgressManager.forceEnd();
+        }
+        
+        // Testes com operações reais
+        function testRealAnalysis() {
+            log('🧪 Testando análise com FileRenderer...');
+            
+            if (!KC.FileRenderer) {
+                log('❌ FileRenderer não disponível');
+                return;
+            }
+            
+            // Simula arquivo para análise
+            const testFile = {
+                id: 'test-file',
+                name: 'test-analysis.md',
+                content: 'Teste de análise com progresso...',
+                analyzed: false
+            };
+            
+            KC.FileRenderer.analyzeFile(testFile);
+            log('✅ Análise iniciada com FileRenderer');
+        }
+        
+        function testRealFilters() {
+            log('🧪 Testando filtros com dados reais...');
+            
+            // Cria dados de teste com muitos arquivos
+            const testFiles = [];
+            for (let i = 0; i < 150; i++) {
+                testFiles.push({
+                    id: `file-${i}`,
+                    name: `arquivo-${i}.md`,
+                    relevanceScore: Math.random() * 100,
+                    analyzed: Math.random() > 0.5
+                });
+            }
+            
+            KC.AppState.set('files', testFiles);
+            
+            if (KC.FilterManager) {
+                KC.FilterManager.applyCurrentFilters();
+                log('✅ Filtros aplicados com progresso');
+            } else {
+                log('❌ FilterManager não disponível');
+            }
+        }
+        
+        function testProgressEvents() {
+            log('🧪 Testando eventos de progresso...');
+            
+            // Monitora eventos
+            KC.EventBus.on(KC.Events.PROGRESS_START, (data) => {
+                log(`📨 PROGRESS_START: ${data.type} - ${data.title}`);
+            });
+            
+            KC.EventBus.on(KC.Events.PROGRESS_UPDATE, (data) => {
+                log(`📨 PROGRESS_UPDATE: ${data.progress}% - ${data.details}`);
+            });
+            
+            KC.EventBus.on(KC.Events.PROGRESS_END, (data) => {
+                log(`📨 PROGRESS_END: ${data.title}`);
+            });
+            
+            log('✅ Listeners de evento configurados');
+        }
+        
+        // Configurações
+        function applySettings() {
+            const showOverlay = document.getElementById('show-overlay').checked;
+            const autoHide = document.getElementById('auto-hide').checked;
+            const hideDelay = parseInt(document.getElementById('hide-delay').value);
+            const minTime = parseInt(document.getElementById('min-time').value);
+            
+            KC.ProgressManager.configure({
+                showOverlay: showOverlay,
+                autoHide: autoHide,
+                hideDelay: hideDelay,
+                minDisplayTime: minTime
+            });
+            
+            log(`⚙️ Configurações aplicadas: overlay=${showOverlay}, autoHide=${autoHide}, hideDelay=${hideDelay}ms, minTime=${minTime}ms`);
+            updateProgressInfo();
+        }
+        
+        // Inicialização
+        window.addEventListener('load', () => {
+            log('Teste de barra de progresso inicializado');
+            updateProgressInfo();
+            
+            // Configurar sliders
+            document.getElementById('hide-delay').addEventListener('input', (e) => {
+                document.getElementById('hide-delay-value').textContent = e.target.value + 'ms';
+            });
+            
+            document.getElementById('min-time').addEventListener('input', (e) => {
+                document.getElementById('min-time-value').textContent = e.target.value + 'ms';
+            });
+            
+            // Teste inicial automático
+            setTimeout(() => {
+                log('🎯 Executando teste automático...');
+                simulateQuickProgress();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Discovery Manager</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .directory-list {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .directory-item {
+            padding: 5px;
+            margin: 5px 0;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stat-card {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste do Discovery Manager</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de FileUtils</h2>
+        <button onclick="testFileUtils()">Testar FileUtils</button>
+        <div id="fileutils-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Configuração de Diretórios</h2>
+        <textarea id="directories-input" rows="5" placeholder="Insira diretórios de teste, um por linha">
+/Users/demo/Documents
+/Users/demo/Desktop/Notes
+C:\Users\demo\Obsidian</textarea>
+        <br>
+        <button onclick="addDirectories()">Adicionar Diretórios</button>
+        <button onclick="clearDirectories()">Limpar Lista</button>
+        <div id="directory-list" class="directory-list"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste de Descoberta</h2>
+        <label>
+            Profundidade de Subpastas:
+            <select id="depth-select">
+                <option value="0">Ilimitado</option>
+                <option value="1">1 nível</option>
+                <option value="2">2 níveis</option>
+            </select>
+        </label>
+        <br><br>
+        <button onclick="startDiscovery()">Iniciar Descoberta</button>
+        <button onclick="stopDiscovery()">Parar Descoberta</button>
+        <button onclick="testObsidian()">Testar Obsidian</button>
+        <div id="discovery-result"></div>
+        <div id="discovery-stats" class="stats-display"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Arquivos Descobertos</h2>
+        <button onclick="showFiles()">Mostrar Arquivos</button>
+        <div id="files-result"></div>
+    </div>
+
+    <script>
+        // Aguarda carregamento
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Carrega scripts necessários
+            const scripts = [
+                'js/core/EventBus.js',
+                'js/core/AppState.js',
+                'js/utils/FileUtils.js',
+                'js/managers/DiscoveryManager.js'
+            ];
+
+            for (const src of scripts) {
+                await loadScript(src);
+            }
+
+            initTests();
+        });
+
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error(`Falha ao carregar ${src}`));
+                document.head.appendChild(script);
+            });
+        }
+
+        function initTests() {
+            const KC = window.KnowledgeConsolidator;
+            if (!KC) {
+                addResult('fileutils-result', 'KC não encontrado!', 'error');
+                return;
+            }
+
+            // Inicializa componentes
+            if (KC.DiscoveryManager) {
+                KC.DiscoveryManager.initialize();
+            }
+
+            // Escuta eventos
+            if (KC.EventBus && KC.Events) {
+                KC.EventBus.on(KC.Events.PROGRESS_START, (data) => {
+                    addResult('discovery-result', `Descoberta iniciada: ${data.message}`, 'info');
+                });
+
+                KC.EventBus.on(KC.Events.PROGRESS_UPDATE, (data) => {
+                    const msg = `Progresso: ${data.current}/${data.total} - ${data.message}`;
+                    updateLastResult('discovery-result', msg, 'info');
+                });
+
+                KC.EventBus.on(KC.Events.FILES_DISCOVERED, (data) => {
+                    addResult('discovery-result', `Descoberta concluída! ${data.files.length} arquivos`, 'success');
+                    updateStats(data.stats);
+                });
+
+                KC.EventBus.on(KC.Events.ERROR_OCCURRED, (data) => {
+                    addResult('discovery-result', `Erro: ${data.error}`, 'error');
+                });
+            }
+
+            updateDirectoryList();
+            addResult('fileutils-result', 'Sistema pronto para testes!', 'success');
+        }
+
+        function addResult(elementId, message, type = 'info') {
+            const container = document.getElementById(elementId);
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(result);
+        }
+
+        function updateLastResult(elementId, message, type = 'info') {
+            const container = document.getElementById(elementId);
+            const lastResult = container.lastElementChild;
+            if (lastResult && lastResult.classList.contains('info')) {
+                lastResult.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            } else {
+                addResult(elementId, message, type);
+            }
+        }
+
+        function testFileUtils() {
+            const KC = window.KnowledgeConsolidator;
+            const container = document.getElementById('fileutils-result');
+            container.innerHTML = '';
+
+            if (!KC.FileUtils) {
+                addResult('fileutils-result', 'FileUtils não encontrado', 'error');
+                return;
+            }
+
+            // Teste 1: Formatação de tamanho
+            const sizes = [0, 1024, 1048576, 1073741824];
+            sizes.forEach(size => {
+                const formatted = KC.FileUtils.formatFileSize(size);
+                addResult('fileutils-result', `Tamanho ${size} = ${formatted}`, 'info');
+            });
+
+            // Teste 2: Validação de caminhos
+            const paths = [
+                '/Users/demo/test',
+                'C:\\Users\\demo\\test',
+                'invalid<>path'
+            ];
+            paths.forEach(path => {
+                const validation = KC.FileUtils.validatePath(path);
+                const status = validation.isValid ? 'success' : 'error';
+                addResult('fileutils-result', `Path "${path}": ${validation.isValid ? 'Válido' : 'Inválido'}`, status);
+            });
+
+            // Teste 3: Extensões suportadas
+            const files = ['test.md', 'doc.txt', 'file.docx', 'image.jpg'];
+            files.forEach(file => {
+                const supported = KC.FileUtils.isFileSupported(file);
+                const status = supported ? 'success' : 'info';
+                addResult('fileutils-result', `${file}: ${supported ? 'Suportado' : 'Não suportado'}`, status);
+            });
+
+            // Teste 4: Parse Obsidian
+            const obsidianJson = JSON.stringify({
+                vaults: {
+                    "vault1": { path: "/test/vault1", ts: Date.now() },
+                    "vault2": { path: "/test/vault2", ts: Date.now() }
+                }
+            });
+            const vaults = KC.FileUtils.parseObsidianVaults(obsidianJson);
+            addResult('fileutils-result', `Vaults Obsidian encontrados: ${vaults.length}`, 'success');
+        }
+
+        function addDirectories() {
+            const KC = window.KnowledgeConsolidator;
+            const textarea = document.getElementById('directories-input');
+            const dirs = textarea.value.split('\n').filter(d => d.trim());
+
+            dirs.forEach(dir => {
+                if (KC.DiscoveryManager && KC.DiscoveryManager.addDirectory(dir.trim())) {
+                    addResult('fileutils-result', `Diretório adicionado: ${dir}`, 'success');
+                }
+            });
+
+            updateDirectoryList();
+            textarea.value = '';
+        }
+
+        function clearDirectories() {
+            const KC = window.KnowledgeConsolidator;
+            if (KC.AppState) {
+                KC.AppState.set('configuration.discovery.directories', []);
+                updateDirectoryList();
+                addResult('fileutils-result', 'Lista de diretórios limpa', 'info');
+            }
+        }
+
+        function updateDirectoryList() {
+            const KC = window.KnowledgeConsolidator;
+            const container = document.getElementById('directory-list');
+            container.innerHTML = '';
+
+            if (!KC.AppState) return;
+
+            const dirs = KC.AppState.get('configuration.discovery.directories') || [];
+            
+            if (dirs.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d;">Nenhum diretório configurado</p>';
+                return;
+            }
+
+            dirs.forEach(dir => {
+                const item = document.createElement('div');
+                item.className = 'directory-item';
+                item.innerHTML = `
+                    <span>${dir}</span>
+                    <button onclick="removeDirectory('${dir}')" style="background: #dc3545;">Remover</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function removeDirectory(dir) {
+            const KC = window.KnowledgeConsolidator;
+            if (KC.DiscoveryManager && KC.DiscoveryManager.removeDirectory(dir)) {
+                updateDirectoryList();
+                addResult('fileutils-result', `Diretório removido: ${dir}`, 'info');
+            }
+        }
+
+        async function startDiscovery() {
+            const KC = window.KnowledgeConsolidator;
+            const depthSelect = document.getElementById('depth-select');
+            
+            document.getElementById('discovery-result').innerHTML = '';
+            document.getElementById('discovery-stats').innerHTML = '';
+
+            if (KC.DiscoveryManager) {
+                const result = await KC.DiscoveryManager.startDiscovery({
+                    subfolderDepth: parseInt(depthSelect.value)
+                });
+
+                if (!result.success) {
+                    addResult('discovery-result', `Falha: ${result.error}`, 'error');
+                }
+            }
+        }
+
+        function stopDiscovery() {
+            const KC = window.KnowledgeConsolidator;
+            if (KC.DiscoveryManager) {
+                KC.DiscoveryManager.stopDiscovery();
+                addResult('discovery-result', 'Descoberta cancelada', 'info');
+            }
+        }
+
+        async function testObsidian() {
+            const KC = window.KnowledgeConsolidator;
+            if (KC.DiscoveryManager) {
+                await KC.DiscoveryManager.startDiscovery({ checkObsidian: true });
+            }
+        }
+
+        function updateStats(stats) {
+            const container = document.getElementById('discovery-stats');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${stats.scannedDirectories}</div>
+                    <div class="stat-label">Diretórios</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.totalFiles}</div>
+                    <div class="stat-label">Total Arquivos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.matchedFiles}</div>
+                    <div class="stat-label">Válidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.skippedFiles}</div>
+                    <div class="stat-label">Ignorados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.errors}</div>
+                    <div class="stat-label">Erros</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${((stats.endTime - stats.startTime) / 1000).toFixed(1)}s</div>
+                    <div class="stat-label">Tempo</div>
+                </div>
+            `;
+        }
+
+        function showFiles() {
+            const KC = window.KnowledgeConsolidator;
+            const container = document.getElementById('files-result');
+            container.innerHTML = '';
+
+            if (!KC.AppState) return;
+
+            const files = KC.AppState.get('files') || [];
+            
+            addResult('files-result', `Total de arquivos: ${files.length}`, 'info');
+
+            files.slice(0, 10).forEach(file => {
+                const info = `${file.name} - ${file.sizeFormatted} - ${file.lastModifiedFormatted}`;
+                addResult('files-result', info, 'success');
+            });
+
+            if (files.length > 10) {
+                addResult('files-result', `... e mais ${files.length - 10} arquivos`, 'info');
+            }
+        }
+    </script>
+</body>
+</html>

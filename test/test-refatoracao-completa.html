@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste da Refatoração - Single Source of Truth</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    
+    <style>
+        body {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .test-header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .test-section {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .status-card {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .status-ok { color: #10b981; font-weight: bold; }
+        .status-error { color: #ef4444; font-weight: bold; }
+        .status-warning { color: #f59e0b; font-weight: bold; }
+        .log-output {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #1f2937;
+            margin-top: 0;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🚀 Teste da Refatoração - Single Source of Truth</h1>
+        <p>Validando implementação do Diagrama 5 com FilterManager centralizado</p>
+    </div>
+    
+    <!-- Status da Refatoração -->
+    <div class="test-section">
+        <h2>📊 Status da Refatoração</h2>
+        <div class="test-grid">
+            <div class="status-card">
+                <h3>✅ Implementado:</h3>
+                <ul>
+                    <li>FileRenderer.applyFilters() desativado</li>
+                    <li>FilterManager usa apenas FILES_FILTERED</li>
+                    <li>Removida atualização direta do FileRenderer</li>
+                    <li>Botão "Refinar Dados" adicionado</li>
+                </ul>
+            </div>
+            <div class="status-card">
+                <h3>🎯 Princípios Aplicados:</h3>
+                <ul>
+                    <li>Single Source of Truth</li>
+                    <li>Eventos unidirecionais</li>
+                    <li>Separação de responsabilidades</li>
+                    <li>Fluxo de dados simplificado</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Controles de Teste -->
+    <div class="test-section">
+        <h2>🎮 Controles de Teste</h2>
+        
+        <div class="filter-controls">
+            <!-- Dados -->
+            <button class="test-button" onclick="loadTestData()">📁 Carregar Dados de Teste</button>
+            <button class="test-button" onclick="checkComponents()">🔍 Verificar Componentes</button>
+            <button class="test-button" onclick="monitorEvents()">📡 Monitorar Eventos</button>
+            
+            <!-- Separador -->
+            <div style="width: 100%; height: 1px; background: #e5e7eb; margin: 10px 0;"></div>
+            
+            <!-- Filtros -->
+            <div class="filter-tabs" id="filter-tabs">
+                <button class="filter-tab active" data-filter="all">
+                    Todos <span class="tab-badge" id="badge-all">0</span>
+                </button>
+                <button class="filter-tab" data-filter="high">
+                    Alta Relevância <span class="tab-badge" id="badge-high">0</span>
+                </button>
+                <button class="filter-tab" data-filter="medium">
+                    Média Relevância <span class="tab-badge" id="badge-medium">0</span>
+                </button>
+                <button class="filter-tab" data-filter="pending">
+                    Pendente Análise <span class="tab-badge" id="badge-pending">0</span>
+                </button>
+                <button class="filter-tab" data-filter="analyzed">
+                    Já Analisados <span class="tab-badge" id="badge-analyzed">0</span>
+                </button>
+            </div>
+            
+            <!-- NOVO: Botão Refinar Dados -->
+            <button id="refine-data-btn" class="refine-button" onclick="testRefineData()">
+                🔍 Refinar Dados
+            </button>
+        </div>
+        
+        <div id="test-log" class="log-output"></div>
+    </div>
+    
+    <!-- Monitoramento de Eventos -->
+    <div class="test-section">
+        <h2>📡 Monitor de Eventos</h2>
+        <div id="event-monitor" class="log-output" style="max-height: 200px;"></div>
+    </div>
+    
+    <!-- Lista de Arquivos -->
+    <div class="test-section">
+        <h2>📄 Lista de Arquivos Renderizada</h2>
+        <div id="files-container"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        const KC = window.KnowledgeConsolidator;
+        let eventMonitorActive = false;
+        
+        // Dados de teste variados
+        const testFiles = [
+            {
+                name: 'decisao-critica.md',
+                path: '/vault/decisao-critica.md',
+                size: 8500,
+                modified: new Date(),
+                relevanceScore: 0.92,
+                content: 'Decisão estratégica sobre transformação digital com insights importantes.',
+                analyzed: false
+            },
+            {
+                name: 'notas-diarias.txt',
+                path: '/vault/notas-diarias.txt',
+                size: 1200,
+                modified: new Date(),
+                relevanceScore: 0.25,
+                content: 'Notas gerais do dia.',
+                analyzed: true
+            },
+            {
+                name: 'insight-projeto.md',
+                path: '/vault/insight-projeto.md',
+                size: 5600,
+                modified: new Date(),
+                relevanceScore: 0.78,
+                content: 'Insight importante sobre o projeto de inovação.',
+                analyzed: false
+            },
+            {
+                name: 'reuniao-equipe.md',
+                path: '/vault/reuniao-equipe.md',
+                size: 3200,
+                modified: new Date(),
+                relevanceScore: 0.45,
+                content: 'Ata da reunião de equipe.',
+                analyzed: true
+            },
+            {
+                name: 'breakthrough-tecnico.md',
+                path: '/vault/breakthrough-tecnico.md',
+                size: 7800,
+                modified: new Date(),
+                relevanceScore: 0.88,
+                content: 'Breakthrough técnico com aprendizados importantes.',
+                analyzed: false
+            },
+            {
+                name: 'ideias-random.txt',
+                path: '/vault/ideias-random.txt',
+                size: 900,
+                modified: new Date(),
+                relevanceScore: 0.15,
+                content: 'Ideias aleatórias.',
+                analyzed: false
+            }
+        ];
+        
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('test-log');
+            const time = new Date().toLocaleTimeString();
+            const icons = {
+                'info': 'ℹ️',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            };
+            
+            logEl.innerHTML += `[${time}] ${icons[type]} ${message}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function loadTestData() {
+            log('Carregando dados de teste...', 'info');
+            
+            // Carrega dados no AppState
+            KC.AppState.set('files', testFiles);
+            log(`${testFiles.length} arquivos carregados no AppState`, 'success');
+            
+            // Inicializa componentes
+            if (KC.FilterManager && !KC.FilterManager.initialized) {
+                KC.FilterManager.initialize();
+                log('FilterManager inicializado', 'success');
+            }
+            
+            if (KC.FileRenderer && !KC.FileRenderer.initialized) {
+                KC.FileRenderer.initialize();
+                KC.FileRenderer.setContainer('files-container');
+                log('FileRenderer inicializado', 'success');
+            }
+            
+            // Atualiza badges
+            updateBadges();
+        }
+        
+        function checkComponents() {
+            log('\n=== Verificando Componentes ===', 'info');
+            
+            // Verifica FilterManager
+            if (KC.FilterManager) {
+                log('FilterManager: Carregado', 'success');
+                if (KC.FilterManager.refineData) {
+                    log('  → refineData(): Disponível', 'success');
+                }
+                if (KC.FilterManager.applyCurrentFilters) {
+                    log('  → applyCurrentFilters(): Disponível', 'success');
+                }
+            } else {
+                log('FilterManager: NÃO ENCONTRADO', 'error');
+            }
+            
+            // Verifica FileRenderer
+            if (KC.FileRenderer) {
+                log('FileRenderer: Carregado', 'success');
+                log(`  → files: ${KC.FileRenderer.files.length}`, 'info');
+                log(`  → filteredFiles: ${KC.FileRenderer.filteredFiles.length}`, 'info');
+                
+                // Testa se applyFilters está desativado
+                const oldLength = KC.FileRenderer.filteredFiles.length;
+                KC.FileRenderer.applyFilters();
+                log('  → applyFilters(): Desativado (não filtra localmente)', 
+                    KC.FileRenderer.filteredFiles.length === oldLength ? 'success' : 'error');
+            } else {
+                log('FileRenderer: NÃO ENCONTRADO', 'error');
+            }
+        }
+        
+        function monitorEvents() {
+            if (eventMonitorActive) {
+                log('Monitor de eventos já está ativo', 'warning');
+                return;
+            }
+            
+            const monitor = document.getElementById('event-monitor');
+            monitor.innerHTML = 'Monitor de eventos iniciado...\n\n';
+            eventMonitorActive = true;
+            
+            // Monitora FILES_FILTERED
+            KC.EventBus.on(KC.Events.FILES_FILTERED, (data) => {
+                const time = new Date().toLocaleTimeString();
+                monitor.innerHTML += `[${time}] 📨 FILES_FILTERED\n`;
+                monitor.innerHTML += `  → Original: ${data.originalFiles.length} arquivos\n`;
+                monitor.innerHTML += `  → Filtrado: ${data.filteredFiles.length} arquivos\n`;
+                monitor.innerHTML += `  → Filtros: ${JSON.stringify(data.filters)}\n\n`;
+                monitor.scrollTop = monitor.scrollHeight;
+            });
+            
+            // Monitora outros eventos
+            ['FILTER_APPLIED', 'PROGRESS_START', 'PROGRESS_END'].forEach(eventName => {
+                if (KC.Events[eventName]) {
+                    KC.EventBus.on(KC.Events[eventName], (data) => {
+                        const time = new Date().toLocaleTimeString();
+                        monitor.innerHTML += `[${time}] 📢 ${eventName}\n`;
+                        if (data) {
+                            monitor.innerHTML += `  → ${JSON.stringify(data)}\n\n`;
+                        }
+                        monitor.scrollTop = monitor.scrollHeight;
+                    });
+                }
+            });
+            
+            log('Monitor de eventos ativado', 'success');
+        }
+        
+        function testRefineData() {
+            log('\n=== Testando Refinar Dados ===', 'info');
+            
+            if (!KC.FilterManager || !KC.FilterManager.refineData) {
+                log('FilterManager.refineData() não disponível!', 'error');
+                return;
+            }
+            
+            log('Chamando FilterManager.refineData()...', 'info');
+            KC.FilterManager.refineData();
+            
+            // Verifica resultados após um delay
+            setTimeout(() => {
+                if (KC.FileRenderer && KC.FileRenderer.filteredFiles) {
+                    log(`Arquivos filtrados: ${KC.FileRenderer.filteredFiles.length}`, 'success');
+                    KC.FileRenderer.filteredFiles.forEach(file => {
+                        log(`  → ${file.name} (${Math.round(file.relevanceScore * 100)}%)`, 'info');
+                    });
+                }
+            }, 600);
+        }
+        
+        function updateBadges() {
+            const files = KC.AppState.get('files') || [];
+            
+            let counts = {
+                all: files.length,
+                high: files.filter(f => f.relevanceScore >= 0.7).length,
+                medium: files.filter(f => f.relevanceScore >= 0.5 && f.relevanceScore < 0.7).length,
+                pending: files.filter(f => !f.analyzed).length,
+                analyzed: files.filter(f => f.analyzed).length
+            };
+            
+            Object.entries(counts).forEach(([key, count]) => {
+                const badge = document.getElementById(`badge-${key}`);
+                if (badge) badge.textContent = count;
+            });
+        }
+        
+        // Configura listeners dos filtros
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Página de teste carregada', 'success');
+            
+            // Listeners para os botões de filtro
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const filter = tab.dataset.filter;
+                    log(`\nFiltro clicado: ${filter}`, 'info');
+                    
+                    // Remove active de todos
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Ativa filtro via FilterManager
+                    if (KC.FilterManager && KC.FilterManager.activateFilter) {
+                        KC.FilterManager.activateFilter(filter);
+                        log(`FilterManager.activateFilter('${filter}') chamado`, 'success');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Teste - Indexação de Arquivos Categorizados</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2563eb; }
+        h2 { color: #059669; margin-top: 0; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .log {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .success { color: #059669; }
+        .warning { color: #d97706; }
+        .error { color: #dc2626; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Indexação de Arquivos Categorizados</h1>
+    
+    <div class="section">
+        <h2>1️⃣ Criar Arquivo de Teste</h2>
+        <button onclick="criarArquivoTeste()">Criar Arquivo Sem Preview</button>
+        <button onclick="criarArquivoComPreview()">Criar Arquivo Com Preview</button>
+        <div id="arquivo-info" class="log" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="section">
+        <h2>2️⃣ Categorizar Arquivo</h2>
+        <button onclick="categorizarArquivo()">Adicionar Categoria "tecnico"</button>
+        <button onclick="adicionarMultiplasCategorias()">Adicionar 3 Categorias</button>
+        <div id="categoria-info" class="log" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="section">
+        <h2>3️⃣ Verificar Consolidação</h2>
+        <button onclick="verificarConsolidacao()">Verificar Dados para RAG</button>
+        <div id="consolidacao-info" class="log" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="section">
+        <h2>4️⃣ Processar Pipeline</h2>
+        <button onclick="processarPipeline()">Processar Arquivos Categorizados</button>
+        <div id="pipeline-info" class="log" style="margin-top: 10px;"></div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Console de Debug</h2>
+        <div id="console-log" class="log"></div>
+    </div>
+
+    <!-- Scripts do KC -->
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    <script src="../js/managers/CategoryManager.js"></script>
+    <script src="../js/managers/RAGExportManager.js"></script>
+    <script src="../js/utils/Logger.js"></script>
+    <script src="../js/utils/PreviewUtils.js"></script>
+    <script src="../js/utils/ChunkingUtils.js"></script>
+
+    <script>
+        // Arquivo de teste global
+        let arquivoTeste = null;
+        
+        // Logger personalizado para capturar logs
+        const logDiv = document.getElementById('console-log');
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog('info', args.join(' '));
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('warning', args.join(' '));
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('error', args.join(' '));
+        };
+        
+        function addLog(type, message) {
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<span class="${type}">[${time}] ${message}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Inicializar KC
+        KC.CategoryManager.initialize();
+        addLog('success', 'Sistema KC inicializado');
+
+        // 1. Criar arquivo de teste
+        function criarArquivoTeste() {
+            arquivoTeste = {
+                id: 'test-file-' + Date.now(),
+                name: 'arquivo-sem-preview.md',
+                path: '/test/arquivo-sem-preview.md',
+                size: 1024,
+                lastModified: Date.now(),
+                // SEM preview e SEM content propositalmente
+                relevanceScore: 30,
+                categories: [],
+                approved: false,
+                archived: false
+            };
+
+            // Salvar no AppState
+            const files = KC.AppState.get('files') || [];
+            files.push(arquivoTeste);
+            KC.AppState.set('files', files);
+
+            document.getElementById('arquivo-info').innerHTML = `
+<span class="success">✅ Arquivo criado SEM preview/content:</span>
+ID: ${arquivoTeste.id}
+Nome: ${arquivoTeste.name}
+Relevância: ${arquivoTeste.relevanceScore}%
+Preview: ${arquivoTeste.preview ? 'SIM' : '<span class="error">NÃO</span>'}
+Content: ${arquivoTeste.content ? 'SIM' : '<span class="error">NÃO</span>'}`;
+            
+            addLog('success', 'Arquivo de teste criado sem preview/content');
+        }
+
+        function criarArquivoComPreview() {
+            arquivoTeste = {
+                id: 'test-file-' + Date.now(),
+                name: 'arquivo-com-preview.md',
+                path: '/test/arquivo-com-preview.md',
+                size: 2048,
+                lastModified: Date.now(),
+                preview: 'Este é um preview do arquivo de teste com conteúdo relevante.',
+                relevanceScore: 45,
+                categories: [],
+                approved: false,
+                archived: false
+            };
+
+            // Salvar no AppState
+            const files = KC.AppState.get('files') || [];
+            files.push(arquivoTeste);
+            KC.AppState.set('files', files);
+
+            document.getElementById('arquivo-info').innerHTML = `
+<span class="success">✅ Arquivo criado COM preview:</span>
+ID: ${arquivoTeste.id}
+Nome: ${arquivoTeste.name}
+Relevância: ${arquivoTeste.relevanceScore}%
+Preview: ${arquivoTeste.preview ? '<span class="success">SIM</span>' : 'NÃO'}`;
+            
+            addLog('success', 'Arquivo de teste criado com preview');
+        }
+
+        // 2. Categorizar arquivo
+        function categorizarArquivo() {
+            if (!arquivoTeste) {
+                alert('Crie um arquivo primeiro!');
+                return;
+            }
+
+            const result = KC.CategoryManager.assignCategoryToFile(arquivoTeste.id, 'tecnico');
+            
+            // Buscar arquivo atualizado
+            const files = KC.AppState.get('files') || [];
+            arquivoTeste = files.find(f => f.id === arquivoTeste.id);
+
+            document.getElementById('categoria-info').innerHTML = `
+<span class="success">✅ Categoria atribuída:</span>
+Categorias: ${arquivoTeste.categories.join(', ')}
+Relevância Original: 30% → Boosted: ${arquivoTeste.relevanceScore}%
+Boost aplicado: ${Math.round((arquivoTeste.relevanceScore / 30 - 1) * 100)}%`;
+
+            addLog('success', `Categoria 'tecnico' atribuída. Nova relevância: ${arquivoTeste.relevanceScore}%`);
+        }
+
+        function adicionarMultiplasCategorias() {
+            if (!arquivoTeste) {
+                alert('Crie um arquivo primeiro!');
+                return;
+            }
+
+            const categorias = ['tecnico', 'estrategico', 'insight'];
+            categorias.forEach(cat => {
+                KC.CategoryManager.assignCategoryToFile(arquivoTeste.id, cat);
+            });
+
+            // Buscar arquivo atualizado
+            const files = KC.AppState.get('files') || [];
+            arquivoTeste = files.find(f => f.id === arquivoTeste.id);
+
+            document.getElementById('categoria-info').innerHTML = `
+<span class="success">✅ Múltiplas categorias atribuídas:</span>
+Categorias: ${arquivoTeste.categories.join(', ')}
+Total de categorias: ${arquivoTeste.categories.length}
+Relevância Boosted: ${arquivoTeste.relevanceScore}%
+Boost total: ${Math.round((1.5 + arquivoTeste.categories.length * 0.1 - 1) * 100)}%`;
+
+            addLog('success', `${categorias.length} categorias atribuídas. Nova relevância: ${arquivoTeste.relevanceScore}%`);
+        }
+
+        // 3. Verificar consolidação
+        async function verificarConsolidacao() {
+            try {
+                const data = await KC.RAGExportManager.consolidateData();
+                
+                const arquivoCategorizado = data.documents.find(d => d.id === arquivoTeste?.id);
+                
+                document.getElementById('consolidacao-info').innerHTML = `
+<span class="info">📊 Resultado da Consolidação:</span>
+Total de documentos: ${data.documents.length}
+Arquivo teste incluído: ${arquivoCategorizado ? '<span class="success">SIM</span>' : '<span class="error">NÃO</span>'}
+${arquivoCategorizado ? `
+Chunks gerados: ${arquivoCategorizado.chunks.length}
+Tipo do chunk: ${arquivoCategorizado.chunks[0]?.metadata?.isCategoryOnly ? 'Category-Only' : 
+                arquivoCategorizado.chunks[0]?.metadata?.isPreviewOnly ? 'Preview-Only' : 'Content'}
+Conteúdo do chunk: "${arquivoCategorizado.chunks[0]?.content?.substring(0, 100)}..."` : ''}`;
+
+                addLog('info', `Consolidação: ${data.documents.length} documentos prontos`);
+                
+            } catch (error) {
+                document.getElementById('consolidacao-info').innerHTML = 
+                    `<span class="error">❌ Erro: ${error.message}</span>`;
+                addLog('error', `Erro na consolidação: ${error.message}`);
+            }
+        }
+
+        // 4. Processar pipeline
+        async function processarPipeline() {
+            try {
+                // Simular processamento sem Ollama/Qdrant reais
+                const mockResult = {
+                    success: true,
+                    results: {
+                        processed: 1,
+                        failed: 0,
+                        totalChunks: 1
+                    },
+                    message: 'Pipeline simulado (sem Ollama/Qdrant ativos)'
+                };
+
+                // Verificar quantos arquivos categorizados existem
+                const files = KC.AppState.get('files') || [];
+                const categorizados = files.filter(f => f.categories && f.categories.length > 0);
+
+                document.getElementById('pipeline-info').innerHTML = `
+<span class="info">🚀 Resultado do Pipeline (Simulado):</span>
+Arquivos categorizados no sistema: ${categorizados.length}
+Arquivos que seriam processados: ${categorizados.filter(f => !f.archived).length}
+
+<span class="warning">⚠️ Nota: Para teste real, é necessário:</span>
+- Ollama rodando em localhost:11434
+- Qdrant acessível
+- Executar KC.RAGExportManager.processApprovedFiles()`;
+
+                addLog('info', `Pipeline simulado: ${categorizados.length} arquivos categorizados encontrados`);
+                
+            } catch (error) {
+                document.getElementById('pipeline-info').innerHTML = 
+                    `<span class="error">❌ Erro: ${error.message}</span>`;
+                addLog('error', `Erro no pipeline: ${error.message}`);
+            }
+        }
+
+        // Log inicial
+        addLog('info', 'Página de teste carregada. Use os botões para testar o fluxo.');
+    </script>
+</body>
+</html>

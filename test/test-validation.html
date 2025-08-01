@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validação de Componentes - Knowledge Consolidator</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-success { background: #d4edda; border-color: #c3e6cb; }
+        .test-error { background: #f8d7da; border-color: #f5c6cb; }
+        .test-warning { background: #fff3cd; border-color: #ffeaa7; }
+        .console-output { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .danger { background: #dc3545; }
+        .danger:hover { background: #c82333; }
+        .success { background: #28a745; }
+        .success:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Validação de Componentes KC</h1>
+    
+    <div class="test-section">
+        <h2>1. Teste de Componentes Core</h2>
+        <button onclick="testCoreComponents()">Testar Componentes</button>
+        <div id="core-results" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Teste de File System Access API</h2>
+        <button onclick="testFileSystemAPI()">Testar File System API</button>
+        <div id="filesystem-results" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Teste de Descoberta Real</h2>
+        <button onclick="testDiscovery()" class="success">Iniciar Descoberta de Arquivos</button>
+        <div id="discovery-results" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Diagnóstico Completo</h2>
+        <button onclick="runFullDiagnostics()">Executar kcdiag()</button>
+        <div id="diagnostic-results" class="console-output"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Console JavaScript</h2>
+        <div id="console-errors" class="console-output">
+            Abra o DevTools (F12) para ver erros do console em tempo real.
+        </div>
+    </div>
+
+    <!-- Scripts Core -->
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/core/AppController.js"></script>
+    
+    <!-- Scripts Utils -->
+    <script src="js/utils/Logger.js"></script>
+    <script src="js/utils/HandleManager.js"></script>
+    <script src="js/utils/BrowserCompatibility.js"></script>
+    <script src="js/utils/FileUtils.js"></script>
+    <script src="js/utils/DateUtils.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/utils/ValidationUtils.js"></script>
+    
+    <!-- Scripts Managers -->
+    <script src="js/managers/ConfigManager.js"></script>
+    <script src="js/managers/DiscoveryManager.js"></script>
+    <script src="js/managers/AnalysisManager.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/managers/ExportManager.js"></script>
+    <script src="js/managers/StatsManager.js"></script>
+    
+    <!-- Scripts Components -->
+    <script src="js/components/FileRenderer.js"></script>
+    <script src="js/components/ModalManager.js"></script>
+    <script src="js/components/WorkflowPanel.js"></script>
+    <script src="js/components/FilterBar.js"></script>
+    <script src="js/components/StatsPanel.js"></script>
+    
+    <!-- Script Principal -->
+    <script src="js/app.js"></script>
+
+    <script>
+        // Aguarda inicialização
+        setTimeout(() => {
+            console.log('Página de validação carregada');
+        }, 1000);
+
+        function testCoreComponents() {
+            const results = document.getElementById('core-results');
+            const KC = window.KnowledgeConsolidator;
+            
+            let html = '<h3>Status dos Componentes:</h3>';
+            
+            const components = [
+                'EventBus', 'AppState', 'AppController',
+                'Logger', 'handleManager', 'compatibility',
+                'DiscoveryManager', 'WorkflowPanel', 'ModalManager',
+                'ConfigManager', 'FilterManager', 'StatsManager'
+            ];
+            
+            components.forEach(comp => {
+                const exists = KC && KC[comp];
+                const status = exists ? '✅' : '❌';
+                const type = typeof (KC && KC[comp]);
+                html += `<div>${status} KC.${comp}: ${type}</div>`;
+            });
+            
+            results.innerHTML = html;
+            
+            // Testa EventBus
+            if (KC && KC.EventBus) {
+                try {
+                    KC.EventBus.emit('test-event', { test: true });
+                    html += '<div>✅ EventBus funcionando</div>';
+                } catch (e) {
+                    html += `<div>❌ EventBus erro: ${e.message}</div>`;
+                }
+            }
+            
+            results.innerHTML = html;
+        }
+
+        function testFileSystemAPI() {
+            const results = document.getElementById('filesystem-results');
+            
+            // Verifica se File System Access API está disponível
+            if ('showDirectoryPicker' in window) {
+                results.innerHTML = '✅ File System Access API disponível no navegador';
+            } else {
+                results.innerHTML = '❌ File System Access API NÃO disponível - Use Chrome/Edge';
+                return;
+            }
+            
+            // Testa compatibilidade
+            const KC = window.KnowledgeConsolidator;
+            if (KC && KC.compatibility) {
+                const supported = KC.compatibility.isSupported();
+                results.innerHTML += `<br>🌐 Compatibilidade: ${supported ? 'Suportado' : 'Não Suportado'}`;
+            }
+        }
+
+        async function testDiscovery() {
+            const results = document.getElementById('discovery-results');
+            const KC = window.KnowledgeConsolidator;
+            
+            if (!KC || !KC.DiscoveryManager) {
+                results.innerHTML = '❌ DiscoveryManager não disponível';
+                return;
+            }
+            
+            try {
+                results.innerHTML = '⏳ Iniciando descoberta de arquivos...';
+                
+                // Simula seleção de diretório
+                if ('showDirectoryPicker' in window) {
+                    results.innerHTML += '<br>📂 Clique em "Escolher pasta" quando aparecer o seletor de diretório...';
+                    
+                    const dirHandle = await window.showDirectoryPicker();
+                    results.innerHTML += `<br>✅ Diretório selecionado: ${dirHandle.name}`;
+                    
+                    // Testa descoberta
+                    const files = await KC.DiscoveryManager.scanDirectory(dirHandle);
+                    results.innerHTML += `<br>📄 ${files.length} arquivos descobertos`;
+                    
+                    if (files.length > 0) {
+                        results.innerHTML += '<br><strong>Primeiros arquivos:</strong>';
+                        files.slice(0, 5).forEach(file => {
+                            results.innerHTML += `<br>• ${file.name} (${file.size} bytes)`;
+                        });
+                    }
+                } else {
+                    results.innerHTML = '❌ File System Access API não disponível';
+                }
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    results.innerHTML = '⚠️ Seleção de diretório cancelada';
+                } else {
+                    results.innerHTML = `❌ Erro na descoberta: ${error.message}`;
+                }
+            }
+        }
+
+        function runFullDiagnostics() {
+            const results = document.getElementById('diagnostic-results');
+            
+            if (typeof window.kcdiag === 'function') {
+                // Captura saída do console
+                const originalLog = console.log;
+                let output = '';
+                
+                console.log = (...args) => {
+                    output += args.join(' ') + '<br>';
+                    originalLog(...args);
+                };
+                
+                const result = window.kcdiag();
+                console.log = originalLog;
+                
+                results.innerHTML = output + `<br><strong>Resultado: ${result}</strong>`;
+            } else {
+                results.innerHTML = '❌ Função kcdiag() não disponível';
+            }
+        }
+
+        // Captura erros do console
+        const originalError = console.error;
+        console.error = (...args) => {
+            const errorDiv = document.getElementById('console-errors');
+            errorDiv.innerHTML += `<div style="color: red;">❌ ${args.join(' ')}</div>`;
+            originalError(...args);
+        };
+
+        const originalWarn = console.warn;
+        console.warn = (...args) => {
+            const errorDiv = document.getElementById('console-errors');
+            errorDiv.innerHTML += `<div style="color: orange;">⚠️ ${args.join(' ')}</div>`;
+            originalWarn(...args);
+        };
+    </script>
+</body>
+</html>

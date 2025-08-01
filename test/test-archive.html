@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Arquivamento - Funcionalidade Completa</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    
+    <style>
+        body {
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-button.danger {
+            background: #ef4444;
+        }
+        .test-button.danger:hover {
+            background: #dc2626;
+        }
+        .log-output {
+            background: #f3f4f6;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .stats-display {
+            background: #e0f2fe;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .filter-bar {
+            margin: 10px 0;
+        }
+        .filter-button {
+            margin: 2px;
+            padding: 8px 16px;
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filter-button.active {
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Arquivamento - Funcionalidade Completa</h1>
+    
+    <div class="test-section">
+        <h2>1. Estatísticas Atuais</h2>
+        <button class="test-button" onclick="updateStats()">Atualizar Estatísticas</button>
+        <div id="stats-display" class="stats-display"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Testes de Arquivamento</h2>
+        <button class="test-button" onclick="testArchiveModal()">Testar Modal de Arquivamento</button>
+        <button class="test-button danger" onclick="archiveRandomFile()">Arquivar Arquivo Aleatório</button>
+        <button class="test-button" onclick="testArchiveFilters()">Testar Filtros de Arquivamento</button>
+        <div id="archive-log" class="log-output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Filtros de Arquivamento</h2>
+        <div class="filter-bar">
+            <button class="filter-button active" data-filter="all">Todos (Não Arquivados)</button>
+            <button class="filter-button" data-filter="alta-relevancia">Alta Relevância</button>
+            <button class="filter-button" data-filter="ja-analisados">Já Analisados</button>
+            <button class="filter-button" data-filter="arquivados">📦 Arquivados</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Lista de Arquivos</h2>
+        <div id="files-container"></div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="js/utils/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/components/FileRenderer.js"></script>
+    
+    <script>
+        // Inicialização
+        const KC = window.KnowledgeConsolidator;
+        let logElement = document.getElementById('archive-log');
+        let statsDisplay = document.getElementById('stats-display');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}<br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function updateStats() {
+            if (!KC.FileRenderer || !KC.FileRenderer.files) return;
+            
+            const files = KC.FileRenderer.files;
+            const archived = files.filter(f => f.archived);
+            const active = files.filter(f => !f.archived);
+            const analyzed = files.filter(f => f.analyzed);
+            
+            statsDisplay.innerHTML = `
+                <strong>Estatísticas dos Arquivos:</strong><br>
+                Total de arquivos: ${files.length}<br>
+                Arquivos ativos: ${active.length}<br>
+                Arquivos arquivados: ${archived.length}<br>
+                Arquivos analisados: ${analyzed.length}<br>
+                Filtro atual: ${KC.FileRenderer.currentFilter}<br>
+                Arquivos visíveis: ${KC.FileRenderer.filteredFiles.length}
+            `;
+        }
+        
+        // Dados de teste
+        const testFiles = [
+            {
+                id: 'file1',
+                name: 'insight-decisao.md',
+                path: '/test/insight-decisao.md',
+                size: 5000,
+                modified: new Date(),
+                relevanceScore: 85,
+                content: 'Insights sobre decisão estratégica...',
+                categories: ['Estratégia'],
+                analyzed: false,
+                archived: false
+            },
+            {
+                id: 'file2',
+                name: 'notas-reuniao.txt',
+                path: '/test/notas-reuniao.txt',
+                size: 2000,
+                modified: new Date(),
+                relevanceScore: 45,
+                content: 'Notas da reunião...',
+                categories: ['Reunião'],
+                analyzed: true,
+                archived: false
+            },
+            {
+                id: 'file3',
+                name: 'projeto-breakthrough.md',
+                path: '/test/projeto-breakthrough.md',
+                size: 8000,
+                modified: new Date(),
+                relevanceScore: 92,
+                content: 'Breakthrough técnico...',
+                categories: ['Técnico', 'Inovação'],
+                analyzed: false,
+                archived: false
+            },
+            {
+                id: 'file4',
+                name: 'arquivo-arquivado.txt',
+                path: '/test/arquivo-arquivado.txt',
+                size: 1500,
+                modified: new Date(),
+                relevanceScore: 30,
+                content: 'Arquivo já arquivado...',
+                categories: ['Arquivo'],
+                analyzed: true,
+                archived: true,
+                archivedDate: new Date().toISOString()
+            }
+        ];
+        
+        // Inicializa componentes
+        window.addEventListener('load', () => {
+            log('Inicializando teste de arquivamento...');
+            
+            // Configura AppState
+            KC.AppState.set('files', testFiles);
+            log(`AppState: ${testFiles.length} arquivos carregados`);
+            
+            // Inicializa FileRenderer
+            KC.FileRenderer.initialize();
+            KC.FileRenderer.setContainer('files-container');
+            log('FileRenderer inicializado');
+            
+            // Monitora eventos
+            KC.EventBus.on(KC.Events.STATE_CHANGED, (data) => {
+                if (data.path === 'files') {
+                    log(`📨 STATE_CHANGED: ${data.newValue.length} arquivos`);
+                    updateStats();
+                }
+            });
+            
+            // Atualiza estatísticas inicial
+            updateStats();
+        });
+        
+        // Função para testar modal de arquivamento
+        function testArchiveModal() {
+            log('🧪 Testando modal de arquivamento...');
+            
+            const activeFiles = KC.FileRenderer.files.filter(f => !f.archived);
+            if (activeFiles.length === 0) {
+                log('❌ Nenhum arquivo ativo encontrado para testar');
+                return;
+            }
+            
+            const testFile = activeFiles[0];
+            log(`Abrindo modal para: ${testFile.name}`);
+            
+            KC.FileRenderer.archiveFile(testFile);
+            log('✅ Modal de arquivamento aberto');
+        }
+        
+        // Função para arquivar arquivo aleatório
+        function archiveRandomFile() {
+            log('🎲 Arquivando arquivo aleatório...');
+            
+            const activeFiles = KC.FileRenderer.files.filter(f => !f.archived);
+            if (activeFiles.length === 0) {
+                log('❌ Nenhum arquivo ativo encontrado para arquivar');
+                return;
+            }
+            
+            const randomFile = activeFiles[Math.floor(Math.random() * activeFiles.length)];
+            log(`Arquivando: ${randomFile.name}`);
+            
+            KC.FileRenderer.executeArchive(randomFile);
+            log('✅ Arquivo arquivado com sucesso');
+            
+            updateStats();
+        }
+        
+        // Função para testar filtros
+        function testArchiveFilters() {
+            log('🔍 Testando filtros de arquivamento...');
+            
+            const filters = ['all', 'arquivados', 'alta-relevancia', 'ja-analisados'];
+            
+            filters.forEach(filter => {
+                KC.FileRenderer.currentFilter = filter;
+                KC.FileRenderer.renderFileList();
+                
+                const visibleCount = KC.FileRenderer.filteredFiles.length;
+                log(`Filtro "${filter}": ${visibleCount} arquivos visíveis`);
+            });
+            
+            // Volta para 'all'
+            KC.FileRenderer.currentFilter = 'all';
+            KC.FileRenderer.renderFileList();
+            
+            log('✅ Teste de filtros concluído');
+            updateStats();
+        }
+        
+        // Adiciona listeners aos botões de filtro
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const filter = e.target.dataset.filter;
+                log(`🎯 Filtro aplicado: ${filter}`);
+                
+                // Remove active de todos
+                document.querySelectorAll('.filter-button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Aplica filtro
+                KC.FileRenderer.currentFilter = filter;
+                KC.FileRenderer.renderFileList();
+                
+                updateStats();
+            });
+        });
+        
+        // Função para restaurar arquivo arquivado
+        function restoreArchivedFile(fileId) {
+            log(`🔄 Restaurando arquivo arquivado: ${fileId}`);
+            
+            const allFiles = KC.AppState.get('files') || [];
+            const fileIndex = allFiles.findIndex(f => f.id === fileId || f.name === fileId);
+            
+            if (fileIndex !== -1) {
+                allFiles[fileIndex].archived = false;
+                delete allFiles[fileIndex].archivedDate;
+                
+                KC.AppState.set('files', allFiles);
+                log('✅ Arquivo restaurado com sucesso');
+                updateStats();
+            }
+        }
+        
+        // Disponibiliza função globalmente para usar no console
+        window.restoreArchivedFile = restoreArchivedFile;
+        
+        // Logs informativos
+        log('ℹ️ Comandos disponíveis:');
+        log('- testArchiveModal(): Testa modal de arquivamento');
+        log('- archiveRandomFile(): Arquiva arquivo aleatório');
+        log('- testArchiveFilters(): Testa todos os filtros');
+        log('- restoreArchivedFile(id): Restaura arquivo arquivado');
+        log('- Use os filtros para visualizar diferentes conjuntos de arquivos');
+    </script>
+</body>
+</html>

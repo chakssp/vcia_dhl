@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Extração de Triplas - 2Litros</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .result-box {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Teste de Extração de Triplas Semânticas - 2Litros</h1>
+        
+        <p>Este teste executa a função <code>testeFinal2Litros()</code> para extrair triplas semânticas do conteúdo de exemplo da empresa 2Litros.</p>
+        
+        <button onclick="executarTeste()">Executar Teste</button>
+        
+        <div id="loading">Executando teste...</div>
+        
+        <div id="resultado" class="result-box" style="display: none;">
+            <!-- Resultado será inserido aqui -->
+        </div>
+    </div>
+
+    <script>
+        // Carregar o sistema principal primeiro
+        const scripts = [
+            '/js/schemas/TripleSchema.js',
+            '/js/extractors/RelationshipExtractor.js',
+            '/js/managers/TripleStoreManager.js',
+            '/test/teste-final-2litros.js'
+        ];
+        
+        // Função para carregar scripts em sequência
+        function loadScripts(scripts, callback) {
+            if (scripts.length === 0) {
+                callback();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = scripts[0];
+            script.onload = () => loadScripts(scripts.slice(1), callback);
+            script.onerror = () => {
+                console.error('Erro ao carregar:', scripts[0]);
+                loadScripts(scripts.slice(1), callback);
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Criar o objeto KnowledgeConsolidator se não existir
+        window.KnowledgeConsolidator = window.KnowledgeConsolidator || {};
+        
+        // Função principal para executar o teste
+        async function executarTeste() {
+            const loading = document.getElementById('loading');
+            const resultado = document.getElementById('resultado');
+            
+            loading.style.display = 'block';
+            resultado.style.display = 'none';
+            
+            // Capturar console.log
+            const logs = [];
+            const originalLog = console.log;
+            console.log = function(...args) {
+                logs.push(args.join(' '));
+                originalLog.apply(console, args);
+            };
+            
+            try {
+                // Verificar se a função existe
+                if (typeof window.testeFinal2Litros !== 'function') {
+                    throw new Error('Função testeFinal2Litros não encontrada');
+                }
+                
+                // Executar o teste
+                const result = await window.testeFinal2Litros();
+                
+                // Restaurar console.log
+                console.log = originalLog;
+                
+                // Formatar resultado
+                let output = logs.join('\n');
+                
+                if (result.sucesso) {
+                    output += '\n\n' + '<span class="success">✅ TESTE CONCLUÍDO COM SUCESSO!</span>\n\n';
+                    output += `📊 RESUMO FINAL:\n`;
+                    output += `- Triplas extraídas: ${result.extraidas}\n`;
+                    output += `- Triplas armazenadas: ${result.armazenadas}\n`;
+                    output += `- Tipos encontrados: ${result.grupos.join(', ')}\n`;
+                } else {
+                    output += '\n\n' + '<span class="error">❌ ERRO NO TESTE</span>\n';
+                    output += `Erro: ${result.erro}\n`;
+                }
+                
+                resultado.innerHTML = output;
+                resultado.style.display = 'block';
+                
+            } catch (erro) {
+                console.log = originalLog;
+                resultado.innerHTML = '<span class="error">❌ ERRO AO EXECUTAR TESTE</span>\n\n' + 
+                                    erro.message + '\n\n' + 
+                                    erro.stack;
+                resultado.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Carregar scripts necessários
+        window.onload = function() {
+            loadScripts(scripts, () => {
+                console.log('Scripts carregados com sucesso!');
+                console.log('KC:', window.KnowledgeConsolidator);
+                console.log('testeFinal2Litros:', typeof window.testeFinal2Litros);
+            });
+        };
+    </script>
+</body>
+</html>
