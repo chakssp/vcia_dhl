@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - UnifiedConfidenceSystem</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/components/confidence-display.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 32px;
+            padding: 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            color: #374151;
+            margin-top: 0;
+            border-bottom: 2px solid #7c3aed;
+            padding-bottom: 8px;
+        }
+        .test-button {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .test-button:hover { background: #6d28d9; }
+        .test-button.danger { background: #dc2626; }
+        .test-button.danger:hover { background: #b91c1c; }
+        .test-button.success { background: #16a34a; }
+        .test-button.success:hover { background: #15803d; }
+        .test-result {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .test-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .test-status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .test-status.error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .test-status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .sample-files {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .sample-file {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 12px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a855f7);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 UnifiedConfidenceSystem - Sistema de Testes</h1>
+        <p>Validação completa do sistema de confiança semântica implementado</p>
+
+        <!-- System Status -->
+        <div class="test-section">
+            <h3>📊 Status do Sistema</h3>
+            <button class="test-button" onclick="checkSystemStatus()">Verificar Status</button>
+            <button class="test-button" onclick="initializeSystem()">Inicializar Sistema</button>
+            <button class="test-button danger" onclick="emergencyDisable()">Desabilitar (Emergência)</button>
+            <div id="system-status" class="test-result"></div>
+        </div>
+
+        <!-- Feature Flags -->
+        <div class="test-section">
+            <h3>🚩 Feature Flags</h3>
+            <button class="test-button" onclick="listFeatureFlags()">Listar Flags</button>
+            <button class="test-button success" onclick="enableConfidenceBeta()">Habilitar Beta (100%)</button>
+            <button class="test-button" onclick="enableConfidenceGradual()">Habilitar Gradual (50%)</button>
+            <button class="test-button danger" onclick="disableAllConfidence()">Desabilitar Tudo</button>
+            <div id="feature-flags" class="test-result"></div>
+        </div>
+
+        <!-- Data Validation -->
+        <div class="test-section">
+            <h3>🔍 Validação de Dados</h3>
+            <button class="test-button" onclick="runFullValidation()">Validação Completa</button>
+            <button class="test-button" onclick="runQuickValidation()">Validação Rápida</button>
+            <button class="test-button" onclick="checkDataMapping()">Verificar Mapeamento</button>
+            <div class="progress-bar"><div id="validation-progress" class="progress-fill"></div></div>
+            <div id="validation-results" class="test-result"></div>
+        </div>
+
+        <!-- Score Normalization -->
+        <div class="test-section">
+            <h3>📐 Normalização de Scores</h3>
+            <button class="test-button" onclick="testScoreNormalization()">Testar Normalização</button>
+            <button class="test-button" onclick="benchmarkNormalization()">Benchmark Performance</button>
+            <button class="test-button" onclick="testAllMethods()">Testar Todos Métodos</button>
+            <div id="normalization-results" class="test-result"></div>
+        </div>
+
+        <!-- Qdrant Integration -->
+        <div class="test-section">
+            <h3>🔗 Integração Qdrant</h3>
+            <button class="test-button" onclick="testQdrantConnection()">Testar Conexão</button>
+            <button class="test-button" onclick="loadQdrantData()">Carregar Dados (351 pontos)</button>
+            <button class="test-button" onclick="testScoreBridge()">Testar Score Bridge</button>
+            <div id="qdrant-results" class="test-result"></div>
+        </div>
+
+        <!-- File Processing -->
+        <div class="test-section">
+            <h3>📁 Processamento de Arquivos</h3>
+            <button class="test-button" onclick="processTestFiles()">Processar Arquivos Teste</button>
+            <button class="test-button" onclick="processBatchFiles()">Processamento em Batch</button>
+            <button class="test-button" onclick="simulateRealFiles()">Simular Arquivos Reais</button>
+            <div class="progress-bar"><div id="processing-progress" class="progress-fill"></div></div>
+            <div id="processing-results" class="test-result"></div>
+            
+            <div class="sample-files" id="sample-files"></div>
+        </div>
+
+        <!-- Performance Monitoring -->
+        <div class="test-section">
+            <h3>⚡ Monitoramento de Performance</h3>
+            <button class="test-button" onclick="getPerformanceReport()">Relatório Performance</button>
+            <button class="test-button" onclick="generateRecommendations()">Gerar Recomendações</button>
+            <button class="test-button" onclick="runStressTest()">Teste de Stress</button>
+            <div id="performance-results" class="test-result"></div>
+        </div>
+
+        <!-- Diagnostics -->
+        <div class="test-section">
+            <h3>🔧 Diagnósticos</h3>
+            <button class="test-button" onclick="runCompleteDiagnostics()">Diagnóstico Completo</button>
+            <button class="test-button" onclick="exportDiagnostics()">Exportar Dados</button>
+            <button class="test-button" onclick="clearAllCaches()">Limpar Caches</button>
+            <div id="diagnostics-results" class="test-result"></div>
+        </div>
+    </div>
+
+    <!-- Include all required scripts -->
+    <script src="../js/utils/Logger.js"></script>
+    <script src="../js/core/EventBus.js"></script>
+    <script src="../js/core/AppState.js"></script>
+    
+    <!-- Core confidence system components -->
+    <script type="module" src="../js/core/FeatureFlagManager.js"></script>
+    <script type="module" src="../js/utils/ScoreNormalizer.js"></script>
+    <script type="module" src="../js/services/QdrantScoreBridge.js"></script>
+    <script type="module" src="../js/monitoring/ConfidencePerformanceMonitor.js"></script>
+    <script type="module" src="../js/validation/DataValidationManager.js"></script>
+    <script type="module" src="../js/controllers/UnifiedConfidenceController.js"></script>
+
+    <script>
+        // Initialize KC namespace if not available
+        window.KC = window.KC || {};
+        
+        // Wait for all modules to load
+        let moduleLoadCount = 0;
+        const expectedModules = 6;
+        
+        function onModuleLoaded() {
+            moduleLoadCount++;
+            if (moduleLoadCount === expectedModules) {
+                console.log('All UnifiedConfidenceSystem modules loaded');
+                setTimeout(initializePage, 500);
+            }
+        }
+
+        function initializePage() {
+            updateSystemStatus();
+            createSampleFiles();
+        }
+
+        function updateSystemStatus() {
+            const statusEl = document.getElementById('system-status');
+            try {
+                const status = KC.UnifiedConfidenceControllerInstance?.getSystemStatus();
+                statusEl.textContent = JSON.stringify(status, null, 2);
+            } catch (error) {
+                statusEl.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // System Status Functions
+        function checkSystemStatus() {
+            const result = document.getElementById('system-status');
+            try {
+                if (KC.UnifiedConfidenceControllerInstance) {
+                    const status = KC.UnifiedConfidenceControllerInstance.getSystemStatus();
+                    result.textContent = JSON.stringify(status, null, 2);
+                } else {
+                    result.textContent = 'UnifiedConfidenceController not available';
+                }
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function initializeSystem() {
+            const result = document.getElementById('system-status');
+            result.textContent = 'Initializing system...';
+            
+            try {
+                if (KC.UnifiedConfidenceControllerInstance) {
+                    const initResult = await KC.UnifiedConfidenceControllerInstance.init();
+                    result.textContent = JSON.stringify(initResult, null, 2);
+                } else {
+                    result.textContent = 'UnifiedConfidenceController not available';
+                }
+            } catch (error) {
+                result.textContent = `Initialization failed: ${error.message}`;
+            }
+        }
+
+        async function emergencyDisable() {
+            const result = document.getElementById('system-status');
+            try {
+                const disableResult = await KC.UnifiedConfidenceControllerInstance?.emergencyDisable();
+                result.textContent = JSON.stringify(disableResult, null, 2);
+            } catch (error) {
+                result.textContent = `Emergency disable failed: ${error.message}`;
+            }
+        }
+
+        // Feature Flags Functions
+        function listFeatureFlags() {
+            const result = document.getElementById('feature-flags');
+            try {
+                const flags = KC.FeatureFlagManagerInstance?.getAllFlags();
+                result.textContent = JSON.stringify(flags, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function enableConfidenceBeta() {
+            const result = document.getElementById('feature-flags');
+            try {
+                const betaResult = KC.FeatureFlagManagerInstance?.enableConfidenceSystemBeta();
+                result.textContent = JSON.stringify(betaResult, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function enableConfidenceGradual() {
+            const result = document.getElementById('feature-flags');
+            try {
+                const gradualResult = await KC.UnifiedConfidenceControllerInstance?.enableConfidenceSystem(50);
+                result.textContent = JSON.stringify(gradualResult, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function disableAllConfidence() {
+            const result = document.getElementById('feature-flags');
+            try {
+                const disableResult = KC.FeatureFlagManagerInstance?.emergencyDisableConfidence();
+                result.textContent = JSON.stringify(disableResult, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Data Validation Functions
+        async function runFullValidation() {
+            const result = document.getElementById('validation-results');
+            const progress = document.getElementById('validation-progress');
+            
+            result.textContent = 'Running full validation...';
+            progress.style.width = '0%';
+            
+            try {
+                // Simulate progress
+                const progressInterval = setInterval(() => {
+                    const currentWidth = parseFloat(progress.style.width) || 0;
+                    if (currentWidth < 90) {
+                        progress.style.width = (currentWidth + 10) + '%';
+                    }
+                }, 200);
+
+                const validation = await KC.DataValidationManagerInstance?.runValidation();
+                
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                
+                result.textContent = JSON.stringify(validation, null, 2);
+            } catch (error) {
+                result.textContent = `Validation failed: ${error.message}`;
+                progress.style.width = '0%';
+            }
+        }
+
+        async function runQuickValidation() {
+            const result = document.getElementById('validation-results');
+            try {
+                const validation = await KC.DataValidationManagerInstance?.runValidation({
+                    skipPerformanceBaseline: true,
+                    skipUserExperience: true
+                });
+                result.textContent = JSON.stringify(validation?.summary || validation, null, 2);
+            } catch (error) {
+                result.textContent = `Quick validation failed: ${error.message}`;
+            }
+        }
+
+        function checkDataMapping() {
+            const result = document.getElementById('validation-results');
+            try {
+                const status = KC.DataValidationManagerInstance?.getValidationStatus();
+                result.textContent = JSON.stringify(status, null, 2);
+            } catch (error) {
+                result.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        // Score Normalization Functions
+        function testScoreNormalization() {
+            const result = document.getElementById('normalization-results');
+            try {
+                const testCases = [
+                    { score: 21.5, type: 'qdrant', method: 'linear' },
+                    { score: 0.75, type: 'relevance', method: 'percentile' },
+                    { score: 85, type: 'percentage', method: 'linear' },
+                    { score: 35.2, type: 'intelligence', method: 'sigmoid' }
+                ];
+
+                const results = testCases.map(test => 
+                    KC.ScoreNormalizerInstance?.normalize(test.score, test.type, test.method)
+                );
+                
+                result.textContent = JSON.stringify(results, null, 2);
+            } catch (error) {
+                result.textContent = `Normalization test failed: ${error.message}`;
+            }
+        }
+
+        function benchmarkNormalization() {
+            const result = document.getElementById('normalization-results');
+            try {
+                const iterations = 1000;
+                const startTime = performance.now();
+                
+                for (let i = 0; i < iterations; i++) {
+                    KC.ScoreNormalizerInstance?.normalize(Math.random() * 45, 'qdrant', 'linear');
+                }
+                
+                const endTime = performance.now();
+                const avgTime = (endTime - startTime) / iterations;
+                
+                const stats = KC.ScoreNormalizerInstance?.getStats();
+                
+                result.textContent = `Benchmark Results:\nAverage time: ${avgTime.toFixed(3)}ms\nIterations: ${iterations}\n\nStats:\n${JSON.stringify(stats, null, 2)}`;
+            } catch (error) {
+                result.textContent = `Benchmark failed: ${error.message}`;
+            }
+        }
+
+        function testAllMethods() {
+            const result = document.getElementById('normalization-results');
+            try {
+                const methods = ['linear', 'logarithmic', 'exponential', 'percentile', 'sigmoid', 'minmax'];
+                const testScore = 21.5;
+                
+                const results = methods.map(method => ({
+                    method,
+                    result: KC.ScoreNormalizerInstance?.normalize(testScore, 'qdrant', method)
+                }));
+                
+                result.textContent = JSON.stringify(results, null, 2);
+            } catch (error) {
+                result.textContent = `Method test failed: ${error.message}`;
+            }
+        }
+
+        // Qdrant Integration Functions
+        async function testQdrantConnection() {
+            const result = document.getElementById('qdrant-results');
+            try {
+                if (KC.QdrantService) {
+                    const connectionTest = await KC.QdrantService.checkConnection();
+                    result.textContent = JSON.stringify(connectionTest, null, 2);
+                } else {
+                    result.textContent = 'QdrantService not available - this is expected in test environment';
+                }
+            } catch (error) {
+                result.textContent = `Connection test failed: ${error.message}`;
+            }
+        }
+
+        async function loadQdrantData() {
+            const result = document.getElementById('qdrant-results');
+            try {
+                if (KC.QdrantScoreBridgeInstance) {
+                    const initResult = await KC.QdrantScoreBridgeInstance.initialize();
+                    result.textContent = JSON.stringify(initResult, null, 2);
+                } else {
+                    result.textContent = 'QdrantScoreBridge not available';
+                }
+            } catch (error) {
+                result.textContent = `Data loading failed: ${error.message}`;
+            }
+        }
+
+        function testScoreBridge() {
+            const result = document.getElementById('qdrant-results');
+            try {
+                const testFiles = ['test-file-1', 'test-file-2', 'test-file-3'];
+                const bridgeResults = testFiles.map(fileId => 
+                    KC.QdrantScoreBridgeInstance?.getFileConfidence(fileId)
+                );
+                
+                result.textContent = JSON.stringify(bridgeResults, null, 2);
+            } catch (error) {
+                result.textContent = `Score bridge test failed: ${error.message}`;
+            }
+        }
+
+        // File Processing Functions
+        async function processTestFiles() {
+            const result = document.getElementById('processing-results');
+            const progress = document.getElementById('processing-progress');
+            
+            try {
+                const testFiles = generateTestFiles(10);
+                
+                // Simulate processing progress
+                const progressInterval = setInterval(() => {
+                    const currentWidth = parseFloat(progress.style.width) || 0;
+                    if (currentWidth < 90) {
+                        progress.style.width = (currentWidth + 15) + '%';
+                    }
+                }, 300);
+
+                const processResult = await KC.UnifiedConfidenceControllerInstance?.processFiles(testFiles);
+                
+                clearInterval(progressInterval);
+                progress.style.width = '100%';
+                
+                result.textContent = JSON.stringify(processResult, null, 2);
+                updateSampleFiles(testFiles.slice(0, 5));
+            } catch (error) {
+                result.textContent = `File processing failed: ${error.message}`;
+                progress.style.width = '0%';
+            }
+        }
+
+        async function processBatchFiles() {
+            const result = document.getElementById('processing-results');
+            try {
+                const testFiles = generateTestFiles(50);
+                const batchResult = await KC.UnifiedConfidenceControllerInstance?.processFiles(testFiles, { 
+                    batchSize: 10,
+                    background: false 
+                });
+                
+                result.textContent = JSON.stringify(batchResult, null, 2);
+            } catch (error) {
+                result.textContent = `Batch processing failed: ${error.message}`;
+            }
+        }
+
+        function simulateRealFiles() {
+            const result = document.getElementById('processing-results');
+            try {
+                // Simulate files similar to what would be in AppState
+                const realFiles = [
+                    { id: 'project-notes.md', name: 'project-notes.md', content: 'Important project decisions...', categories: ['projetos', 'decisões'] },
+                    { id: 'meeting-summary.txt', name: 'meeting-summary.txt', content: 'Key insights from team meeting...', categories: ['reuniões'] },
+                    { id: 'research-findings.md', name: 'research-findings.md', content: 'Breakthrough research results...', categories: ['pesquisa', 'breakthrough'] }
+                ];
+                
+                // Process with confidence scores
+                const enhancedFiles = realFiles.map(file => {
+                    const confidence = KC.UnifiedConfidenceControllerInstance?.getFileConfidence(file.id);
+                    return { ...file, confidence: confidence?.confidence || 0 };
+                });
+                
+                result.textContent = JSON.stringify(enhancedFiles, null, 2);
+                updateSampleFiles(enhancedFiles);
+            } catch (error) {
+                result.textContent = `Simulation failed: ${error.message}`;
+            }
+        }
+
+        // Performance Monitoring Functions
+        function getPerformanceReport() {
+            const result = document.getElementById('performance-results');
+            try {
+                const report = KC.ConfidencePerformanceMonitorInstance?.getPerformanceReport();
+                result.textContent = JSON.stringify(report, null, 2);
+            } catch (error) {
+                result.textContent = `Performance report failed: ${error.message}`;
+            }
+        }
+
+        function generateRecommendations() {
+            const result = document.getElementById('performance-results');
+            try {
+                const recommendations = KC.ConfidencePerformanceMonitorInstance?.generateRecommendations();
+                result.textContent = JSON.stringify(recommendations, null, 2);
+            } catch (error) {
+                result.textContent = `Recommendations failed: ${error.message}`;
+            }
+        }
+
+        async function runStressTest() {
+            const result = document.getElementById('performance-results');
+            try {
+                result.textContent = 'Running stress test...';
+                
+                const startTime = performance.now();
+                const promises = [];
+                
+                // Create 100 concurrent confidence calculations
+                for (let i = 0; i < 100; i++) {
+                    promises.push(
+                        KC.UnifiedConfidenceControllerInstance?.getFileConfidence(`stress-test-${i}`)
+                    );
+                }
+                
+                const results = await Promise.all(promises);
+                const endTime = performance.now();
+                
+                const stressReport = {
+                    duration: endTime - startTime,
+                    operations: results.length,
+                    averageTime: (endTime - startTime) / results.length,
+                    successCount: results.filter(r => r?.confidence !== undefined).length,
+                    errorCount: results.filter(r => r?.error).length
+                };
+                
+                result.textContent = JSON.stringify(stressReport, null, 2);
+            } catch (error) {
+                result.textContent = `Stress test failed: ${error.message}`;
+            }
+        }
+
+        // Diagnostics Functions
+        async function runCompleteDiagnostics() {
+            const result = document.getElementById('diagnostics-results');
+            try {
+                result.textContent = 'Running complete diagnostics...';
+                const diagnostics = await KC.UnifiedConfidenceControllerInstance?.runDiagnostics();
+                result.textContent = JSON.stringify(diagnostics, null, 2);
+            } catch (error) {
+                result.textContent = `Diagnostics failed: ${error.message}`;
+            }
+        }
+
+        function exportDiagnostics() {
+            const result = document.getElementById('diagnostics-results');
+            try {
+                const report = KC.ConfidencePerformanceMonitorInstance?.exportMetrics('json');
+                
+                // Create downloadable file
+                const blob = new Blob([report], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `confidence-system-diagnostics-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                result.textContent = 'Diagnostics exported successfully';
+            } catch (error) {
+                result.textContent = `Export failed: ${error.message}`;
+            }
+        }
+
+        function clearAllCaches() {
+            const result = document.getElementById('diagnostics-results');
+            try {
+                KC.ScoreNormalizerInstance?.clearCache();
+                KC.ConfidencePerformanceMonitorInstance?.clearMetrics();
+                
+                result.textContent = 'All caches cleared successfully';
+            } catch (error) {
+                result.textContent = `Cache clearing failed: ${error.message}`;
+            }
+        }
+
+        // Helper Functions
+        function generateTestFiles(count) {
+            const files = [];
+            const sampleNames = ['project-notes', 'meeting-summary', 'research-findings', 'development-log', 'design-specs'];
+            const sampleCategories = [['projetos'], ['reuniões'], ['pesquisa'], ['desenvolvimento'], ['design']];
+            
+            for (let i = 0; i < count; i++) {
+                const nameIndex = i % sampleNames.length;
+                files.push({
+                    id: `${sampleNames[nameIndex]}-${i}.md`,
+                    name: `${sampleNames[nameIndex]}-${i}.md`,
+                    content: `Sample content for ${sampleNames[nameIndex]} ${i}...`,
+                    categories: sampleCategories[nameIndex],
+                    lastModified: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+                    size: Math.floor(Math.random() * 50000) + 1000
+                });
+            }
+            
+            return files;
+        }
+
+        function createSampleFiles() {
+            updateSampleFiles(generateTestFiles(3));
+        }
+
+        function updateSampleFiles(files) {
+            const container = document.getElementById('sample-files');
+            if (!container || !files) return;
+            
+            container.innerHTML = files.map(file => `
+                <div class="sample-file">
+                    <strong>${file.name}</strong>
+                    ${file.confidence !== undefined ? 
+                        `<div class="confidence-score" style="color: ${getConfidenceColor(file.confidence)};">
+                            🎯 Confiança: ${file.confidence}%
+                        </div>` : ''
+                    }
+                    <div>Categorias: ${(file.categories || []).join(', ') || 'Nenhuma'}</div>
+                    <div>Tamanho: ${formatFileSize(file.size || 0)}</div>
+                </div>
+            `).join('');
+        }
+
+        function getConfidenceColor(confidence) {
+            if (confidence >= 80) return '#16a34a';
+            if (confidence >= 60) return '#ea580c';
+            if (confidence >= 30) return '#dc2626';
+            return '#6b7280';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Auto-run some basic tests on page load
+        setTimeout(() => {
+            onModuleLoaded(); // Simulate module loading
+        }, 1000);
+    </script>
+</body>
+</html>

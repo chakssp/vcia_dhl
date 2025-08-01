@@ -1,0 +1,355 @@
+/**
+ * Confidence Display Styles - UnifiedConfidenceSystem UI Components
+ * Provides visual styling for confidence scores and semantic intelligence display
+ */
+
+/* Confidence Score Display */
+.confidence-score {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 2px 0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2px);
+    transition: all 0.2s ease;
+}
+
+.confidence-score:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-icon {
+    font-size: 0.875rem;
+    line-height: 1;
+}
+
+.confidence-text {
+    white-space: nowrap;
+}
+
+.confidence-source-badge {
+    background: #7c3aed;
+    color: white;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Confidence Level Colors */
+.confidence-score[data-level="high"] {
+    background: rgba(22, 163, 74, 0.1);
+    border: 1px solid rgba(22, 163, 74, 0.3);
+}
+
+.confidence-score[data-level="medium"] {
+    background: rgba(234, 88, 12, 0.1);
+    border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.confidence-score[data-level="low"] {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+/* File Entry Enhancements with Confidence */
+.file-entry[data-confidence-level="high"] {
+    border-left: 3px solid #16a34a;
+    background: linear-gradient(90deg, rgba(22, 163, 74, 0.05) 0%, transparent 10%);
+}
+
+.file-entry[data-confidence-level="medium"] {
+    border-left: 3px solid #ea580c;
+    background: linear-gradient(90deg, rgba(234, 88, 12, 0.05) 0%, transparent 10%);
+}
+
+.file-entry[data-confidence-level="low"] {
+    border-left: 3px solid #dc2626;
+    background: linear-gradient(90deg, rgba(220, 38, 38, 0.05) 0%, transparent 10%);
+}
+
+/* Enhanced File Cards (when feature flag enabled) */
+.file-entry.enhanced-confidence {
+    position: relative;
+    overflow: hidden;
+}
+
+.file-entry.enhanced-confidence::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--confidence-color, #6b7280);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.file-entry.enhanced-confidence:hover::before {
+    opacity: 1;
+    width: 6px;
+}
+
+/* Confidence Tooltips */
+.confidence-tooltip {
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    max-width: 200px;
+    white-space: pre-line;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+/* Confidence System Status Indicator */
+.confidence-system-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    color: #374151;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.confidence-system-status:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.confidence-system-status.active {
+    border-color: #16a34a;
+    color: #16a34a;
+}
+
+.confidence-system-status.processing {
+    border-color: #ea580c;
+    color: #ea580c;
+}
+
+.confidence-system-status.error {
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+/* Confidence Progress Bar */
+.confidence-progress {
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.confidence-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #dc2626 0%, #ea580c 50%, #16a34a 100%);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+    position: relative;
+}
+
+.confidence-progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 20px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+    animation: confidence-shimmer 2s infinite;
+}
+
+@keyframes confidence-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Batch Confidence Actions */
+.confidence-batch-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 6px;
+    margin: 8px 0;
+}
+
+.confidence-batch-button {
+    background: #7c3aed;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.confidence-batch-button:hover {
+    background: #6d28d9;
+    transform: translateY(-1px);
+}
+
+.confidence-batch-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Confidence Statistics Panel */
+.confidence-stats-panel {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.confidence-stats-title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.confidence-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.confidence-stat-item {
+    text-align: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 4px;
+}
+
+.confidence-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #7c3aed;
+}
+
+.confidence-stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .confidence-score {
+        background: rgba(0, 0, 0, 0.2);
+        color: #e5e7eb;
+    }
+
+    .confidence-score:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .confidence-system-status {
+        background: rgba(0, 0, 0, 0.9);
+        color: #e5e7eb;
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .confidence-stats-panel {
+        background: #1f2937;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #e5e7eb;
+    }
+
+    .confidence-stats-title {
+        color: #f3f4f6;
+    }
+
+    .confidence-stat-item {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .confidence-stat-label {
+        color: #9ca3af;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .confidence-score {
+        font-size: 0.6875rem;
+        padding: 1px 4px;
+    }
+
+    .confidence-source-badge {
+        display: none;
+    }
+
+    .confidence-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .confidence-system-status {
+        bottom: 10px;
+        right: 10px;
+        padding: 6px 8px;
+        font-size: 0.6875rem;
+    }
+}
+
+/* Animation for confidence updates */
+@keyframes confidence-update {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.confidence-score.updating {
+    animation: confidence-update 0.6s ease;
+}
+
+/* Loading state for confidence calculation */
+.confidence-score.loading {
+    opacity: 0.6;
+    position: relative;
+}
+
+.confidence-score.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: confidence-loading 1.5s infinite;
+}
+
+@keyframes confidence-loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}

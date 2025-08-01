@@ -517,6 +517,7 @@
                                 </span>
                             ` : ''}
                         </div>
+                        ${this.renderConfidenceScore(file)}
                         <div class="file-date">${this.formatDate(file.lastModified)}</div>
                         <div class="file-size">${this.formatFileSize(file.size)}</div>
                         ${file.duplicateConfidence ? `<div class="duplicate-confidence">Confiança: ${Math.round(file.duplicateConfidence * 100)}%</div>` : ''}
@@ -1957,6 +1958,88 @@
                     ${category.name}
                 </span>`;
             }).join('');
+        }
+
+        /**
+         * Render confidence score for a file
+         * Integrates with UnifiedConfidenceSystem to display semantic confidence
+         */
+        renderConfidenceScore(file) {
+            // Check if confidence system is enabled
+            if (!KC.FeatureFlagManagerInstance?.isEnabled('unified_confidence_system')) {
+                return '';
+            }
+
+            // Get confidence score from the unified system
+            let confidenceData = null;
+            try {
+                if (file.confidence !== undefined) {
+                    // Use cached confidence from file
+                    confidenceData = {
+                        confidence: file.confidence,
+                        source: file.confidenceSource || 'cached',
+                        metadata: file.confidenceMetadata || {}
+                    };
+                } else if (KC.UnifiedConfidenceControllerInstance) {
+                    // Get real-time confidence
+                    confidenceData = KC.UnifiedConfidenceControllerInstance.getFileConfidence(file.id || file.name);
+                }
+            } catch (error) {
+                console.warn('Failed to get confidence score for file:', file.name, error);
+            }
+
+            if (!confidenceData || confidenceData.confidence === 0) {
+                return '';
+            }
+
+            const confidence = confidenceData.confidence;
+            const source = confidenceData.source;
+            
+            // Determine confidence level and color
+            let confidenceLevel = 'low';
+            let confidenceColor = '#6b7280';  // gray
+            let confidenceIcon = '🔍';
+            
+            if (confidence >= 80) {
+                confidenceLevel = 'high';
+                confidenceColor = '#16a34a';  // green
+                confidenceIcon = '🎯';
+            } else if (confidence >= 60) {
+                confidenceLevel = 'medium';
+                confidenceColor = '#ea580c';  // orange
+                confidenceIcon = '📊';
+            } else if (confidence >= 30) {
+                confidenceLevel = 'low';
+                confidenceColor = '#dc2626';  // red
+                confidenceIcon = '📉';
+            }
+
+            // Build tooltip with detailed information
+            let tooltip = `Confiança Semântica: ${confidence}%\\nFonte: ${source}`;
+            if (confidenceData.metadata?.qdrantScore) {
+                tooltip += `\\nScore Qdrant: ${confidenceData.metadata.qdrantScore}`;
+            }
+            if (confidenceData.metadata?.normalizationMethod) {
+                tooltip += `\\nMétodo: ${confidenceData.metadata.normalizationMethod}`;
+            }
+
+            // Show color coding if enabled
+            const colorCodingEnabled = KC.FeatureFlagManagerInstance?.isEnabled('confidence_color_coding');
+            const colorStyle = colorCodingEnabled ? 
+                `style="color: ${confidenceColor}; border-left: 3px solid ${confidenceColor}; padding-left: 8px;"` : 
+                `style="color: ${confidenceColor};"`;
+
+            return `
+                <div class="confidence-score" 
+                     ${colorStyle}
+                     title="${tooltip}"
+                     data-confidence="${confidence}"
+                     data-level="${confidenceLevel}">
+                    <span class="confidence-icon">${confidenceIcon}</span>
+                    <span class="confidence-text">Confiança: ${confidence}%</span>
+                    ${source === 'qdrant' ? '<span class="confidence-source-badge">AI</span>' : ''}
+                </div>
+            `;
         }
 
         /**

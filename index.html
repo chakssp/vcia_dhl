@@ -28,6 +28,8 @@
     <link rel="stylesheet" href="css/components/word-cloud.css">
     <link rel="stylesheet" href="css/components/graph-visualization.css">
     <link rel="stylesheet" href="css/components/quick-filters-bar.css">
+    <link rel="stylesheet" href="css/components/confidence-display.css">
+    <link rel="stylesheet" href="css/components/processing-logs.css">
     <link rel="stylesheet" href="css/components/quick-filters-bar-fix.css">
     <link rel="stylesheet" href="css/components/quick-filters-override.css">
     
@@ -222,6 +224,7 @@
     <script src="js/utils/DateUtils.js"></script>
     <script src="js/utils/PreviewUtils.js"></script>
     <script src="js/utils/PatternUtils.js"></script>
+    <script src="js/utils/ObsidianPluginUtils.js"></script>
     <script src="js/utils/ExclusionPatternsHandler.js"></script>
     <script src="js/utils/ContentAccessUtils.js"></script>
     <script src="js/utils/ChunkingUtils.js"></script>
@@ -234,6 +237,7 @@
     <script src="js/utils/SessionCache.js"></script>
     <script src="js/utils/ThemeManager.js"></script>
     <script src="js/utils/RelevanceUtils.js"></script>
+    <script src="js/utils/CategoryNormalizer.js"></script>
     
     <!-- Scripts Managers -->
     <script src="js/managers/DataIntegrityManager.js"></script>
@@ -243,6 +247,7 @@
     <script src="js/managers/PromptManager.js"></script>
     <script src="js/managers/AnalysisAdapter.js"></script>
     <script src="js/managers/SchemaOrgMapper.js"></script>
+    <script src="js/schemas/QdrantUnifiedSchema.js"></script>
     <script src="js/managers/CategoryManager.js"></script>
     <script src="js/managers/FilterManager.js"></script>
     <script src="js/managers/StatsManager.js"></script>
@@ -265,6 +270,20 @@
     <script src="js/services/QdrantService.js"></script>
     <script src="js/services/SimilaritySearchService.js"></script>
     <script src="js/services/TripleStoreService.js"></script>
+    <script src="js/services/ConvergenceAnalysisService.js"></script>
+    <script src="js/services/IntelligenceEnrichmentPipeline.js"></script>
+    
+    <!-- UnifiedConfidenceSystem Components -->
+    <script type="module" src="js/core/FeatureFlagManager.js"></script>
+    <script type="module" src="js/utils/ScoreNormalizer.js"></script>
+    <script type="module" src="js/services/QdrantScoreBridge.js"></script>
+    <script type="module" src="js/monitoring/ConfidencePerformanceMonitor.js"></script>
+    <script type="module" src="js/validation/DataValidationManager.js"></script>
+    <script type="module" src="js/controllers/UnifiedConfidenceController.js"></script>
+    
+    <!-- Patches temporários para problemas de cache -->
+    <script src="js/patches/convergence-patch.js"></script>
+    <script src="js/patches/enrichment-debug.js"></script>
     
     <!-- Scripts ML Components (Waves 6-9) -->
     <script src="js/ml/ConfidenceCalculator.js"></script>
@@ -305,6 +324,7 @@
     <script src="js/components/QdrantExplorerFixed.js"></script>
     <script src="js/components/QuickAccessMenu.js"></script>
     <script src="js/components/OrganizationPanel.js"></script>
+    <script src="js/components/ProcessingLogsPanel.js"></script>
     
     <!-- Scripts Utils Adicionais -->
     <script src="js/utils/WarningSupressor.js"></script>
@@ -322,6 +342,8 @@
     <!-- Debug Temporário -->
     <script src="js/debug-export.js"></script>
     <script src="js/debug-organization.js"></script>
+    <script src="js/debug-processing-logs.js"></script>
+    <script src="js/debug-categories.js"></script>
     
     <!-- Testes -->
     <script src="test/test-triple-extraction.js"></script>
