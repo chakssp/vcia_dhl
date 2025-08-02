@@ -97,6 +97,11 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 - Acesse http://127.0.0.1:5500
 - Execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir
 
+### Backup Guidelines
+
+- Criar backup antes de mudanças grandes
+  - Use o comando: `./scripts/guardian-commands.sh backup`
+
 <LEIS>
 ### LEIS do projeto
 
@@ -116,6 +121,31 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
   - Solução: Use caminho completo ou comando Read
   - O cache do Claude Code pode demorar para atualizar
 
+### 🎯 REGRA CRÍTICA - Fluxo de Confidence Scores (01/08/2025)
+
+**LEI #13 - SCORES DURANTE DESCOBERTA**:
+- Confidence scores DEVEM ser calculados DURANTE a descoberta de arquivos
+- NUNCA implementar processamento posterior que cause fluxo invertido
+- Usuário DEVE ver scores inteligentes em tempo real
+- Sistema DEVE funcionar com inicialização lazy e fallbacks robustos
+- **Documentação**: `/docs/12-correcao-fluxo-confidence/CORRECAO-FLUXO-INVERTIDO.md`
 </LEIS>
+
+**IMPORTANTE**: `Multi-Agent Orchestration Pattern`
+The infinite command implements sophisticated parallel agent coordination:
+1. **Specification Analysis** - Deeply understands the spec requirements
+2. **Directory Reconnaissance** - Analyzes existing iterations to maintain uniqueness
+3. **Parallel Sub-Agent Deployment** - Launches multiple agents with distinct creative directions
+4. **Wave-Based Generation** - For infinite mode, manages successive agent waves
+5. **Context Management** - Optimizes context usage across all agents
+
+**IMPORTANTE**: `Key Implementation Details`
+- Sub-agents receive complete context including spec, existing iterations, and unique creative assignments
+- Parallel execution managed through Task tool with batch sizes optimized by count
+- Progressive sophistication strategy for infinite mode waves
+- Each iteration must be genuinely unique while maintaining spec compliance
+
+# IMPORTANT
+- Remember EVER to translate to Brazilian Protuguese before send to User providing Best Experience!
 
 [... rest of the previous content remains the same ...]

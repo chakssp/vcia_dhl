@@ -406,6 +406,28 @@
                     }
                 }
             }
+            
+            // Inicializar pipeline de enriquecimento de inteligência
+            if (KC.IntelligenceEnrichmentPipeline && KC.IntelligenceEnrichmentPipeline.initialize) {
+                try {
+                    console.log('[INFO] AppController: Inicializando Intelligence Enrichment Pipeline...');
+                    await KC.IntelligenceEnrichmentPipeline.initialize();
+                    console.log('[SUCCESS] AppController: Intelligence Enrichment Pipeline inicializado');
+                } catch (error) {
+                    console.error('[ERROR] AppController: Erro ao inicializar Intelligence Enrichment Pipeline:', error);
+                }
+            }
+            
+            // Inicializar ConvergenceAnalysisService se disponível
+            if (KC.ConvergenceAnalysisService && KC.ConvergenceAnalysisService.initialize) {
+                try {
+                    console.log('[INFO] AppController: Inicializando Convergence Analysis Service...');
+                    await KC.ConvergenceAnalysisService.initialize();
+                    console.log('[SUCCESS] AppController: Convergence Analysis Service inicializado');
+                } catch (error) {
+                    console.error('[ERROR] AppController: Erro ao inicializar Convergence Analysis Service:', error);
+                }
+            }
         }
 
         /**

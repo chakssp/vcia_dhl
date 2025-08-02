@@ -91,6 +91,9 @@
 
             // Renderiza interface
             this.container.innerHTML = this._getTemplate();
+            
+            // Inicializa o ProcessingLogsPanel
+            this._initializeProcessingLogsPanel();
 
             // Atualiza estatísticas
             this.updateStats();
@@ -218,6 +221,15 @@
                         <h3>🚀 Pipeline de Processamento RAG</h3>
                         <p>Processa arquivos aprovados gerando embeddings e inserindo no Qdrant.</p>
                         
+                        <!-- Toggle de Enriquecimento -->
+                        <div class="enrichment-toggle" style="margin: 15px 0; padding: 10px; background: #f0f7ff; border-radius: 5px;">
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" id="enable-enrichment" checked style="margin-right: 10px;">
+                                <span style="font-weight: 500;">🧠 Habilitar Análise de Inteligência</span>
+                                <small style="margin-left: 10px; color: #666;">(Detecta convergências e insights)</small>
+                            </label>
+                        </div>
+                        
                         <div id="pipeline-status" class="pipeline-status">
                             <div class="status-info">
                                 <span class="status-label">Status:</span>
@@ -268,6 +280,9 @@
                         <button id="btn-process-pipeline" class="btn btn-primary" onclick="KC.OrganizationPanel.processWithPipeline()">
                             🔄 Processar Arquivos Aprovados
                         </button>
+                        
+                        <!-- Container para o Painel de Logs -->
+                        <div id="processing-logs-container" class="processing-logs-wrapper"></div>
                         
                         <!-- Localização dos Dados -->
                         <div id="data-location" class="data-location" style="display: none; margin-top: 15px;">
@@ -732,51 +747,35 @@
             });
 
             try {
-                // Configurar opções baseadas no critério selecionado
+                // Verificar se o toggle de enriquecimento está habilitado
+                const enableEnrichment = document.getElementById('enable-enrichment')?.checked ?? true;
+                
+                // Configurar opções para o pipeline
                 const processingOptions = {
-                    onlyApproved: false,
-                    onlyHighRelevance: false,
-                    onlyLowRelevance: false,
-                    onlyAnalyzed: false,
-                    requiredCategories: []
+                    enableEnrichment: enableEnrichment,
+                    batchSize: 10
                 };
                 
-                // Aplicar filtro baseado no critério
-                switch(criteria) {
-                    case 'analyzed':
-                        processingOptions.onlyAnalyzed = true;
-                        break;
-                    case 'high-relevance':
-                        processingOptions.onlyHighRelevance = true;
-                        break;
-                    case 'medium-relevance':
-                        processingOptions.minRelevance = 30;
-                        break;
-                    case 'categorized':
-                        // Obter todas as categorias disponíveis
-                        const categories = KC.CategoryManager?.getCategories() || [];
-                        processingOptions.requiredCategories = categories.map(c => c.name);
-                        break;
-                    case 'all':
-                    default:
-                        // Processar todos os arquivos aprovados
-                        processingOptions.onlyApproved = true;
-                        break;
-                }
-                
-                // Definir callback de progresso
-                KC.QdrantProcessorWithFilters?.setProgressCallback((percentage, message) => {
+                // Configurar listeners de progresso do RAGExportManager
+                const removeRAGProgressListener = KC.EventBus?.on(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', (data) => {
+                    // Converter eventos do RAGExportManager para o formato esperado pela UI
                     KC.EventBus?.emit('QDRANT_PROCESSING_PROGRESS', {
-                        percentage: percentage,
-                        message: message
+                        percentage: data.percentage || 0,
+                        message: data.message || data.stage || 'Processando...',
+                        currentFile: data.currentFile,
+                        stage: data.stage,
+                        stageStatus: data.stageStatus
                     });
                 });
                 
-                // Usar QdrantProcessorWithFilters com as opções corretas
-                const result = await KC.QdrantProcessorWithFilters?.processFilesToQdrant(processingOptions);
+                // Chamar RAGExportManager em vez de QdrantProcessorWithFilters
+                const result = await KC.RAGExportManager?.processApprovedFiles(processingOptions);
                 
-                // Se o resultado foi retornado diretamente (sem evento)
-                if (result && !KC.EventBus?.hasListeners('QDRANT_PROCESSING_COMPLETED')) {
+                // Limpar listener de progresso
+                if (removeRAGProgressListener) removeRAGProgressListener();
+                
+                // Se o resultado foi retornado diretamente
+                if (result && result.success) {
                     if (removeProgressListener) removeProgressListener();
                     if (removeCompletedListener) removeCompletedListener();
                     
@@ -784,6 +783,42 @@
                     if (progressContainer) progressContainer.style.display = 'none';
                     if (statusText) statusText.textContent = 'Processamento concluído!';
                     if (dataLocation) dataLocation.style.display = 'block';
+                    
+                    // Atualizar status dos estágios
+                    this._updateStageStatus('chunking', 'completed');
+                    this._updateStageStatus('embeddings', 'completed');
+                    this._updateStageStatus('qdrant', 'completed');
+                    
+                    // Mostrar resultados incluindo enriquecimento
+                    if (resultsContainer && result.results) {
+                        let enrichmentInfo = '';
+                        if (result.results.enrichmentStats) {
+                            enrichmentInfo = `
+                                <div class="enrichment-results" style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 5px;">
+                                    <h5>🧠 Análise de Inteligência</h5>
+                                    <ul style="margin: 5px 0;">
+                                        <li>Cadeias de convergência: ${result.results.enrichmentStats.chainsFound || 0}</li>
+                                        <li>Insights gerados: ${result.results.enrichmentStats.insightsGenerated || 0}</li>
+                                        <li>Breakthroughs detectados: ${result.results.enrichmentStats.breakthroughsDetected || 0}</li>
+                                    </ul>
+                                </div>
+                            `;
+                        }
+                        
+                        resultsContainer.innerHTML = `
+                            <div class="results-success">
+                                <h4>✅ Processamento Concluído</h4>
+                                <p>${result.message || 'Pipeline executado com sucesso!'}</p>
+                                <ul>
+                                    <li>Documentos processados: ${result.results.processed || 0}</li>
+                                    <li>Chunks gerados: ${result.results.totalChunks || 0}</li>
+                                    <li>Erros: ${result.results.failed || 0}</li>
+                                </ul>
+                                ${enrichmentInfo}
+                            </div>
+                        `;
+                        resultsContainer.style.display = 'block';
+                    }
                 }
                 
             } catch (error) {
@@ -1165,6 +1200,34 @@
                 'value': count,
                 'percentage': ((count / documents.length) * 100).toFixed(2) + '%'
             }));
+        }
+
+        /**
+         * Inicializa o painel de logs de processamento
+         * @private
+         */
+        _initializeProcessingLogsPanel() {
+            const container = document.getElementById('processing-logs-container');
+            if (!container) {
+                KC.Logger?.warn('OrganizationPanel', 'Container processing-logs-container não encontrado');
+                return;
+            }
+            
+            // Inicializa o ProcessingLogsPanel se ainda não foi inicializado
+            if (KC.ProcessingLogs && !KC.ProcessingLogs.initialized) {
+                KC.ProcessingLogs.initialize();
+            }
+            
+            // Adiciona o elemento do painel ao container
+            if (KC.ProcessingLogs) {
+                const logsElement = KC.ProcessingLogs.getElement();
+                container.innerHTML = ''; // Limpa o container
+                container.appendChild(logsElement);
+                
+                KC.Logger?.info('OrganizationPanel', 'ProcessingLogsPanel adicionado ao container');
+            } else {
+                KC.Logger?.warn('OrganizationPanel', 'ProcessingLogsPanel não está disponível');
+            }
         }
 
         /**

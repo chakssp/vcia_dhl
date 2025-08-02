@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seletor de Categorias - Spotify Style</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #121212;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .example {
+            background: #181818;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .demo-area {
+            min-height: 200px;
+            border: 2px dashed #282828;
+            border-radius: 8px;
+            padding: 20px;
+            background: #1a1a1a;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: #1db954;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #1ed760;
+            transform: scale(1.05);
+        }
+        
+        /* Popup base */
+        .spotify-selector {
+            position: absolute;
+            background: #282828;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            max-width: 500px;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #181818;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #b3b3b3;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: #404040;
+            transform: rotate(90deg);
+        }
+        
+        /* Tags */
+        .spotify-tag {
+            display: inline-block;
+            padding: 8px 20px;
+            margin: 4px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+            border: 2px solid transparent;
+        }
+        
+        .spotify-tag:hover {
+            transform: scale(1.05);
+            filter: brightness(1.2);
+        }
+        
+        .spotify-tag.selected {
+            border-color: currentColor;
+            box-shadow: 0 0 0 2px currentColor;
+        }
+        
+        /* Botão adicionar */
+        .add-new-tag {
+            display: inline-block;
+            padding: 8px 20px;
+            margin: 4px;
+            border: 2px dashed #404040;
+            border-radius: 20px;
+            background: transparent;
+            color: #b3b3b3;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .add-new-tag:hover {
+            border-color: #1db954;
+            color: #1db954;
+            background: rgba(29, 185, 84, 0.1);
+        }
+        
+        /* Form de nova categoria */
+        .new-category-input {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #181818;
+            border-radius: 8px;
+        }
+        
+        .new-category-input.active {
+            display: block;
+        }
+        
+        .new-category-input input {
+            width: 100%;
+            padding: 10px;
+            background: #121212;
+            border: 1px solid #404040;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .new-category-input input:focus {
+            outline: none;
+            border-color: #1db954;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: white;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .form-buttons button {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+        }
+        
+        .btn-cancel {
+            background: #404040;
+        }
+        
+        .btn-cancel:hover {
+            background: #535353;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .selected-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: #282828;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #b3b3b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #1db954;">Spotify Style com Cores Vibrantes</h1>
+        
+        <div class="example">
+            <h2 style="color: #fff; margin-top: 0;">Categorias com Cores Preservadas</h2>
+            <div class="demo-area">
+                <button onclick="showExample(event)">Selecionar Categorias</button>
+                <div id="selected-preview" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Categorias com cores vibrantes
+        const categories = [
+            { id: 'tecnico', name: 'Técnico', color: '#4f46e5', icon: '🔧' },
+            { id: 'estrategico', name: 'Estratégico', color: '#059669', icon: '📊' },
+            { id: 'conceitual', name: 'Conceitual', color: '#dc2626', icon: '💡' },
+            { id: 'decisivo', name: 'Momento Decisivo', color: '#d97706', icon: '🎯' },
+            { id: 'insight', name: 'Insight', color: '#7c3aed', icon: '✨' },
+            { id: 'aprendizado', name: 'Aprendizado', color: '#be185d', icon: '📚' }
+        ];
+        
+        let selectedTags = [];
+        const availableColors = [
+            '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6',
+            '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
+        ];
+        
+        function createPopup(event) {
+            // Remove popup anterior
+            document.querySelectorAll('.spotify-selector').forEach(p => p.remove());
+            
+            const popup = document.createElement('div');
+            popup.className = 'spotify-selector';
+            
+            // Posicionar
+            const rect = event.target.getBoundingClientRect();
+            popup.style.left = rect.left + 'px';
+            popup.style.top = (rect.bottom + 10) + 'px';
+            
+            document.body.appendChild(popup);
+            
+            // Fechar ao clicar fora
+            setTimeout(() => {
+                document.addEventListener('click', function closePopup(e) {
+                    if (!popup.contains(e.target) && e.target !== event.target) {
+                        popup.remove();
+                        document.removeEventListener('click', closePopup);
+                    }
+                });
+            }, 100);
+            
+            return popup;
+        }
+        
+        function showExample(event) {
+            const popup = createPopup(event);
+            
+            popup.innerHTML = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 20px 0; color: #fff;">Escolha as categorias:</h4>
+                <div class="tags-container">
+                    ${categories.map(cat => `
+                        <span class="spotify-tag ${selectedTags.includes(cat.id) ? 'selected' : ''}" 
+                              style="background: ${cat.color}; color: white;"
+                              onclick="toggleTag('${cat.id}')">
+                            ${cat.icon} ${cat.name}
+                        </span>
+                    `).join('')}
+                    
+                    <span class="add-new-tag" onclick="showAddForm()">
+                        + Adicionar
+                    </span>
+                </div>
+                
+                <div id="new-form" class="new-category-input">
+                    <input type="text" 
+                           id="new-name" 
+                           placeholder="Nome da nova categoria"
+                           onkeypress="if(event.key === 'Enter') addNewCategory()">
+                    
+                    <div class="color-picker">
+                        ${availableColors.map((color, i) => `
+                            <div class="color-option ${i === 0 ? 'selected' : ''}" 
+                                 style="background: ${color};"
+                                 onclick="selectColor('${color}', this)"></div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button onclick="addNewCategory()">Criar</button>
+                        <button class="btn-cancel" onclick="hideAddForm()">Cancelar</button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <span style="color: #b3b3b3; font-size: 14px; margin-right: 10px;">
+                        ${selectedTags.length} selecionada${selectedTags.length !== 1 ? 's' : ''}
+                    </span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: #535353;">
+                        Confirmar
+                    </button>
+                </div>
+            `;
+        }
+        
+        function toggleTag(tagId) {
+            const index = selectedTags.indexOf(tagId);
+            if (index > -1) {
+                selectedTags.splice(index, 1);
+            } else {
+                selectedTags.push(tagId);
+            }
+            
+            updatePreview();
+            
+            // Re-renderizar
+            const button = document.querySelector('button');
+            button.click();
+        }
+        
+        function updatePreview() {
+            const preview = document.getElementById('selected-preview');
+            if (selectedTags.length === 0) {
+                preview.textContent = 'Nenhuma categoria selecionada';
+            } else {
+                const names = selectedTags.map(id => {
+                    const cat = categories.find(c => c.id === id);
+                    return cat ? `${cat.icon} ${cat.name}` : '';
+                }).join(', ');
+                preview.innerHTML = `<strong>Selecionadas:</strong> ${names}`;
+            }
+        }
+        
+        function showAddForm() {
+            document.getElementById('new-form').classList.add('active');
+            document.getElementById('new-name').focus();
+        }
+        
+        function hideAddForm() {
+            document.getElementById('new-form').classList.remove('active');
+            document.getElementById('new-name').value = '';
+        }
+        
+        let selectedColor = availableColors[0];
+        function selectColor(color, element) {
+            selectedColor = color;
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function addNewCategory() {
+            const name = document.getElementById('new-name').value.trim();
+            if (!name) return;
+            
+            const id = name.toLowerCase().replace(/\s+/g, '-');
+            if (categories.find(cat => cat.id === id)) {
+                alert('Categoria já existe!');
+                return;
+            }
+            
+            categories.push({
+                id: id,
+                name: name,
+                color: selectedColor,
+                icon: '🏷️'
+            });
+            
+            selectedTags.push(id);
+            
+            // Re-renderizar
+            const button = document.querySelector('button');
+            button.click();
+            
+            console.log('Nova categoria:', { id, name, color: selectedColor });
+        }
+    </script>
+</body>
+</html>

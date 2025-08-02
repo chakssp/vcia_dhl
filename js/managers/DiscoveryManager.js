@@ -279,6 +279,7 @@
                 console.log(`Arquivos com extensões suportadas: ${this.stats.matchedFiles}`);
                 console.log(`Arquivos descobertos (após filtros): ${finalFiles.length}`);
                 console.log(`Arquivos pulados: ${this.stats.skippedFiles}`);
+                console.log(`Diretórios excluídos: ${this.stats.skippedDirs || 0}`);
                 console.log('==========================================');
                 
                 // Emite evento de conclusão com arquivos já merged
@@ -286,6 +287,11 @@
                     files: mergedFiles,
                     stats: { ...this.stats, duplicates: duplicateStats }
                 });
+
+                // REFATORAÇÃO REMOVIDA: Processamento posterior de confidence scores
+                // MOTIVO: Scores agora são calculados DURANTE descoberta via _calculateConfidenceDuringDiscovery()
+                // O processamento posterior criava fluxo invertido onde usuário via 0% e depois scores apareciam
+                console.log('✅ REFATORAÇÃO: Confidence scores calculados durante descoberta - processamento posterior removido');
 
                 EventBus.emit(Events.PROGRESS_END, {
                     type: 'discovery',
@@ -371,7 +377,7 @@
                         source: path.metadata?.source,
                         directory: pathString
                     });
-                    files = await this._realDirectoryScan(path.handle, config, currentDepth);
+                    files = await this._realDirectoryScan(path.handle, config, currentDepth, pathString);
                 } else if (typeof path === 'string') {
                     // String paths não têm acesso real
                     KC.Logger.error(`❌ SEM ACESSO REAL - Path string: ${path}`);
@@ -558,7 +564,7 @@
          * Escaneia diretório usando File System Access API
          * @private
          */
-        async _realDirectoryScan(directoryHandle, configParam, currentDepth = 0) {
+        async _realDirectoryScan(directoryHandle, configParam, currentDepth = 0, parentPath = '') {
             // Verifica compatibilidade
             if (!KC.compatibility || !KC.compatibility.isSupported()) {
                 console.error('File System Access API não suportada - use Chrome/Edge 86+');
@@ -598,7 +604,7 @@
                         // Verifica se é um tipo de arquivo suportado
                         if (supportedExtensions.includes(extension)) {
                             // Verifica padrões de exclusão antes de processar
-                            const filePath = `${directoryHandle.name}/${file.name}`;
+                            const filePath = parentPath ? `${parentPath}/${file.name}` : file.name;
                             const shouldExclude = configParam.excludePatterns && configParam.excludePatterns.length > 0 && 
                                 KC.PatternUtils && KC.PatternUtils.matchesFilePattern(
                                     filePath, 
@@ -614,7 +620,7 @@
                                 // SPRINT 1.3.1: DESATIVADO - Sem filtros automáticos
                                 // Aplica filtros de data e tamanho
                                 // if (this._passesFilters(file, config)) {
-                                    const metadata = await this._extractRealMetadata(file, entry, directoryHandle.name);
+                                    const metadata = await this._extractRealMetadata(file, entry, parentPath || directoryHandle.name);
                                     files.push(metadata);
                                 
                                 // Atualiza estatísticas
@@ -640,13 +646,26 @@
                         }
                         
                     } else if (entry.kind === 'directory') {
+                        // Constrói o caminho completo desde a raiz
+                        const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+                        
+                        // NOVO: Verifica se QUALQUER parte do caminho contém diretórios excluídos
+                        const shouldExclude = this._shouldExcludeDirectory(currentPath, entry.name, configParam.excludePatterns || []) ||
+                                            this._pathContainsExcludedDirectory(currentPath, configParam.excludePatterns || []);
+                        
+                        if (shouldExclude) {
+                            this.stats.skippedDirs = (this.stats.skippedDirs || 0) + 1;
+                            KC.Logger.debug('DiscoveryManager', `Diretório excluído: ${currentPath}`);
+                            continue; // Pula este diretório completamente
+                        }
+                        
                         // Scanning recursivo se configurado
                         const shouldRecurse = configParam.subfolderDepth === 0 || currentDepth < configParam.subfolderDepth;
                         
                         if (shouldRecurse) {
                             try {
                                 const subDirHandle = await directoryHandle.getDirectoryHandle(entry.name);
-                                const subFiles = await this._realDirectoryScan(subDirHandle, configParam, currentDepth + 1);
+                                const subFiles = await this._realDirectoryScan(subDirHandle, configParam, currentDepth + 1, currentPath);
                                 files.push(...subFiles);
                             } catch (error) {
                                 console.warn(`Erro ao acessar subdiretório ${entry.name}:`, error);
@@ -679,6 +698,239 @@
             }
             
             return files;
+        }
+
+        /**
+         * Verifica se qualquer parte do caminho contém um diretório excluído
+         * @private
+         * @param {string} path - Caminho completo para verificar
+         * @param {string[]} excludePatterns - Padrões de exclusão
+         * @returns {boolean} True se o caminho contém diretório excluído
+         */
+        _pathContainsExcludedDirectory(path, excludePatterns) {
+            if (!excludePatterns || excludePatterns.length === 0 || !path) {
+                return false;
+            }
+
+            // Primeiro verifica padrões com caminho completo
+            for (const pattern of excludePatterns) {
+                const cleanPattern = pattern.trim().replace(/\/$/, '');
+                const cleanPath = path.replace(/\/$/, '');
+                
+                // Se o padrão contém '/', é um caminho e não apenas um nome de diretório
+                if (cleanPattern.includes('/')) {
+                    // Verifica se o caminho atual contém ou termina com o padrão
+                    if (cleanPath.includes(cleanPattern) || cleanPath.endsWith(cleanPattern)) {
+                        return true;
+                    }
+                }
+            }
+
+            // Depois verifica cada parte do caminho contra padrões simples
+            const pathParts = path.split('/').filter(part => part);
+            
+            for (const part of pathParts) {
+                for (const pattern of excludePatterns) {
+                    const cleanPattern = pattern.trim().replace(/\/$/, '');
+                    
+                    // Se o padrão NÃO contém '/', é um nome de diretório simples
+                    if (!cleanPattern.includes('/')) {
+                        // Verifica match exato
+                        if (part === cleanPattern) {
+                            return true;
+                        }
+                        
+                        // Verifica wildcards se disponível
+                        if (KC.PatternUtils && KC.PatternUtils.matchesWildcard) {
+                            if (KC.PatternUtils.matchesWildcard(part, cleanPattern)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        /**
+         * Verifica se um diretório deve ser excluído baseado nos padrões
+         * @private
+         * @param {string} dirPath - Caminho completo do diretório
+         * @param {string} dirName - Nome do diretório
+         * @param {string[]} excludePatterns - Padrões de exclusão
+         * @returns {boolean} True se o diretório deve ser excluído
+         */
+        _shouldExcludeDirectory(dirPath, dirName, excludePatterns) {
+            if (!excludePatterns || excludePatterns.length === 0) {
+                return false;
+            }
+
+            // Usa o novo método otimizado do PatternUtils se disponível
+            if (KC.PatternUtils && KC.PatternUtils.matchesDirectoryPattern) {
+                return KC.PatternUtils.matchesDirectoryPattern(dirPath, dirName, excludePatterns);
+            }
+
+            // Fallback para verificação simples
+            for (const pattern of excludePatterns) {
+                // Padrões específicos para diretórios
+                if (pattern === dirName) {
+                    return true; // Match exato do nome
+                }
+                
+                if (pattern.endsWith('/') && dirName === pattern.slice(0, -1)) {
+                    return true; // Padrão de diretório
+                }
+                
+                // Usa PatternUtils se disponível
+                if (KC.PatternUtils) {
+                    // Verifica match no nome do diretório
+                    if (KC.PatternUtils.matchesWildcard(dirName, pattern)) {
+                        return true;
+                    }
+                    
+                    // Verifica match no caminho completo
+                    if (KC.PatternUtils.matchesWildcard(dirPath, pattern)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+
+        /**
+         * Calcula confidence score durante a descoberta usando UnifiedConfidenceSystem
+         * REFATORAÇÃO CRÍTICA: Integra cálculo de confiança no momento da descoberta
+         * @private
+         * @param {Object} metadata - Metadados do arquivo com conteúdo
+         * @returns {number} Score de confiança (0-100)
+         */
+        async _calculateConfidenceDuringDiscovery(metadata) {
+            try {
+                // ETAPA 1: Inicialização lazy do UnifiedConfidenceSystem
+                await this._ensureUnifiedConfidenceSystemReady();
+
+                // ETAPA 2: Verifica se sistema está ativo e pronto
+                if (!KC.UnifiedConfidenceControllerInstance?.initialized) {
+                    KC.Logger?.debug('UnifiedConfidenceSystem não inicializado - usando fallback');
+                    return this._calculateFallbackConfidence(metadata);
+                }
+
+                // ETAPA 3: Usa ConfidenceAggregator para processamento completo
+                if (KC.ConfidenceAggregatorInstance?.processFile) {
+                    // Cria objeto file temporário para processamento
+                    const tempFile = {
+                        id: metadata.id,
+                        name: metadata.name,
+                        content: metadata.content,
+                        preview: metadata.preview,
+                        smartPreview: metadata.smartPreview,
+                        size: metadata.size,
+                        path: metadata.path,
+                        categories: metadata.categories || [],
+                        lastModified: metadata.lastModified,
+                        relevanceScore: metadata.relevanceScore || 0
+                    };
+
+                    const result = await KC.ConfidenceAggregatorInstance.processFile(tempFile, {
+                        source: 'discovery_phase',
+                        realTime: true,
+                        skipCache: true // Evita problemas de cache durante descoberta
+                    });
+
+                    // Adiciona metadados de confidence ao arquivo
+                    metadata.confidenceMetadata = {
+                        breakdown: result.breakdown,
+                        strategy: result.strategy,
+                        processingTime: result.processingTime,
+                        originalRelevance: result.originalRelevance,
+                        timestamp: result.timestamp,
+                        source: 'unified_confidence_system'
+                    };
+
+                    // Retorna score final em escala 0-100
+                    const finalScore = Math.min(100, Math.max(0, result.finalScore || 0));
+                    KC.Logger?.debug(`🎯 Unified confidence calculado: ${metadata.name} = ${Math.round(finalScore)}%`);
+                    return finalScore;
+                }
+
+                // ETAPA 4: Fallback se aggregator não disponível
+                KC.Logger?.warning('ConfidenceAggregator não disponível - usando fallback');
+                return this._calculateFallbackConfidence(metadata);
+
+            } catch (error) {
+                KC.Logger?.warning(`Erro no cálculo de confidence para ${metadata.name}:`, error.message);
+                return this._calculateFallbackConfidence(metadata);
+            }
+        }
+
+        /**
+         * Garante que o UnifiedConfidenceSystem está pronto para uso
+         * @private
+         */
+        async _ensureUnifiedConfidenceSystemReady() {
+            try {
+                // Verifica se feature flag está ativa
+                if (!KC.FeatureFlagManagerInstance?.isEnabled('unified_confidence_system')) {
+                    KC.Logger?.debug('Feature flag unified_confidence_system não está ativa');
+                    return false;
+                }
+
+                // Inicializa UnifiedConfidenceController se necessário
+                if (!KC.UnifiedConfidenceControllerInstance?.initialized) {
+                    KC.Logger?.info('🔧 Inicializando UnifiedConfidenceSystem durante descoberta...');
+                    const initResult = await KC.UnifiedConfidenceControllerInstance?.init();
+                    if (!initResult?.success) {
+                        KC.Logger?.warning('Falha na inicialização do UnifiedConfidenceSystem:', initResult?.error);
+                        return false;
+                    }
+                }
+
+                // Inicializa componentes necessários
+                if (KC.QdrantScoreBridgeInstance && !KC.QdrantScoreBridgeInstance.initialized) {
+                    KC.Logger?.info('🔧 Inicializando QdrantScoreBridge durante descoberta...');
+                    await KC.QdrantScoreBridgeInstance.initialize();
+                }
+
+                return true;
+
+            } catch (error) {
+                KC.Logger?.error('Erro na inicialização do UnifiedConfidenceSystem:', error);
+                return false;
+            }
+        }
+
+        /**
+         * Calcula confidence usando método de fallback
+         * @private
+         */
+        _calculateFallbackConfidence(metadata) {
+            // Usa PreviewUtils como fallback
+            if (KC.PreviewUtils && metadata.smartPreview) {
+                const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
+                const score = KC.PreviewUtils.calculatePreviewRelevance(metadata.smartPreview, keywords);
+                KC.Logger?.debug(`📊 Fallback confidence: ${metadata.name} = ${Math.round(score)}%`);
+                return score;
+            }
+
+            // Fallback básico baseado em tamanho e tipo de arquivo
+            let baseScore = 30; // Base mínima
+
+            // Boost por tamanho (arquivos maiores tendem a ter mais conteúdo)
+            if (metadata.size > 1000) baseScore += 10;
+            if (metadata.size > 5000) baseScore += 10;
+
+            // Boost por extensão
+            if (metadata.extension === '.md') baseScore += 15;
+            if (metadata.extension === '.txt') baseScore += 10;
+
+            // Boost por categorias existentes
+            if (metadata.categories && metadata.categories.length > 0) {
+                baseScore += Math.min(20, metadata.categories.length * 5);
+            }
+
+            return Math.min(95, baseScore);
         }
 
         /**
@@ -718,12 +970,34 @@
                         // Gera preview de texto combinado
                         metadata.preview = KC.PreviewUtils.getTextPreview(smartPreview);
                         
-                        // Calcula relevância baseada no preview
-                        const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
-                        metadata.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(smartPreview, keywords);
+                        // UNIFIED CONFIDENCE SYSTEM: Calculate intelligent scores during discovery
+                        // REFATORAÇÃO CRÍTICA: Scores calculados DURANTE descoberta, não DEPOIS
+                        try {
+                            const confidenceScore = await this._calculateConfidenceDuringDiscovery(metadata);
+                            metadata.relevanceScore = confidenceScore;
+                            
+                            // Verifica se metadados de confidence foram adicionados
+                            if (metadata.confidenceMetadata) {
+                                metadata.confidenceSource = metadata.confidenceMetadata.source;
+                                console.log(`🎯 Unified confidence calculado durante descoberta: ${file.name} = ${Math.round(confidenceScore)}%`);
+                            } else {
+                                metadata.confidenceSource = 'fallback_confidence';
+                                console.log(`📊 Fallback confidence calculado durante descoberta: ${file.name} = ${Math.round(confidenceScore)}%`);
+                            }
+                            
+                        } catch (error) {
+                            // Fallback para cálculo básico se tudo falhar
+                            const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
+                            metadata.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(smartPreview, keywords);
+                            metadata.confidenceSource = 'fallback_preview';
+                            
+                            console.warn(`⚠️ Fallback para preview relevance: ${file.name}`, error.message);
+                        }
                         
                         console.log(`Preview extraído para ${file.name}:`, {
-                            preview: metadata.preview.substring(0, 100) + '...',
+                            preview: typeof metadata.preview === 'string' 
+                                ? metadata.preview.substring(0, 100) + '...'
+                                : (metadata.preview?.segment1?.substring(0, 100) || 'Preview não disponível') + '...',
                             structure: smartPreview.structure
                         });
                     }
@@ -1078,6 +1352,72 @@
                 console.warn('Detecção automática do Obsidian requer Chrome/Edge 86+');
             }
             return [];
+        }
+
+        /**
+         * Importa exclusões do plugin file-explorer-plus do Obsidian
+         * @public
+         * @param {FileSystemDirectoryHandle} rootHandle - Handle do diretório raiz (opcional)
+         * @returns {Promise<Object>} Resultado da importação
+         */
+        async importObsidianExclusions(rootHandle = null) {
+            try {
+                // Se não tiver handle, tenta usar o primeiro diretório configurado
+                if (!rootHandle) {
+                    const config = KC.AppState.get('configuration')?.discovery || {};
+                    const directories = config.directories || [];
+                    
+                    if (directories.length === 0 || !directories[0].handle) {
+                        return {
+                            success: false,
+                            message: 'Nenhum diretório configurado. Execute a descoberta primeiro.'
+                        };
+                    }
+                    
+                    rootHandle = directories[0].handle;
+                }
+
+                // Verifica se ObsidianPluginUtils está disponível
+                if (!KC.ObsidianPluginUtils) {
+                    KC.Logger.error('DiscoveryManager', 'ObsidianPluginUtils não está carregado');
+                    return {
+                        success: false,
+                        message: 'ObsidianPluginUtils não está disponível'
+                    };
+                }
+
+                // Importa as exclusões
+                const result = await KC.ObsidianPluginUtils.importObsidianExclusions(rootHandle);
+                
+                if (result.success && result.exclusions.length > 0) {
+                    // Atualiza a configuração com as novas exclusões
+                    const config = KC.AppState.get('configuration') || {};
+                    const discoveryConfig = config.discovery || {};
+                    const currentExclusions = discoveryConfig.excludePatterns || [];
+                    
+                    // Adiciona novas exclusões
+                    const updatedExclusions = [...new Set([...currentExclusions, ...result.exclusions])];
+                    
+                    // Salva a configuração atualizada
+                    discoveryConfig.excludePatterns = updatedExclusions;
+                    config.discovery = discoveryConfig;
+                    KC.AppState.set('configuration', config);
+                    
+                    KC.Logger.info('DiscoveryManager', 'Exclusões importadas com sucesso', {
+                        novas: result.exclusions.length,
+                        total: updatedExclusions.length
+                    });
+                }
+                
+                return result;
+                
+            } catch (error) {
+                KC.Logger.error('DiscoveryManager', 'Erro ao importar exclusões do Obsidian', error);
+                return {
+                    success: false,
+                    message: `Erro: ${error.message}`
+                };
+            }
         }
 
         // REMOVIDO: _simulateObsidianJson - sem simulações

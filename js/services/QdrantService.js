@@ -347,6 +347,30 @@ class QdrantService {
     }
 
     /**
+     * Reseta a coleção (remove todos os pontos)
+     */
+    async resetCollection() {
+        if (!this.initialized) await this.initialize();
+
+        try {
+            // Deletar a coleção
+            await this.request(
+                'DELETE',
+                `/collections/${this.config.collectionName}`
+            );
+            
+            // Recriar a coleção
+            await this.createCollection();
+            
+            console.log(`✅ Coleção ${this.config.collectionName} resetada com sucesso`);
+            return true;
+        } catch (error) {
+            console.error('Erro ao resetar coleção:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Verifica pontos diretamente sem cache (para debug)
      */
     async debugGetPoints(limit = 5) {

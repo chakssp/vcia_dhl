@@ -442,6 +442,26 @@
                     fileId: file.id || file.name,
                     analysisType: analysisType
                 });
+                
+                // UNIFIED CONFIDENCE SYSTEM: Update confidence after AI analysis
+                if (KC.UnifiedConfidenceControllerInstance && KC.FeatureFlagManagerInstance?.isEnabled('unified_confidence_system')) {
+                    try {
+                        const analyzedFile = files.find(f => (f.id === file.id) || (f.name === file.name));
+                        if (analyzedFile) {
+                            console.log(`AnalysisManager: Processando confidence para arquivo analisado: ${analyzedFile.name}`);
+                            
+                            KC.UnifiedConfidenceControllerInstance.processFiles([analyzedFile], {
+                                background: true,
+                                trigger: 'ai_analysis_completed'
+                            }).catch(error => {
+                                console.error('AnalysisManager: Erro ao processar confidence após análise:', error);
+                            });
+                        }
+                        
+                    } catch (error) {
+                        console.error('AnalysisManager: Erro na integração de confidence:', error);
+                    }
+                }
             }
         }
 
@@ -804,6 +824,26 @@
                     analysisType: analysisType,
                     hasSchemaOrg: !!files[fileIndex].schemaOrg // NOVO
                 });
+                
+                // UNIFIED CONFIDENCE SYSTEM: Update confidence after enhanced analysis
+                if (KC.UnifiedConfidenceControllerInstance && KC.FeatureFlagManagerInstance?.isEnabled('unified_confidence_system')) {
+                    try {
+                        const analyzedFile = files[fileIndex];
+                        if (analyzedFile) {
+                            console.log(`AnalysisManager: Processando confidence para arquivo com análise aprimorada: ${analyzedFile.name}`);
+                            
+                            KC.UnifiedConfidenceControllerInstance.processFiles([analyzedFile], {
+                                background: true,
+                                trigger: 'enhanced_analysis_completed'
+                            }).catch(error => {
+                                console.error('AnalysisManager: Erro ao processar confidence após análise aprimorada:', error);
+                            });
+                        }
+                        
+                    } catch (error) {
+                        console.error('AnalysisManager: Erro na integração de confidence (análise aprimorada):', error);
+                    }
+                }
             }
         }
     }

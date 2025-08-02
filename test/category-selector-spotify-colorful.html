@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seletor de Categorias - Spotify Style Colorido</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #121212;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .demo-area {
+            background: #181818;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: #282828;
+            border-radius: 8px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .file-item:hover {
+            background: #333;
+            border-color: #404040;
+        }
+        
+        .file-icon {
+            font-size: 28px;
+            margin-right: 16px;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        
+        .file-meta {
+            font-size: 13px;
+            color: #b3b3b3;
+            margin-bottom: 10px;
+        }
+        
+        .category-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            transition: all 0.2s;
+        }
+        
+        .category-badge:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+        
+        .edit-btn {
+            padding: 10px 20px;
+            border: 1px solid #404040;
+            background: transparent;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .edit-btn:hover {
+            background: #1db954;
+            border-color: #1db954;
+            transform: translateY(-1px);
+        }
+        
+        /* Popup Overlay */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Popup Container */
+        .popup {
+            background: #181818;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            border: 1px solid #282828;
+            transform: scale(0.9);
+            animation: scaleIn 0.3s forwards;
+        }
+        
+        @keyframes scaleIn {
+            to { transform: scale(1); }
+        }
+        
+        .popup-header {
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid #282828;
+            position: relative;
+        }
+        
+        .popup-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+            margin: 0;
+        }
+        
+        .popup-subtitle {
+            font-size: 14px;
+            color: #b3b3b3;
+            margin-top: 4px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #282828;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #b3b3b3;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: #404040;
+            color: #fff;
+            transform: rotate(90deg);
+        }
+        
+        /* Tags Container */
+        .tags-scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .tags-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        
+        .tag-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border-radius: 12px;
+            background: #282828;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
+            text-align: center;
+        }
+        
+        .tag-item:hover {
+            background: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .tag-item.selected {
+            border-color: currentColor;
+            background: currentColor;
+        }
+        
+        .tag-item.selected .tag-icon,
+        .tag-item.selected .tag-name {
+            color: #fff !important;
+        }
+        
+        .tag-item.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.9);
+            color: currentColor;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .tag-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .tag-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #fff;
+        }
+        
+        /* Add New Button */
+        .add-new-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            border-radius: 12px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px dashed #404040;
+            text-align: center;
+        }
+        
+        .add-new-btn:hover {
+            border-color: #1db954;
+            background: rgba(29, 185, 84, 0.1);
+        }
+        
+        .add-new-btn .tag-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: #b3b3b3;
+        }
+        
+        .add-new-btn .tag-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #b3b3b3;
+        }
+        
+        .add-new-btn:hover .tag-icon,
+        .add-new-btn:hover .tag-name {
+            color: #1db954;
+        }
+        
+        /* New Category Form */
+        .new-category-form {
+            display: none;
+            padding: 24px;
+            background: #121212;
+            border-top: 1px solid #282828;
+        }
+        
+        .new-category-form.active {
+            display: block;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .input-group {
+            flex: 1;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #b3b3b3;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #282828;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #1db954;
+            background: #333;
+        }
+        
+        .emoji-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .emoji-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #282828;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        
+        .emoji-option:hover {
+            background: #333;
+            transform: scale(1.1);
+        }
+        
+        .emoji-option.selected {
+            border-color: #1db954;
+            background: #333;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+        
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #fff;
+        }
+        
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .btn-primary {
+            background: #1db954;
+            color: #000;
+        }
+        
+        .btn-primary:hover {
+            background: #1ed760;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #282828;
+            color: #fff;
+            border: 1px solid #404040;
+        }
+        
+        .btn-secondary:hover {
+            background: #333;
+        }
+        
+        /* Popup Footer */
+        .popup-footer {
+            padding: 20px 24px;
+            border-top: 1px solid #282828;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .selection-info {
+            font-size: 14px;
+            color: #b3b3b3;
+        }
+        
+        .selection-count {
+            font-weight: 600;
+            color: #1db954;
+            font-size: 16px;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #181818;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #535353;
+        }
+        
+        /* Empty State */
+        .empty-categories {
+            text-align: center;
+            color: #b3b3b3;
+            font-size: 13px;
+            padding: 8px 16px;
+            background: #282828;
+            border-radius: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema de Categorias</h1>
+            <p style="color: #b3b3b3;">Organize seus arquivos com múltiplas categorias coloridas</p>
+        </div>
+        
+        <div class="demo-area">
+            <div class="file-list">
+                <!-- Arquivo 1 -->
+                <div class="file-item">
+                    <div class="file-icon">📄</div>
+                    <div class="file-info">
+                        <div class="file-name">projeto-ambev-analise.md</div>
+                        <div class="file-meta">Modificado há 2 dias • 15 KB • 85% relevância</div>
+                        <div class="category-badges" id="badges-1">
+                            <span class="category-badge" style="background: #4f46e5;">🔧 Técnico</span>
+                            <span class="category-badge" style="background: #059669;">📊 Estratégico</span>
+                        </div>
+                    </div>
+                    <button class="edit-btn" onclick="openSelector('1')">
+                        Editar Categorias
+                    </button>
+                </div>
+                
+                <!-- Arquivo 2 -->
+                <div class="file-item">
+                    <div class="file-icon">📝</div>
+                    <div class="file-info">
+                        <div class="file-name">decisao-arquitetura-2024.txt</div>
+                        <div class="file-meta">Modificado há 1 semana • 8 KB • 92% relevância</div>
+                        <div class="category-badges" id="badges-2">
+                            <span class="category-badge" style="background: #d97706;">🎯 Momento Decisivo</span>
+                        </div>
+                    </div>
+                    <button class="edit-btn" onclick="openSelector('2')">
+                        Editar Categorias
+                    </button>
+                </div>
+                
+                <!-- Arquivo 3 -->
+                <div class="file-item">
+                    <div class="file-icon">💡</div>
+                    <div class="file-info">
+                        <div class="file-name">insights-ml-pipeline.md</div>
+                        <div class="file-meta">Modificado há 3 dias • 22 KB • 78% relevância</div>
+                        <div class="category-badges" id="badges-3">
+                            <span class="empty-categories">Sem categorias</span>
+                        </div>
+                    </div>
+                    <button class="edit-btn" onclick="openSelector('3')">
+                        Adicionar Categorias
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Categorias disponíveis
+        let categories = [
+            { id: 'tecnico', name: 'Técnico', color: '#4f46e5', icon: '🔧' },
+            { id: 'estrategico', name: 'Estratégico', color: '#059669', icon: '📊' },
+            { id: 'conceitual', name: 'Conceitual', color: '#dc2626', icon: '💡' },
+            { id: 'decisivo', name: 'Momento Decisivo', color: '#d97706', icon: '🎯' },
+            { id: 'insight', name: 'Insight', color: '#7c3aed', icon: '✨' },
+            { id: 'aprendizado', name: 'Aprendizado', color: '#be185d', icon: '📚' },
+            { id: 'juridico', name: 'Jurídico', color: '#1e40af', icon: '⚖️' },
+            { id: 'financeiro', name: 'Financeiro', color: '#16a34a', icon: '💰' }
+        ];
+        
+        // Categorias por arquivo
+        const fileCategories = {
+            '1': ['tecnico', 'estrategico'],
+            '2': ['decisivo'],
+            '3': []
+        };
+        
+        // Emojis disponíveis
+        const emojis = ['🏷️', '📌', '🔖', '💼', '📊', '🎯', '💡', '🚀', '⭐', '🔥'];
+        
+        // Cores disponíveis
+        const colors = [
+            '#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16',
+            '#22c55e', '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9',
+            '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef',
+            '#ec4899', '#f43f5e', '#be185d', '#7c2d12', '#78716c'
+        ];
+        
+        let selectedColor = colors[0];
+        let selectedEmoji = emojis[0];
+        let currentFileId = null;
+        
+        function openSelector(fileId) {
+            currentFileId = fileId;
+            const selected = [...fileCategories[fileId]];
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            overlay.innerHTML = `
+                <div class="popup">
+                    <div class="popup-header">
+                        <h2 class="popup-title">Selecionar Categorias</h2>
+                        <p class="popup-subtitle">Escolha múltiplas categorias para organizar este arquivo</p>
+                        <button class="close-btn" onclick="closePopup()">×</button>
+                    </div>
+                    
+                    <div class="tags-scroll-container">
+                        <div class="tags-grid">
+                            ${categories.map(cat => `
+                                <div class="tag-item ${selected.includes(cat.id) ? 'selected' : ''}" 
+                                     style="color: ${cat.color};"
+                                     onclick="toggleCategory('${cat.id}', this)">
+                                    <div class="tag-icon">${cat.icon}</div>
+                                    <div class="tag-name">${cat.name}</div>
+                                </div>
+                            `).join('')}
+                            
+                            <div class="add-new-btn" onclick="showNewForm()">
+                                <div class="tag-icon">+</div>
+                                <div class="tag-name">Adicionar</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="new-form" class="new-category-form">
+                        <div class="form-row">
+                            <div class="input-group" style="flex: 2;">
+                                <label>Nome da Categoria</label>
+                                <input type="text" 
+                                       id="new-name" 
+                                       placeholder="Ex: Urgente, Revisão, etc."
+                                       onkeypress="if(event.key === 'Enter') addNewCategory()">
+                            </div>
+                            <div class="input-group">
+                                <label>Ícone</label>
+                                <div class="emoji-picker">
+                                    ${emojis.map((emoji, i) => `
+                                        <div class="emoji-option ${i === 0 ? 'selected' : ''}"
+                                             onclick="selectEmoji('${emoji}', this)">${emoji}</div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Cor da Categoria</label>
+                            <div class="color-grid">
+                                ${colors.map((color, i) => `
+                                    <div class="color-option ${i === 0 ? 'selected' : ''}"
+                                         style="background: ${color};"
+                                         onclick="selectColor('${color}', this)"></div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="addNewCategory()">
+                                Criar Categoria
+                            </button>
+                            <button class="btn btn-secondary" onclick="hideNewForm()">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-footer">
+                        <div class="selection-info">
+                            <span class="selection-count">${selected.length}</span> 
+                            categoria${selected.length !== 1 ? 's' : ''} selecionada${selected.length !== 1 ? 's' : ''}
+                        </div>
+                        <button class="btn btn-primary" onclick="saveCategories()">
+                            Confirmar Seleção
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            overlay.tempSelection = selected;
+        }
+        
+        function closePopup() {
+            document.querySelector('.popup-overlay').remove();
+        }
+        
+        function toggleCategory(catId, element) {
+            const overlay = document.querySelector('.popup-overlay');
+            const selected = overlay.tempSelection;
+            const index = selected.indexOf(catId);
+            
+            if (index > -1) {
+                selected.splice(index, 1);
+                element.classList.remove('selected');
+            } else {
+                selected.push(catId);
+                element.classList.add('selected');
+            }
+            
+            updateSelectionCount(selected.length);
+        }
+        
+        function updateSelectionCount(count) {
+            const countEl = document.querySelector('.selection-count');
+            const textEl = document.querySelector('.selection-info');
+            countEl.textContent = count;
+            textEl.innerHTML = `<span class="selection-count">${count}</span> categoria${count !== 1 ? 's' : ''} selecionada${count !== 1 ? 's' : ''}`;
+        }
+        
+        function showNewForm() {
+            document.getElementById('new-form').classList.add('active');
+            document.getElementById('new-name').focus();
+            
+            // Scroll para mostrar o formulário
+            const form = document.getElementById('new-form');
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        function hideNewForm() {
+            document.getElementById('new-form').classList.remove('active');
+            document.getElementById('new-name').value = '';
+        }
+        
+        function selectColor(color, element) {
+            selectedColor = color;
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function selectEmoji(emoji, element) {
+            selectedEmoji = emoji;
+            document.querySelectorAll('.emoji-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        function addNewCategory() {
+            const name = document.getElementById('new-name').value.trim();
+            if (!name) {
+                document.getElementById('new-name').focus();
+                return;
+            }
+            
+            const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
+            if (categories.find(cat => cat.id === id)) {
+                alert('Esta categoria já existe!');
+                return;
+            }
+            
+            const newCat = {
+                id: id,
+                name: name,
+                color: selectedColor,
+                icon: selectedEmoji,
+                custom: true
+            };
+            
+            categories.push(newCat);
+            
+            // Adicionar à seleção atual
+            const overlay = document.querySelector('.popup-overlay');
+            overlay.tempSelection.push(id);
+            
+            // Salvar no console para persistência
+            console.log('Nova categoria criada:', newCat);
+            console.log('Para persistir, adicione ao categories.jsonl:');
+            console.log(JSON.stringify({
+                ...newCat,
+                segment: 'custom',
+                active: true,
+                created: new Date().toISOString()
+            }));
+            
+            // Re-renderizar
+            closePopup();
+            openSelector(currentFileId);
+        }
+        
+        function saveCategories() {
+            const overlay = document.querySelector('.popup-overlay');
+            const selected = overlay.tempSelection;
+            
+            fileCategories[currentFileId] = selected;
+            updateBadges(currentFileId);
+            
+            // Log para auto-save
+            console.log(`Categorias atualizadas para arquivo ${currentFileId}:`, selected);
+            
+            closePopup();
+        }
+        
+        function updateBadges(fileId) {
+            const container = document.getElementById(`badges-${fileId}`);
+            const selected = fileCategories[fileId];
+            
+            if (selected.length === 0) {
+                container.innerHTML = '<span class="empty-categories">Sem categorias</span>';
+            } else {
+                container.innerHTML = selected.map(catId => {
+                    const cat = categories.find(c => c.id === catId);
+                    return `<span class="category-badge" style="background: ${cat.color};">${cat.icon} ${cat.name}</span>`;
+                }).join('');
+            }
+        }
+    </script>
+</body>
+</html>

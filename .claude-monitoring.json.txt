@@ -1,0 +1,9 @@
+.claude-monitoring.json
+
+{
+  "version": "1.0",
+  "rules": {
+    "maxChangesPerSession": 10,
+    "requireBackup": true
+  }
+}

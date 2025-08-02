@@ -9,6 +9,8 @@
     <!-- CSS Principal -->
     <link rel="stylesheet" href="css/utils/variables.css">
     <link rel="stylesheet" href="css/utils/dark-mode.css">
+    <link rel="stylesheet" href="css/zoom-control.css">
+    <link rel="stylesheet" href="css/responsive-positioning.css">
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/utils/animations.css">
     <link rel="stylesheet" href="css/utils/responsive.css">
@@ -28,10 +30,11 @@
     <link rel="stylesheet" href="css/components/word-cloud.css">
     <link rel="stylesheet" href="css/components/graph-visualization.css">
     <link rel="stylesheet" href="css/components/quick-filters-bar.css">
-    <link rel="stylesheet" href="css/components/confidence-display.css">
+    <!-- DISABLED: <link rel="stylesheet" href="css/components/confidence-display.css"> -->
     <link rel="stylesheet" href="css/components/processing-logs.css">
     <link rel="stylesheet" href="css/components/quick-filters-bar-fix.css">
     <link rel="stylesheet" href="css/components/quick-filters-override.css">
+    <link rel="stylesheet" href="css/fixed-positioning-patch.css">
     
     <!-- Vis.js para visualização de grafos -->
     <link rel="stylesheet" href="https://unpkg.com/vis-network@latest/dist/dist/vis-network.min.css">
@@ -250,6 +253,7 @@
     <script src="js/schemas/QdrantUnifiedSchema.js"></script>
     <script src="js/managers/CategoryManager.js"></script>
     <script src="js/managers/FilterManager.js"></script>
+    <script src="js/components/CategoryQuickSelector.js"></script>
     <script src="js/managers/StatsManager.js"></script>
     <script src="js/managers/StatsCoordinator.js"></script>
     <script src="js/managers/RAGExportManager.js"></script>
@@ -277,9 +281,9 @@
     <script type="module" src="js/core/FeatureFlagManager.js"></script>
     <script type="module" src="js/utils/ScoreNormalizer.js"></script>
     <script type="module" src="js/services/QdrantScoreBridge.js"></script>
-    <script type="module" src="js/monitoring/ConfidencePerformanceMonitor.js"></script>
+    <!-- DISABLED: <script type="module" src="js/monitoring/ConfidencePerformanceMonitor.js"></script> -->
     <script type="module" src="js/validation/DataValidationManager.js"></script>
-    <script type="module" src="js/controllers/UnifiedConfidenceController.js"></script>
+    <!-- DISABLED: <script type="module" src="js/controllers/UnifiedConfidenceController.js"></script> -->
     
     <!-- Patches temporários para problemas de cache -->
     <script src="js/patches/convergence-patch.js"></script>
@@ -367,6 +371,9 @@
     <!-- Correção da barra de filtros rápidos -->
     <script src="js/quick-filters-final-fix.js"></script>
     <script src="js/quick-filters-combined-fix.js"></script>
+    
+    <!-- Correção de posicionamento fixo -->
+    <script src="js/fix-positioning.js"></script>
     
     <!-- Barra de Filtros Rápidos -->
     <div class="quick-filters-bar" id="quick-filters-bar">

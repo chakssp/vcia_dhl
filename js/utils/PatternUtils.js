@@ -90,6 +90,88 @@
         }
 
         /**
+         * Testa se um diretório corresponde a padrões
+         * Otimizado para verificação de diretórios antes de entrar neles
+         * @param {string} dirPath - Caminho completo do diretório
+         * @param {string} dirName - Nome do diretório
+         * @param {string[]} patterns - Padrões para testar
+         * @returns {boolean} True se o diretório deve ser excluído
+         */
+        static matchesDirectoryPattern(dirPath, dirName, patterns) {
+            if (!patterns || patterns.length === 0) {
+                return false;
+            }
+
+            return patterns.some(pattern => {
+                // Remove barras finais para comparação consistente
+                const cleanPattern = pattern.replace(/\/$/, '').trim();
+                const cleanDirName = dirName.replace(/\/$/, '').trim();
+                const cleanDirPath = dirPath.replace(/\/$/, '').trim();
+
+                // Match exato do nome do diretório (para padrões simples como "node_modules")
+                if (!cleanPattern.includes('/') && cleanPattern === cleanDirName) {
+                    return true;
+                }
+
+                // Match exato do caminho completo (para padrões como "tests/mdesk/reports")
+                if (cleanDirPath === cleanPattern) {
+                    return true;
+                }
+
+                // Verifica se o caminho termina com o padrão (para caminhos relativos)
+                if (cleanPattern.includes('/') && cleanDirPath.endsWith(cleanPattern)) {
+                    return true;
+                }
+
+                // Verifica se o caminho contém o padrão como substring
+                // Útil para padrões como "intelligence-lab/storage" que podem estar em qualquer nível
+                if (cleanPattern.includes('/') && cleanDirPath.includes(cleanPattern)) {
+                    return true;
+                }
+
+                // Padrões com ** devem funcionar em qualquer nível
+                if (pattern.includes('**')) {
+                    // Converte ** para regex apropriado
+                    const regexPattern = pattern
+                        .replace(/\*\*/g, '.*')
+                        .replace(/\*/g, '[^/]*')
+                        .replace(/\?/g, '.');
+                    
+                    const regex = new RegExp(`^${regexPattern}$`, 'i');
+                    return regex.test(cleanDirPath) || regex.test(cleanDirName);
+                }
+
+                // Padrão com /* no final (excluir tudo dentro)
+                if (pattern.endsWith('/*')) {
+                    const basePattern = pattern.slice(0, -2); // Remove /*
+                    // Verifica se o caminho começa com o padrão base
+                    if (cleanDirPath.startsWith(basePattern + '/') || 
+                        cleanDirPath === basePattern) {
+                        return true;
+                    }
+                    // Para padrões como */node_modules/*
+                    if (basePattern.startsWith('*/')) {
+                        const dirToMatch = basePattern.slice(2);
+                        const pathSegments = cleanDirPath.split('/');
+                        for (let i = 0; i < pathSegments.length - 1; i++) {
+                            if (pathSegments[i] === dirToMatch) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                // Wildcard simples
+                if (pattern.includes('*') || pattern.includes('?')) {
+                    return this.matchesWildcard(cleanDirName, cleanPattern) || 
+                           this.matchesWildcard(cleanDirPath, cleanPattern);
+                }
+
+                return false;
+            });
+        }
+
+        /**
          * Valida se um padrão é válido
          * @param {string} pattern - Padrão a validar
          * @returns {Object} {valid: boolean, error?: string}

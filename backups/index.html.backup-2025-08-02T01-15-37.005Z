@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Consolidador de Conhecimento Pessoal - Descoberta automatizada de momentos decisivos">
+    <title>V///Alliances vcia.com.br Bem vindo ao jogo</title>
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="css/utils/variables.css">
+    <link rel="stylesheet" href="css/utils/dark-mode.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/utils/animations.css">
+    <link rel="stylesheet" href="css/utils/responsive.css">
+    
+    <!-- CSS dos Componentes -->
+    <link rel="stylesheet" href="css/components/workflow.css">
+    <link rel="stylesheet" href="css/components/filters.css">
+    <link rel="stylesheet" href="css/components/filter-panel.css">
+    <link rel="stylesheet" href="css/components/file-list.css">
+    <link rel="stylesheet" href="css/components/modals.css">
+    <link rel="stylesheet" href="css/components/export-ui.css">
+    <link rel="stylesheet" href="css/components/organization-panel.css">
+    <link rel="stylesheet" href="css/components/validation-modal.css">
+    <link rel="stylesheet" href="css/components/stats.css">
+    <link rel="stylesheet" href="css/components/pagination.css">
+    <link rel="stylesheet" href="css/components/progress-global.css">
+    <link rel="stylesheet" href="css/components/word-cloud.css">
+    <link rel="stylesheet" href="css/components/graph-visualization.css">
+    <link rel="stylesheet" href="css/components/quick-filters-bar.css">
+    <link rel="stylesheet" href="css/components/confidence-display.css">
+    <link rel="stylesheet" href="css/components/processing-logs.css">
+    <link rel="stylesheet" href="css/components/quick-filters-bar-fix.css">
+    <link rel="stylesheet" href="css/components/quick-filters-override.css">
+    
+    <!-- Vis.js para visualização de grafos -->
+    <link rel="stylesheet" href="https://unpkg.com/vis-network@latest/dist/dist/vis-network.min.css">
+</head>
+<body>
+    <!-- Header Principal -->
+    <header class="main-header">
+        <div class="container">
+            <h1 class="logo">
+                <span class="logo-icon">🧠</span>
+                Knowledge Consolidator
+            </h1>
+            <nav class="main-nav">
+                <button class="btn-api-config" onclick="KC.EventBus.emit(KC.Events.OPEN_API_CONFIG)" title="Configurar APIs de IA">
+                    🔧 Configurar APIs
+                </button>
+                <button id="export-state" class="btn-export-state" title="Exportar Estado da Aplicação">
+                    💾 Exportar Estado
+                </button>
+                <span class="nav-status" id="nav-status">
+                    Sprint 1 - Sistema Base
+                </span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <main class="main-container">
+        <!-- Workflow de 4 Etapas -->
+        <section class="workflow-section" id="workflow-section">
+            <div class="container">
+                <div class="workflow-grid" id="workflow-grid">
+                    <!-- Cards serão inseridos via JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Área de Conteúdo Principal -->
+        <!-- ORIGINAL - Preservado para rollback se necessário
+        <section class="content-section" id="content-section">
+            <div class="container">
+                ... conteúdo original ...
+            </div>
+        </section>
+        -->
+        
+        <!-- Container de conteúdo principal -->
+        <section class="content-section" id="content-section">
+                <div class="container">
+                    <!-- Painel de Configuração (Etapa 1-4) -->
+                    <div class="panel-container" id="panel-container">
+                        <!-- Painéis serão inseridos dinamicamente -->
+                    </div>
+
+                    <!-- Barra de Filtros (SPRINT 1.2 - insights-1.2.png) -->
+                    <div class="filter-section" id="filter-section" style="display: none;">
+                        <!-- Abas de Filtro baseadas no insights-1.2.png -->
+                        <div class="filter-tabs" id="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">
+                                Todos <span class="tab-badge" id="badge-all">5</span>
+                            </button>
+                            <button class="filter-tab" data-filter="high">
+                                Alta Relevância <span class="tab-badge" id="badge-high">3</span>
+                            </button>
+                            <button class="filter-tab" data-filter="medium">
+                                Média Relevância <span class="tab-badge" id="badge-medium">3</span>
+                            </button>
+                            <button class="filter-tab" data-filter="pending">
+                                Pendente Análise <span class="tab-badge" id="badge-pending">6</span>
+                            </button>
+                            <button class="filter-tab" data-filter="analyzed">
+                                Já Analisados <span class="tab-badge" id="badge-analyzed">1</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Classificação e Filtros Avançados -->
+                        <div class="filter-controls">
+                            <div class="filter-dropdown">
+                                <label for="sort-select">Classificar por:</label>
+                                <select id="sort-select">
+                                    <option value="relevance">Relevância</option>
+                                    <option value="date">Data</option>
+                                    <option value="size">Tamanho</option>
+                                    <option value="name">Nome</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-bar" id="filter-bar">
+                                <!-- Filtros adicionais serão inseridos via JavaScript -->
+                            </div>
+                            
+                            <!-- NOVO: Botão Refinar Dados -->
+                            <button id="refine-data-btn" class="refine-button" onclick="KC.FilterManager.refineData()">
+                                🔍 Refinar Dados
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Arquivos -->
+                    <div class="files-section" id="files-section" style="display: none;">
+                        <div class="files-header" style="display: none;">
+                            <!-- Header oculto mas preservado para compatibilidade -->
+                            <h2 class="files-title" style="display: none;">Arquivos Descobertos</h2>
+                            <div class="files-actions" id="files-actions">
+                                <!-- Ações em lote -->
+                            </div>
+                        </div>
+                        <div class="files-container" id="files-container">
+                            <!-- Lista de arquivos será renderizada aqui -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <p class="footer-info">
+                <span id="footer-stats">Pronto para iniciar</span>
+                <span class="separator">•</span>
+                <span id="footer-version">v1.0.0</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Container de Modais -->
+    <div class="modal-container" id="modal-container">
+        <!-- Modais serão inseridos dinamicamente -->
+    </div>
+
+    <!-- Container de Notificações -->
+    <div class="notification-container" id="notification-container">
+        <!-- Notificações serão inseridas dinamicamente -->
+    </div>
+
+    <!-- Barra de Progresso Global -->
+    <div class="progress-global" id="progress-global">
+        <div class="progress-global-bar" id="progress-global-bar"></div>
+        <div class="progress-global-overlay" id="progress-global-overlay">
+            <div class="progress-info">
+                <span class="progress-title" id="progress-title">Carregando...</span>
+                <span class="progress-details" id="progress-details">Processando dados...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Actions Container -->
+    <div class="floating-actions">
+        <!-- Theme Toggle Button (sempre visível, em cima) -->
+        <button class="theme-toggle action-btn" id="theme-toggle" title="Alternar tema">
+            <span id="theme-icon">☀️</span>
+        </button>
+        
+        <!-- Go to Filters Button (sempre visível, meio) -->
+        <button class="go-to-filters action-btn" id="go-to-filters" title="Ir para filtros">
+            <span>🔍</span>
+        </button>
+        
+        <!-- Go to Top Button (aparece/desaparece, embaixo) -->
+        <button class="go-to-top action-btn" id="go-to-top" title="Ir para o topo">
+            <span>⬆️</span>
+        </button>
+        
+        
+        <!-- Botão de Filtros Rápidos -->
+        <button class="action-btn" id="quick-filters-toggle" title="Mostrar/Ocultar Filtros Rápidos">
+            <span>📊</span>
+        </button>
+    </div>
+
+    <!-- Vis.js para visualização de grafos -->
+    <script src="https://unpkg.com/vis-network@latest/dist/vis-network.min.js"></script>
+    
+    <!-- Scripts Core -->
+    <script src="js/core/EventBus.js"></script>
+    <script src="js/core/AppState.js"></script>
+    <script src="js/core/AppController.js"></script>
+    
+    <!-- Scripts Config (Single Source of Truth) -->
+    <script src="js/config/AnalysisTypes.js"></script>
+    <script src="js/config/APIConfig.js"></script>
+    
+    <!-- Scripts Utils (carregados primeiro pois são dependências) -->
+    <script src="js/utils/Logger.js"></script>
+    <script src="js/utils/HandleManager.js"></script>
+    <script src="js/utils/BrowserCompatibility.js"></script>
+    <script src="js/utils/FileUtils.js"></script>
+    <script src="js/utils/DateUtils.js"></script>
+    <script src="js/utils/PreviewUtils.js"></script>
+    <script src="js/utils/PatternUtils.js"></script>
+    <script src="js/utils/ObsidianPluginUtils.js"></script>
+    <script src="js/utils/ExclusionPatternsHandler.js"></script>
+    <script src="js/utils/ContentAccessUtils.js"></script>
+    <script src="js/utils/ChunkingUtils.js"></script>
+    <script src="js/managers/IntentManager.js"></script>
+    <script src="js/managers/InsightExtractor.js"></script>
+    <script src="js/utils/ValidationUtils.js"></script>
+    <script src="js/utils/ProgressManager.js"></script>
+    <script src="js/utils/WordCloudGenerator.js"></script>
+    <script src="js/utils/DuplicateDetector.js"></script>
+    <script src="js/utils/SessionCache.js"></script>
+    <script src="js/utils/ThemeManager.js"></script>
+    <script src="js/utils/RelevanceUtils.js"></script>
+    <script src="js/utils/CategoryNormalizer.js"></script>
+    
+    <!-- Scripts Managers -->
+    <script src="js/managers/DataIntegrityManager.js"></script>
+    <script src="js/managers/DiscoveryManager.js"></script>
+    <script src="js/managers/AnalysisManager.js"></script>
+    <script src="js/managers/AIAPIManager.js"></script>
+    <script src="js/managers/PromptManager.js"></script>
+    <script src="js/managers/AnalysisAdapter.js"></script>
+    <script src="js/managers/SchemaOrgMapper.js"></script>
+    <script src="js/schemas/QdrantUnifiedSchema.js"></script>
+    <script src="js/managers/CategoryManager.js"></script>
+    <script src="js/managers/FilterManager.js"></script>
+    <script src="js/managers/StatsManager.js"></script>
+    <script src="js/managers/StatsCoordinator.js"></script>
+    <script src="js/managers/RAGExportManager.js"></script>
+    
+    <!-- Scripts Schemas -->
+    <script src="js/schemas/QdrantSchema.js"></script>
+    <script src="js/schemas/TripleSchema.js"></script>
+    
+    <!-- Scripts Extractors -->
+    <script src="js/extractors/RelationshipExtractor.js"></script>
+    
+    <!-- Scripts Core Managers (Triple Store) -->
+    <script src="js/managers/TripleStoreManager.js"></script>
+    
+    <!-- Scripts Services -->
+    <script src="js/services/CacheService.js"></script>
+    <script src="js/services/EmbeddingService.js"></script>
+    <script src="js/services/QdrantService.js"></script>
+    <script src="js/services/SimilaritySearchService.js"></script>
+    <script src="js/services/TripleStoreService.js"></script>
+    <script src="js/services/ConvergenceAnalysisService.js"></script>
+    <script src="js/services/IntelligenceEnrichmentPipeline.js"></script>
+    
+    <!-- UnifiedConfidenceSystem Components -->
+    <script type="module" src="js/core/FeatureFlagManager.js"></script>
+    <script type="module" src="js/utils/ScoreNormalizer.js"></script>
+    <script type="module" src="js/services/QdrantScoreBridge.js"></script>
+    <script type="module" src="js/monitoring/ConfidencePerformanceMonitor.js"></script>
+    <script type="module" src="js/validation/DataValidationManager.js"></script>
+    <script type="module" src="js/controllers/UnifiedConfidenceController.js"></script>
+    
+    <!-- Patches temporários para problemas de cache -->
+    <script src="js/patches/convergence-patch.js"></script>
+    <script src="js/patches/enrichment-debug.js"></script>
+    
+    <!-- Scripts ML Components (Waves 6-9) -->
+    <script src="js/ml/ConfidenceCalculator.js"></script>
+    <script src="js/ml/ConfidenceTracker.js"></script>
+    <script src="js/ml/ConfidenceValidator.js"></script>
+    <script src="js/ml/DashboardMetrics.js"></script>
+    <script src="js/ml/DashboardCharts.js"></script>
+    <script src="js/ml/MLDashboard.js"></script>
+    <script src="js/ml/WorkerPoolManager.js"></script>
+    
+    <!-- Scripts Wave 10 Production Components -->
+    <script src="js/wave10/SystemIntegrationOrchestrator.js"></script>
+    <script src="js/wave10/CompleteSystemDeployment.js"></script>
+    <script src="js/wave10/CanaryController.js"></script>
+    <script src="js/wave10/ProductionMonitor.js"></script>
+    <script src="js/wave10/RollbackManager.js"></script>
+    <script src="js/wave10/ABTestingFramework.js"></script>
+    <script src="js/wave10/ProductionChecklist.js"></script>
+    
+    <!-- Scripts de Refinamento -->
+    <script src="js/services/RefinementService.js"></script>
+    <script src="js/services/ConvergenceCalculator.js"></script>
+    <script src="js/services/RefinementDetector.js"></script>
+    <script src="js/components/RefinementIndicator.js"></script>
+    
+    <!-- Scripts Components -->
+    <script src="js/components/FileRenderer.js"></script>
+    <script src="js/components/FilterPanel.js"></script>
+    <script src="js/components/ModalManager.js"></script>
+    <script src="js/components/WorkflowPanel.js"></script>
+    <script src="js/components/FilterBar.js"></script>
+    <script src="js/components/StatsPanel.js"></script>
+    <script src="js/components/DashboardRenderer.js"></script>
+    <script src="js/components/ExportUI.js"></script>
+    <script src="js/components/GraphVisualization.js"></script>
+    <script src="js/components/GraphVisualizationV2.js"></script>
+    <script src="js/components/QdrantExplorer.js"></script>
+    <script src="js/components/QdrantExplorerFixed.js"></script>
+    <script src="js/components/QuickAccessMenu.js"></script>
+    <script src="js/components/OrganizationPanel.js"></script>
+    <script src="js/components/ProcessingLogsPanel.js"></script>
+    
+    <!-- Scripts Utils Adicionais -->
+    <script src="js/utils/WarningSupressor.js"></script>
+    <script src="js/utils/ContentAccessUtils.js"></script>
+    <script src="js/utils/ExclusionPatternsHandler.js"></script>
+    <script src="js/utils/PatternUtils.js"></script>
+    <script src="js/utils/QdrantProcessorWithFilters.js"></script>
+    
+    <!-- Componente de Processamento Qdrant -->
+    <script src="js/components/QdrantProcessButton.js"></script>
+    
+    <!-- Script Principal -->
+    <script src="js/app.js"></script>
+    
+    <!-- Debug Temporário -->
+    <script src="js/debug-export.js"></script>
+    <script src="js/debug-organization.js"></script>
+    <script src="js/debug-processing-logs.js"></script>
+    <script src="js/debug-categories.js"></script>
+    
+    <!-- Testes -->
+    <script src="test/test-triple-extraction.js"></script>
+    <script src="test/test-triple-store-service.js"></script>
+    <script src="test/test-manual-triple-extraction.js"></script>
+    <script src="test/exemplo-teste-2litros.js"></script>
+    <script src="test/debug-triple-extraction.js"></script>
+    <script src="test/teste-simples-triplas.js"></script>
+    <script src="test/debug-content-extraction.js"></script>
+    <script src="test/teste-final-2litros.js"></script>
+    
+    <!-- Script de Diagnóstico -->
+    <script src="test/run-diagnostic.js"></script>
+    
+    <!-- Script de Correção de Conteúdo -->
+    <script src="test/fix-load-content.js"></script>
+    
+    <!-- Script de Debug de Handle -->
+    <script src="test/debug-handle-type.js"></script>
+    
+    <!-- Correção da barra de filtros rápidos -->
+    <script src="js/quick-filters-final-fix.js"></script>
+    <script src="js/quick-filters-combined-fix.js"></script>
+    
+    <!-- Barra de Filtros Rápidos -->
+    <div class="quick-filters-bar" id="quick-filters-bar">
+        <div class="quick-filters-container">
+            <!-- Navegação Etapas -->
+            <button class="nav-button prev" id="nav-prev" title="Voltar para etapa anterior">
+                <span>◀ Etapa I</span>
+            </button>
+            
+            <!-- Filtros de Status (sem div wrapper) -->
+            <button class="quick-filter-item" data-filter="status" data-value="todos">
+                <span class="filter-label">Total:</span>
+                <span class="filter-count" id="quick-count-all">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="pendente">
+                <span class="filter-label">Pendente:</span>
+                <span class="filter-count pending" id="quick-count-pending">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="aprovados">
+                <span class="filter-label">Aprovado:</span>
+                <span class="filter-count approved" id="quick-count-approved">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="status" data-value="arquivados">
+                <span class="filter-label">Arquivado:</span>
+                <span class="filter-count archived" id="quick-count-archived">0</span>
+            </button>
+            
+            <span class="separator-double">||</span>
+            
+            <!-- Filtros de Relevância (sem div wrapper) -->
+            <button class="quick-filter-item" data-filter="relevance" data-value="alta">
+                <span class="filter-label">Alta:</span>
+                <span class="filter-count high" id="quick-count-high">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="relevance" data-value="media">
+                <span class="filter-label">Média:</span>
+                <span class="filter-count medium" id="quick-count-medium">0</span>
+            </button>
+            <span class="separator">|</span>
+            <button class="quick-filter-item" data-filter="relevance" data-value="baixa">
+                <span class="filter-label">Baixa:</span>
+                <span class="filter-count low" id="quick-count-low">0</span>
+            </button>
+            
+            <span class="separator-double">||</span>
+            
+            <!-- Ações -->
+            <button class="action-button export" id="export-filter" title="Exportar filtro atual">
+                <span>💾 Exportar</span>
+            </button>
+            
+            <!-- Navegação Etapas -->
+            <button class="nav-button next" id="nav-next" title="Ir para próxima etapa">
+                <span>Etapa III ▶</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

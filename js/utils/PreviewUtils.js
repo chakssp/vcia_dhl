@@ -155,9 +155,9 @@
             });
             
             // Bonus por estrutura
-            if (preview.structure.hasHeaders) score += 2;
-            if (preview.structure.hasLists) score += 1;
-            if (preview.structure.hasCode) score += 1;
+            if (preview.structure?.hasHeaders) score += 2;
+            if (preview.structure?.hasLists) score += 1;
+            if (preview.structure?.hasCode) score += 1;
             
             // Converte score para percentual (0-100)
             // Assume que score máximo realista seria ~20 (muitas keywords + bônus)

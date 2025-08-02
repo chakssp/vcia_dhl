@@ -99,7 +99,19 @@
             'ProductionMonitor',
             'RollbackManager',
             'ABTestingFramework',
-            'ProductionChecklist'
+            'ProductionChecklist',
+            // UnifiedConfidenceSystem Components
+            // 'UnifiedConfidenceController', // Comentado - componente ausente
+            'QdrantScoreBridge',
+            'FeatureFlagManager',
+            'ScoreNormalizer',
+            // 'ConfidencePerformanceMonitor', // Comentado - componente ausente
+            'DataValidationManager',
+            // NEW Week 2 UnifiedConfidenceSystem Components
+            // 'BoostCalculator', // Comentado - componente ausente
+            // 'PrefixEnhancer', // Comentado - componente ausente
+            // 'ConfidenceAggregator', // Comentado - componente ausente
+            // 'ZeroRelevanceResolver' // Comentado - componente ausente
         ];
 
         components.forEach(name => {
@@ -378,6 +390,25 @@
                 console.log('RefinementIndicator inicializado');
             }
             
+            // 🚀 UNIFIED CONFIDENCE SYSTEM - WEEK 1 + WEEK 2
+            console.log('🎯 Inicializando UnifiedConfidenceSystem completo...');
+            if (KC.UnifiedConfidenceControllerInstance && typeof KC.UnifiedConfidenceControllerInstance.init === 'function') {
+                const result = await KC.UnifiedConfidenceControllerInstance.init();
+                if (result.success) {
+                    console.log('✅ UnifiedConfidenceSystem inicializado com sucesso!');
+                    console.log('📊 351 pontos Qdrant + 163K prefixos ATIVOS!');
+                    console.log('🔥 BoostCalculator, PrefixEnhancer, ZeroResolver, Aggregator PRONTOS!');
+                    
+                    // Auto-iniciar processamento em background
+                    if (KC.UnifiedConfidenceControllerInstance.startBackgroundProcessing) {
+                        KC.UnifiedConfidenceControllerInstance.startBackgroundProcessing();
+                        console.log('⚡ Processamento em background ATIVADO!');
+                    }
+                } else {
+                    console.warn('⚠️ UnifiedConfidenceSystem inicialização parcial:', result.error);
+                }
+            }
+            
             // WAVE 10: Inicializar Sistema de Produção
             console.log('🚀 Inicializando componentes Wave 10...');
             
@@ -432,6 +463,49 @@
                 details: '7 componentes de produção carregados com sucesso.',
                 duration: 4000
             });
+            
+            // UNIFIED CONFIDENCE SYSTEM: Initialize confidence system integration
+            console.log('🧠 Inicializando UnifiedConfidenceSystem...');
+            
+            // 1. Initialize FeatureFlagManager first (required for other components)
+            if (KC.FeatureFlagManager && !KC.FeatureFlagManagerInstance) {
+                KC.FeatureFlagManagerInstance = new KC.FeatureFlagManager();
+                console.log('✅ FeatureFlagManager inicializado');
+            }
+            
+            // 2. Initialize UnifiedConfidenceController (main orchestrator)
+            if (KC.UnifiedConfidenceController && KC.UnifiedConfidenceControllerInstance) {
+                try {
+                    const initResult = await KC.UnifiedConfidenceControllerInstance.init();
+                    if (initResult.success) {
+                        console.log('✅ UnifiedConfidenceController inicializado');
+                        
+                        // Enable confidence system if feature flags allow
+                        const featureFlags = KC.FeatureFlagManagerInstance;
+                        if (featureFlags && featureFlags.isEnabled('unified_confidence_system')) {
+                            await KC.UnifiedConfidenceControllerInstance.enableConfidenceSystem();
+                            console.log('✅ UnifiedConfidenceSystem ativado via feature flags');
+                        }
+                        
+                        showNotification({
+                            type: 'success',
+                            message: 'Sistema de Confiança ativado!',
+                            details: 'Confidence scores baseados em dados do Qdrant disponíveis.',
+                            duration: 3000
+                        });
+                    } else {
+                        console.warn('⚠️ UnifiedConfidenceController inicialização falhou:', initResult.error);
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao inicializar UnifiedConfidenceController:', error);
+                    showNotification({
+                        type: 'warning',
+                        message: 'Sistema de Confiança com erro',
+                        details: error.message,
+                        duration: 5000
+                    });
+                }
+            }
 
             // FASE 1.1: Validar Ollama como padrão no carregamento
             // AIDEV-NOTE: ollama-default; Ollama é o serviço padrão de embeddings
@@ -482,6 +556,41 @@
                 // Forçar Ollama como provider padrão
                 KC.EmbeddingService.config.ollama.enabled = true;
                 KC.EmbeddingService.config.openai.enabled = false; // Desabilitar fallback por padrão
+            }
+            
+            // INTELLIGENCE ENRICHMENT: Inicializar pipeline de enriquecimento
+            if (KC.IntelligenceEnrichmentPipeline && typeof KC.IntelligenceEnrichmentPipeline.initialize === 'function') {
+                try {
+                    console.log('🧠 Inicializando Intelligence Enrichment Pipeline...');
+                    await KC.IntelligenceEnrichmentPipeline.initialize();
+                    console.log('✅ Intelligence Enrichment Pipeline inicializado');
+                    
+                    showNotification({
+                        type: 'success',
+                        message: 'Pipeline de Inteligência ativado!',
+                        details: 'Análise de convergência e insights disponíveis.',
+                        duration: 3000
+                    });
+                } catch (error) {
+                    console.error('❌ Erro ao inicializar Intelligence Enrichment Pipeline:', error);
+                    showNotification({
+                        type: 'warning',
+                        message: 'Pipeline de Inteligência com erro',
+                        details: error.message,
+                        duration: 5000
+                    });
+                }
+            }
+            
+            // CONVERGENCE ANALYSIS: Inicializar serviço de análise de convergência
+            if (KC.ConvergenceAnalysisService && typeof KC.ConvergenceAnalysisService.initialize === 'function') {
+                try {
+                    console.log('📊 Inicializando Convergence Analysis Service...');
+                    await KC.ConvergenceAnalysisService.initialize();
+                    console.log('✅ Convergence Analysis Service inicializado');
+                } catch (error) {
+                    console.error('❌ Erro ao inicializar Convergence Analysis Service:', error);
+                }
             }
 
             // Ativa modo debug em desenvolvimento

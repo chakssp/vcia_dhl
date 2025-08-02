@@ -29,6 +29,12 @@
     gap: 20px;
 }
 
+/* Container do ProcessingLogsPanel */
+.processing-logs-wrapper {
+    margin-top: 20px;
+    width: 100%;
+}
+
 /* Cards */
 .card {
     background: var(--color-background-secondary);

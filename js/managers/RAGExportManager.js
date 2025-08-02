@@ -5,6 +5,8 @@
  * compatível com Qdrant e outros sistemas RAG (Retrieval-Augmented Generation)
  * 
  * @requires AppState, CategoryManager, AnalysisManager, PreviewUtils, ChunkingUtils
+ * @version 1.0.1
+ * @lastModified 2025-02-02T15:30:00Z - Adicionado diagnóstico completo e geração de chunks após enriquecimento
  */
 
 (function(window) {
@@ -147,10 +149,33 @@
 
                 // Adicionar preview estruturado
                 if (file.preview) {
+                    // Normalizar preview para string
+                    let previewText = '';
+                    if (typeof file.preview === 'string') {
+                        previewText = file.preview;
+                    } else if (typeof file.preview === 'object') {
+                        // Se for objeto, extrair texto usando PreviewUtils ou concatenar segments
+                        if (KC.PreviewUtils && KC.PreviewUtils.getTextPreview) {
+                            previewText = KC.PreviewUtils.getTextPreview(file.preview);
+                        } else {
+                            // Fallback: concatenar todos os valores do objeto
+                            previewText = Object.values(file.preview).filter(v => v).join(' ... ');
+                        }
+                    }
+                    
                     enrichedFile.structuredPreview = {
                         segments: file.preview,
+                        text: previewText, // NOVO: texto normalizado
                         relevanceScore: file.relevanceScore,
-                        keywords: this._extractKeywords(file.preview)
+                        keywords: this._extractKeywords(previewText), // Usar texto normalizado
+                        // CRITICAL FIX: Add structure property with all required fields
+                        structure: file.preview?.structure || {
+                            hasHeaders: false,
+                            hasLists: false,
+                            hasCode: false,
+                            hasLinks: false,
+                            hasImages: false
+                        }
                     };
                 }
 
@@ -195,7 +220,18 @@
 
                 // Se não tiver conteúdo, criar chunk único com preview
                 if (chunks.length === 0 && file.preview) {
-                    const previewText = KC.PreviewUtils.getTextPreview(file.preview);
+                    let previewText = '';
+                    if (typeof file.preview === 'string') {
+                        previewText = file.preview;
+                    } else if (typeof file.preview === 'object') {
+                        // Normalizar preview objeto para string
+                        if (KC.PreviewUtils && KC.PreviewUtils.getTextPreview) {
+                            previewText = KC.PreviewUtils.getTextPreview(file.preview);
+                        } else {
+                            previewText = Object.values(file.preview).filter(v => v).join(' ... ');
+                        }
+                    }
+                    
                     chunks.push({
                         id: `${file.id}-preview-chunk`,
                         content: previewText,
@@ -295,9 +331,18 @@
 
         /**
          * Estrutura dados para exportação
+         * REFATORADO: Adiciona content, name, path no nível raiz para Intelligence Enrichment Pipeline
          * @private
          */
         _structureForExport(data) {
+            // Validação inicial - detecta documentos sem content que precisam de enriquecimento
+            const documentsWithoutContent = data.files.filter(file => !file.content && !file.preview);
+            if (documentsWithoutContent.length > 0) {
+                KC.Logger?.warn('RAGExportManager', `${documentsWithoutContent.length} documentos sem content detectados:`, 
+                    documentsWithoutContent.map(f => f.name || f.id)
+                );
+            }
+
             const exportStructure = {
                 version: this.version,
                 metadata: {
@@ -308,36 +353,82 @@
                     configuration: data.configuration,
                     stats: data.stats
                 },
-                documents: data.files.map(file => ({
-                    id: file.id,
-                    source: {
-                        fileName: file.name,
-                        path: file.path,
-                        size: file.size,
-                        lastModified: file.lastModified,
-                        handle: file.handle ? 'available' : 'not_available'
-                    },
-                    analysis: {
-                        type: file.analysisType || 'Aprendizado Geral', // CRÍTICO: Usar default consistente
-                        analysisType: file.analysisType || 'Aprendizado Geral', // Duplicar campo para garantir
-                        relevanceScore: file.relevanceScore,
-                        moments: file.aiAnalysis?.moments || [],
-                        insights: file.aiAnalysis?.insights || [],
-                        summary: file.aiAnalysis?.summary || '',
-                        categories: file.metadata.categories
-                    },
-                    chunks: file.chunks,
-                    metadata: file.metadata,
-                    preview: file.structuredPreview,
-                    insights: {
-                        decisiveMoments: this._extractDecisiveMoments(file),
-                        breakthroughs: this._extractBreakthroughs(file),
-                        evolution: this._extractEvolution(file)
+                documents: data.files.map(file => {
+                    // CRÍTICO: Validação individual por documento
+                    const hasContent = !!(file.content || file.preview);
+                    const contentToUse = file.content || file.preview || '';
+                    
+                    // Se não tem content nem preview, gera erro claro
+                    if (!hasContent) {
+                        KC.Logger?.error('RAGExportManager', `Documento ${file.name || file.id} não possui content nem preview - enriquecimento será impossível`);
                     }
-                })),
+
+                    return {
+                        // NOVO: Campos no nível raiz para Intelligence Enrichment Pipeline
+                        content: contentToUse,
+                        name: file.name,
+                        path: file.path,
+                        categories: KC.CategoryNormalizer.normalize(file.categories, 'RAGExportManager._structureForExport.root'),
+                        // CORREÇÃO: analysisType no nível raiz para IntelligenceEnrichmentPipeline
+                        analysisType: file.analysisType || 'Aprendizado Geral',
+                        
+                        // EXISTENTE: Estrutura original mantida para compatibilidade completa
+                        id: file.id,
+                        source: {
+                            fileName: file.name,
+                            path: file.path,
+                            size: file.size,
+                            lastModified: file.lastModified,
+                            handle: file.handle ? 'available' : 'not_available'
+                        },
+                        analysis: {
+                            type: file.analysisType || 'Aprendizado Geral', // CRÍTICO: Usar default consistente
+                            analysisType: file.analysisType || 'Aprendizado Geral', // Duplicar campo para garantir
+                            relevanceScore: file.relevanceScore,
+                            moments: file.aiAnalysis?.moments || [],
+                            insights: file.aiAnalysis?.insights || [],
+                            summary: file.aiAnalysis?.summary || '',
+                            categories: KC.CategoryNormalizer.normalize(file.categories, 'RAGExportManager._structureForExport')
+                        },
+                        chunks: file.chunks,
+                        metadata: file.metadata,
+                        // CRITICAL FIX: Ensure preview has structure property
+                        preview: file.structuredPreview || {
+                            segments: file.preview || {},
+                            text: contentToUse,
+                            structure: {
+                                hasHeaders: false,
+                                hasLists: false,
+                                hasCode: false,
+                                hasLinks: false,
+                                hasImages: false
+                            }
+                        },
+                        insights: {
+                            decisiveMoments: this._extractDecisiveMoments(file),
+                            breakthroughs: this._extractBreakthroughs(file),
+                            evolution: this._extractEvolution(file)
+                        },
+                        
+                        // NOVO: Flags de validação para debugging
+                        _validation: {
+                            hasContent: hasContent,
+                            contentLength: contentToUse.length,
+                            contentSource: file.content ? 'content' : (file.preview ? 'preview' : 'none'),
+                            structuredAt: new Date().toISOString()
+                        }
+                    };
+                }),
                 categories: data.categories,
                 knowledgeGraph: this._buildKnowledgeGraph(data.files)
             };
+
+            // Log final da estruturação
+            KC.Logger?.info('RAGExportManager', 'Dados estruturados para exportação', {
+                totalDocuments: exportStructure.documents.length,
+                documentsWithContent: exportStructure.documents.filter(d => d.content && d.content.length > 0).length,
+                documentsWithValidation: exportStructure.documents.filter(d => d._validation?.hasContent).length
+            });
 
             return exportStructure;
         }
@@ -470,6 +561,113 @@
 
                 KC.Logger?.info('RAGExportManager', `Processando ${totalDocuments} documentos`);
 
+                // 1.5. NOVO: Enriquecer com inteligência se disponível e habilitado
+                let enrichedData = consolidatedData;
+                let enrichmentStats = null;
+                
+                // LOG: Rastrear categorias antes do enriquecimento
+                KC.Logger?.info('[CATEGORY-TRACE] Antes do enriquecimento', {
+                    totalDocs: consolidatedData.documents.length,
+                    docsWithCategories: consolidatedData.documents.filter(d => d.categories && d.categories.length > 0).length,
+                    sampleCategories: consolidatedData.documents[0]?.categories?.slice(0, 2)
+                });
+                
+                if (KC.IntelligenceEnrichmentPipeline && options.enableEnrichment !== false) {
+                    KC.Logger?.info('RAGExportManager', 'Iniciando enriquecimento com inteligência');
+                    
+                    // Emite progresso
+                    KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
+                        stage: 'enrichment',
+                        message: 'Analisando convergências e gerando insights...',
+                        percentage: 10
+                    });
+                    
+                    try {
+                        // LOG DIAGNÓSTICO: Estrutura ANTES do enriquecimento
+                        console.log('🔍 DIAGNÓSTICO - Documentos ANTES do enriquecimento:', {
+                            total: consolidatedData.documents.length,
+                            withContent: consolidatedData.documents.filter(d => d.content).length,
+                            withChunks: consolidatedData.documents.filter(d => d.chunks && d.chunks.length > 0).length,
+                            totalChunks: consolidatedData.documents.reduce((sum, d) => sum + (d.chunks?.length || 0), 0),
+                            sample: consolidatedData.documents.slice(0, 3).map(d => ({
+                                id: d.id,
+                                name: d.name,
+                                hasContent: !!d.content,
+                                contentLength: d.content?.length || 0,
+                                hasChunks: !!d.chunks,
+                                chunksCount: d.chunks?.length || 0
+                            }))
+                        });
+                        
+                        const enrichmentResult = await KC.IntelligenceEnrichmentPipeline.enrichDocuments(consolidatedData.documents);
+                        
+                        // LOG DIAGNÓSTICO: Estrutura DEPOIS do enriquecimento (sem chunks ainda)
+                        console.log('🔍 DIAGNÓSTICO - Documentos DEPOIS do enriquecimento (sem chunks):', 
+                            enrichmentResult.documents.slice(0, 3).map(d => ({
+                                id: d.id,
+                                name: d.name,
+                                hasContent: !!d.content,
+                                contentLength: d.content?.length || 0,
+                                hasChunks: !!d.chunks,
+                                chunksCount: d.chunks?.length || 0,
+                                convergenceScore: d.convergenceScore,
+                                intelligenceType: d.intelligenceType
+                            }))
+                        );
+                        
+                        // IMPORTANTE: Preservar chunks do consolidatedData
+                        // O enrichmentResult não inclui chunks, então precisamos mesclar
+                        enrichedData = {
+                            ...consolidatedData,
+                            documents: enrichmentResult.documents.map((enrichedDoc, index) => {
+                                const originalDoc = consolidatedData.documents[index];
+                                return {
+                                    ...enrichedDoc,
+                                    // Preservar chunks do documento original
+                                    chunks: originalDoc.chunks || []
+                                };
+                            })
+                        };
+                        
+                        enrichmentStats = enrichmentResult.stats;
+                        
+                        // LOG DIAGNÓSTICO: Estrutura FINAL após preservar chunks
+                        console.log('🔍 DIAGNÓSTICO - Documentos FINAL (com chunks preservados):', {
+                            total: enrichedData.documents.length,
+                            withContent: enrichedData.documents.filter(d => d.content).length,
+                            withChunks: enrichedData.documents.filter(d => d.chunks && d.chunks.length > 0).length,
+                            totalChunks: enrichedData.documents.reduce((sum, d) => sum + (d.chunks?.length || 0), 0)
+                        });
+                        
+                        // LOG: Rastrear categorias após enriquecimento
+                        KC.Logger?.info('[CATEGORY-TRACE] Após enriquecimento e preservação de chunks', {
+                            totalDocs: enrichedData.documents.length,
+                            docsWithCategories: enrichedData.documents.filter(d => d.categories && d.categories.length > 0).length,
+                            sampleCategories: enrichedData.documents[0]?.categories?.slice(0, 2),
+                            categoriesFormat: enrichedData.documents[0]?.categories ? typeof enrichedData.documents[0].categories[0] : 'none'
+                        });
+                        
+                        // Salvar metadados globais
+                        if (enrichmentResult.metadata) {
+                            KC.AppState?.set('knowledgeMetadata', enrichmentResult.metadata);
+                            KC.AppState?.set('lastEnrichmentDate', new Date().toISOString());
+                        }
+                        
+                        KC.Logger?.success('RAGExportManager', 
+                            `Enriquecimento concluído: ${enrichmentResult.analysis.convergenceChains.length} cadeias, ` +
+                            `${enrichmentResult.analysis.insights.length} insights detectados`
+                        );
+                        
+                        // NOTA: Chunks já foram gerados em _applySemanticChunking() durante consolidateData()
+                        // A correção em _structureForExport() garante que content, name e path estejam disponíveis
+                        // para o IntelligenceEnrichmentPipeline processar corretamente
+                        
+                    } catch (error) {
+                        KC.Logger?.error('RAGExportManager', 'ERRO CRÍTICO no enriquecimento', error);
+                        throw new Error(`Falha no enriquecimento de inteligência: ${error.message}`);
+                    }
+                }
+
                 // 2. Verifica serviços necessários
                 const embeddingAvailable = await KC.EmbeddingService?.checkOllamaAvailability();
                 const qdrantAvailable = await KC.QdrantService?.checkConnection();
@@ -488,11 +686,21 @@
                     processed: 0,
                     failed: 0,
                     totalChunks: 0,
-                    errors: []
+                    errors: [],
+                    enrichmentStats: enrichmentStats
                 };
 
+                // LOG DIAGNÓSTICO FINAL: Estado antes do processamento
+                console.log('📊 ESTADO FINAL antes do processamento em batch:', {
+                    totalDocuments: enrichedData.documents.length,
+                    documentsWithContent: enrichedData.documents.filter(d => d.content).length,
+                    documentsWithChunks: enrichedData.documents.filter(d => d.chunks && d.chunks.length > 0).length,
+                    totalChunks: enrichedData.documents.reduce((sum, d) => sum + (d.chunks?.length || 0), 0),
+                    note: 'Chunks gerados em _applySemanticChunking(), content/name/path preservados em _structureForExport()'
+                });
+
                 for (let i = 0; i < totalDocuments; i += batchSize) {
-                    const batch = consolidatedData.documents.slice(i, i + batchSize);
+                    const batch = enrichedData.documents.slice(i, i + batchSize);
                     
                     // Emite progresso
                     KC.EventBus?.emit(KC.Events.PIPELINE_PROGRESS || 'pipeline:progress', {
@@ -546,7 +754,7 @@
                         current: results.processed,
                         total: results.processed + documents.length,
                         percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
-                        currentFile: doc.source.fileName,
+                        currentFile: doc.name || doc.source?.fileName || 'Documento sem nome',
                         stage: 'chunking',
                         stageStatus: 'processing'
                     });
@@ -554,6 +762,22 @@
                     // Prepara pontos para o Qdrant
                     const points = [];
                     let chunksProcessed = 0;
+                    
+                    // LOG: Rastrear categorias no processamento
+                    KC.Logger?.info('[CATEGORY-TRACE] Processando documento', {
+                        docId: doc.id,
+                        docName: doc.name,
+                        hasCategories: !!(doc.categories && doc.categories.length > 0),
+                        categoriesCount: doc.categories?.length || 0,
+                        categoriesFormat: doc.categories && doc.categories[0] ? typeof doc.categories[0] : 'none',
+                        sampleCategories: doc.categories?.slice(0, 2)
+                    });
+                    
+                    // Verifica se o documento tem chunks
+                    if (!doc.chunks || doc.chunks.length === 0) {
+                        KC.Logger?.warning('RAGExportManager', `Documento ${doc.id} não possui chunks, pulando...`);
+                        continue;
+                    }
                     
                     for (const chunk of doc.chunks) {
                         let retries = 3;
@@ -566,7 +790,7 @@
                                     current: results.processed,
                                     total: results.processed + documents.length,
                                     percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
-                                    currentFile: doc.source.fileName,
+                                    currentFile: doc.name || doc.source?.fileName || 'Documento sem nome',
                                     stage: 'embeddings',
                                     stageStatus: 'processing',
                                     chunksGenerated: results.totalChunks + chunksProcessed
@@ -583,26 +807,72 @@
                                 // Gera ID numérico único baseado em timestamp + índice
                                 const pointId = Date.now() * 1000 + points.length;
                                 
+                                // Criar payload base
+                                const basePayload = {
+                                    originalChunkId: chunk.id, // Salva o ID original no payload
+                                    documentId: doc.id,
+                                    fileName: doc.name || doc.source?.fileName || 'Documento sem nome',
+                                    chunkId: chunk.id,
+                                    content: chunk.content,
+                                    // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
+                                    // DEBUG: Log para rastrear onde o analysisType está sendo encontrado
+                                    analysisType: (() => {
+                                        const type = doc.analysisType || doc.analysis?.type || 'Aprendizado Geral';
+                                        KC.Logger?.debug('RAGExportManager', 'Determinando analysisType', {
+                                            docName: doc.name,
+                                            docAnalysisType: doc.analysisType,
+                                            docAnalysisTypeExists: !!doc.analysisType,
+                                            analysisType: doc.analysis?.type,
+                                            analysisTypeExists: !!doc.analysis?.type,
+                                            finalType: type
+                                        });
+                                        return type;
+                                    })(),
+                                    metadata: {
+                                        ...chunk.metadata,
+                                        // REMOVIDO: analysisType duplicado - agora está no nível raiz
+                                        categories: KC.CategoryNormalizer.extractNames(
+                                            KC.CategoryNormalizer.normalize(
+                                                doc.categories || doc.analysis?.categories || [], 
+                                                'RAGExportManager._processBatch'
+                                            )
+                                        ),
+                                        relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || 0,
+                                        lastModified: doc.lastModified || doc.source?.lastModified || new Date().toISOString(),
+                                        processedAt: new Date().toISOString()
+                                    }
+                                };
+                                
+                                // Adicionar campos de enriquecimento se disponíveis
+                                if (doc.convergenceScore !== undefined) {
+                                    basePayload.convergenceScore = doc.convergenceScore;
+                                }
+                                if (doc.impactScore !== undefined) {
+                                    basePayload.impactScore = doc.impactScore;
+                                }
+                                if (doc.intelligenceScore !== undefined) {
+                                    basePayload.intelligenceScore = doc.intelligenceScore;
+                                }
+                                if (doc.intelligenceType) {
+                                    basePayload.intelligenceType = doc.intelligenceType;
+                                }
+                                if (doc.convergenceChains && doc.convergenceChains.length > 0) {
+                                    basePayload.convergenceChains = doc.convergenceChains;
+                                }
+                                if (doc.insights && doc.insights.length > 0) {
+                                    basePayload.insights = doc.insights;
+                                }
+                                if (doc.breakthroughs && doc.breakthroughs.length > 0) {
+                                    basePayload.breakthroughs = doc.breakthroughs;
+                                }
+                                if (doc.enrichmentMetadata) {
+                                    basePayload.enrichmentMetadata = doc.enrichmentMetadata;
+                                }
+                                
                                 points.push({
                                     id: pointId,
                                     vector: embedding,
-                                    payload: {
-                                        originalChunkId: chunk.id, // Salva o ID original no payload
-                                        documentId: doc.id,
-                                        fileName: doc.source.fileName,
-                                        chunkId: chunk.id,
-                                        content: chunk.content,
-                                        // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
-                                        analysisType: doc.analysis.type || 'Aprendizado Geral',
-                                        metadata: {
-                                            ...chunk.metadata,
-                                            analysisType: doc.analysis.type || 'Aprendizado Geral', // Mantém compatibilidade
-                                            categories: doc.analysis.categories.map(cat => cat.name),
-                                            relevanceScore: doc.analysis.relevanceScore,
-                                            lastModified: doc.source.lastModified,
-                                            processedAt: new Date().toISOString()
-                                        }
-                                    }
+                                    payload: basePayload
                                 });
 
                                 results.totalChunks++;
@@ -638,7 +908,7 @@
                             current: results.processed,
                             total: results.processed + documents.length,
                             percentage: Math.round((results.processed / (results.processed + documents.length)) * 100),
-                            currentFile: doc.source.fileName,
+                            currentFile: doc.name || doc.source?.fileName || 'Documento sem nome',
                             stage: 'qdrant',
                             stageStatus: 'processing',
                             chunksGenerated: results.totalChunks
@@ -775,7 +1045,12 @@
                         metadata: {
                             ...chunk.metadata,
                             analysisType: doc.analysis.type,
-                            categories: doc.analysis.categories.map(cat => cat.name),
+                            categories: KC.CategoryNormalizer.extractNames(
+                                KC.CategoryNormalizer.normalize(
+                                    doc.analysis?.categories || doc.categories || [], 
+                                    'RAGExportManager._exportToQdrant'
+                                )
+                            ),
                             relevanceScore: doc.analysis.relevanceScore,
                             lastModified: doc.source.lastModified
                         }
@@ -898,7 +1173,21 @@
 
         _extractKeyPhrases(file) {
             // Simplificado - em produção, usar NLP mais avançado
-            const text = file.content || KC.PreviewUtils.getTextPreview(file.preview || {});
+            let text = file.content || '';
+            
+            // Se não tiver conteúdo, tentar extrair do preview
+            if (!text && file.preview) {
+                if (typeof file.preview === 'string') {
+                    text = file.preview;
+                } else if (typeof file.preview === 'object') {
+                    if (KC.PreviewUtils && KC.PreviewUtils.getTextPreview) {
+                        text = KC.PreviewUtils.getTextPreview(file.preview);
+                    } else {
+                        text = Object.values(file.preview).filter(v => v).join(' ... ');
+                    }
+                }
+            }
+            
             const phrases = text.match(/[A-Z][^.!?]*[.!?]/g) || [];
             
             return phrases

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seletores de Tags Avançados - Com Botão Adicionar</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .example-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .example {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .example h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .demo-area {
+            min-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            background: #fafafa;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #4f46e5;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+        
+        /* Base popup styles */
+        .popup-base {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            max-width: 500px;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: #e5e7eb;
+            transform: rotate(90deg);
+        }
+        
+        /* Botão Adicionar Compartilhado */
+        .add-new-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            margin: 4px;
+            border: 2px dashed #d1d5db;
+            border-radius: 20px;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .add-new-tag:hover {
+            border-color: #4f46e5;
+            background: #f5f3ff;
+            color: #4f46e5;
+        }
+        
+        /* Input de nova categoria */
+        .new-category-input {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .new-category-input.active {
+            display: block;
+        }
+        
+        .new-category-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.selected {
+            border-color: #333;
+        }
+        
+        /* Exemplo 1: Minimal Floating */
+        .minimal-floating {
+            background: rgba(255,255,255,0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .minimal-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            margin: 3px;
+            border-radius: 16px;
+            background: #f3f4f6;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            border: 2px solid transparent;
+        }
+        
+        .minimal-tag:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        
+        .minimal-tag.selected {
+            background: #4f46e5;
+            color: white;
+            border-color: #4338ca;
+        }
+        
+        /* Exemplo 2: Glassmorphism */
+        .glass-selector {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        
+        .glass-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 18px;
+            margin: 4px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .glass-tag:hover {
+            background: rgba(255,255,255,0.9);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .glass-tag.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        /* Exemplo 3: Neon Glow */
+        .neon-selector {
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .neon-tag {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 25px;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            border: 2px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .neon-tag::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: currentColor;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s;
+            opacity: 0.2;
+        }
+        
+        .neon-tag:hover::before {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .neon-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px currentColor;
+        }
+        
+        .neon-tag.selected {
+            background: currentColor;
+            color: #1a1a2e;
+            box-shadow: 0 0 20px currentColor;
+        }
+        
+        /* Exemplo 4: Soft Gradient */
+        .gradient-selector {
+            background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .gradient-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gradient-tag::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .gradient-tag:hover::after {
+            left: 100%;
+        }
+        
+        .gradient-tag:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .gradient-tag.selected {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(79,70,229,0.3);
+        }
+        
+        /* Exemplo 5: Material Design */
+        .material-selector {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-radius: 12px;
+        }
+        
+        .material-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 20px;
+            background: #e3f2fd;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .material-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            background: currentColor;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .material-tag:hover::before {
+            opacity: 0.1;
+        }
+        
+        .material-tag:active {
+            transform: scale(0.95);
+        }
+        
+        .material-tag.selected {
+            background: #2196f3;
+            color: white;
+        }
+        
+        /* Exemplo 6: Spotify Style */
+        .spotify-selector {
+            background: #121212;
+            color: white;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .spotify-tag {
+            display: inline-block;
+            padding: 8px 20px;
+            margin: 4px;
+            border-radius: 20px;
+            background: #282828;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            color: #b3b3b3;
+            font-weight: 500;
+        }
+        
+        .spotify-tag:hover {
+            background: #333;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .spotify-tag.selected {
+            background: #1db954;
+            color: white;
+        }
+        
+        .spotify-selector .add-new-tag {
+            background: #282828;
+            color: #b3b3b3;
+            border-color: #333;
+        }
+        
+        .spotify-selector .add-new-tag:hover {
+            background: #333;
+            color: #1db954;
+            border-color: #1db954;
+        }
+        
+        /* Animações */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .selected-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="example-container">
+        <h1 style="text-align: center; color: #333; margin-bottom: 40px;">
+            ✨ Seletores Avançados com Botão Adicionar
+        </h1>
+        
+        <!-- Exemplo 1: Minimal Floating -->
+        <div class="example">
+            <h2>1. Minimal Floating (Super Clean)</h2>
+            <div class="demo-area">
+                <button onclick="showExample('minimal', event)">Selecionar Tags</button>
+                <div id="selected-minimal" class="selected-preview">Nenhuma tag selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 2: Glassmorphism -->
+        <div class="example">
+            <h2>2. Glassmorphism (Moderno)</h2>
+            <div class="demo-area">
+                <button onclick="showExample('glass', event)">Escolher Categorias</button>
+                <div id="selected-glass" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 3: Neon Glow -->
+        <div class="example">
+            <h2>3. Neon Glow (Futurista)</h2>
+            <div class="demo-area" style="background: #0f0f23;">
+                <button onclick="showExample('neon', event)">Gerenciar Tags</button>
+                <div id="selected-neon" class="selected-preview" style="background: #1a1a2e; color: #fff;">
+                    Nenhuma tag selecionada
+                </div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 4: Soft Gradient -->
+        <div class="example">
+            <h2>4. Soft Gradient (Suave)</h2>
+            <div class="demo-area">
+                <button onclick="showExample('gradient', event)">Organizar Categorias</button>
+                <div id="selected-gradient" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 5: Material Design -->
+        <div class="example">
+            <h2>5. Material Design (Google Style)</h2>
+            <div class="demo-area">
+                <button onclick="showExample('material', event)">Selecionar Tags</button>
+                <div id="selected-material" class="selected-preview">Nenhuma tag selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 6: Spotify Style -->
+        <div class="example">
+            <h2>6. Spotify Style (Dark Mode)</h2>
+            <div class="demo-area" style="background: #1a1a1a;">
+                <button onclick="showExample('spotify', event)" style="background: #1db954;">
+                    Escolher Gêneros
+                </button>
+                <div id="selected-spotify" class="selected-preview" style="background: #282828; color: #b3b3b3;">
+                    Nenhum gênero selecionado
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dados iniciais
+        let categories = [
+            { id: 'tecnico', name: 'Técnico', color: '#4f46e5', icon: '🔧' },
+            { id: 'estrategico', name: 'Estratégico', color: '#059669', icon: '📊' },
+            { id: 'conceitual', name: 'Conceitual', color: '#dc2626', icon: '💡' },
+            { id: 'decisivo', name: 'Momento Decisivo', color: '#d97706', icon: '🎯' },
+            { id: 'insight', name: 'Insight', color: '#7c3aed', icon: '✨' },
+            { id: 'aprendizado', name: 'Aprendizado', color: '#be185d', icon: '📚' }
+        ];
+        
+        let selectedTags = {};
+        let currentPopup = null;
+        
+        // Cores disponíveis para novas categorias
+        const availableColors = [
+            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+            '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1'
+        ];
+        
+        // Criar popup base
+        function createPopup(type, event) {
+            // Remove popup anterior
+            if (currentPopup) currentPopup.remove();
+            
+            selectedTags[type] = selectedTags[type] || [];
+            
+            const popup = document.createElement('div');
+            popup.className = `popup-base ${type}-selector`;
+            
+            // Posicionar próximo ao botão
+            const rect = event.target.getBoundingClientRect();
+            popup.style.left = rect.left + 'px';
+            popup.style.top = (rect.bottom + 10) + 'px';
+            
+            document.body.appendChild(popup);
+            currentPopup = popup;
+            
+            // Fechar ao clicar fora
+            setTimeout(() => {
+                document.addEventListener('click', function closePopup(e) {
+                    if (!popup.contains(e.target) && e.target !== event.target) {
+                        popup.remove();
+                        document.removeEventListener('click', closePopup);
+                    }
+                });
+            }, 100);
+            
+            return popup;
+        }
+        
+        // Renderizar conteúdo do popup
+        function renderPopupContent(type) {
+            const tagClass = `${type}-tag`;
+            
+            let content = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 20px 0; ${type === 'neon' || type === 'spotify' ? 'color: inherit;' : 'color: #333;'}">
+                    ${getTitle(type)}
+                </h4>
+                <div class="tags-container">
+                    ${categories.map(cat => {
+                        const isSelected = selectedTags[type].includes(cat.id);
+                        const colorStyle = getColorStyle(type, cat, isSelected);
+                        return `
+                            <span class="${tagClass} ${isSelected ? 'selected' : ''}" 
+                                  onclick="toggleTag('${type}', '${cat.id}')"
+                                  style="${colorStyle}">
+                                ${cat.icon} ${cat.name}
+                            </span>
+                        `;
+                    }).join('')}
+                    
+                    <span class="add-new-tag" onclick="showAddForm('${type}')">
+                        + Adicionar
+                    </span>
+                </div>
+                
+                <div id="new-category-form-${type}" class="new-category-input">
+                    <input type="text" 
+                           id="new-category-name-${type}" 
+                           placeholder="Nome da nova categoria"
+                           onkeypress="if(event.key === 'Enter') addNewCategory('${type}')">
+                    
+                    <div class="color-picker">
+                        ${availableColors.map((color, i) => `
+                            <div class="color-option ${i === 0 ? 'selected' : ''}" 
+                                 style="background: ${color};"
+                                 onclick="selectColor('${type}', '${color}', this)"></div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="addNewCategory('${type}')" style="flex: 1;">
+                            Criar Categoria
+                        </button>
+                        <button onclick="hideAddForm('${type}')" 
+                                style="flex: 1; background: #6b7280;">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; ${type === 'neon' || type === 'spotify' ? 'color: inherit;' : 'color: #666;'}">
+                        ${selectedTags[type].length} selecionada${selectedTags[type].length !== 1 ? 's' : ''}
+                    </span>
+                    <button onclick="this.parentElement.parentElement.remove()">
+                        Confirmar
+                    </button>
+                </div>
+            `;
+            
+            return content;
+        }
+        
+        // Obter título baseado no tipo
+        function getTitle(type) {
+            const titles = {
+                minimal: 'Selecione as tags',
+                glass: 'Escolha suas categorias',
+                neon: 'Tags disponíveis',
+                gradient: 'Organize por categorias',
+                material: 'Filtrar por tags',
+                spotify: 'Escolha os gêneros'
+            };
+            return titles[type] || 'Selecionar';
+        }
+        
+        // Obter estilo de cor baseado no tipo
+        function getColorStyle(type, cat, isSelected) {
+            if (type === 'neon') {
+                return `color: ${cat.color}; border-color: ${cat.color};`;
+            }
+            if (type === 'material' && !isSelected) {
+                return `background: ${cat.color}20; color: ${cat.color};`;
+            }
+            return '';
+        }
+        
+        // Mostrar exemplo
+        function showExample(type, event) {
+            const popup = createPopup(type, event);
+            popup.innerHTML = renderPopupContent(type);
+        }
+        
+        // Toggle tag
+        function toggleTag(type, tagId) {
+            const index = selectedTags[type].indexOf(tagId);
+            if (index > -1) {
+                selectedTags[type].splice(index, 1);
+            } else {
+                selectedTags[type].push(tagId);
+            }
+            
+            updatePreview(type);
+            
+            // Re-renderizar popup
+            if (currentPopup && currentPopup.classList.contains(`${type}-selector`)) {
+                currentPopup.innerHTML = renderPopupContent(type);
+            }
+        }
+        
+        // Mostrar formulário de adicionar
+        function showAddForm(type) {
+            const form = document.getElementById(`new-category-form-${type}`);
+            form.classList.add('active');
+            document.getElementById(`new-category-name-${type}`).focus();
+        }
+        
+        // Esconder formulário
+        function hideAddForm(type) {
+            const form = document.getElementById(`new-category-form-${type}`);
+            form.classList.remove('active');
+            document.getElementById(`new-category-name-${type}`).value = '';
+        }
+        
+        // Selecionar cor
+        let selectedColor = availableColors[0];
+        function selectColor(type, color, element) {
+            selectedColor = color;
+            // Remover seleção anterior
+            element.parentElement.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+        
+        // Adicionar nova categoria
+        function addNewCategory(type) {
+            const input = document.getElementById(`new-category-name-${type}`);
+            const name = input.value.trim();
+            
+            if (!name) {
+                input.focus();
+                return;
+            }
+            
+            // Criar ID único
+            const id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
+            // Verificar se já existe
+            if (categories.find(cat => cat.id === id)) {
+                alert('Esta categoria já existe!');
+                return;
+            }
+            
+            // Adicionar nova categoria
+            const newCategory = {
+                id: id,
+                name: name,
+                color: selectedColor,
+                icon: '🏷️',
+                custom: true
+            };
+            
+            categories.push(newCategory);
+            
+            // Selecionar automaticamente
+            selectedTags[type].push(id);
+            
+            // Limpar form e re-renderizar
+            hideAddForm(type);
+            updatePreview(type);
+            
+            if (currentPopup) {
+                currentPopup.innerHTML = renderPopupContent(type);
+            }
+            
+            // Log para simular salvamento
+            console.log('Nova categoria adicionada:', newCategory);
+            console.log('Para persistir, atualize o arquivo categories.jsonl');
+        }
+        
+        // Atualizar preview
+        function updatePreview(type) {
+            const selected = selectedTags[type] || [];
+            const preview = document.getElementById(`selected-${type}`);
+            
+            if (selected.length === 0) {
+                preview.textContent = type === 'spotify' ? 'Nenhum gênero selecionado' : 'Nenhuma categoria selecionada';
+            } else {
+                const names = selected.map(id => {
+                    const cat = categories.find(c => c.id === id);
+                    return cat ? `${cat.icon} ${cat.name}` : '';
+                }).join(', ');
+                preview.innerHTML = `<strong>Selecionadas:</strong> ${names}`;
+            }
+        }
+    </script>
+</body>
+</html>

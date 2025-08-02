@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemplos de Seletores de Tags/Categorias</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .example-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .example {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .example h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .demo-area {
+            min-height: 200px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            background: #fafafa;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            background: #4f46e5;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+        
+        /* Exemplo 1: Floating Bubbles */
+        .floating-tags {
+            position: absolute;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            max-width: 400px;
+            z-index: 1000;
+        }
+        
+        .tag-bubble {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 4px;
+            border-radius: 20px;
+            background: #f3f4f6;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tag-bubble:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .tag-bubble.selected {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .tag-bubble .icon {
+            margin-right: 4px;
+        }
+        
+        /* Exemplo 2: Mac Style Pills */
+        .mac-style-selector {
+            position: absolute;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .pill-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            margin: 4px;
+            border-radius: 12px;
+            border: 2px solid transparent;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .pill-tag:hover {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .pill-tag.selected {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        
+        .pill-tag .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        /* Exemplo 3: Card Grid */
+        .card-selector {
+            position: absolute;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 600px;
+            z-index: 1000;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+        }
+        
+        .tag-card {
+            padding: 16px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            background: white;
+        }
+        
+        .tag-card:hover {
+            border-color: #4f46e5;
+            background: #f5f3ff;
+            transform: translateY(-2px);
+        }
+        
+        .tag-card.selected {
+            border-color: #4f46e5;
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .tag-card .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        /* Exemplo 4: Floating Cloud */
+        .cloud-selector {
+            position: absolute;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+            max-width: 550px;
+        }
+        
+        .cloud-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .cloud-tag {
+            padding: 10px 20px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cloud-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transition: left 0.3s;
+        }
+        
+        .cloud-tag:hover::before {
+            left: 100%;
+        }
+        
+        .cloud-tag:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .cloud-tag.selected {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        /* Exemplo 5: Instagram Style */
+        .instagram-selector {
+            position: absolute;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            max-width: 400px;
+            overflow: hidden;
+        }
+        
+        .instagram-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .instagram-tags {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .instagram-tag {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
+        
+        .instagram-tag:hover {
+            background: #f5f5f5;
+        }
+        
+        .instagram-tag.selected {
+            background: #e8f5e9;
+        }
+        
+        .instagram-tag .tag-color {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        
+        .instagram-tag .tag-info {
+            flex: 1;
+        }
+        
+        .instagram-tag .tag-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .instagram-tag .tag-count {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* Animações */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .popup-animation {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        /* Utilities */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .close-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .selected-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="example-container">
+        <h1 style="text-align: center; color: #333; margin-bottom: 40px;">
+            🏷️ Exemplos de Seletores de Tags/Categorias
+        </h1>
+        
+        <!-- Exemplo 1: Floating Bubbles -->
+        <div class="example">
+            <h2>1. Floating Bubbles (Estilo Notion)</h2>
+            <div class="demo-area">
+                <button onclick="showExample1(event)">Selecionar Categorias</button>
+                <div id="selected1" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 2: Mac Style Pills -->
+        <div class="example">
+            <h2>2. Mac Style Pills (Estilo macOS)</h2>
+            <div class="demo-area">
+                <button onclick="showExample2(event)">Escolher Tags</button>
+                <div id="selected2" class="selected-preview">Nenhuma tag selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 3: Card Grid -->
+        <div class="example">
+            <h2>3. Card Grid (Estilo Trello)</h2>
+            <div class="demo-area">
+                <button onclick="showExample3(event)">Organizar Categorias</button>
+                <div id="selected3" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 4: Floating Cloud -->
+        <div class="example">
+            <h2>4. Floating Cloud (Estilo Tag Cloud)</h2>
+            <div class="demo-area">
+                <button onclick="showExample4(event)">Adicionar Tags</button>
+                <div id="selected4" class="selected-preview">Nenhuma tag selecionada</div>
+            </div>
+        </div>
+        
+        <!-- Exemplo 5: Instagram Style -->
+        <div class="example">
+            <h2>5. Instagram Style List</h2>
+            <div class="demo-area">
+                <button onclick="showExample5(event)">Gerenciar Categorias</button>
+                <div id="selected5" class="selected-preview">Nenhuma categoria selecionada</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Dados de exemplo
+        const categories = [
+            { id: 'tecnico', name: 'Técnico', color: '#4f46e5', icon: '🔧', count: 23 },
+            { id: 'estrategico', name: 'Estratégico', color: '#059669', icon: '📊', count: 15 },
+            { id: 'conceitual', name: 'Conceitual', color: '#dc2626', icon: '💡', count: 8 },
+            { id: 'decisivo', name: 'Momento Decisivo', color: '#d97706', icon: '🎯', count: 12 },
+            { id: 'insight', name: 'Insight', color: '#7c3aed', icon: '✨', count: 19 },
+            { id: 'aprendizado', name: 'Aprendizado', color: '#be185d', icon: '📚', count: 7 }
+        ];
+        
+        let selectedTags = {};
+        
+        // Função auxiliar para criar e posicionar popup
+        function createPopup(content, event, className) {
+            // Remove popups anteriores
+            document.querySelectorAll('.popup-animation').forEach(p => p.remove());
+            
+            const popup = document.createElement('div');
+            popup.className = `${className} popup-animation`;
+            popup.innerHTML = content;
+            
+            // Posicionar próximo ao botão
+            const rect = event.target.getBoundingClientRect();
+            popup.style.left = rect.left + 'px';
+            popup.style.top = (rect.bottom + 10) + 'px';
+            
+            document.body.appendChild(popup);
+            
+            // Fechar ao clicar fora
+            setTimeout(() => {
+                document.addEventListener('click', function closePopup(e) {
+                    if (!popup.contains(e.target)) {
+                        popup.remove();
+                        document.removeEventListener('click', closePopup);
+                    }
+                });
+            }, 100);
+            
+            return popup;
+        }
+        
+        // Exemplo 1: Floating Bubbles
+        function showExample1(event) {
+            selectedTags[1] = selectedTags[1] || [];
+            
+            const content = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 15px 0; color: #333;">Selecione as categorias:</h4>
+                <div style="margin-bottom: 15px;">
+                    ${categories.map(cat => `
+                        <span class="tag-bubble ${selectedTags[1].includes(cat.id) ? 'selected' : ''}" 
+                              onclick="toggleTag(1, '${cat.id}')"
+                              style="${selectedTags[1].includes(cat.id) ? `background: ${cat.color}; color: white;` : ''}">
+                            <span class="icon">${cat.icon}</span>
+                            ${cat.name}
+                        </span>
+                    `).join('')}
+                </div>
+                <div style="text-align: right;">
+                    <button onclick="this.parentElement.parentElement.remove()">Concluir</button>
+                </div>
+            `;
+            
+            createPopup(content, event, 'floating-tags');
+        }
+        
+        // Exemplo 2: Mac Style Pills
+        function showExample2(event) {
+            selectedTags[2] = selectedTags[2] || [];
+            
+            const content = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 20px 0; color: #333; font-weight: 600;">Tags disponíveis</h4>
+                <div style="margin-bottom: 20px;">
+                    ${categories.map(cat => `
+                        <span class="pill-tag ${selectedTags[2].includes(cat.id) ? 'selected' : ''}" 
+                              onclick="toggleTag(2, '${cat.id}')">
+                            <span class="color-dot" style="background: ${cat.color};"></span>
+                            ${cat.name}
+                        </span>
+                    `).join('')}
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; color: #666;">${selectedTags[2].length} selecionadas</span>
+                    <button onclick="this.parentElement.parentElement.remove()">Aplicar</button>
+                </div>
+            `;
+            
+            createPopup(content, event, 'mac-style-selector');
+        }
+        
+        // Exemplo 3: Card Grid
+        function showExample3(event) {
+            selectedTags[3] = selectedTags[3] || [];
+            
+            const content = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 20px 0; color: #333;">Escolha as categorias:</h4>
+                <div class="card-grid">
+                    ${categories.map(cat => `
+                        <div class="tag-card ${selectedTags[3].includes(cat.id) ? 'selected' : ''}" 
+                             onclick="toggleTag(3, '${cat.id}')">
+                            <span class="icon">${cat.icon}</span>
+                            <div style="font-size: 14px; font-weight: 500;">${cat.name}</div>
+                            <div style="font-size: 12px; opacity: 0.7; margin-top: 4px;">${cat.count} itens</div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="this.parentElement.parentElement.remove()" style="width: 100%;">
+                        Confirmar Seleção
+                    </button>
+                </div>
+            `;
+            
+            createPopup(content, event, 'card-selector');
+        }
+        
+        // Exemplo 4: Floating Cloud
+        function showExample4(event) {
+            selectedTags[4] = selectedTags[4] || [];
+            
+            const content = `
+                <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+                <h4 style="margin: 0 0 20px 0; color: #333; text-align: center;">
+                    ✨ Selecione suas tags favoritas
+                </h4>
+                <div class="cloud-tags">
+                    ${categories.map(cat => `
+                        <span class="cloud-tag ${selectedTags[4].includes(cat.id) ? 'selected' : ''}" 
+                              onclick="toggleTag(4, '${cat.id}')"
+                              style="${!selectedTags[4].includes(cat.id) ? `background: ${cat.color};` : ''}">
+                            ${cat.icon} ${cat.name}
+                        </span>
+                    `).join('')}
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="this.parentElement.parentElement.remove()">
+                        💾 Salvar Tags
+                    </button>
+                </div>
+            `;
+            
+            createPopup(content, event, 'cloud-selector');
+        }
+        
+        // Exemplo 5: Instagram Style
+        function showExample5(event) {
+            selectedTags[5] = selectedTags[5] || [];
+            
+            const content = `
+                <div class="instagram-header">
+                    Categorias
+                    <button class="close-btn" onclick="this.parentElement.parentElement.remove()">×</button>
+                </div>
+                <div class="instagram-tags">
+                    ${categories.map(cat => `
+                        <div class="instagram-tag ${selectedTags[5].includes(cat.id) ? 'selected' : ''}" 
+                             onclick="toggleTag(5, '${cat.id}')">
+                            <div class="tag-color" style="background: ${cat.color};">
+                                ${cat.icon}
+                            </div>
+                            <div class="tag-info">
+                                <div class="tag-name">${cat.name}</div>
+                                <div class="tag-count">${cat.count} arquivos</div>
+                            </div>
+                            <div style="margin-left: auto;">
+                                ${selectedTags[5].includes(cat.id) ? '✓' : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="padding: 16px; border-top: 1px solid #e5e7eb;">
+                    <button onclick="this.parentElement.parentElement.remove()" style="width: 100%;">
+                        Aplicar Filtros
+                    </button>
+                </div>
+            `;
+            
+            createPopup(content, event, 'instagram-selector');
+        }
+        
+        // Toggle tag selection
+        function toggleTag(example, tagId) {
+            if (!selectedTags[example]) selectedTags[example] = [];
+            
+            const index = selectedTags[example].indexOf(tagId);
+            if (index > -1) {
+                selectedTags[example].splice(index, 1);
+            } else {
+                selectedTags[example].push(tagId);
+            }
+            
+            // Atualizar preview
+            updatePreview(example);
+            
+            // Re-renderizar o popup
+            const button = document.querySelector(`.example:nth-child(${example + 1}) button`);
+            if (button) {
+                button.click();
+            }
+        }
+        
+        // Atualizar preview de selecionados
+        function updatePreview(example) {
+            const selected = selectedTags[example] || [];
+            const preview = document.getElementById(`selected${example}`);
+            
+            if (selected.length === 0) {
+                preview.textContent = 'Nenhuma categoria selecionada';
+            } else {
+                const names = selected.map(id => {
+                    const cat = categories.find(c => c.id === id);
+                    return cat ? `${cat.icon} ${cat.name}` : '';
+                }).join(', ');
+                preview.innerHTML = `<strong>Selecionadas:</strong> ${names}`;
+            }
+        }
+    </script>
+</body>
+</html>

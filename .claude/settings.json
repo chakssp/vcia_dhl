@@ -38,8 +38,8 @@
       "mcp__memory-serve__search_nodes",
       "mcp__time__get_current_time",
       "mcp__memory-serve__read_graph",
-      "mcp__puppeteer__puppeteer_click"
-      "cmd(dir:F:\\vcia-1307\\vcia_dhl\\*)"
+      "mcp__puppeteer__puppeteer_click",
+      "cmd(dir:F:\\vcia-1307\\vcia_dhl\\*)",
       "Bash(dir:F:\\vcia-1307\\vcia_dhl\\*)"
     ],
     "deny": []

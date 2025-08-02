@@ -1,0 +1,174 @@
+/**
+ * CSS Variables Reference - Intelligence Lab v1.0
+ * Data: 29/07/2025
+ * 
+ * Arquivo de referência rápida para todas as variáveis CSS
+ * Use este arquivo para personalização e manutenção
+ */
+
+:root {
+    /* ===== CORES PRINCIPAIS ===== */
+    --primary: #5b8def;
+    --secondary: #4ade80;
+    --accent: #fbbf24;
+    --danger: #f87171;
+    
+    /* ===== DARK MODE - TONS DE CINZA ===== */
+    --bg-base: #2a2d33;        /* Cinza escuro suave (não preto) */
+    --bg-elevated: #33373f;    /* Cards e elementos elevados */
+    --bg-hover: #3d424b;       /* Hover states */
+    --bg-modal: #373b44;       /* Modals e overlays */
+    
+    /* ===== BORDAS E DIVISORES ===== */
+    --border-default: #484d58;
+    --border-light: #3d424b;
+    --border-focus: #5b8def;
+    --border-width: 2px;       /* Padrão para bordas */
+    --border-width-thick: 2.5px; /* Bordas categorizadas */
+    
+    /* ===== TEXTO ===== */
+    --text-primary: #e2e4e9;
+    --text-secondary: #a3a8b3;
+    --text-muted: #787f8d;
+    
+    /* ===== CORES POR CATEGORIA SEMÂNTICA ===== */
+    --cat-breakthrough: #7c3aed;    /* Roxo - Breakthrough Técnico */
+    --cat-evolution: #2563eb;       /* Azul - Evolução Conceitual */
+    --cat-moment: #dc2626;          /* Vermelho - Momento Decisivo */
+    --cat-insight: #059669;         /* Verde - Insight Estratégico */
+    --cat-learning: #d97706;        /* Laranja - Aprendizado Geral */
+    
+    /* ===== SOMBRAS ===== */
+    --shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.3), 
+              0 1px 2px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 
+                 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    
+    /* ===== DIMENSÕES - LAYOUT ===== */
+    --container-max: 1600px;
+    --sidebar-width: 180px;
+    --header-height: 50px;
+    --visualization-height: 700px;
+    
+    /* ===== ESPAÇAMENTOS - v1.0 Compacto ===== */
+    --spacing-xs: 0.125rem;    /* 2px */
+    --spacing-sm: 0.375rem;    /* 6px */
+    --spacing-md: 0.5rem;      /* 8px */
+    --spacing-lg: 0.75rem;     /* 12px */
+    --spacing-xl: 1rem;        /* 16px */
+    --spacing-2xl: 1.5rem;     /* 24px */
+    
+    /* ===== TIPOGRAFIA - TAMANHOS ===== */
+    --font-xs: 0.625rem;       /* 10px - Mínimo legível */
+    --font-sm: 0.75rem;        /* 12px */
+    --font-md: 0.8125rem;      /* 13px */
+    --font-base: 0.875rem;     /* 14px - Padrão */
+    --font-lg: 1.125rem;       /* 18px */
+    --font-xl: 1.25rem;        /* 20px */
+    --font-2xl: 1.5rem;        /* 24px */
+    
+    /* ===== COMPONENTES - PADDING ===== */
+    --btn-padding-y: 0.5rem;
+    --btn-padding-x: 0.875rem;
+    --card-padding: 0.75rem;
+    --modal-padding: 1rem;
+    --input-padding-y: 0.375rem;
+    --input-padding-x: 0.5rem;
+    --nav-padding-y: 0.5rem;
+    --nav-padding-x: 0.75rem;
+    
+    /* ===== GRID E GAPS ===== */
+    --grid-gap-sm: 0.5rem;
+    --grid-gap-md: 0.75rem;
+    --grid-gap-lg: 1rem;
+    --metrics-columns: repeat(auto-fit, minmax(140px, 1fr));
+    --results-columns: repeat(auto-fill, minmax(280px, 1fr));
+    
+    /* ===== BORDER RADIUS ===== */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-pill: 16px;
+    
+    /* ===== TRANSIÇÕES ===== */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* ===== Z-INDEX LAYERS ===== */
+    --z-header: 100;
+    --z-modal: 1000;
+    --z-tooltip: 1100;
+}
+
+/* ===== UTILITY CLASSES - MODO COMPACTO ===== */
+.compact-mode {
+    --sidebar-width: 150px;
+    --spacing-unit: 0.25rem;
+    --font-scale: 0.875;
+    --padding-scale: 0.75;
+}
+
+/* ===== UTILITY CLASSES - MODO EXPANDIDO ===== */
+.expanded-mode {
+    --sidebar-width: 220px;
+    --spacing-unit: 0.5rem;
+    --font-scale: 1.125;
+    --padding-scale: 1.25;
+}
+
+/* ===== CLASSES DE ESPAÇAMENTO RÁPIDO ===== */
+.p-0 { padding: 0; }
+.p-xs { padding: var(--spacing-xs); }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+
+.m-0 { margin: 0; }
+.m-xs { margin: var(--spacing-xs); }
+.m-sm { margin: var(--spacing-sm); }
+.m-md { margin: var(--spacing-md); }
+.m-lg { margin: var(--spacing-lg); }
+.m-xl { margin: var(--spacing-xl); }
+
+/* ===== CLASSES DE TIPOGRAFIA ===== */
+.text-xs { font-size: var(--font-xs); }
+.text-sm { font-size: var(--font-sm); }
+.text-md { font-size: var(--font-md); }
+.text-base { font-size: var(--font-base); }
+.text-lg { font-size: var(--font-lg); }
+.text-xl { font-size: var(--font-xl); }
+
+/* ===== MEDIA QUERIES - BREAKPOINTS ===== */
+@media (max-width: 1600px) {
+    :root {
+        --container-max: 100%;
+    }
+}
+
+@media (max-width: 1366px) {
+    /* Ajustes para laptops menores */
+    :root {
+        --sidebar-width: 160px;
+        --font-scale: 0.95;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* Ajustes para tablets */
+    :root {
+        --sidebar-width: 60px; /* Ícones apenas */
+        --visualization-height: 500px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Mobile - sidebar oculta, layout vertical */
+    :root {
+        --sidebar-width: 0;
+        --header-height: 40px;
+        --spacing-unit: 0.375rem;
+    }
+}

@@ -76,22 +76,13 @@
 
 /* NOVO: Barra de ações em lote */
 .bulk-actions-bar {
-    position: sticky;
-    top: 64px; /* Posicionado logo abaixo do header (64px) */
-    z-index: 90; /* Abaixo do header (z-index: 100) */
+    /* Posicionamento será controlado pelo fixed-positioning-patch.css */
     background: var(--bg-tertiary);
     color: var(--text-primary);
     padding: var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-md);
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-md);
     animation: slideDown var(--transition-normal);
-    /* Propriedades do antigo container */
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-md);
 }
 
 @keyframes slideDown {

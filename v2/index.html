@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Consolidator V2 | Power User Interface</title>
+    
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/animations.css">
+    <link rel="stylesheet" href="css/themes.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+    <!-- Command Palette -->
+    <div id="command-palette" class="command-palette hidden">
+        <div class="command-input-wrapper">
+            <span class="command-prompt">></span>
+            <input type="text" id="command-input" class="command-input" placeholder="Digite um comando ou pesquise..." autocomplete="off">
+        </div>
+        <div id="command-results" class="command-results"></div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="app-container">
+        <!-- Status Bar (Top) -->
+        <header class="status-bar">
+            <div class="status-left">
+                <span class="status-item">KC V2</span>
+                <span class="status-separator">|</span>
+                <span id="status-mode" class="status-item">DISCOVERY</span>
+                <span class="status-separator">|</span>
+                <span id="status-files" class="status-item">0 arquivos</span>
+            </div>
+            <div class="status-center">
+                <span id="status-message" class="status-message"></span>
+            </div>
+            <div class="status-right">
+                <span id="status-api" class="status-item status-api">
+                    <span class="status-indicator"></span>
+                    API
+                </span>
+                <span class="status-separator">|</span>
+                <span id="status-qdrant" class="status-item">
+                    <span class="status-indicator"></span>
+                    Qdrant
+                </span>
+                <span class="status-separator">|</span>
+                <span id="status-time" class="status-item">00:00</span>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <div class="nav-section">
+                        <h3 class="nav-title">WORKFLOW</h3>
+                        <ul class="nav-list">
+                            <li class="nav-item active" data-view="discovery">
+                                <span class="nav-icon">🔍</span>
+                                <span class="nav-label">Discovery</span>
+                                <span class="nav-shortcut">Ctrl+1</span>
+                            </li>
+                            <li class="nav-item" data-view="analysis">
+                                <span class="nav-icon">🧠</span>
+                                <span class="nav-label">Analysis</span>
+                                <span class="nav-shortcut">Ctrl+2</span>
+                            </li>
+                            <li class="nav-item" data-view="organization">
+                                <span class="nav-icon">📂</span>
+                                <span class="nav-label">Organization</span>
+                                <span class="nav-shortcut">Ctrl+3</span>
+                            </li>
+                            <li class="nav-item" data-view="export">
+                                <span class="nav-icon">📤</span>
+                                <span class="nav-label">Export</span>
+                                <span class="nav-shortcut">Ctrl+4</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <h3 class="nav-title">TOOLS</h3>
+                        <ul class="nav-list">
+                            <li class="nav-item" data-view="settings">
+                                <span class="nav-icon">⚙️</span>
+                                <span class="nav-label">Settings</span>
+                                <span class="nav-shortcut">Ctrl+,</span>
+                            </li>
+                            <li class="nav-item" data-view="logs">
+                                <span class="nav-icon">📋</span>
+                                <span class="nav-label">Logs</span>
+                                <span class="nav-shortcut">Ctrl+L</span>
+                            </li>
+                            <li class="nav-item" data-view="stats">
+                                <span class="nav-icon">📊</span>
+                                <span class="nav-label">Statistics</span>
+                                <span class="nav-shortcut">Ctrl+S</span>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Views will be loaded here dynamically -->
+                <div id="view-container" class="view-container">
+                    <!-- Discovery View (Default) -->
+                    <div id="discovery-view" class="view active">
+                        <div class="view-header">
+                            <h2 class="view-title">File Discovery</h2>
+                            <div class="view-actions">
+                                <button class="btn btn-primary" id="btn-select-directory">
+                                    Select Directory
+                                </button>
+                                <button class="btn btn-secondary" id="btn-scan-options">
+                                    Scan Options
+                                </button>
+                            </div>
+                        </div>
+                        <div class="view-content">
+                            <div class="discovery-panel">
+                                <div class="config-section">
+                                    <h3>Pattern Configuration</h3>
+                                    <div class="pattern-list" id="pattern-list">
+                                        <!-- Patterns will be loaded here -->
+                                    </div>
+                                    <button class="btn btn-small" id="btn-add-pattern">Add Pattern</button>
+                                </div>
+                                <div class="results-section">
+                                    <h3>Discovered Files</h3>
+                                    <div class="file-grid" id="discovered-files">
+                                        <!-- Files will be displayed here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Panel (Bottom) -->
+            <div class="terminal-panel">
+                <div class="terminal-tabs">
+                    <div class="terminal-tab active" data-terminal="console">Console</div>
+                    <div class="terminal-tab" data-terminal="logs">Logs</div>
+                    <div class="terminal-tab" data-terminal="api">API Monitor</div>
+                </div>
+                <div class="terminal-content" id="terminal-content">
+                    <div id="terminal-console" class="terminal-view active">
+                        <div class="terminal-output" id="console-output"></div>
+                        <div class="terminal-input-line">
+                            <span class="terminal-prompt">></span>
+                            <input type="text" id="terminal-input" class="terminal-input" placeholder="Digite um comando...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals will be inserted here -->
+    <div id="modal-container"></div>
+
+    <!-- Core JavaScript -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

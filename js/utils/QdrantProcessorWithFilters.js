@@ -14,6 +14,7 @@
         constructor() {
             this.isProcessing = false;
             this.progressCallback = null;
+            this.enableConsoleLog = false; // Flag para debug opcional
         }
 
         /**
@@ -27,14 +28,28 @@
 
             this.isProcessing = true;
             
+            // Mostrar o painel de logs se estiver disponível
+            if (KC.ProcessingLogs) {
+                KC.ProcessingLogs.show();
+                KC.ProcessingLogs.log('🚀 Iniciando processamento para Qdrant...');
+            }
+            
             try {
                 // 1. Obter arquivos do AppState
                 const allFiles = KC.AppState.get('files') || [];
-                console.log(`Total de arquivos no sistema: ${allFiles.length}`);
+                const totalFilesMsg = `Total de arquivos no sistema: ${allFiles.length}`;
+                if (KC.ProcessingLogs) {
+                    KC.ProcessingLogs.log(totalFilesMsg);
+                }
+                if (this.enableConsoleLog) console.log(totalFilesMsg);
 
                 // 2. Aplicar filtros ativos
                 let filesToProcess = this.applyActiveFilters(allFiles, options);
-                console.log(`Arquivos após filtros: ${filesToProcess.length}`);
+                const filteredMsg = `Arquivos após filtros: ${filesToProcess.length}`;
+                if (KC.ProcessingLogs) {
+                    KC.ProcessingLogs.log(filteredMsg);
+                }
+                if (this.enableConsoleLog) console.log(filteredMsg);
 
                 if (filesToProcess.length === 0) {
                     KC.showNotification?.({
@@ -59,9 +74,19 @@
                 const result = await this.performProcessing(filesToProcess);
                 
                 // 5. Mostrar resultado
+                const successMsg = `✅ Processamento concluído! ${result.processed} arquivos processados, ${result.chunks} chunks criados.`;
+                
+                if (KC.ProcessingLogs) {
+                    KC.ProcessingLogs.log(successMsg);
+                    KC.ProcessingLogs.log(`⏱️ Tempo total: ${(result.duration / 1000).toFixed(2)} segundos`);
+                    if (result.errors.length > 0) {
+                        KC.ProcessingLogs.log(`⚠️ ${result.errors.length} erros encontrados durante o processamento`);
+                    }
+                }
+                
                 KC.showNotification?.({
                     type: 'success',
-                    message: `Processamento concluído! ${result.processed} arquivos processados, ${result.chunks} chunks criados.`,
+                    message: successMsg,
                     duration: 8000
                 });
 
@@ -71,7 +96,11 @@
                 return result;
 
             } catch (error) {
-                console.error('Erro ao processar arquivos:', error);
+                const errorMsg = `❌ Erro ao processar arquivos: ${error.message}`;
+                if (KC.ProcessingLogs) {
+                    KC.ProcessingLogs.log(errorMsg);
+                }
+                if (this.enableConsoleLog) console.error('Erro ao processar arquivos:', error);
                 KC.showNotification?.({
                     type: 'error',
                     message: `Erro ao processar: ${error.message}`,
@@ -166,7 +195,11 @@
                     results.processed += batchResult.processed;
                     results.chunks += batchResult.chunks;
                 } catch (error) {
-                    console.error('Erro ao processar batch:', error);
+                    const batchErrorMsg = `❌ Erro ao processar batch: ${error.message}`;
+                    if (KC.ProcessingLogs) {
+                        KC.ProcessingLogs.log(batchErrorMsg);
+                    }
+                    if (this.enableConsoleLog) console.error('Erro ao processar batch:', error);
                     results.errors.push({
                         batch: `${i + 1}-${Math.min(i + batchSize, files.length)}`,
                         error: error.message
@@ -196,7 +229,11 @@
                     }
 
                     if (!file.content) {
-                        console.warn(`Arquivo ${file.name} sem conteúdo, pulando...`);
+                        const warnMsg = `⚠️ Arquivo ${file.name} sem conteúdo, pulando...`;
+                        if (KC.ProcessingLogs) {
+                            KC.ProcessingLogs.log(warnMsg);
+                        }
+                        if (this.enableConsoleLog) console.warn(warnMsg);
                         continue;
                     }
 
@@ -205,42 +242,95 @@
                                  this.simpleChunking(file.content);
 
                     // Processar cada chunk
-                    for (const chunk of chunks) {
+                    for (let i = 0; i < chunks.length; i++) {
+                        const chunk = chunks[i];
+                        // Garantir que o chunk tem um índice
+                        const chunkIndex = chunk.index !== undefined ? chunk.index : i;
+                        
                         // Gerar embedding
                         const embedding = await KC.EmbeddingService.generateEmbedding(chunk.content);
 
-                        // Preparar payload para Qdrant
+                        // VOLTANDO AO QUE FUNCIONAVA - sem QdrantUnifiedSchema
+                        // Criar payload simples como antes
                         const payload = {
-                            filename: file.name,
-                            filepath: file.path,
-                            chunk_index: chunk.index,
-                            content: chunk.content,
-                            relevanceScore: file.relevanceScore,
-                            analysisType: file.analysisType || 'Aprendizado Geral',
+                            fileName: file.name,
+                            filePath: file.path,
+                            chunkIndex: chunkIndex,
+                            content: chunk.content.substring(0, 5000), // Limitar tamanho
+                            analysisType: file.analysisType || 'Não analisado',
                             categories: file.categories || [],
+                            relevanceScore: file.relevanceScore || 0,
                             approved: file.approved || false,
                             analyzed: file.analyzed || false,
-                            processedAt: new Date().toISOString(),
-                            metadata: {
-                                ...chunk.metadata,
-                                fileId: file.id,
-                                totalChunks: chunks.length
-                            }
+                            createdAt: file.createdAt || new Date().toISOString(),
+                            fileId: file.id,
+                            chunkMetadata: chunk.metadata || {}
                         };
 
-                        // Enviar para Qdrant
-                        await KC.QdrantService.upsertPoint({
-                            id: `${file.id}_chunk_${chunk.index}`,
-                            vector: embedding,
-                            payload: payload
-                        });
+                        // Gerar ID numérico único para o Qdrant
+                        // Usa os últimos 9 dígitos do timestamp + 4 dígitos do índice
+                        const timestamp = Date.now();
+                        const shortTimestamp = parseInt(timestamp.toString().slice(-9));
+                        const pointId = parseInt(`${shortTimestamp}${chunkIndex.toString().padStart(4, '0')}`);
+                        
+                        // Log de processamento
+                        const logMessage = `Processando chunk ${chunkIndex} do arquivo ${file.name}: {pointId: ${pointId}, embeddingLength: ${embedding.length}, contentLength: ${chunk.content.length}, payloadSize: ${JSON.stringify(payload).length}}`;
+                        
+                        // Usa ProcessingLogs se disponível
+                        if (KC.ProcessingLogs) {
+                            KC.ProcessingLogs.log(logMessage);
+                        }
+                        
+                        // Console log opcional para debug
+                        if (this.enableConsoleLog) {
+                            console.log('[QdrantProcessor]', logMessage);
+                        }
+                        
+                        // Enviar para Qdrant com retry em caso de erro de transporte
+                        let retries = 3;
+                        let lastError = null;
+                        
+                        while (retries > 0) {
+                            try {
+                                await KC.QdrantService.insertPoint({
+                                    id: pointId,
+                                    vector: embedding,
+                                    payload: payload
+                                });
+                                break; // Sucesso, sair do loop
+                            } catch (error) {
+                                lastError = error;
+                                if (error.message.includes('transport error') && retries > 1) {
+                                    const retryMsg = `⚠️ Erro de transporte, tentando novamente... (${retries - 1} tentativas restantes)`;
+                                    if (KC.ProcessingLogs) {
+                                        KC.ProcessingLogs.log(retryMsg);
+                                    }
+                                    if (this.enableConsoleLog) console.warn(retryMsg);
+                                    await new Promise(resolve => setTimeout(resolve, 1000)); // Aguardar 1 segundo
+                                    retries--;
+                                } else {
+                                    throw error; // Repassar o erro se não for transport error ou sem retries
+                                }
+                            }
+                        }
+                        
+                        if (retries === 0 && lastError) {
+                            throw lastError;
+                        }
 
                         result.chunks++;
+                        
+                        // Pequeno delay para garantir IDs únicos (1ms)
+                        await new Promise(resolve => setTimeout(resolve, 1));
                     }
 
                     result.processed++;
                 } catch (error) {
-                    console.error(`Erro ao processar arquivo ${file.name}:`, error);
+                    const errorMsg = `❌ Erro ao processar arquivo ${file.name}: ${error.message}`;
+                    if (KC.ProcessingLogs) {
+                        KC.ProcessingLogs.log(errorMsg);
+                    }
+                    if (this.enableConsoleLog) console.error(`Erro ao processar arquivo ${file.name}:`, error);
                 }
             }
 
@@ -302,5 +392,6 @@
     };
 
     console.log('[QdrantProcessorWithFilters] Módulo carregado e disponível');
+    console.log('[QdrantProcessorWithFilters] Logs de processamento serão direcionados para ProcessingLogsPanel quando disponível');
 
 })(window);

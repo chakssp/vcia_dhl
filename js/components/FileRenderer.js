@@ -247,6 +247,33 @@
                 });
             }
             
+            // NOVO: Escuta evento CATEGORIES_SELECTED do CategoryQuickSelector
+            if (Events && Events.CATEGORIES_SELECTED) {
+                EventBus.on(Events.CATEGORIES_SELECTED, (data) => {
+                    console.log('FileRenderer: Evento CATEGORIES_SELECTED recebido', data);
+                    
+                    // Remove todas as categorias antigas
+                    const file = this.files.find(f => f.id === data.fileId);
+                    if (file && file.categories) {
+                        file.categories.forEach(catId => {
+                            KC.CategoryManager.removeCategoryFromFiles([data.fileId], catId);
+                        });
+                    }
+                    
+                    // Aplica novas categorias usando CategoryManager
+                    data.categories.forEach(categoryId => {
+                        KC.CategoryManager.assignCategoryToFiles([data.fileId], categoryId);
+                    });
+                    
+                    // Emite evento para sincronizar componentes
+                    EventBus.emit(Events.FILES_UPDATED, {
+                        action: 'category_assigned',
+                        fileId: data.fileId,
+                        categories: data.categories
+                    });
+                });
+            }
+            
             // FASE 1.3 FIX: Escuta FILES_UPDATED para atualizar relevância com boost
             // AIDEV-NOTE: category-boost-render; re-renderiza quando categoria é aplicada
             if (Events && Events.FILES_UPDATED) {
@@ -967,14 +994,19 @@
         categorizeFile(file, buttonElement) {
             console.log(`FileRenderer: Abrindo categorização de ${file.name}`);
             
-            // Cria modal de categorização
-            const modal = this.createCategoryModal(file);
-            document.body.appendChild(modal);
-            
-            // Mostra modal
-            setTimeout(() => {
-                modal.classList.add('show');
-            }, 10);
+            // Usa o novo CategoryQuickSelector
+            if (KC.CategoryQuickSelector) {
+                KC.CategoryQuickSelector.open(file.id, file.categories || []);
+            } else {
+                // Fallback para o modal antigo se o novo não estiver disponível
+                const modal = this.createCategoryModal(file);
+                document.body.appendChild(modal);
+                
+                // Mostra modal
+                setTimeout(() => {
+                    modal.classList.add('show');
+                }, 10);
+            }
         }
 
         /**
@@ -2138,9 +2170,16 @@
          * @param {string} selectedCategoryId - ID da categoria a ser marcada como selecionada
          */
         updateCategoryList(selectedCategoryId = null) {
-            const categoryList = document.querySelector('.category-list');
+            // AIDEV-NOTE: check-modal-exists; verificar se existe modal aberto antes de atualizar
+            const modal = document.querySelector('.modal-overlay');
+            if (!modal) {
+                // Modal não está aberto, não precisa atualizar
+                return;
+            }
+            
+            const categoryList = modal.querySelector('.category-list');
             if (!categoryList) {
-                console.error('FileRenderer: .category-list não encontrada');
+                // Modal existe mas não é de categorias
                 return;
             }
             
@@ -2417,7 +2456,18 @@
                 return;
             }
             
-            // Cria modal de categorização em lote
+            // Usa o CategoryQuickSelector para categorização em lote
+            if (KC.CategoryQuickSelector && this.selectedFiles.size === 1) {
+                // Se apenas um arquivo selecionado, usa o seletor rápido
+                const fileId = this.selectedFiles.values().next().value;
+                const file = this.getCurrentFiles().find(f => f.id === fileId);
+                if (file) {
+                    KC.CategoryQuickSelector.open(file.id, file.categories || []);
+                    return;
+                }
+            }
+            
+            // Para múltiplos arquivos, ainda usa o modal tradicional
             const selectedArray = Array.from(this.selectedFiles);
             const categories = this.getAvailableCategories();
             

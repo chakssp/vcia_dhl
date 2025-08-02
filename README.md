@@ -223,13 +223,60 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 - **ML Integration**: Confidence tracking com shadow mode validado
 - **User Experience**: Dashboard executivo + interface otimizada
 
-## 📞 Suporte
-
-Para reportar problemas ou sugerir melhorias:
-- Use as Issues do GitHub
-- Consulte a documentação em `/docs/`
-- Utilize os comandos de diagnóstico no console
-
 ---
+
+## Usage
+
+Read `.claude/settings.json` to see the permissions and commands allowed.
+
+Start Claude Code: `claude`
+
+Type slash command `/project:infinite` to start the infinite agentic loop.
+
+The infinite command takes three arguments:
+```
+/project:infinite <spec_file> <output_dir> <count>
+```
+
+### 4 Command Variants
+
+#### 1. Single Generation
+```bash
+/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src 1
+```
+Generate one new iteration using the UI specification.
+
+#### 2. Small Batch (5 iterations)
+```bash
+/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src_new 5
+```
+Deploy 5 parallel agents to generate 5 unique iterations simultaneously.
+
+#### 3. Large Batch (20 iterations)  
+```bash
+/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src_new 20
+```
+Generate 20 iterations in coordinated batches of 5 agents for optimal resource management.
+
+#### 4. Infinite Mode
+```bash
+/project:infinite intelligence-lab/specs/invent_new_ui_v3.md infinite_src_new/ infinite
+```
+Continuous generation in waves until context limits are reached, with progressive sophistication.
+
+## How It Works
+
+1. **Specification Analysis**: Reads and understands the spec file requirements
+2. **Directory Reconnaissance**: Analyzes existing iterations to determine starting point
+3. **Parallel Coordination**: Deploys Sub Agents with unique creative directions
+4. **Quality Assurance**: Ensures each iteration is unique and spec-compliant
+5. **Wave Management**: For infinite mode, manages successive waves of agents
+
+## Directions you can take to enhance this pattern
+
+- Apply this to a use case of your choice.
+- Build an MCP Server that enables reuse of the infinite agentic loop.
+- Get the `.claude/commands/infinite.md` into your `~/.claude/commands/` directory for global use.
+- Update `.claude/commands/infinite.md` to generate sets of files instead of a single file.
 
 **Desenvolvido com foco em dados reais e economia de tokens para máxima eficiência.**

@@ -1,0 +1,14 @@
+{"id":"tecnico","name":"Técnico","color":"#4f46e5","icon":"🔧","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"estrategico","name":"Estratégico","color":"#059669","icon":"📊","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"conceitual","name":"Conceitual","color":"#dc2626","icon":"💡","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"decisivo","name":"Momento Decisivo","color":"#d97706","icon":"🎯","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"insight","name":"Insight","color":"#7c3aed","icon":"✨","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"aprendizado","name":"Aprendizado","color":"#be185d","icon":"📚","segment":"default","active":true,"created":"2025-01-31T00:00:00Z"}
+{"id":"juridico","name":"Jurídico","color":"#1e40af","icon":"⚖️","segment":"legal","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"compliance","name":"Compliance","color":"#7c2d12","icon":"📋","segment":"legal","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"financeiro","name":"Financeiro","color":"#16a34a","icon":"💰","segment":"finance","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"investimento","name":"Investimento","color":"#0891b2","icon":"📈","segment":"finance","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"marketing","name":"Marketing","color":"#ec4899","icon":"📢","segment":"business","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"vendas","name":"Vendas","color":"#f97316","icon":"🛒","segment":"business","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"pesquisa","name":"Pesquisa","color":"#8b5cf6","icon":"🔬","segment":"academic","active":false,"created":"2025-01-31T00:00:00Z"}
+{"id":"publicacao","name":"Publicação","color":"#06b6d4","icon":"📄","segment":"academic","active":false,"created":"2025-01-31T00:00:00Z"}

@@ -68,7 +68,7 @@
                 return [];
             }
 
-            KC.Logger?.flow('ChunkingUtils', 'Iniciando chunking semântico');
+            // KC.Logger?.flow('ChunkingUtils', 'Iniciando chunking semântico'); // Desabilitado para evitar poluição do console
 
             // 1. Identificar estrutura do documento
             const structure = this._analyzeDocumentStructure(content);
@@ -90,10 +90,10 @@
             // 4. Adicionar metadados semânticos
             chunks = this._enrichChunksWithMetadata(chunks, content);
 
-            KC.Logger?.info('ChunkingUtils', 'Chunking concluído', {
-                totalChunks: chunks.length,
-                avgSize: Math.round(chunks.reduce((acc, c) => acc + c.content.length, 0) / chunks.length)
-            });
+            // KC.Logger?.info('ChunkingUtils', 'Chunking concluído', {
+            //     totalChunks: chunks.length,
+            //     avgSize: Math.round(chunks.reduce((acc, c) => acc + c.content.length, 0) / chunks.length)
+            // }); // Desabilitado para evitar poluição do console
 
             return chunks;
         }

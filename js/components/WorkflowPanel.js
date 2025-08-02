@@ -685,6 +685,47 @@
                 // Auto-adiciona ao campo de texto
                 this._addDirectoryToTextarea(accessResult.name);
                 
+                // NOVO: Se detectou Obsidian, tenta importar exclusões automaticamente
+                if (preview.hasObsidian && KC.ObsidianPluginUtils) {
+                    try {
+                        const importResult = await KC.ObsidianPluginUtils.importObsidianExclusions(accessResult.handle);
+                        
+                        if (importResult.success && importResult.exclusions.length > 0) {
+                            // Atualiza a configuração com as novas exclusões
+                            const config = KC.AppState.get('configuration') || {};
+                            const discoveryConfig = config.discovery || {};
+                            const currentExclusions = discoveryConfig.excludePatterns || [];
+                            
+                            // Adiciona novas exclusões
+                            const updatedExclusions = [...new Set([...currentExclusions, ...importResult.exclusions])];
+                            
+                            // Salva a configuração atualizada
+                            discoveryConfig.excludePatterns = updatedExclusions;
+                            config.discovery = discoveryConfig;
+                            KC.AppState.set('configuration', config);
+                            
+                            // Atualiza o campo de exclusões se existir
+                            const exclusionTextarea = document.getElementById('exclusion-patterns');
+                            if (exclusionTextarea) {
+                                exclusionTextarea.value = updatedExclusions.join(', ');
+                            }
+                            
+                            // Notifica o usuário
+                            KC.showNotification({
+                                type: 'success',
+                                message: '🔮 Exclusões do Obsidian importadas automaticamente',
+                                details: `${importResult.stats.imported} novas exclusões adicionadas`,
+                                duration: 5000
+                            });
+                            
+                            console.log('Exclusões importadas do Obsidian:', importResult);
+                        }
+                    } catch (error) {
+                        console.warn('Erro ao importar exclusões do Obsidian:', error);
+                        // Não mostra erro ao usuário, pois é uma funcionalidade opcional
+                    }
+                }
+                
             } catch (error) {
                 console.error('Erro no browseDirectory:', error);
                 KC.showNotification({

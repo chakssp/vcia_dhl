@@ -18,7 +18,12 @@ class UnifiedConfidenceController {
             normalizer: null,
             featureFlags: null,
             performanceMonitor: null,
-            validator: null
+            validator: null,
+            // NEW Week 2 components
+            boostCalculator: null,
+            prefixEnhancer: null,
+            confidenceAggregator: null,
+            zeroResolver: null
         };
 
         // System configuration
@@ -75,6 +80,13 @@ class UnifiedConfidenceController {
                 
                 // Start background processing if enabled
                 if (this.components.featureFlags?.isEnabled('unified_confidence_system')) {
+                    // Initialize QdrantScoreBridge if available
+                    if (this.components.scoreBridge && !this.components.scoreBridge.initialized) {
+                        this.logger.info('UnifiedConfidenceController: Initializing QdrantScoreBridge...');
+                        const bridgeResult = await this.components.scoreBridge.initialize();
+                        this.logger.info('UnifiedConfidenceController: QdrantScoreBridge initialized', bridgeResult);
+                    }
+                    
                     await this.startBackgroundProcessing();
                 }
                 
@@ -178,19 +190,55 @@ class UnifiedConfidenceController {
     }
 
     /**
-     * Get real-time confidence score for a single file
+     * Get real-time confidence score for a single file using NEW unified pipeline
      * @param {string} fileId - File ID
      * @returns {Object} Confidence information
      */
-    getFileConfidence(fileId) {
+    async getFileConfidence(fileId) {
         if (!this.initialized) {
             return this.getFallbackConfidence(fileId);
         }
 
-        const endTiming = this.components.performanceMonitor?.startTiming('scoreNormalization');
+        const endTiming = this.components.performanceMonitor?.startTiming('unifiedConfidenceCalculation');
         
         try {
-            // Get raw score from Qdrant bridge
+            // Get file from AppState
+            const files = window.KC?.AppState?.get('files') || [];
+            const file = files.find(f => f.id === fileId);
+            
+            if (!file) {
+                return this.getFallbackConfidence(fileId, 'file_not_found');
+            }
+
+            // Use NEW UnifiedConfidenceSystem pipeline if available
+            if (this.components.confidenceAggregator) {
+                const result = await this.components.confidenceAggregator.processFile(file);
+                
+                if (endTiming) {
+                    endTiming({ fileId, success: true, unified: true });
+                }
+
+                return {
+                    fileId,
+                    confidence: result.finalScore,
+                    source: 'unified_confidence_system',
+                    breakdown: result.breakdown,
+                    strategy: result.strategy,
+                    metadata: {
+                        processingTime: result.processingTime,
+                        originalRelevance: result.originalRelevance,
+                        timestamp: result.timestamp,
+                        components: {
+                            qdrant: result.breakdown?.components?.qdrant?.score || 0,
+                            boost: result.breakdown?.components?.boost?.boost || 1.0,
+                            prefix: result.breakdown?.components?.prefix?.enhancement || 0,
+                            contextual: result.breakdown?.components?.contextual?.score || 0
+                        }
+                    }
+                };
+            }
+
+            // FALLBACK: Use legacy pipeline
             const qdrantScore = this.components.scoreBridge.getFileConfidence(fileId);
             
             // Normalize score if normalizer is available
@@ -204,7 +252,7 @@ class UnifiedConfidenceController {
             }
 
             if (endTiming) {
-                endTiming({ fileId, success: true });
+                endTiming({ fileId, success: true, unified: false });
             }
 
             return {
@@ -214,7 +262,8 @@ class UnifiedConfidenceController {
                 metadata: {
                     qdrantScore: qdrantScore.rawScore,
                     normalizationMethod: normalizedScore.method,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    legacy: true
                 }
             };
             
@@ -257,6 +306,12 @@ class UnifiedConfidenceController {
             // Enable core flags
             this.components.featureFlags?.enable('unified_confidence_system', rolloutPercentage);
             this.components.featureFlags?.enable('qdrant_score_bridge', rolloutPercentage);
+            
+            // Enable NEW Week 2 components
+            this.components.featureFlags?.enable('confidence_boost_calculator', rolloutPercentage);
+            this.components.featureFlags?.enable('prefix_enhancement_enabled', rolloutPercentage);
+            this.components.featureFlags?.enable('zero_relevance_resolution', rolloutPercentage);
+            this.components.featureFlags?.enable('confidence_aggregation_enabled', rolloutPercentage);
             
             // Enable UI features gradually
             if (rolloutPercentage >= 50) {
@@ -375,6 +430,23 @@ class UnifiedConfidenceController {
             if (!this.components.normalizer) {
                 this.components.normalizer = new (window.KC?.ScoreNormalizer)();
             }
+
+            // NEW Week 2 Components - Initialize if feature flags enabled
+            if (this.components.featureFlags.isEnabled('confidence_boost_calculator')) {
+                this.components.boostCalculator = window.KC?.BoostCalculatorInstance;
+            }
+
+            if (this.components.featureFlags.isEnabled('prefix_enhancement_enabled')) {
+                this.components.prefixEnhancer = window.KC?.PrefixEnhancerInstance;
+            }
+
+            if (this.components.featureFlags.isEnabled('zero_relevance_resolution')) {
+                this.components.zeroResolver = window.KC?.ZeroRelevanceResolverInstance;
+            }
+
+            if (this.components.featureFlags.isEnabled('confidence_aggregation_enabled')) {
+                this.components.confidenceAggregator = window.KC?.ConfidenceAggregatorInstance;
+            }
         }
 
         // Performance monitor (always available)
@@ -388,7 +460,12 @@ class UnifiedConfidenceController {
             normalizer: !!this.components.normalizer,
             featureFlags: !!this.components.featureFlags,
             performanceMonitor: !!this.components.performanceMonitor,
-            validator: !!this.components.validator
+            validator: !!this.components.validator,
+            // NEW Week 2 components
+            boostCalculator: !!this.components.boostCalculator,
+            prefixEnhancer: !!this.components.prefixEnhancer,
+            confidenceAggregator: !!this.components.confidenceAggregator,
+            zeroResolver: !!this.components.zeroResolver
         });
     }
 
@@ -463,12 +540,44 @@ class UnifiedConfidenceController {
     }
 
     async processBatch(files, options) {
-        const enhancedFiles = this.components.scoreBridge.enhanceFilesWithConfidence(files);
+        const enhancedFiles = [];
+        const errors = [];
+
+        // Use NEW unified pipeline if available
+        if (this.components.confidenceAggregator) {
+            for (const file of files) {
+                try {
+                    const result = await this.components.confidenceAggregator.processFile(file, options);
+                    enhancedFiles.push({
+                        ...file,
+                        confidence: result.finalScore,
+                        confidenceSource: 'unified_confidence_system',
+                        confidenceMetadata: {
+                            breakdown: result.breakdown,
+                            strategy: result.strategy,
+                            processingTime: result.processingTime,
+                            originalRelevance: result.originalRelevance,
+                            timestamp: result.timestamp
+                        }
+                    });
+                } catch (error) {
+                    errors.push({
+                        fileId: file.id,
+                        error: error.message,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            }
+        } else {
+            // FALLBACK: Use legacy pipeline
+            const legacyEnhanced = this.components.scoreBridge.enhanceFilesWithConfidence(files);
+            enhancedFiles.push(...legacyEnhanced);
+        }
         
         return {
             processedCount: files.length,
             enhancedFiles,
-            errors: []
+            errors
         };
     }
 
@@ -524,13 +633,13 @@ class UnifiedConfidenceController {
         return Math.round(confidence);
     }
 
-    getFallbackConfidence(fileId) {
+    getFallbackConfidence(fileId, reason = 'system_not_initialized') {
         return {
             fileId,
             confidence: 0,
             source: 'fallback',
             metadata: {
-                reason: 'system_not_initialized',
+                reason: reason,
                 timestamp: new Date().toISOString()
             }
         };
@@ -558,6 +667,30 @@ class UnifiedConfidenceController {
             validator: {
                 available: !!this.components.validator,
                 lastValidation: this.components.validator?.lastValidation
+            },
+            // NEW Week 2 components status
+            boostCalculator: {
+                available: !!this.components.boostCalculator,
+                stats: this.components.boostCalculator?.getStats(),
+                currentStrategy: this.components.boostCalculator?.currentStrategy
+            },
+            prefixEnhancer: {
+                available: !!this.components.prefixEnhancer,
+                initialized: this.components.prefixEnhancer?.initialized || false,
+                stats: this.components.prefixEnhancer?.stats,
+                cacheStats: this.components.prefixEnhancer?.getCacheStats()
+            },
+            confidenceAggregator: {
+                available: !!this.components.confidenceAggregator,
+                initialized: this.components.confidenceAggregator?.initialized || false,
+                stats: this.components.confidenceAggregator?.getStats(),
+                currentWeights: this.components.confidenceAggregator?.weights
+            },
+            zeroResolver: {
+                available: !!this.components.zeroResolver,
+                initialized: this.components.zeroResolver?.initialized || false,
+                stats: this.components.zeroResolver?.getStats(),
+                threshold: this.components.zeroResolver?.resolutionThreshold
             }
         };
     }
@@ -686,18 +819,99 @@ class UnifiedConfidenceController {
         }
     }
 
+    /**
+     * Test NEW Week 2 components functionality
+     */
+    async testNewComponents() {
+        const results = {
+            timestamp: new Date().toISOString(),
+            tests: {}
+        };
+
+        try {
+            // Test BoostCalculator
+            if (this.components.boostCalculator) {
+                results.tests.boostCalculator = await this.components.boostCalculator.runTestCalculations();
+            }
+
+            // Test PrefixEnhancer
+            if (this.components.prefixEnhancer) {
+                const testFile = { id: 'test', content: 'api documentation configuration setup', name: 'api-docs.md' };
+                results.tests.prefixEnhancer = await this.components.prefixEnhancer.enhance(testFile);
+            }
+
+            // Test ZeroRelevanceResolver
+            if (this.components.zeroResolver) {
+                results.tests.zeroResolver = await this.components.zeroResolver.runTestResolution();
+            }
+
+            // Test ConfidenceAggregator
+            if (this.components.confidenceAggregator) {
+                results.tests.confidenceAggregator = await this.components.confidenceAggregator.runTestAggregation();
+            }
+
+            return results;
+
+        } catch (error) {
+            this.logger.error('Component testing failed', error);
+            return { error: error.message, results };
+        }
+    }
+
+    /**
+     * Enable Week 2 components for testing
+     */
+    async enableWeek2Components() {
+        try {
+            const flags = [
+                'confidence_boost_calculator',
+                'prefix_enhancement_enabled', 
+                'zero_relevance_resolution',
+                'confidence_aggregation_enabled'
+            ];
+
+            const results = {};
+            for (const flag of flags) {
+                results[flag] = this.components.featureFlags?.enable(flag, 100);
+            }
+
+            // Re-initialize components with new flags
+            await this.initializeComponents();
+
+            return {
+                success: true,
+                enabledFlags: results,
+                componentsAvailable: {
+                    boostCalculator: !!this.components.boostCalculator,
+                    prefixEnhancer: !!this.components.prefixEnhancer,
+                    zeroResolver: !!this.components.zeroResolver,
+                    confidenceAggregator: !!this.components.confidenceAggregator
+                }
+            };
+
+        } catch (error) {
+            this.logger.error('Failed to enable Week 2 components', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     registerConsoleCommands() {
         if (typeof window !== 'undefined') {
             window.kcconfidence = {
                 init: () => this.init(),
                 process: (files, options) => this.processFiles(files, options),
+                processFiles: (files, options) => this.processFiles(files, options), // Alias
                 status: () => this.getSystemStatus(),
                 enable: (percentage) => this.enableConfidenceSystem(percentage),
                 disable: () => this.emergencyDisable(),
                 diagnostics: () => this.runDiagnostics(),
                 getConfidence: (fileId) => this.getFileConfidence(fileId),
                 startBackground: () => this.startBackgroundProcessing(),
-                stopBackground: () => this.stopBackgroundProcessing()
+                stopBackground: () => this.stopBackgroundProcessing(),
+                // NEW Week 2 convenience methods
+                testComponents: () => this.testNewComponents(),
+                enableWeek2: () => this.enableWeek2Components(),
+                componentsStatus: () => this.getComponentsStatus()
             };
         }
     }

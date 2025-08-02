@@ -1,6 +1,11 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "allow": ["Write", "MultiEdit", "Edit", "Bash",
+    "allow": [
+      "Write",
+      "MultiEdit",
+      "Edit",
+      "Bash",
       "Bash(grep:mnt/f/vcia-1307/vcia_dhl/*)",
       "Bash(ls:mnt/f/vcia-1307/vcia_dhl/*)",
       "Bash(cd:mnt/f/vcia-1307/vcia_dhl/*)",
@@ -38,9 +43,19 @@
       "mcp__memory-serve__search_nodes",
       "mcp__time__get_current_time",
       "mcp__memory-serve__read_graph",
-      "mcp__puppeteer__puppeteer_click"
-      "cmd(dir:F:\\vcia-1307\\vcia_dhl\\*)"
-      "Bash(dir:F:\\vcia-1307\\vcia_dhl\\*)"
+      "mcp__puppeteer__puppeteer_click",
+      "cmd(dir:F:\\vcia-1307\\vcia_dhl\\*)",
+      "Bash(dir:F:\\vcia-1307\\vcia_dhl\\*)",
+      "mcp__memory-serve__open_nodes",
+      "mcp__playwright__playwright_navigate",
+      "mcp__playwright__playwright_screenshot",
+      "mcp__playwright__playwright_click",
+      "mcp__playwright__playwright_evaluate",
+      "mcp__playwright__playwright_get_visible_html",
+      "mcp__playwright__playwright_get_visible_text",
+      "mcp__playwright__playwright_console_logs",
+      "mcp__curl__curl",
+      "mcp__btools__getConsoleErrors"
     ],
     "deny": []
   },

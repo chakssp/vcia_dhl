@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KC V2 - Discovery View Demo</title>
+  
+  <!-- V2 Styles -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/discovery-view.css">
+  
+  <style>
+    /* Demo specific styles */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    .demo-container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .demo-header {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-primary);
+      padding: var(--spacing-md);
+      flex-shrink: 0;
+    }
+    
+    .demo-content {
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .v1-status {
+      padding: var(--spacing-sm) var(--spacing-md);
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--border-radius-base);
+      margin-bottom: var(--spacing-md);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: var(--font-size-sm);
+    }
+    
+    .v1-status.connected {
+      background-color: rgba(63, 185, 80, 0.1);
+      border-color: var(--accent-success);
+      color: var(--accent-success);
+    }
+    
+    .v1-status.disconnected {
+      background-color: rgba(248, 81, 73, 0.1);
+      border-color: var(--accent-danger);
+      color: var(--accent-danger);
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <!-- Demo Header -->
+    <div class="demo-header">
+      <h1>🚀 KC V2 - Discovery View Demo</h1>
+      <div id="v1-status" class="v1-status">
+        ⏳ Checking V1 connection...
+      </div>
+      <p>
+        This demo showcases the new DiscoveryView component with V1 integration.
+        The interface adapts based on V1 system availability.
+      </p>
+    </div>
+    
+    <!-- Discovery View Container -->
+    <div class="demo-content">
+      <div id="discovery-container"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module">
+    import { DiscoveryView } from './js/views/DiscoveryView.js';
+    import appState from './js/core/AppState.js';
+    import { legacyBridge } from './js/core/LegacyBridge.js';
+    
+    class DiscoveryDemo {
+      constructor() {
+        this.discoveryView = null;
+        this.v1Available = false;
+      }
+      
+      async initialize() {
+        try {
+          console.log('[Demo] Initializing Discovery View Demo');
+          
+          // Check V1 availability
+          await this.checkV1Status();
+          
+          // Initialize app state
+          await appState.initialize();
+          
+          // Create discovery view
+          const container = document.getElementById('discovery-container');
+          this.discoveryView = new DiscoveryView();
+          
+          // Set global reference for onclick handlers
+          window.discoveryView = this.discoveryView;
+          
+          // Initialize discovery view
+          await this.discoveryView.initialize(container);
+          
+          // Load demo data if V1 not available
+          if (!this.v1Available) {
+            this.loadDemoData();
+          }
+          
+          console.log('[Demo] Discovery View Demo initialized successfully');
+          
+        } catch (error) {
+          console.error('[Demo] Initialization failed:', error);
+          this.showError(error);
+        }
+      }
+      
+      async checkV1Status() {
+        const statusEl = document.getElementById('v1-status');
+        
+        try {
+          // Check if V1 KC is available
+          if (typeof window.KC !== 'undefined') {
+            this.v1Available = true;
+            statusEl.textContent = '✅ V1 System Connected - Using real data';
+            statusEl.className = 'v1-status connected';
+            
+            // Try to initialize legacy bridge
+            await legacyBridge.initialize();
+            console.log('[Demo] V1 system available and connected');
+            
+          } else {
+            this.v1Available = false;
+            statusEl.textContent = '⚠️ V1 System Not Available - Using demo data';
+            statusEl.className = 'v1-status disconnected';
+            console.log('[Demo] V1 system not available, using demo data');
+          }
+          
+        } catch (error) {
+          this.v1Available = false;
+          statusEl.textContent = '❌ V1 Connection Failed - Using demo data';
+          statusEl.className = 'v1-status disconnected';
+          console.warn('[Demo] V1 connection failed:', error);
+        }
+      }
+      
+      loadDemoData() {
+        console.log('[Demo] Loading demo data');
+        
+        // Create demo files for testing
+        const demoFiles = [
+          {
+            id: 'demo_1',
+            name: 'project-roadmap.md',
+            path: '/docs/planning/project-roadmap.md',
+            size: 15420,
+            type: 'md',
+            lastModified: new Date('2024-01-15'),
+            content: 'This document outlines the strategic roadmap for our knowledge consolidation project...',
+            preview: {
+              segment1: 'This document outlines the strategic roadmap for our knowledge consolidation project. We aim to transform scattered information into actionable insights through intelligent automation.',
+            },
+            categories: [
+              { name: 'Planning', color: '#4A90E2' },
+              { name: 'Strategy', color: '#7B68EE' }
+            ],
+            analyzed: true,
+            approved: false,
+            relevanceScore: 0.92,
+            confidenceScore: 0.88,
+            analysisType: 'Strategic Planning',
+            analysisResult: {
+              type: 'Strategic Planning',
+              confidence: 0.88,
+              summary: 'High-value strategic document with clear roadmap elements'
+            }
+          },
+          {
+            id: 'demo_2',
+            name: 'technical-decisions.txt',
+            path: '/notes/technical-decisions.txt',
+            size: 8930,
+            type: 'txt',
+            lastModified: new Date('2024-01-12'),
+            content: 'Key technical decisions made during the architecture phase: 1. Database selection - PostgreSQL vs MongoDB...',
+            preview: {
+              segment1: 'Key technical decisions made during the architecture phase: Database selection, framework choices, and deployment strategies that will impact the entire project lifecycle.',
+            },
+            categories: [
+              { name: 'Technical', color: '#FF6B6B' },
+              { name: 'Architecture', color: '#4ECDC4' }
+            ],
+            analyzed: true,
+            approved: true,
+            relevanceScore: 0.85,
+            confidenceScore: 0.91,
+            analysisType: 'Technical Breakthrough',
+            analysisResult: {
+              type: 'Technical Breakthrough',
+              confidence: 0.91,
+              summary: 'Critical technical decisions with long-term impact'
+            }
+          },
+          {
+            id: 'demo_3',
+            name: 'meeting-notes-2024-01-10.docx',
+            path: '/meetings/meeting-notes-2024-01-10.docx',
+            size: 12580,
+            type: 'docx',
+            lastModified: new Date('2024-01-10'),
+            content: 'Meeting notes from stakeholder review: Discussed project scope, timeline adjustments, and resource allocation...',
+            preview: {
+              segment1: 'Meeting notes from stakeholder review session. Key topics covered include project scope refinements, timeline adjustments based on new requirements.',
+            },
+            categories: [],
+            analyzed: false,
+            approved: false,
+            relevanceScore: 0.67,
+            confidenceScore: 0,
+            analysisType: null,
+            analysisResult: null
+          },
+          {
+            id: 'demo_4',
+            name: 'research-findings.pdf',
+            path: '/research/research-findings.pdf',
+            size: 245600,
+            type: 'pdf',
+            lastModified: new Date('2024-01-08'),
+            content: 'Comprehensive research on knowledge management systems and their effectiveness in organizational settings...',
+            preview: {
+              segment1: 'Comprehensive research findings on knowledge management systems. Analysis of effectiveness across different organizational contexts and team structures.',
+            },
+            categories: [
+              { name: 'Research', color: '#95A5A6' }
+            ],
+            analyzed: true,
+            approved: false,
+            relevanceScore: 0.78,
+            confidenceScore: 0.82,
+            analysisType: 'Research Insight',
+            analysisResult: {
+              type: 'Research Insight',
+              confidence: 0.82,
+              summary: 'Valuable research with actionable insights for implementation'
+            }
+          },
+          {
+            id: 'demo_5',
+            name: 'user-feedback-analysis.gdoc',
+            path: '/feedback/user-feedback-analysis.gdoc',
+            size: 18200,
+            type: 'gdoc',
+            lastModified: new Date('2024-01-05'),
+            content: 'Analysis of user feedback collected during the beta testing phase. Identifies key pain points and improvement opportunities...',
+            preview: {
+              segment1: 'Analysis of user feedback from beta testing phase. Identifies critical pain points, feature requests, and opportunities for user experience improvements.',
+            },
+            categories: [
+              { name: 'User Research', color: '#F39C12' },
+              { name: 'Product', color: '#E74C3C' }
+            ],
+            analyzed: true,
+            approved: true,
+            relevanceScore: 0.89,
+            confidenceScore: 0.87,
+            analysisType: 'User Insight',
+            analysisResult: {
+              type: 'User Insight',
+              confidence: 0.87,
+              summary: 'High-value user insights with clear action items'
+            }
+          }
+        ];
+        
+        // Store demo data in app state
+        appState.set('files', demoFiles);
+        appState.set('categories', [
+          { id: 'planning', name: 'Planning', color: '#4A90E2', count: 1 },
+          { id: 'strategy', name: 'Strategy', color: '#7B68EE', count: 1 },
+          { id: 'technical', name: 'Technical', color: '#FF6B6B', count: 1 },
+          { id: 'architecture', name: 'Architecture', color: '#4ECDC4', count: 1 },
+          { id: 'research', name: 'Research', color: '#95A5A6', count: 1 },
+          { id: 'user-research', name: 'User Research', color: '#F39C12', count: 1 },
+          { id: 'product', name: 'Product', color: '#E74C3C', count: 1 }
+        ]);
+        
+        console.log('[Demo] Demo data loaded:', demoFiles.length, 'files');
+      }
+      
+      showError(error) {
+        const container = document.getElementById('discovery-container');
+        container.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">⚠️</div>
+            <h3>Demo Initialization Failed</h3>
+            <p>${error.message || 'Unknown error occurred'}</p>
+            <button class="btn btn-primary" onclick="location.reload()">
+              🔄 Reload Demo
+            </button>
+          </div>
+        `;
+      }
+    }
+    
+    // Initialize demo when DOM is ready
+    document.addEventListener('DOMContentLoaded', async () => {
+      const demo = new DiscoveryDemo();
+      await demo.initialize();
+    });
+    
+    // Global error handler
+    window.addEventListener('error', (e) => {
+      console.error('[Demo] Global error:', e.error);
+    });
+    
+    window.addEventListener('unhandledrejection', (e) => {
+      console.error('[Demo] Unhandled promise rejection:', e.reason);
+    });
+  </script>
+</body>
+</html>

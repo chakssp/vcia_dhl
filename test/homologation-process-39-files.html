@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processamento de Homologação - 39 Arquivos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .status-card {
+            background-color: #333;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #666;
+        }
+        .status-card.success {
+            border-left-color: #4CAF50;
+        }
+        .status-card.warning {
+            border-left-color: #ff9800;
+        }
+        .status-card.error {
+            border-left-color: #f44336;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        .log-output {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .result-card {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .result-card h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        .result-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #fff;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Processamento de Homologação - UnifiedConfidenceSystem</h1>
+        
+        <div id="system-status" class="status-card">
+            <h3>Status do Sistema</h3>
+            <div id="status-details">Verificando...</div>
+        </div>
+        
+        <div id="control-panel">
+            <button onclick="checkSystem()">🔍 Verificar Sistema</button>
+            <button onclick="navigateToStep2()">📂 Ir para Etapa 2</button>
+            <button onclick="processFiles()" id="process-btn">🎯 Processar Arquivos</button>
+            <button onclick="clearLog()">🧹 Limpar Log</button>
+        </div>
+        
+        <div class="progress-bar" id="progress-bar" style="display: none;">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        
+        <div id="results" class="results" style="display: none;">
+            <div class="result-card">
+                <h3>Total de Arquivos</h3>
+                <div class="value" id="total-files">0</div>
+            </div>
+            <div class="result-card">
+                <h3>Processados</h3>
+                <div class="value" id="processed-files">0</div>
+            </div>
+            <div class="result-card">
+                <h3>Score Médio</h3>
+                <div class="value" id="avg-score">0%</div>
+            </div>
+            <div class="result-card">
+                <h3>Taxa de Sucesso</h3>
+                <div class="value" id="success-rate">0%</div>
+            </div>
+        </div>
+        
+        <div class="log-output" id="log-output"></div>
+    </div>
+
+    <script>
+        // Utilitários de logging
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            
+            let prefix = '';
+            switch(type) {
+                case 'success': prefix = '✅'; break;
+                case 'error': prefix = '❌'; break;
+                case 'warning': prefix = '⚠️'; break;
+                case 'info': prefix = '📌'; break;
+                default: prefix = '•';
+            }
+            
+            logOutput.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log-output').textContent = '';
+            log('Log limpo', 'info');
+        }
+
+        function updateProgress(current, total) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            
+            progressBar.style.display = 'block';
+            const percentage = (current / total) * 100;
+            progressFill.style.width = percentage + '%';
+        }
+
+        // Verificar sistema
+        async function checkSystem() {
+            log('Verificando sistema...', 'info');
+            
+            const statusDiv = document.getElementById('status-details');
+            let statusHTML = '';
+            let allGood = true;
+            
+            // Verificar componentes
+            const checks = {
+                'UnifiedConfidenceController': !!window.KC?.UnifiedConfidenceControllerInstance,
+                'QdrantScoreBridge': !!window.KC?.QdrantScoreBridgeInstance,
+                'ScoreNormalizer': !!window.KC?.ScoreNormalizerInstance,
+                'FeatureFlagManager': !!window.KC?.FeatureFlagManagerInstance,
+                'QdrantService': !!window.KC?.QdrantService
+            };
+            
+            for (const [component, exists] of Object.entries(checks)) {
+                statusHTML += `${component}: ${exists ? '✅' : '❌'}<br>`;
+                if (!exists) allGood = false;
+                log(`${component}: ${exists ? 'OK' : 'Não encontrado'}`, exists ? 'success' : 'error');
+            }
+            
+            // Verificar feature flags
+            if (window.KC?.FeatureFlagManagerInstance) {
+                const flagEnabled = window.KC.FeatureFlagManagerInstance.isEnabled('unified_confidence_system');
+                statusHTML += `<br>Feature Flag (unified_confidence_system): ${flagEnabled ? '✅' : '❌'}<br>`;
+                log(`Feature flag: ${flagEnabled ? 'Ativada' : 'Desativada'}`, flagEnabled ? 'success' : 'warning');
+            }
+            
+            // Verificar arquivos
+            const files = window.KC?.AppState?.get('files') || [];
+            statusHTML += `<br>Arquivos no AppState: ${files.length}<br>`;
+            log(`Arquivos encontrados: ${files.length}`, files.length > 0 ? 'success' : 'warning');
+            
+            // Verificar Qdrant
+            if (window.KC?.QdrantService) {
+                try {
+                    const connected = await window.KC.QdrantService.checkConnection();
+                    statusHTML += `Qdrant: ${connected ? '✅ Conectado' : '❌ Desconectado'}<br>`;
+                    log(`Qdrant: ${connected ? 'Conectado' : 'Desconectado'}`, connected ? 'success' : 'error');
+                } catch (error) {
+                    statusHTML += `Qdrant: ❌ Erro<br>`;
+                    log(`Erro ao verificar Qdrant: ${error.message}`, 'error');
+                }
+            }
+            
+            statusDiv.innerHTML = statusHTML;
+            
+            const statusCard = document.getElementById('system-status');
+            statusCard.className = 'status-card ' + (allGood ? 'success' : 'warning');
+            
+            return allGood;
+        }
+
+        // Navegar para etapa 2
+        function navigateToStep2() {
+            log('Navegando para Etapa 2...', 'info');
+            
+            if (window.KC?.AppController) {
+                window.KC.AppController.navigateToStep(2);
+                log('Navegação concluída', 'success');
+                
+                setTimeout(() => {
+                    const files = window.KC.AppState.get('files') || [];
+                    log(`Arquivos após navegação: ${files.length}`, 'info');
+                    
+                    if (files.length > 0) {
+                        document.getElementById('process-btn').disabled = false;
+                    }
+                }, 1000);
+            } else {
+                log('AppController não encontrado', 'error');
+            }
+        }
+
+        // Processar arquivos
+        async function processFiles() {
+            log('Iniciando processamento...', 'info');
+            document.getElementById('results').style.display = 'grid';
+            
+            try {
+                // Carregar script de processamento
+                const script = document.createElement('script');
+                script.src = 'process-39-files-homologation.js';
+                document.head.appendChild(script);
+                
+                // Aguardar carregamento
+                await new Promise(resolve => {
+                    script.onload = resolve;
+                    setTimeout(resolve, 1000);
+                });
+                
+                if (typeof window.processarArquivosHomologacao === 'function') {
+                    log('Executando processamento...', 'info');
+                    
+                    // Interceptar console.log para capturar saída
+                    const originalLog = console.log;
+                    console.log = function(...args) {
+                        originalLog.apply(console, args);
+                        log(args.join(' '), 'info');
+                    };
+                    
+                    const result = await window.processarArquivosHomologacao();
+                    
+                    // Restaurar console.log
+                    console.log = originalLog;
+                    
+                    // Atualizar resultados
+                    document.getElementById('total-files').textContent = result.filesProcessed + result.filesFailed;
+                    document.getElementById('processed-files').textContent = result.filesProcessed;
+                    document.getElementById('avg-score').textContent = result.averageScore + '%';
+                    document.getElementById('success-rate').textContent = 
+                        ((result.filesProcessed / (result.filesProcessed + result.filesFailed)) * 100).toFixed(1) + '%';
+                    
+                    log('Processamento concluído!', 'success');
+                    
+                } else {
+                    log('Função de processamento não encontrada', 'error');
+                }
+                
+            } catch (error) {
+                log(`Erro no processamento: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+
+        // Inicialização
+        window.addEventListener('load', async () => {
+            log('Página de homologação carregada', 'info');
+            await checkSystem();
+            
+            // Verificar se há arquivos
+            const files = window.KC?.AppState?.get('files') || [];
+            if (files.length === 0) {
+                log('Nenhum arquivo encontrado. Navegue para Etapa 2 primeiro.', 'warning');
+                document.getElementById('process-btn').disabled = true;
+            } else {
+                log(`${files.length} arquivos prontos para processamento`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

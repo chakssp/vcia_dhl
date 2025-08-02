@@ -24,7 +24,8 @@
             priority: 1,
             color: '#4f46e5',
             icon: '🔧',
-            categoryId: 'tecnico' // Relaciona com CategoryManager
+            categoryId: 'tecnico', // Relaciona com CategoryManager
+            intelligenceType: 'technical_innovation' // Mapeamento para Qdrant
         },
         
         EVOLUCAO_CONCEITUAL: {
@@ -36,7 +37,8 @@
             priority: 2,
             color: '#dc2626',
             icon: '💡',
-            categoryId: 'conceitual'
+            categoryId: 'conceitual',
+            intelligenceType: 'conceptual_evolution' // Mapeamento para Qdrant
         },
         
         MOMENTO_DECISIVO: {
@@ -48,7 +50,8 @@
             priority: 3,
             color: '#d97706',
             icon: '🎯',
-            categoryId: 'decisivo'
+            categoryId: 'decisivo',
+            intelligenceType: 'decision_point' // Mapeamento para Qdrant
         },
         
         INSIGHT_ESTRATEGICO: {
@@ -60,7 +63,8 @@
             priority: 4,
             color: '#7c3aed',
             icon: '✨',
-            categoryId: 'insight'
+            categoryId: 'insight',
+            intelligenceType: 'strategic_insight' // Mapeamento para Qdrant
         },
         
         APRENDIZADO_GERAL: {
@@ -72,7 +76,8 @@
             priority: 5,
             color: '#be185d',
             icon: '📚',
-            categoryId: 'aprendizado'
+            categoryId: 'aprendizado',
+            intelligenceType: 'knowledge_piece' // Mapeamento para Qdrant
         }
     };
 
@@ -173,6 +178,21 @@
          */
         getTypeNames() {
             return this.getAllAsArray().map(type => type.name);
+        }
+
+        /**
+         * Obtém o intelligenceType para mapeamento no Qdrant
+         * @param {string} analysisTypeName - Nome do tipo de análise
+         * @returns {string} Intelligence type correspondente para o Qdrant
+         */
+        getIntelligenceType(analysisTypeName) {
+            const type = this.getByName(analysisTypeName);
+            if (!type) {
+                KC.Logger?.warning('AnalysisTypesManager', 
+                    `Tipo de análise não reconhecido: ${analysisTypeName}, usando fallback 'knowledge_piece'`);
+                return 'knowledge_piece';
+            }
+            return type.intelligenceType || 'knowledge_piece';
         }
     }
 

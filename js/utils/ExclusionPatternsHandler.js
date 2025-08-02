@@ -29,10 +29,14 @@
                             // Verifica se é o textarea ou contém o textarea
                             if (node.id === 'exclusion-patterns') {
                                 this.attachHandlers(node);
+                                // REMOVIDO: Botão agora é automático na Etapa 1
+                                // this.addObsidianImportButton(node);
                             } else if (node.querySelector) {
                                 const textarea = node.querySelector('#exclusion-patterns');
                                 if (textarea) {
                                     this.attachHandlers(textarea);
+                                    // REMOVIDO: Botão agora é automático na Etapa 1
+                                    // this.addObsidianImportButton(textarea);
                                 }
                             }
                         }
@@ -50,6 +54,8 @@
             const existingTextarea = document.getElementById('exclusion-patterns');
             if (existingTextarea) {
                 this.attachHandlers(existingTextarea);
+                // REMOVIDO: Botão agora é automático na Etapa 1
+                // this.addObsidianImportButton(existingTextarea);
             }
         }
 
@@ -96,6 +102,138 @@
                 // Atualiza o valor do textarea com os padrões salvos
                 textarea.value = savedPatterns.join(', ');
                 console.log(`Carregados ${savedPatterns.length} padrões de exclusão salvos`);
+            }
+        }
+
+        static addObsidianImportButton(textarea) {
+            // Verifica se o botão já existe
+            const existingButton = document.getElementById('import-obsidian-exclusions');
+            if (existingButton) {
+                return;
+            }
+
+            // Cria o botão
+            const button = document.createElement('button');
+            button.id = 'import-obsidian-exclusions';
+            button.className = 'import-obsidian-btn';
+            button.innerHTML = '🔮 Importar Exclusões do Obsidian';
+            button.title = 'Importar padrões de exclusão do plugin file-explorer-plus do Obsidian';
+            
+            // Estilo do botão
+            button.style.cssText = `
+                margin-top: 10px;
+                padding: 8px 16px;
+                background: #7C3AED;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                display: block;
+                width: 100%;
+            `;
+
+            // Hover effect
+            button.addEventListener('mouseenter', () => {
+                button.style.background = '#6D28D9';
+                button.style.transform = 'translateY(-1px)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.background = '#7C3AED';
+                button.style.transform = 'translateY(0)';
+            });
+
+            // Click handler
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await this.handleObsidianImport(textarea);
+            });
+
+            // Insere o botão após o textarea
+            if (textarea.parentNode) {
+                textarea.parentNode.insertBefore(button, textarea.nextSibling);
+            }
+        }
+
+        static async handleObsidianImport(textarea) {
+            try {
+                // Desabilita o botão durante o processo
+                const button = document.getElementById('import-obsidian-exclusions');
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '⏳ Importando...';
+
+                // Chama o método de importação do DiscoveryManager
+                if (!KC.DiscoveryManager) {
+                    throw new Error('DiscoveryManager não está disponível');
+                }
+
+                const result = await KC.DiscoveryManager.importObsidianExclusions();
+
+                if (result.success) {
+                    // Atualiza o textarea com os novos padrões
+                    const currentPatterns = KC.AppState.get('configuration.discovery.excludePatterns') || [];
+                    textarea.value = currentPatterns.join(', ');
+
+                    // Mostra notificação de sucesso
+                    if (KC.showNotification) {
+                        KC.showNotification({
+                            type: 'success',
+                            message: result.message,
+                            details: `Total de exclusões: ${currentPatterns.length}`
+                        });
+                    } else {
+                        alert(result.message);
+                    }
+
+                    // Log detalhado
+                    if (result.stats) {
+                        console.log('Estatísticas de importação:', {
+                            encontradas: result.stats.totalFound,
+                            importadas: result.stats.imported,
+                            existentes: result.stats.alreadyExisting
+                        });
+                    }
+                } else {
+                    // Mostra erro
+                    if (KC.showNotification) {
+                        KC.showNotification({
+                            type: 'error',
+                            message: 'Erro ao importar exclusões',
+                            details: result.message
+                        });
+                    } else {
+                        alert(`Erro: ${result.message}`);
+                    }
+                }
+
+                // Restaura o botão
+                button.disabled = false;
+                button.innerHTML = originalText;
+
+            } catch (error) {
+                console.error('Erro ao importar exclusões do Obsidian:', error);
+                
+                // Mostra erro
+                if (KC.showNotification) {
+                    KC.showNotification({
+                        type: 'error',
+                        message: 'Erro ao importar exclusões',
+                        details: error.message
+                    });
+                } else {
+                    alert(`Erro: ${error.message}`);
+                }
+
+                // Restaura o botão
+                const button = document.getElementById('import-obsidian-exclusions');
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = '🔮 Importar Exclusões do Obsidian';
+                }
             }
         }
 

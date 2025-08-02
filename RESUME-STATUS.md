@@ -9,9 +9,9 @@
 
 **Nome**: Consolidador de Conhecimento Pessoal (Personal Knowledge Consolidator)  
 **Visão**: Transformar conhecimento disperso em insights acionáveis  
-**Sprint Atual**: FASE 2 - Fundação Semântica ✅ CONCLUÍDA  
-**Última Atualização**: 28/07/2025 (Menu Quick Access e correções de modais)  
-**Status Geral**: 🟢 PRODUÇÃO - Sistema 100% funcional com todas as 10 Waves implementadas / ✅ ML Confidence Integration ativa / ✅ Zero downtime deployment / ✅ Estrutura reorganizada / ✅ Menu Quick Access funcional  
+**Sprint Atual**: CORREÇÃO CRÍTICA - Fluxo UnifiedConfidenceSystem ✅ CORRIGIDO  
+**Última Atualização**: 01/08/2025 (Correção do fluxo invertido de confidence scores)  
+**Status Geral**: 🟢 PRODUÇÃO - Sistema 100% funcional / ✅ UnifiedConfidenceSystem com fluxo correto / ✅ Scores calculados durante descoberta / ✅ Experiência do usuário otimizada  
 
 ### 🌐 Ambiente de Desenvolvimento
 - **Servidor**: Five Server (gerenciado pelo USUÁRIO)
@@ -330,63 +330,6 @@
 
 📁 Arquivos Gerados e Modificados na Ultima Sessão:
 
-  ✅ Arquivos Modificados:
-
-  1. `/RESUME-STATUS.md`
-    - Atualizado Sprint atual para 1.3.1
-    - Adicionada seção de BUGS CRÍTICOS
-    - Adicionada nova lição aprendida
-    - Atualizado histórico de 15/07/2025
-  2. `/CLAUDE.md`
-    - Adicionada LEI #12 sobre TRANSPARÊNCIA DE DADOS
-  3. `/INICIO-SESSAO.md`
-    - Adicionada verificação de integridade de dados no checklist
-
-  📄 Arquivos Criados:
-
-  1. `/docs/sprint/1.3/sprint-1.3.1-integridade-dados.md`
-    - Documentação completa da SPRINT 1.3.1
-    - Análise detalhada do problema de integridade
-    - Plano de implementação em 3 fases
-    - Status das correções realizadas
-
-  📂 Arquivos de Correção Anteriores (criados durante a sessão):
-
-  1. `/docs/sprint/1.3/fase1-complete-minimal-fixes.md`
-    - Documentação das correções mínimas da Fase 1
-  2. `/docs/sprint/1.3/fix-contador-ui-consistency.md`
-    - Correção dos métodos updateCountersUI e updateDuplicateCounters
-  3. `/docs/sprint/1.3/fix-contador-data-consistency.md`
-    - Correção de preservação de arquivos originais e validação de datas
-
-  📂 Arquivos de Sincronização de Categorias (criados nesta sessão):
-
-  1. `/docs/sprint/1.3/correcao-sincronizacao-categorias.md`
-    - Documentação técnica da correção implementada
-  2. `/docs/sprint/1.3/plano-acao-sincronizacao-categorias.md`
-    - Plano de ação completo com análise detalhada
-  3. `/docs/sprint/1.3/base-conhecimento-rag-categorias.json`
-    - Base de conhecimento estruturada para sistema RAG
-
-  📂 Arquivos de Arquitetura LLMs (criados nesta sessão):
-
-  1. `/js/managers/PromptManager.js`
-    - Templates de análise: Momentos Decisivos, Insights Técnicos, Análise de Projetos
-    - Sistema de templates customizáveis com persistência
-  2. `/js/managers/AnalysisAdapter.js`
-    - Normalização de respostas de 4 providers de IA
-    - Sistema inteligente de recuperação de erros JSON
-  3. `/js/managers/AIAPIManager.js`
-    - Gerenciador de APIs com rate limiting e filas
-    - Prioridade para Ollama (local) sobre cloud providers
-  4. `/docs/sprint/1.3/checkpoint-15-07-2025-arquitetura-llm.md`
-    - Checkpoint completo da arquitetura LLM implementada
-  5. `/docs/sprint/1.3/implementacao-aiapi-completa.md`
-    - Documentação completa da implementação de IA
-    - Exemplos de uso e configuração
-  6. `/docs/sprint/1.3/controle-gestao-projeto-sprint13.md`
-    - Evidências formais de gestão da Sprint 1.3
-    - Métricas e validações técnicas
 
   📂 Arquivos de Correção Final (Sessão 5):
 
@@ -448,22 +391,6 @@
 ---
 
 ## 🔧 TAREFAS IMEDIATAS
-
-### 🔴 ALTA PRIORIDADE
-1. ~~**Implementar APIs de IA reais no AnalysisManager**~~ ✅ CONCLUÍDO
-   - ✅ Interface de configuração criada (APIConfig.js)
-   - ✅ Adaptadores implementados para 4 providers
-   - ✅ Simulação substituída por chamadas reais
-
-2. ~~**Criar templates de análise**~~ ✅ CONCLUÍDO
-   - ✅ Templates implementados em PromptManager.js
-   - ✅ Sistema de customização com persistência
-
-3. **NOVA PRIORIDADE: Testar Sistema com Dados Reais**
-   - [ ] Instalar Ollama localmente
-   - [ ] Configurar e testar cada provider
-   - [ ] Validar qualidade das análises
-   - [ ] Otimizar prompts baseado em resultados
 
 ### 🟡 MÉDIA PRIORIDADE
 
@@ -748,6 +675,20 @@ Antes de iniciar qualquer sessão:
 ---
 
 ## 📅 HISTÓRICO DE ATUALIZAÇÕES
+
+### 01/08/2025 - CORREÇÃO CRÍTICA: FLUXO INVERTIDO UNIFIEDCONFIDENCESYSTEM ✅
+- ✅ **PROBLEMA RESOLVIDO**: Scores de confiança agora calculados DURANTE descoberta (não APÓS)
+- ✅ **EXPERIÊNCIA DO USUÁRIO**: Usuário vê scores inteligentes em tempo real
+- ✅ **INICIALIZAÇÃO LAZY**: Sistema inicializa automaticamente quando necessário
+- ✅ **FALLBACKS ROBUSTOS**: Múltiplas camadas de fallback garantem funcionamento
+- ✅ **REMOÇÃO DE PROCESSAMENTO POSTERIOR**: Eliminado setTimeout que causava fluxo invertido
+- 🔧 **Modificações Técnicas**:
+  - `_calculateConfidenceDuringDiscovery()` refatorado com inicialização lazy
+  - `_ensureUnifiedConfidenceSystemReady()` criado para inicialização automática  
+  - `_calculateFallbackConfidence()` implementado com estratégias inteligentes
+  - LEI #13 adicionada ao CLAUDE.md sobre fluxo correto
+- 📚 **Documentação**: `/docs/12-correcao-fluxo-confidence/CORRECAO-FLUXO-INVERTIDO.md`
+- 🎯 **Resultado**: Fluxo lógico e intuitivo, decisões informadas em tempo real
 
 ### 28/07/2025 - MENU QUICK ACCESS E CORREÇÕES DE MODAIS
 - ✅ Implementado menu lateral Quick Access com 5 botões operacionais

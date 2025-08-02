@@ -138,13 +138,14 @@ class QdrantScoreBridge {
         try {
             // Use existing QdrantService if available
             if (window.KC?.QdrantService) {
-                const searchResult = await window.KC.QdrantService.searchByText('', {
+                // Use scroll method to get all points without search text
+                const scrollResult = await window.KC.QdrantService.scrollPoints({
                     limit: 1000, // Get all points
                     with_payload: true,
                     with_vector: false
                 });
                 
-                return searchResult.result || [];
+                return scrollResult.points || [];
             }
 
             // Fallback: direct API call
@@ -174,22 +175,63 @@ class QdrantScoreBridge {
         qdrantPoints.forEach(point => {
             const payload = point.payload || {};
             
-            // Try different mapping strategies
+            // Try different mapping strategies - ENHANCED for better AppState compatibility
             const mappingCandidates = [
                 payload.file_id,           // Direct file ID
+                payload.fileId,            // camelCase variant
                 payload.filename,          // Filename
+                payload.fileName,          // camelCase variant
                 payload.path,             // File path
+                payload.filePath,         // camelCase variant
                 payload.title,            // Document title
-                `${payload.source_file}`, // Source file reference
+                payload.name,             // Alternative name field
+                payload.file_name,        // Alternative filename field
+                payload.document_id,      // Document ID
+                payload.documentId,       // camelCase variant
+                payload.source_file,      // Source file reference
+                payload.sourceFile,       // camelCase variant
+                // Additional fields that might contain file identifiers
+                payload.id,               // Generic ID
+                payload.key,              // Generic key
+                payload.reference,        // Reference field
+                payload.source,           // Source field
             ].filter(Boolean);
 
             // Create mappings for all candidates
             mappingCandidates.forEach(candidate => {
+                // Original mapping
                 this.mappingCache.set(candidate, point.id);
+                
+                // Normalized lowercase mapping for case-insensitive matching
+                const normalized = candidate.toString().toLowerCase();
+                this.mappingCache.set(normalized, point.id);
+                
+                // Also create mapping for just the filename without path
+                if (candidate.includes('/') || candidate.includes('\\')) {
+                    const filename = candidate.split(/[/\\]/).pop();
+                    if (filename) {
+                        this.mappingCache.set(filename, point.id);
+                        this.mappingCache.set(filename.toLowerCase(), point.id);
+                    }
+                }
+                
+                // Create mapping for filename without extension
+                if (candidate.includes('.')) {
+                    const nameWithoutExt = candidate.replace(/\.[^/.]+$/, '');
+                    this.mappingCache.set(nameWithoutExt, point.id);
+                    this.mappingCache.set(nameWithoutExt.toLowerCase(), point.id);
+                }
+                
+                // Extract documentId from various formats
+                if (payload.documentId || payload.document_id) {
+                    const docId = payload.documentId || payload.document_id;
+                    this.mappingCache.set(docId, point.id);
+                    this.mappingCache.set(docId.toLowerCase(), point.id);
+                }
             });
         });
 
-        this.logger.info(`Created ${this.mappingCache.size} file mappings`);
+        this.logger.info(`Enhanced mapping: Created ${this.mappingCache.size} file mappings from ${qdrantPoints.length} points`);
     }
 
     _cacheScores(qdrantPoints) {
@@ -241,21 +283,60 @@ class QdrantScoreBridge {
     }
 
     _findFuzzyMatch(fileId) {
-        // Simple fuzzy matching by filename similarity
-        const fileName = fileId.split('/').pop() || fileId;
+        // Enhanced fuzzy matching with multiple strategies
+        const fileName = fileId.split(/[/\\]/).pop() || fileId;
+        const fileNameLower = fileName.toLowerCase();
+        const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
+        
+        let bestMatch = null;
+        let bestSimilarity = 0.6; // Minimum threshold
         
         for (const [mappedId, qdrantId] of this.mappingCache.entries()) {
-            const mappedFileName = mappedId.split('/').pop() || mappedId;
+            const mappedFileName = mappedId.split(/[/\\]/).pop() || mappedId;
+            const mappedFileNameLower = mappedFileName.toLowerCase();
+            const mappedFileNameWithoutExt = mappedFileName.replace(/\.[^/.]+$/, '');
             
-            if (this._calculateSimilarity(fileName, mappedFileName) > 0.8) {
+            // Strategy 1: Exact filename match (case insensitive)
+            if (fileNameLower === mappedFileNameLower) {
                 const score = this.scoreCache.get(qdrantId);
                 if (score !== undefined) {
-                    return { score, qdrantId };
+                    return { score, qdrantId, similarity: 1.0, method: 'exact_filename' };
+                }
+            }
+            
+            // Strategy 2: Filename without extension match
+            if (fileNameWithoutExt.toLowerCase() === mappedFileNameWithoutExt.toLowerCase()) {
+                const score = this.scoreCache.get(qdrantId);
+                if (score !== undefined && 0.95 > bestSimilarity) {
+                    bestMatch = { score, qdrantId, similarity: 0.95, method: 'filename_no_ext' };
+                    bestSimilarity = 0.95;
+                }
+            }
+            
+            // Strategy 3: Jaccard similarity
+            const jaccardSimilarity = this._calculateSimilarity(fileNameLower, mappedFileNameLower);
+            if (jaccardSimilarity > bestSimilarity) {
+                const score = this.scoreCache.get(qdrantId);
+                if (score !== undefined) {
+                    bestMatch = { score, qdrantId, similarity: jaccardSimilarity, method: 'jaccard' };
+                    bestSimilarity = jaccardSimilarity;
+                }
+            }
+            
+            // Strategy 4: Levenshtein-based similarity for close matches
+            if (fileName.length > 3 && mappedFileName.length > 3) {
+                const levenshteinSimilarity = this._calculateLevenshteinSimilarity(fileNameLower, mappedFileNameLower);
+                if (levenshteinSimilarity > bestSimilarity) {
+                    const score = this.scoreCache.get(qdrantId);
+                    if (score !== undefined) {
+                        bestMatch = { score, qdrantId, similarity: levenshteinSimilarity, method: 'levenshtein' };
+                        bestSimilarity = levenshteinSimilarity;
+                    }
                 }
             }
         }
         
-        return null;
+        return bestMatch;
     }
 
     _calculateSimilarity(str1, str2) {
@@ -267,6 +348,45 @@ class QdrantScoreBridge {
         const union = new Set([...set1, ...set2]);
         
         return intersection.size / union.size;
+    }
+
+    _calculateLevenshteinSimilarity(str1, str2) {
+        // Calculate Levenshtein distance and convert to similarity score
+        const distance = this._levenshteinDistance(str1, str2);
+        const maxLength = Math.max(str1.length, str2.length);
+        
+        if (maxLength === 0) return 1.0;
+        
+        return 1 - (distance / maxLength);
+    }
+
+    _levenshteinDistance(str1, str2) {
+        // Dynamic programming implementation of Levenshtein distance
+        const matrix = [];
+        
+        for (let i = 0; i <= str2.length; i++) {
+            matrix[i] = [i];
+        }
+        
+        for (let j = 0; j <= str1.length; j++) {
+            matrix[0][j] = j;
+        }
+        
+        for (let i = 1; i <= str2.length; i++) {
+            for (let j = 1; j <= str1.length; j++) {
+                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1, // substitution
+                        matrix[i][j - 1] + 1,     // insertion
+                        matrix[i - 1][j] + 1      // deletion
+                    );
+                }
+            }
+        }
+        
+        return matrix[str2.length][str1.length];
     }
 
     _getDefaultScore(fileId = null) {

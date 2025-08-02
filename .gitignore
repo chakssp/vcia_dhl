@@ -82,3 +82,16 @@ analise-prd.md
 docs/export-schema-intelligence.md
 .space/
 .devcontainer/
+
+# Guardian Mode Files
+.claude-decisions.log
+.claude-metrics.json
+.claude-backups/
+
+.claude-cache/
+.claude-tmp/
+claude-output/
+
+.claude-cache/
+.claude-tmp/
+claude-output/

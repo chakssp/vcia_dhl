@@ -1,0 +1,169 @@
+/**
+ * Fixed Positioning Patch
+ * 
+ * Corrige problemas de posicionamento de elementos fixos
+ * que não acompanham o scroll da página
+ */
+
+/* ===== BARRA DE FILTROS RÁPIDOS ===== */
+#quick-filters-bar,
+.quick-filters-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    transform: translateY(0) !important;
+    z-index: 1000 !important;
+}
+
+/* ===== BULK ACTIONS BAR ===== */
+#files-section > div.bulk-actions-bar,
+.bulk-actions-bar {
+    position: fixed !important;
+    bottom: 10vh !important; /* Logo acima da barra de filtros */
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    transform: none !important;
+    z-index: 999 !important;
+    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 12px 20px !important;
+    border-top: 1px solid var(--border-light) !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.bulk-actions-bar .bulk-actions-container {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+}
+
+/* ===== MODAL OVERLAY ===== */
+body > div.modal-overlay,
+.modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9990 !important;
+}
+
+/* Modal content dentro do overlay */
+.modal-overlay .modal-content,
+.modal-overlay > div {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 90vh !important;
+    max-width: 90vw !important;
+    overflow-y: auto !important;
+    z-index: 9991 !important;
+}
+
+/* ===== CATEGORY QUICK SELECTOR (reforço) ===== */
+.category-quick-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9998 !important;
+}
+
+.category-quick-popup {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999 !important;
+}
+
+/* ===== NOTIFICAÇÕES E PROGRESS ===== */
+.notification-container {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 10000 !important;
+}
+
+.progress-global {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 10001 !important;
+}
+
+/* ===== AJUSTE DO BODY QUANDO ELEMENTOS FIXOS ESTÃO ATIVOS ===== */
+/* Quando a barra de filtros está visível */
+body:has(.quick-filters-bar) {
+    padding-bottom: 10vh !important;
+}
+
+/* Quando bulk actions está visível */
+body:has(.bulk-actions-bar) {
+    padding-bottom: 20vh !important;
+}
+
+/* Previne scroll quando modal/popup está aberto */
+body.modal-open,
+body.category-popup-open,
+body:has(.modal-overlay.show) {
+    overflow: hidden !important;
+    position: relative !important;
+    height: 100% !important;
+}
+
+/* ===== AJUSTES PARA O CONTEÚDO PRINCIPAL ===== */
+.main-container,
+.content-section,
+#content-section {
+    /* Garante espaço para elementos fixos */
+    padding-bottom: 12vh !important;
+}
+
+/* ===== Z-INDEX HIERARCHY ===== */
+/*
+  - Conteúdo principal: 1-100
+  - Barra de filtros: 1000
+  - Bulk actions: 999
+  - Menu lateral: 9999
+  - Modais: 9990-9991
+  - Category popup: 9998-9999
+  - Notificações: 10000
+  - Progress: 10001
+*/
+
+/* ===== MOBILE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .bulk-actions-bar {
+        bottom: 12vh !important;
+        max-width: 95vw !important;
+        padding: 8px 15px !important;
+    }
+    
+    .modal-overlay .modal-content {
+        max-width: 95vw !important;
+        max-height: 95vh !important;
+    }
+}
+
+/* ===== DEBUG STYLES (remover em produção) ===== */
+/* Adiciona bordas coloridas para visualizar posicionamento */
+.debug-positioning {
+    .quick-filters-bar { border: 2px solid red !important; }
+    .bulk-actions-bar { border: 2px solid blue !important; }
+    .modal-overlay { border: 2px solid green !important; }
+    .category-quick-popup { border: 2px solid yellow !important; }
+}

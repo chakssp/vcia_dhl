@@ -17,18 +17,18 @@ class FeatureFlagManager {
         this.defaultFlags = {
             // Core confidence system flags
             'unified_confidence_system': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Enable UnifiedConfidenceSystem integration'
             },
             'qdrant_score_bridge': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Connect Qdrant scores to UI confidence'
             },
             'advanced_score_normalization': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Use advanced score normalization algorithms'
             },
             'confidence_performance_monitoring': {
@@ -37,20 +37,20 @@ class FeatureFlagManager {
                 description: 'Enable confidence system performance monitoring'
             },
             'batch_confidence_processing': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Enable batch processing for confidence scores'
             },
             
             // UI Enhancement flags
             'enhanced_file_cards': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Show enhanced file cards with confidence scores'
             },
             'confidence_color_coding': {
-                enabled: false,
-                rolloutPercentage: 0,
+                enabled: true,
+                rolloutPercentage: 100,
                 description: 'Color-code files by confidence level'
             },
             'confidence_tooltips': {
@@ -69,6 +69,28 @@ class FeatureFlagManager {
                 enabled: true,
                 rolloutPercentage: 100,
                 description: 'Enable detailed score validation logging'
+            },
+            
+            // Week 2 Component flags
+            'confidence_boost_calculator': {
+                enabled: true,
+                rolloutPercentage: 100,
+                description: 'Enable BoostCalculator for category and temporal boosts'
+            },
+            'prefix_enhancement_enabled': {
+                enabled: true,
+                rolloutPercentage: 100,
+                description: 'Enable PrefixEnhancer using 163K prefixes'
+            },
+            'zero_relevance_resolution': {
+                enabled: true,
+                rolloutPercentage: 100,
+                description: 'Enable ZeroRelevanceResolver for 0% files'
+            },
+            'confidence_aggregation_enabled': {
+                enabled: true,
+                rolloutPercentage: 100,
+                description: 'Enable ConfidenceAggregator for unified scoring'
             }
         };
 
@@ -243,6 +265,26 @@ class FeatureFlagManager {
 
         return results;
     }
+    
+    /**
+     * Enable Week 2 confidence system components
+     */
+    enableWeek2Components() {
+        const week2Features = [
+            'confidence_boost_calculator',
+            'prefix_enhancement_enabled', 
+            'zero_relevance_resolution',
+            'confidence_aggregation_enabled'
+        ];
+        
+        const results = {};
+        week2Features.forEach(flag => {
+            results[flag] = this.enable(flag, 100);
+        });
+        
+        this.logger.info('FeatureFlagManager: Week 2 components enabled', results);
+        return results;
+    }
 
     /**
      * Emergency disable all confidence features
@@ -345,6 +387,7 @@ class FeatureFlagManager {
                 check: (flag) => this.isEnabled(flag),
                 confidence: () => this.getConfidenceFlags(),
                 enableConfidenceBeta: () => this.enableConfidenceSystemBeta(),
+                enableWeek2: () => this.enableWeek2Components(),
                 emergencyDisable: () => this.emergencyDisableConfidence()
             };
         }
