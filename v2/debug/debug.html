@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug LegacyBridge</title>
+</head>
+<body>
+    <h1>Debug do erro LegacyBridge.js</h1>
+    <div id="log"></div>
+    
+    <script type="module">
+        const log = document.getElementById('log');
+        
+        // Teste 1: Verificar se o arquivo existe via fetch
+        try {
+            const response = await fetch('/js/core/LegacyBridge.js');
+            log.innerHTML += `<p>Fetch status: ${response.status}</p>`;
+            if (response.ok) {
+                const text = await response.text();
+                log.innerHTML += `<p>Arquivo encontrado! Tamanho: ${text.length} caracteres</p>`;
+            }
+        } catch (e) {
+            log.innerHTML += `<p>Erro no fetch: ${e.message}</p>`;
+        }
+        
+        // Teste 2: Tentar importar
+        try {
+            const module = await import('./js/core/LegacyBridge.js');
+            log.innerHTML += `<p>Import bem sucedido! LegacyBridge carregado.</p>`;
+        } catch (e) {
+            log.innerHTML += `<p>Erro no import: ${e.message}</p>`;
+            console.error('Erro completo:', e);
+        }
+        
+        // Teste 3: Verificar URL atual
+        log.innerHTML += `<p>URL atual: ${window.location.href}</p>`;
+        log.innerHTML += `<p>Origem: ${window.location.origin}</p>`;
+    </script>
+</body>
+</html>

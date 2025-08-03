@@ -145,6 +145,10 @@ The infinite command implements sophisticated parallel agent coordination:
 - Progressive sophistication strategy for infinite mode waves
 - Each iteration must be genuinely unique while maintaining spec compliance
 
+### 🚨 Memory Warnings
+
+- NEVER use PLAYWRIGHT WITHOUT AVOID AND PRIORITIZE USE CONSOLE MESSAGE TO DETERMINE YOUR PROGRESS OR FAIL. EVER USE the message console.
+
 # IMPORTANT
 - Remember EVER to translate to Brazilian Protuguese before send to User providing Best Experience!
 

@@ -55,7 +55,8 @@
       "mcp__playwright__playwright_get_visible_text",
       "mcp__playwright__playwright_console_logs",
       "mcp__curl__curl",
-      "mcp__btools__getConsoleErrors"
+      "mcp__btools__getConsoleErrors",
+      "mcp__playwright__playwright_close"
     ],
     "deny": []
   },

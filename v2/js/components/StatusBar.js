@@ -5,11 +5,11 @@
 
 import eventBus, { Events } from '../core/EventBus.js';
 import appState from '../core/AppState.js';
-import { apiService } from '../services/APIService.js';
 import { legacyBridge } from '../core/LegacyBridge.js';
 
 export class StatusBar {
-  constructor() {
+  constructor(apiService) {
+    this.apiService = apiService;
     this.elements = {};
     this.updateInterval = null;
     this.statusChecks = new Map();
@@ -127,7 +127,7 @@ export class StatusBar {
    */
   async checkAPIStatus() {
     try {
-      const health = await apiService.checkHealth();
+      const health = await this.apiService.checkHealth();
       if (health.status === 'ok') {
         this.setAPIStatus('online');
       } else {

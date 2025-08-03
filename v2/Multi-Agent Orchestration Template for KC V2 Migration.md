@@ -57,11 +57,10 @@ graph TD
   **Priority**: HIGH
   **Dependencies**: LegacyBridge (✅ READY)
   **Tasks**:
-  // 1. Create NavigationController.js✅
-  // 2. Implement StatusBar.js with real-time indicators✅
-  // 3. Build Terminal.js with command processing✅
-  
-  4. Create CommandPalette.js with fuzzy search
+  // 1. Create NavigationController.js
+  // 2. Implement StatusBar.js with real-time indicators
+  // 3. Build Terminal.js with command processing
+  // 4. Create CommandPalette.js with fuzzy search
   Output: #FE-001 to #FE-004
 
   @ui-ux-dev-lead (#AGENT-2)
@@ -69,11 +68,10 @@ graph TD
   Priority: HIGH
   Dependencies: None (can start immediately)
   Tasks:
-  // 1. Create DiscoveryView.js with file grid ✅
-  
-  5. Build AnalysisView.js with progress tracking
-  6. Implement OrganizationView.js with drag-drop
-  7. Design SettingsView.js with unified config
+  // 5. Create DiscoveryView.js with file grid 
+  // 6. Build AnalysisView.js with progress tracking
+  // 7. Implement OrganizationView.js with drag-drop
+  // 8. Design SettingsView.js with unified config
   Output: #UI-001 to #UI-004
 
   @performance-optimization-coordinator (#AGENT-3)

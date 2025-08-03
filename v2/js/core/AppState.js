@@ -6,7 +6,7 @@
 import { legacyBridge } from './LegacyBridge.js';
 import eventBus, { Events } from './EventBus.js';
 
-export class AppState {
+class AppState {
   constructor() {
     this.state = new Map();
     this.subscribers = new Map();
@@ -326,4 +326,7 @@ export class AppState {
 
 // Create singleton instance
 const appState = new AppState();
+
+// Export both the class and the instance
+export { AppState };
 export default appState;

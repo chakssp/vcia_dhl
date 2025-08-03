@@ -1,7 +1,15 @@
 # 🚀 PROTOCOLO DE INÍCIO DE SESSÃO - KNOWLEDGE CONSOLIDATOR
 
 > **CRÍTICO**: Este protocolo DEVE ser seguido para evitar retrabalho e garantir continuidade eficiente do desenvolvimento.
+> **ATUALIZADO**: 03/08/2025 - Agora com suporte para PLAYWRIGHT MCP (novo padrão)
 > VERIFIQUE SE EXISTE ALGUMA ENTRADA EM [ ### STATUS ATUAL ]
+
+## 🎭 NOVO PADRÃO - PLAYWRIGHT MCP
+**Use o protocolo atualizado**: [@INICIO-SESSAO-PLAYWRIGHT.md](./INICIO-SESSAO-PLAYWRIGHT.md)
+- Validação 100% automatizada
+- Sem necessidade de acesso manual ao navegador
+- Captura automática de logs e screenshots
+
 ---
 
 ## 📋 COMANDO DE INÍCIO OBRIGATÓRIO

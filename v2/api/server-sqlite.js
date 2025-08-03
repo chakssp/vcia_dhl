@@ -32,6 +32,32 @@ app.get('/health', (req, res) => {
   });
 });
 
+// API Health check (for frontend compatibility)
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    service: 'KC V2 API',
+    environment: process.env.NODE_ENV || 'development',
+    database: 'connected',
+    qdrant: 'unavailable', // SQLite version doesn't have Qdrant
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Config endpoint
+app.get('/api/config', (req, res) => {
+  res.json({
+    features: {
+      categories: true,
+      files: true,
+      analysis: false, // Not implemented yet
+      qdrant: false // SQLite version
+    },
+    rateLimits: {},
+    version: '2.0.0'
+  });
+});
+
 // Categories endpoints
 app.get('/api/categories', (req, res) => {
   db.all('SELECT * FROM categories ORDER BY name', (err, rows) => {

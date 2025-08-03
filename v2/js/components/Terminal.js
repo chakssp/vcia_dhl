@@ -546,17 +546,23 @@ export class Terminal {
     
     console.log = (...args) => {
       originalLog.apply(console, args);
-      this.log('logs', args.join(' '), 'info');
+      this.log('logs', args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' '), 'info');
     };
     
     console.error = (...args) => {
       originalError.apply(console, args);
-      this.log('logs', args.join(' '), 'error');
+      this.log('logs', args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' '), 'error');
     };
     
     console.warn = (...args) => {
       originalWarn.apply(console, args);
-      this.log('logs', args.join(' '), 'warn');
+      this.log('logs', args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' '), 'warn');
     };
   }
   

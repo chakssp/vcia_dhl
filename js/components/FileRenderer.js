@@ -460,7 +460,7 @@
         }
 
         /**
-         * Cria elemento HTML para um arquivo individual
+         * Cria elemento HTML para um arquivo individual - ENHANCED (Task #FE-002)
          */
         createFileElement(file) {
             const fileDiv = document.createElement('div');
@@ -480,6 +480,9 @@
             
             // Gera preview básico
             const preview = this.generatePreview(file);
+
+            // ENHANCED: Rich analysis data preparation
+            this.prepareAnalysisDisplayData(file);
 
             // ORIGINAL - Preservado para rollback
             /* fileDiv.innerHTML = `
@@ -3020,6 +3023,496 @@
             
             // Atualiza a barra de ações
             this.updateBulkActionsBar();
+        }
+
+        // ====================================================================
+        // ENHANCED FEATURES - Task #FE-002: Rich Analysis Results Display
+        // ====================================================================
+
+        /**
+         * Prepara dados de análise enriquecidos para exibição
+         */
+        prepareAnalysisDisplayData(file) {
+            // Estrutura de dados de análise enriquecida
+            file.analysisDisplay = {
+                confidenceScore: this.calculateConfidenceScore(file),
+                typeDistribution: this.getTypeDistribution(file),
+                keywords: this.extractKeywords(file),
+                relatedFiles: this.findRelatedFiles(file),
+                timeline: this.getAnalysisTimeline(file),
+                exportFormats: ['JSON', 'PDF', 'MD', 'HTML']
+            };
+
+            return file.analysisDisplay;
+        }
+
+        /**
+         * Calcula score de confiança baseado em múltiplos fatores
+         */
+        calculateConfidenceScore(file) {
+            let confidence = 0;
+            let factors = [];
+
+            // Fator 1: Presença de análise IA
+            if (file.analyzed && file.analysisType) {
+                confidence += 30;
+                factors.push({ name: 'Análise IA', score: 30, color: '#10b981' });
+            }
+
+            // Fator 2: Categorização manual
+            if (file.categories && file.categories.length > 0) {
+                const categoryScore = Math.min(file.categories.length * 15, 25);
+                confidence += categoryScore;
+                factors.push({ name: 'Categorias', score: categoryScore, color: '#3b82f6' });
+            }
+
+            // Fator 3: Relevância calculada
+            if (file.relevanceScore) {
+                const relevanceScore = Math.floor(file.relevanceScore * 20);
+                confidence += relevanceScore;
+                factors.push({ name: 'Relevância', score: relevanceScore, color: '#8b5cf6' });
+            }
+
+            // Fator 4: Tamanho do conteúdo (mais conteúdo = mais confiança)
+            if (file.size) {
+                const sizeScore = Math.min(Math.log(file.size / 1000) * 5, 15);
+                confidence += sizeScore;
+                factors.push({ name: 'Conteúdo', score: Math.floor(sizeScore), color: '#f59e0b' });
+            }
+
+            // Fator 5: Recência do arquivo
+            if (file.lastModified) {
+                const daysSince = (Date.now() - new Date(file.lastModified)) / (1000 * 60 * 60 * 24);
+                const recencyScore = Math.max(10 - daysSince / 30, 0);
+                confidence += recencyScore;
+                factors.push({ name: 'Recência', score: Math.floor(recencyScore), color: '#ef4444' });
+            }
+
+            return {
+                total: Math.min(Math.floor(confidence), 100),
+                factors: factors,
+                level: this.getConfidenceLevel(confidence)
+            };
+        }
+
+        /**
+         * Determina nível de confiança baseado na pontuação
+         */
+        getConfidenceLevel(score) {
+            if (score >= 80) return { name: 'Muito Alta', color: '#10b981', icon: '🟢' };
+            if (score >= 60) return { name: 'Alta', color: '#3b82f6', icon: '🔵' };
+            if (score >= 40) return { name: 'Média', color: '#f59e0b', icon: '🟡' };
+            if (score >= 20) return { name: 'Baixa', color: '#ef4444', icon: '🔴' };
+            return { name: 'Muito Baixa', color: '#6b7280', icon: '⚪' };
+        }
+
+        /**
+         * Gera distribuição de tipos de análise para gráficos
+         */
+        getTypeDistribution(file) {
+            const types = [];
+            
+            if (file.analysisType) {
+                types.push({
+                    type: file.analysisType,
+                    confidence: 85,
+                    color: this.getAnalysisTypeColor(file.analysisType)
+                });
+            }
+
+            // Adiciona tipos secundários baseados em categorias
+            if (file.categories) {
+                file.categories.forEach(category => {
+                    const inferredType = this.inferTypeFromCategory(category);
+                    if (inferredType && !types.find(t => t.type === inferredType.type)) {
+                        types.push(inferredType);
+                    }
+                });
+            }
+
+            return types;
+        }
+
+        /**
+         * Extrai palavras-chave do conteúdo
+         */
+        extractKeywords(file) {
+            const content = file.content || file.preview || '';
+            const words = content.toLowerCase().match(/\b\w{4,}\b/g) || [];
+            
+            // Conta frequência
+            const frequency = {};
+            words.forEach(word => {
+                if (!this.isStopWord(word)) {
+                    frequency[word] = (frequency[word] || 0) + 1;
+                }
+            });
+
+            // Retorna top 10 palavras-chave
+            return Object.entries(frequency)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10)
+                .map(([word, count]) => ({ word, count, relevance: count / words.length }));
+        }
+
+        /**
+         * Encontra arquivos relacionados
+         */
+        findRelatedFiles(targetFile) {
+            if (!this.files || this.files.length === 0) return [];
+
+            const related = [];
+            const targetKeywords = this.extractKeywords(targetFile).map(k => k.word);
+
+            this.files.forEach(file => {
+                if (file.id === targetFile.id) return;
+
+                let similarity = 0;
+                
+                // Similaridade por categorias
+                if (file.categories && targetFile.categories) {
+                    const commonCategories = file.categories.filter(c => 
+                        targetFile.categories.includes(c)
+                    );
+                    similarity += commonCategories.length * 0.3;
+                }
+
+                // Similaridade por tipo de análise
+                if (file.analysisType && file.analysisType === targetFile.analysisType) {
+                    similarity += 0.4;
+                }
+
+                // Similaridade por palavras-chave
+                const fileKeywords = this.extractKeywords(file).map(k => k.word);
+                const commonKeywords = fileKeywords.filter(k => targetKeywords.includes(k));
+                similarity += commonKeywords.length * 0.1;
+
+                if (similarity > 0.3) {
+                    related.push({
+                        file: file,
+                        similarity: Math.min(similarity, 1),
+                        reasons: this.getSimilarityReasons(file, targetFile, similarity)
+                    });
+                }
+            });
+
+            return related.sort((a, b) => b.similarity - a.similarity).slice(0, 5);
+        }
+
+        /**
+         * Timeline de análise do arquivo
+         */
+        getAnalysisTimeline(file) {
+            const timeline = [];
+
+            if (file.lastModified) {
+                timeline.push({
+                    date: new Date(file.lastModified),
+                    event: 'Arquivo criado/modificado',
+                    type: 'creation',
+                    icon: '📄'
+                });
+            }
+
+            if (file.analyzed) {
+                timeline.push({
+                    date: new Date(),
+                    event: `Análise IA: ${file.analysisType}`,
+                    type: 'analysis',
+                    icon: '🤖'
+                });
+            }
+
+            if (file.categories && file.categories.length > 0) {
+                timeline.push({
+                    date: new Date(),
+                    event: `Categorizado: ${file.categories.join(', ')}`,
+                    type: 'categorization',
+                    icon: '🏷️'
+                });
+            }
+
+            return timeline.sort((a, b) => a.date - b.date);
+        }
+
+        /**
+         * Renderiza display expandível de análise
+         */
+        renderExpandableAnalysisDisplay(file) {
+            if (!file.analysisDisplay) return '';
+
+            const display = file.analysisDisplay;
+            const confidence = display.confidenceScore;
+
+            return `
+                <div class="analysis-display-container" style="margin-top: 12px;">
+                    <!-- Cabeçalho com confiança -->
+                    <div class="analysis-header">
+                        <div class="confidence-indicator">
+                            <span class="confidence-icon">${confidence.level.icon}</span>
+                            <span class="confidence-text">Confiança: ${confidence.total}% (${confidence.level.name})</span>
+                            <button class="expand-analysis-btn" data-action="expand-analysis">
+                                <i class="icon-chevron-down"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Conteúdo expandível -->
+                    <div class="analysis-details" style="display: none;">
+                        <!-- Fatores de confiança -->
+                        <div class="confidence-breakdown">
+                            <h5>Fatores de Confiança</h5>
+                            <div class="confidence-bars">
+                                ${confidence.factors.map(factor => `
+                                    <div class="factor-bar">
+                                        <span class="factor-name">${factor.name}</span>
+                                        <div class="factor-progress">
+                                            <div class="factor-fill" style="width: ${factor.score}%; background-color: ${factor.color};"></div>
+                                        </div>
+                                        <span class="factor-score">${factor.score}%</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Distribuição de tipos -->
+                        ${display.typeDistribution.length > 0 ? `
+                            <div class="type-distribution">
+                                <h5>Tipos de Análise</h5>
+                                <div class="type-chart">
+                                    ${display.typeDistribution.map(type => `
+                                        <div class="type-item">
+                                            <span class="type-indicator" style="background-color: ${type.color};"></span>
+                                            <span class="type-name">${type.type}</span>
+                                            <span class="type-confidence">${type.confidence}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Palavras-chave -->
+                        ${display.keywords.length > 0 ? `
+                            <div class="keywords-section">
+                                <h5>Palavras-chave Principais</h5>
+                                <div class="keywords-cloud">
+                                    ${display.keywords.map(keyword => `
+                                        <span class="keyword-tag" style="font-size: ${0.8 + keyword.relevance * 0.6}rem;">
+                                            ${keyword.word} (${keyword.count})
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Arquivos relacionados -->
+                        ${display.relatedFiles.length > 0 ? `
+                            <div class="related-files">
+                                <h5>Arquivos Relacionados</h5>
+                                <div class="related-list">
+                                    ${display.relatedFiles.map(related => `
+                                        <div class="related-item">
+                                            <span class="related-name">${related.file.name}</span>
+                                            <span class="similarity-score">${Math.round(related.similarity * 100)}%</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Timeline -->
+                        <div class="analysis-timeline">
+                            <h5>Timeline de Análise</h5>
+                            <div class="timeline-items">
+                                ${display.timeline.map(item => `
+                                    <div class="timeline-item">
+                                        <span class="timeline-icon">${item.icon}</span>
+                                        <span class="timeline-event">${item.event}</span>
+                                        <span class="timeline-date">${item.date.toLocaleDateString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Ações de exportação -->
+                        <div class="export-actions">
+                            <h5>Exportar Análise</h5>
+                            <div class="export-buttons">
+                                ${display.exportFormats.map(format => `
+                                    <button class="export-btn" data-action="export" data-format="${format}">
+                                        ${format}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Configura event listeners para análise expandível
+         */
+        setupExpandableAnalysisEvents(fileDiv, file) {
+            const expandBtn = fileDiv.querySelector('.expand-analysis-btn');
+            const detailsDiv = fileDiv.querySelector('.analysis-details');
+
+            if (expandBtn && detailsDiv) {
+                expandBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isExpanded = detailsDiv.style.display !== 'none';
+                    
+                    detailsDiv.style.display = isExpanded ? 'none' : 'block';
+                    expandBtn.querySelector('i').className = isExpanded ? 'icon-chevron-down' : 'icon-chevron-up';
+                });
+            }
+
+            // Event listeners para exportação
+            fileDiv.querySelectorAll('.export-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const format = e.target.dataset.format;
+                    this.exportAnalysisResult(file, format);
+                });
+            });
+        }
+
+        /**
+         * Exporta resultado da análise em formato específico
+         */
+        exportAnalysisResult(file, format) {
+            const analysisData = {
+                fileName: file.name,
+                filePath: file.path,
+                analysisType: file.analysisType,
+                categories: file.categories,
+                confidenceScore: file.analysisDisplay?.confidenceScore,
+                keywords: file.analysisDisplay?.keywords,
+                relatedFiles: file.analysisDisplay?.relatedFiles?.map(r => r.file.name),
+                timeline: file.analysisDisplay?.timeline,
+                exportedAt: new Date().toISOString()
+            };
+
+            switch (format.toLowerCase()) {
+                case 'json':
+                    this.exportAsJSON(analysisData, file.name);
+                    break;
+                case 'pdf':
+                    this.exportAsPDF(analysisData, file.name);
+                    break;
+                case 'md':
+                    this.exportAsMarkdown(analysisData, file.name);
+                    break;
+                case 'html':
+                    this.exportAsHTML(analysisData, file.name);
+                    break;
+            }
+        }
+
+        /**
+         * Exporta como JSON
+         */
+        exportAsJSON(data, fileName) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            this.downloadBlob(blob, `${fileName}_analysis.json`);
+        }
+
+        /**
+         * Exporta como Markdown
+         */
+        exportAsMarkdown(data, fileName) {
+            const md = `# Análise: ${data.fileName}
+
+## Informações Básicas
+- **Arquivo**: ${data.fileName}
+- **Caminho**: ${data.filePath}
+- **Tipo de Análise**: ${data.analysisType || 'N/A'}
+- **Categorias**: ${data.categories?.join(', ') || 'Nenhuma'}
+- **Exportado em**: ${new Date(data.exportedAt).toLocaleString()}
+
+## Confiança da Análise
+- **Score Total**: ${data.confidenceScore?.total || 0}%
+- **Nível**: ${data.confidenceScore?.level?.name || 'N/A'}
+
+### Fatores de Confiança
+${data.confidenceScore?.factors?.map(factor => 
+    `- **${factor.name}**: ${factor.score}%`
+).join('\n') || 'Nenhum fator identificado'}
+
+## Palavras-chave Principais
+${data.keywords?.map(keyword => 
+    `- **${keyword.word}** (${keyword.count} ocorrências)`
+).join('\n') || 'Nenhuma palavra-chave identificada'}
+
+## Arquivos Relacionados
+${data.relatedFiles?.map(name => `- ${name}`).join('\n') || 'Nenhum arquivo relacionado'}
+
+## Timeline
+${data.timeline?.map(item => 
+    `- **${item.date}**: ${item.event}`
+).join('\n') || 'Nenhum evento registrado'}
+`;
+
+            const blob = new Blob([md], { type: 'text/markdown' });
+            this.downloadBlob(blob, `${fileName}_analysis.md`);
+        }
+
+        /**
+         * Utilitário para download de blob
+         */
+        downloadBlob(blob, fileName) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Utilitários auxiliares
+         */
+        getAnalysisTypeColor(type) {
+            const colors = {
+                'Breakthrough Técnico': '#10b981',
+                'Evolução Conceitual': '#3b82f6',
+                'Momento Decisivo': '#f59e0b',
+                'Insight Estratégico': '#8b5cf6',
+                'Aprendizado Geral': '#6b7280'
+            };
+            return colors[type] || '#6b7280';
+        }
+
+        inferTypeFromCategory(category) {
+            const mappings = {
+                'IA/ML': { type: 'Breakthrough Técnico', confidence: 70, color: '#10b981' },
+                'Decisão': { type: 'Momento Decisivo', confidence: 75, color: '#f59e0b' },
+                'Estratégia': { type: 'Insight Estratégico', confidence: 80, color: '#8b5cf6' },
+                'Aprendizado': { type: 'Aprendizado Geral', confidence: 65, color: '#6b7280' }
+            };
+            return mappings[category] || null;
+        }
+
+        isStopWord(word) {
+            const stopWords = ['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'que', 'de', 'para', 'com', 'em', 'do', 'da', 'dos', 'das'];
+            return stopWords.includes(word.toLowerCase());
+        }
+
+        getSimilarityReasons(file1, file2, similarity) {
+            const reasons = [];
+            
+            if (file1.analysisType === file2.analysisType) {
+                reasons.push('Mesmo tipo de análise');
+            }
+            
+            if (file1.categories && file2.categories) {
+                const common = file1.categories.filter(c => file2.categories.includes(c));
+                if (common.length > 0) {
+                    reasons.push(`Categorias em comum: ${common.join(', ')}`);
+                }
+            }
+            
+            return reasons;
         }
     }
 

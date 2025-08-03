@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "00eca24852a339f5",
+        "id": "3ada50d938559048",
         "type": "tabs",
         "children": [
           {
-            "id": "5193a06c9a229336",
+            "id": "a33c279c21077796",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "v2/Multi-Agent Orchestration Template for KC V2 Migration.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Multi-Agent Orchestration Template for KC V2 Migration"
+              "title": "Nova aba"
             }
           }
         ]
@@ -168,43 +164,44 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "5193a06c9a229336",
+  "active": "a33c279c21077796",
   "lastOpenFiles": [
-    "v2/discovery-demo.html",
-    "v2/css/discovery-view.css",
-    "v2/js/views/DiscoveryView.js",
-    "v2/js/components/Terminal.js",
-    "v2/js/components/StatusBar.js",
-    "v2/js/core/NavigationController.js",
     "v2/Multi-Agent Orchestration Template for KC V2 Migration.md",
-    "scripts/memory-helper.js",
-    "scripts/fix-vscode-indexing.ps1",
-    "specs/ui-spec-v2.md",
-    "index.html.tmp.41044.1754106869787",
-    "js/fix-positioning.js",
-    "index.html.tmp.41044.1754106834377",
-    "docs/13-sistema-categorias-jsonl/README.md",
-    "WEEK1-UNIFIED-CONFIDENCE-IMPLEMENTATION.md",
-    "docs/12-correcao-fluxo-confidence/CORRECAO-FLUXO-INVERTIDO.md",
-    "docs/refatoracao-unified-confidence-fluxo-corrigido.md",
-    "docs/week2-components-implementation.md",
-    "specs/UNIFIED-CONFIDENCE-SYSTEM-SPEC.md",
-    "specs/confidencev2/UNIFIED-CONFIDENCE-SYSTEM-SPEC.md",
-    "docs/intelligence-enrichment-initiative/INTELLIGENCE-ENRICHMENT-ACHIEVEMENT-REPORT.md",
-    "docs/correcoes/correcao-theme-object-object-30-01-2025.md",
-    "temp/qdrant_analysis_report.md",
-    "docs/correcoes/correcao-analysistype-qdrant-30-01-2025.md",
-    "docs/04-bugs-resolvidos/bug-12-mapeamento-analysis-type.md",
-    "QDRANT_ANALYSIS_REPORT.md",
-    "CHECKPOINT-30-01-2025.md",
-    "ai_docs/qdrant-advanced-filtering-nested-filters.md",
-    "ai_docs/qdrant-basic-filtering.md",
-    "ai_docs/qdrant-full-text-filtering.md",
-    "ai_docs/qdrant-coibert-multivectors.md",
-    "ai_docs/qdrant-sparse-vector-search.md",
-    "ai_docs/claude_code_fresh_tutorials.md",
-    "Sem título 1.md",
-    "ai_docs/qdrant-user-data-mulitenant-setup.md",
-    "ai_docs/qdrant-hybrid-search-sparse-dense.md"
+    "v2/Meth-NEVER/Wiki_Robot-Map vs Google_Pagerank-Relevance-Rich.md",
+    "v2/Meth-NEVER/The Semantic Convergence - Why 2000s Metadata is 2025s AI Gold.md",
+    "Captura de tela 2025-08-02 144421.png",
+    "v2/refactor-fase2.md",
+    "v2/_parallel_workspaces/agent-6-docs",
+    "v2/_parallel_workspaces/agent-5-tests",
+    "v2/_parallel_workspaces/agent-4-backend",
+    "v2/_parallel_workspaces/agent-3-ui",
+    "v2/_parallel_workspaces/agent-2-integration",
+    "v2/_parallel_workspaces/agent-1-components",
+    "v2/VALIDATION_CONVERGENCE_COMPLETE.md",
+    "v2/PARALLEL_VALIDATION_INDEX.md",
+    "v2/VALIDATION_SUMMARY.md",
+    "v2/TEST3_MEDIUM_ANALYSIS.md",
+    "v2/TEST3_HEAVY_ANALYSIS.md",
+    "v2/TEST2_ANALYSIS.md",
+    "v2/TEST1_ANALYSIS.md",
+    "v2/FINAL_VALIDATION_REPORT.md",
+    "v2/_parallel_validation/FINAL_VALIDATION_REPORT.md",
+    "v2/_parallel_validation/TEST3_HEAVY_ANALYSIS.md",
+    "v2/_parallel_tests/test-3-token/agent-3/exhaustive-tests-heavy.spec.js",
+    "v2/_parallel_tests/test-3-token/agent-2/feature-module-heavy.js",
+    "v2/_parallel_tests/test-3-token/agent-1/system-docs-heavy.md",
+    "v2/_parallel_tests/test-3-token/token-test.log",
+    "v2/_parallel_validation/TEST3_MEDIUM_ANALYSIS.md",
+    "v2/_parallel_tests/test-3-token/agent-3/test-medium.spec.js",
+    "v2/_parallel_tests/test-3-token/agent-1/docs-medium.md",
+    "v2/_parallel_tests/test-3-token/agent-2/README-light.md",
+    "v2/_parallel_validation/TEST2_ANALYSIS.md",
+    "v2/_parallel_validation/VALIDATION_SUMMARY.md",
+    "v2/_parallel_validation/TEST1_ANALYSIS.md",
+    "v2/_parallel_tests/test-1-read/agent-2/analysis.md",
+    "v2/_parallel_tests/test-1-read/agent-3/analysis.md",
+    "v2/_parallel_tests/test-1-read/agent-1/analysis.md",
+    "v2/MISSAO VISAO VALORES ENEVR.md",
+    "docs/analise-prd.md"
   ]
 }

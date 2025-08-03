@@ -40,11 +40,28 @@
                     isLocal: false,
                     requiresApiKey: true,
                     priority: 2,
-                    models: ['gpt-4', 'gpt-3.5-turbo'],
-                    defaultModel: 'gpt-3.5-turbo',
+                    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'],
+                    defaultModel: 'gpt-4o-mini',
                     endpoints: {
-                        chat: '/chat/completions'
-                    }
+                        chat: '/chat/completions',
+                        models: '/models'
+                    },
+                    pricing: {
+                        'gpt-4o': { input: 0.005, output: 0.015 },
+                        'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
+                        'gpt-4-turbo': { input: 0.01, output: 0.03 },
+                        'gpt-4': { input: 0.03, output: 0.06 },
+                        'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 }
+                    },
+                    maxTokens: {
+                        'gpt-4o': 128000,
+                        'gpt-4o-mini': 128000,
+                        'gpt-4-turbo': 128000,
+                        'gpt-4': 8192,
+                        'gpt-3.5-turbo': 16384
+                    },
+                    supportsStreaming: true,
+                    supportsJsonMode: true
                 },
                 gemini: {
                     id: 'gemini',
@@ -53,10 +70,33 @@
                     isLocal: false,
                     requiresApiKey: true,
                     priority: 3,
-                    models: ['gemini-pro'],
-                    defaultModel: 'gemini-pro',
+                    models: ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro-vision'],
+                    defaultModel: 'gemini-1.5-flash',
                     endpoints: {
-                        generate: '/models/{model}:generateContent'
+                        generate: '/models/{model}:generateContent',
+                        stream: '/models/{model}:streamGenerateContent',
+                        models: '/models'
+                    },
+                    pricing: {
+                        'gemini-2.0-flash-exp': { input: 0.0, output: 0.0 },
+                        'gemini-1.5-flash': { input: 0.000075, output: 0.0003 },
+                        'gemini-1.5-pro': { input: 0.00125, output: 0.005 },
+                        'gemini-pro-vision': { input: 0.00025, output: 0.0005 }
+                    },
+                    maxTokens: {
+                        'gemini-2.0-flash-exp': 1048576,
+                        'gemini-1.5-flash': 1048576,
+                        'gemini-1.5-pro': 2097152,
+                        'gemini-pro-vision': 16384
+                    },
+                    supportsStreaming: true,
+                    supportsMultiModal: true,
+                    supportsJsonMode: true,
+                    safetySettings: {
+                        'HARM_CATEGORY_HARASSMENT': 'BLOCK_NONE',
+                        'HARM_CATEGORY_HATE_SPEECH': 'BLOCK_NONE',
+                        'HARM_CATEGORY_SEXUALLY_EXPLICIT': 'BLOCK_NONE',
+                        'HARM_CATEGORY_DANGEROUS_CONTENT': 'BLOCK_NONE'
                     }
                 },
                 anthropic: {
@@ -66,11 +106,30 @@
                     isLocal: false,
                     requiresApiKey: true,
                     priority: 4,
-                    models: ['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'],
-                    defaultModel: 'claude-3-sonnet-20240229',
+                    models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307'],
+                    defaultModel: 'claude-3-5-sonnet-20241022',
                     endpoints: {
-                        messages: '/messages'
-                    }
+                        messages: '/messages',
+                        stream: '/messages'
+                    },
+                    pricing: {
+                        'claude-3-5-sonnet-20241022': { input: 0.003, output: 0.015 },
+                        'claude-3-5-haiku-20241022': { input: 0.001, output: 0.005 },
+                        'claude-3-opus-20240229': { input: 0.015, output: 0.075 },
+                        'claude-3-sonnet-20240229': { input: 0.003, output: 0.015 },
+                        'claude-3-haiku-20240307': { input: 0.00025, output: 0.00125 }
+                    },
+                    maxTokens: {
+                        'claude-3-5-sonnet-20241022': 200000,
+                        'claude-3-5-haiku-20241022': 200000,
+                        'claude-3-opus-20240229': 200000,
+                        'claude-3-sonnet-20240229': 200000,
+                        'claude-3-haiku-20240307': 200000
+                    },
+                    supportsStreaming: true,
+                    supportsJsonMode: false,
+                    apiVersion: '2023-06-01',
+                    constitutionalAI: true
                 }
             };
 
@@ -81,10 +140,23 @@
             // Rate limiting
             this.rateLimits = {
                 ollama: { requestsPerMinute: 60, concurrent: 5 },
-                openai: { requestsPerMinute: 20, concurrent: 3 },
-                gemini: { requestsPerMinute: 15, concurrent: 3 },
-                anthropic: { requestsPerMinute: 10, concurrent: 2 }
+                openai: { requestsPerMinute: 3500, concurrent: 10 }, // Tier 1
+                gemini: { requestsPerMinute: 1500, concurrent: 5 },  // Free tier
+                anthropic: { requestsPerMinute: 1000, concurrent: 3 } // Tier 1
             };
+            
+            // Token usage tracking
+            this.tokenUsage = {
+                ollama: { totalTokens: 0, cost: 0 },
+                openai: { inputTokens: 0, outputTokens: 0, cost: 0 },
+                gemini: { inputTokens: 0, outputTokens: 0, cost: 0 },
+                anthropic: { inputTokens: 0, outputTokens: 0, cost: 0 }
+            };
+            
+            // Response cache
+            this.responseCache = new Map();
+            this.cacheMaxSize = 100;
+            this.cacheTTL = 3600000; // 1 hora
             
             this.requestQueues = {};
             this.requestTimestamps = {};
@@ -450,7 +522,7 @@ Forneça sua análise em formato JSON com a estrutura:
         }
 
         /**
-         * Chama API do OpenAI
+         * Chama API do OpenAI com suporte a streaming e tracking de tokens
          */
         async _callOpenAI(prompt, options) {
             const provider = this.providers.openai;
@@ -461,36 +533,78 @@ Forneça sua análise em formato JSON com a estrutura:
                 throw new Error('API key do OpenAI não configurada');
             }
 
+            // Verifica cache
+            const cacheKey = this._generateCacheKey('openai', model, prompt, options);
+            const cached = this._getFromCache(cacheKey);
+            if (cached && !options.noCache) {
+                logger.info('AIAPIManager', 'Usando resposta do cache', { provider: 'openai' });
+                return cached;
+            }
+
+            const requestBody = {
+                model: model,
+                messages: [
+                    { role: 'system', content: prompt.system },
+                    { role: 'user', content: prompt.user }
+                ],
+                temperature: options.temperature || 0.7,
+                max_tokens: Math.min(options.maxTokens || 2000, provider.maxTokens[model] || 4000),
+                top_p: options.topP || 1,
+                frequency_penalty: options.frequencyPenalty || 0,
+                presence_penalty: options.presencePenalty || 0,
+                stream: options.stream || false
+            };
+
+            // Adiciona JSON mode se suportado
+            if (provider.supportsJsonMode && options.jsonMode !== false) {
+                requestBody.response_format = { type: 'json_object' };
+            }
+
+            // Adiciona seed para reproducibilidade
+            if (options.seed) {
+                requestBody.seed = options.seed;
+            }
+
             const response = await fetch(provider.baseUrl + provider.endpoints.chat, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+                    'Authorization': `Bearer ${apiKey}`,
+                    'User-Agent': 'KnowledgeConsolidator/1.0'
                 },
-                body: JSON.stringify({
-                    model: model,
-                    messages: [
-                        { role: 'system', content: prompt.system },
-                        { role: 'user', content: prompt.user }
-                    ],
-                    temperature: options.temperature || 0.7,
-                    max_tokens: options.maxTokens || 1000,
-                    response_format: { type: 'json_object' }
-                }),
+                body: JSON.stringify(requestBody),
                 signal: AbortSignal.timeout(this.timeout)
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`OpenAI erro ${response.status}: ${error}`);
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { error: { message: errorText } };
+                }
+                
+                throw new Error(`OpenAI API Error [${response.status}]: ${errorData.error?.message || 'Unknown error'}`);
             }
 
             const data = await response.json();
-            return data.choices[0].message.content;
+            
+            // Tracking de tokens e custo
+            if (data.usage) {
+                this._trackTokenUsage('openai', model, data.usage);
+            }
+
+            const content = data.choices[0].message.content;
+            
+            // Armazena no cache
+            this._setCache(cacheKey, content);
+            
+            return content;
         }
 
         /**
-         * Chama API do Gemini
+         * Chama API do Gemini com suporte a multi-modal e safety settings
          */
         async _callGemini(prompt, options) {
             const provider = this.providers.gemini;
@@ -501,42 +615,108 @@ Forneça sua análise em formato JSON com a estrutura:
                 throw new Error('API key do Gemini não configurada');
             }
 
+            // Verifica cache
+            const cacheKey = this._generateCacheKey('gemini', model, prompt, options);
+            const cached = this._getFromCache(cacheKey);
+            if (cached && !options.noCache) {
+                logger.info('AIAPIManager', 'Usando resposta do cache', { provider: 'gemini' });
+                return cached;
+            }
+
             // Constrói URL com modelo
-            const url = provider.baseUrl + provider.endpoints.generate.replace('{model}', model);
+            const endpoint = options.stream ? provider.endpoints.stream : provider.endpoints.generate;
+            const url = provider.baseUrl + endpoint.replace('{model}', model);
+
+            // Prepara conteúdo multi-modal
+            const parts = [{ text: `${prompt.system}\n\n${prompt.user}` }];
+            
+            // Adiciona imagens se fornecidas
+            if (options.images && Array.isArray(options.images)) {
+                options.images.forEach(image => {
+                    parts.push({
+                        inline_data: {
+                            mime_type: image.mimeType || 'image/jpeg',
+                            data: image.data
+                        }
+                    });
+                });
+            }
+
+            const requestBody = {
+                contents: [{ parts }],
+                generationConfig: {
+                    temperature: options.temperature || 0.7,
+                    topK: options.topK || 40,
+                    topP: options.topP || 0.95,
+                    maxOutputTokens: Math.min(
+                        options.maxTokens || 2000, 
+                        provider.maxTokens[model] || 2048
+                    ),
+                    candidateCount: 1
+                },
+                safetySettings: Object.entries(provider.safetySettings).map(
+                    ([category, threshold]) => ({ category, threshold })
+                )
+            };
+
+            // Adiciona JSON mode se solicitado
+            if (provider.supportsJsonMode && options.jsonMode !== false) {
+                requestBody.generationConfig.responseMimeType = 'application/json';
+            }
 
             const response = await fetch(`${url}?key=${apiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'User-Agent': 'KnowledgeConsolidator/1.0'
                 },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `${prompt.system}\n\n${prompt.user}`
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: options.temperature || 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: options.maxTokens || 1000,
-                        responseMimeType: 'application/json'
-                    }
-                }),
+                body: JSON.stringify(requestBody),
                 signal: AbortSignal.timeout(this.timeout)
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`Gemini erro ${response.status}: ${error}`);
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { error: { message: errorText } };
+                }
+                
+                throw new Error(`Gemini API Error [${response.status}]: ${errorData.error?.message || 'Unknown error'}`);
             }
 
             const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
+            
+            // Verifica se a resposta foi bloqueada por safety
+            if (!data.candidates || data.candidates.length === 0) {
+                throw new Error('Resposta bloqueada por filtros de segurança do Gemini');
+            }
+
+            const candidate = data.candidates[0];
+            if (candidate.finishReason === 'SAFETY') {
+                throw new Error('Conteúdo bloqueado por políticas de segurança do Gemini');
+            }
+
+            // Tracking de tokens
+            if (data.usageMetadata) {
+                this._trackTokenUsage('gemini', model, {
+                    prompt_tokens: data.usageMetadata.promptTokenCount,
+                    completion_tokens: data.usageMetadata.candidatesTokenCount,
+                    total_tokens: data.usageMetadata.totalTokenCount
+                });
+            }
+
+            const content = candidate.content.parts[0].text;
+            
+            // Armazena no cache
+            this._setCache(cacheKey, content);
+            
+            return content;
         }
 
         /**
-         * Chama API do Anthropic Claude
+         * Chama API do Anthropic Claude com Constitutional AI
          */
         async _callAnthropic(prompt, options) {
             const provider = this.providers.anthropic;
@@ -547,32 +727,97 @@ Forneça sua análise em formato JSON com a estrutura:
                 throw new Error('API key do Anthropic não configurada');
             }
 
+            // Verifica cache
+            const cacheKey = this._generateCacheKey('anthropic', model, prompt, options);
+            const cached = this._getFromCache(cacheKey);
+            if (cached && !options.noCache) {
+                logger.info('AIAPIManager', 'Usando resposta do cache', { provider: 'anthropic' });
+                return cached;
+            }
+
+            // Prepara mensagens
+            const messages = [{ role: 'user', content: prompt.user }];
+            
+            // Adiciona conversação anterior se fornecida
+            if (options.conversation && Array.isArray(options.conversation)) {
+                messages.unshift(...options.conversation);
+            }
+
+            const requestBody = {
+                model: model,
+                max_tokens: Math.min(
+                    options.maxTokens || 4000, 
+                    provider.maxTokens[model] || 4000
+                ),
+                temperature: options.temperature || 0.7,
+                top_p: options.topP || 1,
+                top_k: options.topK || 5,
+                system: prompt.system,
+                messages: messages,
+                stream: options.stream || false
+            };
+
+            // Adiciona stop sequences se fornecidas
+            if (options.stopSequences && Array.isArray(options.stopSequences)) {
+                requestBody.stop_sequences = options.stopSequences;
+            }
+
+            // Configurações específicas para Constitutional AI
+            if (provider.constitutionalAI && options.constitutional !== false) {
+                // Adiciona princípios constitucionais ao system prompt
+                requestBody.system += `\n\nPlease follow these constitutional principles:
+1. Be helpful, harmless, and honest
+2. Avoid harmful, illegal, or unethical content
+3. Respect human autonomy and dignity
+4. Provide balanced, nuanced perspectives`;
+            }
+
             const response = await fetch(provider.baseUrl + provider.endpoints.messages, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
+                    'anthropic-version': provider.apiVersion,
+                    'User-Agent': 'KnowledgeConsolidator/1.0'
                 },
-                body: JSON.stringify({
-                    model: model,
-                    max_tokens: options.maxTokens || 1000,
-                    temperature: options.temperature || 0.7,
-                    system: prompt.system,
-                    messages: [
-                        { role: 'user', content: prompt.user }
-                    ]
-                }),
+                body: JSON.stringify(requestBody),
                 signal: AbortSignal.timeout(this.timeout)
             });
 
             if (!response.ok) {
-                const error = await response.text();
-                throw new Error(`Anthropic erro ${response.status}: ${error}`);
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch {
+                    errorData = { error: { message: errorText } };
+                }
+                
+                throw new Error(`Anthropic API Error [${response.status}]: ${errorData.error?.message || 'Unknown error'}`);
             }
 
             const data = await response.json();
-            return data.content[0].text;
+            
+            // Verifica se houve stop reason problemático
+            if (data.stop_reason && data.stop_reason !== 'end_turn' && data.stop_reason !== 'stop_sequence') {
+                logger.warn('AIAPIManager', `Claude parou por: ${data.stop_reason}`);
+            }
+
+            // Tracking de tokens
+            if (data.usage) {
+                this._trackTokenUsage('anthropic', model, {
+                    prompt_tokens: data.usage.input_tokens,
+                    completion_tokens: data.usage.output_tokens,
+                    total_tokens: data.usage.input_tokens + data.usage.output_tokens
+                });
+            }
+
+            const content = data.content[0].text;
+            
+            // Armazena no cache
+            this._setCache(cacheKey, content);
+            
+            return content;
         }
 
         /**
@@ -628,28 +873,123 @@ Forneça sua análise em formato JSON com a estrutura:
         }
 
         /**
-         * Tenta usar provider cloud como fallback
+         * Tenta usar provider cloud como fallback com estratégia inteligente
          */
         async _fallbackToCloudProvider(file, options) {
-            // Tenta OpenAI primeiro, depois Gemini, depois Anthropic
-            const cloudProviders = ['openai', 'gemini', 'anthropic'];
+            // Ordena providers por prioridade e disponibilidade
+            const cloudProviders = ['openai', 'gemini', 'anthropic']
+                .filter(id => this.apiKeys[id])
+                .sort((a, b) => {
+                    const aProvider = this.providers[a];
+                    const bProvider = this.providers[b];
+                    return aProvider.priority - bProvider.priority;
+                });
+            
+            if (cloudProviders.length === 0) {
+                throw new Error('Nenhum provider cloud configurado para fallback');
+            }
+            
+            const errors = [];
+            const originalProvider = this.activeProvider;
             
             for (const providerId of cloudProviders) {
-                if (this.apiKeys[providerId]) {
-                    const originalProvider = this.activeProvider;
-                    try {
-                        this.activeProvider = providerId;
-                        const result = await this.analyze(file, { ...options, fallback: false });
-                        this.activeProvider = originalProvider; // Restaura provider original
-                        return result;
-                    } catch (error) {
-                        logger.warn('AIAPIManager', `Fallback ${providerId} falhou`, error.message);
-                        this.activeProvider = originalProvider;
-                    }
+                try {
+                    logger.info('AIAPIManager', `Tentando fallback para ${providerId}`);
+                    
+                    this.activeProvider = providerId;
+                    const result = await this.analyze(file, { ...options, fallback: false });
+                    
+                    // Adiciona informação sobre fallback no resultado
+                    result.usedFallback = true;
+                    result.originalProvider = originalProvider;
+                    result.fallbackProvider = providerId;
+                    
+                    this.activeProvider = originalProvider;
+                    return result;
+                    
+                } catch (error) {
+                    errors.push({ provider: providerId, error: error.message });
+                    logger.warn('AIAPIManager', `Fallback ${providerId} falhou`, error.message);
+                    this.activeProvider = originalProvider;
                 }
             }
 
-            throw new Error('Nenhum provider disponível para análise');
+            throw new Error(`Todos os providers falharam. Erros: ${JSON.stringify(errors)}`);
+        }
+        
+        /**
+         * Verifica saúde dos providers
+         */
+        async checkProvidersHealth() {
+            const healthStatus = {};
+            
+            for (const [providerId, provider] of Object.entries(this.providers)) {
+                healthStatus[providerId] = {
+                    id: providerId,
+                    name: provider.name,
+                    isLocal: provider.isLocal,
+                    requiresApiKey: provider.requiresApiKey,
+                    hasApiKey: provider.requiresApiKey ? !!this.apiKeys[providerId] : true,
+                    status: 'unknown',
+                    latency: null,
+                    error: null
+                };
+                
+                try {
+                    const startTime = Date.now();
+                    
+                    if (providerId === 'ollama') {
+                        const available = await this.checkOllamaAvailability();
+                        healthStatus[providerId].status = available ? 'healthy' : 'unavailable';
+                    } else if (this.apiKeys[providerId]) {
+                        // Para providers cloud, tenta uma requisição de teste simples
+                        const testPrompt = {
+                            system: 'You are a helpful assistant.',
+                            user: 'Say "test" if you can read this.'
+                        };
+                        
+                        const originalProvider = this.activeProvider;
+                        this.activeProvider = providerId;
+                        
+                        try {
+                            await this._callProvider(testPrompt, { maxTokens: 10, timeout: 5000 });
+                            healthStatus[providerId].status = 'healthy';
+                        } finally {
+                            this.activeProvider = originalProvider;
+                        }
+                    } else {
+                        healthStatus[providerId].status = 'no_api_key';
+                    }
+                    
+                    healthStatus[providerId].latency = Date.now() - startTime;
+                    
+                } catch (error) {
+                    healthStatus[providerId].status = 'error';
+                    healthStatus[providerId].error = error.message;
+                }
+            }
+            
+            return healthStatus;
+        }
+        
+        /**
+         * Chama provider específico baseado no ID
+         */
+        async _callProvider(prompt, options) {
+            const provider = this.providers[this.activeProvider];
+            
+            switch (provider.id) {
+                case 'ollama':
+                    return await this._callOllama(prompt, options);
+                case 'openai':
+                    return await this._callOpenAI(prompt, options);
+                case 'gemini':
+                    return await this._callGemini(prompt, options);
+                case 'anthropic':
+                    return await this._callAnthropic(prompt, options);
+                default:
+                    throw new Error(`Provider não implementado: ${provider.id}`);
+            }
         }
 
         /**
@@ -701,13 +1041,269 @@ Forneça sua análise em formato JSON com a estrutura:
                     isLocal: p.isLocal,
                     requiresApiKey: p.requiresApiKey,
                     hasApiKey: p.requiresApiKey ? !!this.apiKeys[p.id] : true,
-                    isActive: p.id === this.activeProvider
+                    isActive: p.id === this.activeProvider,
+                    supportsStreaming: p.supportsStreaming || false,
+                    supportsJsonMode: p.supportsJsonMode || false,
+                    supportsMultiModal: p.supportsMultiModal || false,
+                    models: p.models,
+                    defaultModel: p.defaultModel
                 }));
+        }
+        
+        /**
+         * Gera chave de cache para requisição
+         */
+        _generateCacheKey(provider, model, prompt, options) {
+            const keyData = {
+                provider,
+                model,
+                systemHash: this._hashString(prompt.system),
+                userHash: this._hashString(prompt.user),
+                temperature: options.temperature || 0.7,
+                maxTokens: options.maxTokens || 1000
+            };
+            return JSON.stringify(keyData);
+        }
+        
+        /**
+         * Hash simples para strings
+         */
+        _hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Converte para 32bit
+            }
+            return hash.toString(36);
+        }
+        
+        /**
+         * Obtém resposta do cache
+         */
+        _getFromCache(key) {
+            const cached = this.responseCache.get(key);
+            if (!cached) return null;
+            
+            // Verifica TTL
+            if (Date.now() - cached.timestamp > this.cacheTTL) {
+                this.responseCache.delete(key);
+                return null;
+            }
+            
+            return cached.response;
+        }
+        
+        /**
+         * Armazena resposta no cache
+         */
+        _setCache(key, response) {
+            // Limpa cache se atingir limite
+            if (this.responseCache.size >= this.cacheMaxSize) {
+                const oldestKey = this.responseCache.keys().next().value;
+                this.responseCache.delete(oldestKey);
+            }
+            
+            this.responseCache.set(key, {
+                response,
+                timestamp: Date.now()
+            });
+        }
+        
+        /**
+         * Rastreia uso de tokens e calcula custos
+         */
+        _trackTokenUsage(provider, model, usage) {
+            const providerData = this.providers[provider];
+            const pricing = providerData.pricing?.[model];
+            
+            if (!this.tokenUsage[provider]) {
+                this.tokenUsage[provider] = { inputTokens: 0, outputTokens: 0, cost: 0 };
+            }
+            
+            const stats = this.tokenUsage[provider];
+            
+            // Normaliza nomes dos campos de usage
+            const inputTokens = usage.prompt_tokens || usage.input_tokens || 0;
+            const outputTokens = usage.completion_tokens || usage.output_tokens || 0;
+            
+            stats.inputTokens += inputTokens;
+            stats.outputTokens += outputTokens;
+            
+            // Calcula custo se pricing disponível
+            if (pricing) {
+                const inputCost = (inputTokens / 1000) * pricing.input;
+                const outputCost = (outputTokens / 1000) * pricing.output;
+                stats.cost += inputCost + outputCost;
+            }
+            
+            logger.flow('AIAPIManager', '_trackTokenUsage', {
+                provider,
+                model,
+                inputTokens,
+                outputTokens,
+                totalCost: stats.cost
+            });
+        }
+        
+        /**
+         * Estima custo de uma requisição
+         */
+        estimateRequestCost(provider, model, promptText, expectedOutputTokens = 500) {
+            const providerData = this.providers[provider];
+            const pricing = providerData.pricing?.[model];
+            
+            if (!pricing) {
+                return { estimated: false, cost: 0, breakdown: null };
+            }
+            
+            // Estimativa simples de tokens (aproximadamente 4 chars = 1 token)
+            const estimatedInputTokens = Math.ceil(promptText.length / 4);
+            
+            const inputCost = (estimatedInputTokens / 1000) * pricing.input;
+            const outputCost = (expectedOutputTokens / 1000) * pricing.output;
+            const totalCost = inputCost + outputCost;
+            
+            return {
+                estimated: true,
+                cost: totalCost,
+                breakdown: {
+                    inputTokens: estimatedInputTokens,
+                    outputTokens: expectedOutputTokens,
+                    inputCost,
+                    outputCost,
+                    currency: 'USD'
+                }
+            };
+        }
+        
+        /**
+         * Obtém estatísticas de uso
+         */
+        getUsageStats(provider = null) {
+            if (provider) {
+                return this.tokenUsage[provider] || {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    cost: 0
+                };
+            }
+            
+            // Retorna stats de todos os providers
+            const totalStats = {
+                totalCost: 0,
+                totalInputTokens: 0,
+                totalOutputTokens: 0,
+                byProvider: {}
+            };
+            
+            Object.entries(this.tokenUsage).forEach(([prov, stats]) => {
+                totalStats.totalCost += stats.cost || 0;
+                totalStats.totalInputTokens += stats.inputTokens || 0;
+                totalStats.totalOutputTokens += stats.outputTokens || 0;
+                totalStats.byProvider[prov] = { ...stats };
+            });
+            
+            return totalStats;
+        }
+        
+        /**
+         * Limpa cache de respostas
+         */
+        clearCache() {
+            this.responseCache.clear();
+            logger.info('AIAPIManager', 'Cache de respostas limpo');
+        }
+        
+        /**
+         * Reseta estatísticas de uso
+         */
+        resetUsageStats() {
+            Object.keys(this.tokenUsage).forEach(provider => {
+                this.tokenUsage[provider] = {
+                    inputTokens: 0,
+                    outputTokens: 0,
+                    cost: 0
+                };
+            });
+            logger.info('AIAPIManager', 'Estatísticas de uso resetadas');
+        }
+        
+        /**
+         * Análise em lote com retry e rate limiting inteligente
+         */
+        async analyzeBatch(files, options = {}) {
+            const provider = this.providers[this.activeProvider];
+            const batchSize = options.batchSize || this.rateLimits[provider.id].concurrent;
+            const results = [];
+            const errors = [];
+            
+            logger.info('AIAPIManager', `Iniciando análise em lote de ${files.length} arquivos`, {
+                provider: provider.id,
+                batchSize
+            });
+            
+            // Processa em batches
+            for (let i = 0; i < files.length; i += batchSize) {
+                const batch = files.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (file, index) => {
+                    try {
+                        const result = await this.analyze(file, options);
+                        return { file, result, index: i + index };
+                    } catch (error) {
+                        errors.push({ file, error, index: i + index });
+                        return null;
+                    }
+                });
+                
+                const batchResults = await Promise.allSettled(batchPromises);
+                batchResults.forEach(result => {
+                    if (result.status === 'fulfilled' && result.value) {
+                        results.push(result.value);
+                    }
+                });
+                
+                // Delay entre batches para respeitar rate limits
+                if (i + batchSize < files.length) {
+                    const delay = Math.ceil(60000 / this.rateLimits[provider.id].requestsPerMinute) * batchSize;
+                    await this.delay(delay);
+                }
+            }
+            
+            logger.info('AIAPIManager', 'Análise em lote concluída', {
+                total: files.length,
+                successes: results.length,
+                errors: errors.length
+            });
+            
+            return {
+                results,
+                errors,
+                stats: {
+                    total: files.length,
+                    successes: results.length,
+                    failures: errors.length,
+                    successRate: (results.length / files.length) * 100
+                }
+            };
         }
     }
 
     // Registra no namespace global
     KC.AIAPIManager = new AIAPIManager();
-    logger.info('AIAPIManager', 'Componente registrado com sucesso');
+    logger.info('AIAPIManager', 'Componente registrado com sucesso - Enhanced Multi-Provider API Manager');
+    
+    // Expõe métodos de debug no console
+    if (typeof window !== 'undefined') {
+        window.aiDebug = {
+            getProviders: () => KC.AIAPIManager.getProviders(),
+            getUsageStats: () => KC.AIAPIManager.getUsageStats(),
+            checkHealth: () => KC.AIAPIManager.checkProvidersHealth(),
+            estimateCost: (provider, model, text, outputTokens) => 
+                KC.AIAPIManager.estimateRequestCost(provider, model, text, outputTokens),
+            clearCache: () => KC.AIAPIManager.clearCache(),
+            resetStats: () => KC.AIAPIManager.resetUsageStats()
+        };
+    }
 
 })(window);

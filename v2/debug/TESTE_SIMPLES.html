@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste KC V2 - Correções</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            background: #000; 
+            color: #0f0; 
+            padding: 20px;
+        }
+        .ok { color: #0f0; }
+        .erro { color: #f00; }
+        h1 { text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Correções KC V2</h1>
+    
+    <h2>Status das Correções:</h2>
+    <ul>
+        <li class="ok">✅ CommandPalette.js - imports corrigidos</li>
+        <li class="ok">✅ ExportView.js - imports corrigidos</li>
+        <li class="ok">✅ LogsView.js - imports corrigidos</li>
+        <li class="ok">✅ StatsView.js - imports corrigidos</li>
+        <li class="ok">✅ KeyboardShortcuts.js - sem problemas</li>
+        <li class="ok">✅ Logger.js - sem problemas</li>
+        <li class="ok">✅ Arquivos de integração - sem problemas</li>
+    </ul>
+    
+    <h2>Como Testar:</h2>
+    <ol>
+        <li>Certifique-se que o servidor está rodando do diretório <code>v2</code></li>
+        <li>Execute: <code>cd F:\vcia-1307\vcia_dhl\v2</code></li>
+        <li>Execute: <code>python -m http.server 3000</code></li>
+        <li>Abra: <a href="http://localhost:3000">http://localhost:3000</a></li>
+    </ol>
+    
+    <h2>Teste de Imports:</h2>
+    <div id="teste-resultado">Testando imports...</div>
+    
+    <script type="module">
+        const resultado = document.getElementById('teste-resultado');
+        let sucesso = 0;
+        let falha = 0;
+        
+        // Testa os imports principais
+        const modulos = [
+            { nome: 'EventBus', caminho: './js/core/EventBus.js' },
+            { nome: 'AppState', caminho: './js/core/AppState.js' },
+            { nome: 'CommandPalette', caminho: './js/components/CommandPalette.js' },
+            { nome: 'ExportView', caminho: './js/views/ExportView.js' },
+            { nome: 'LogsView', caminho: './js/views/LogsView.js' },
+            { nome: 'StatsView', caminho: './js/views/StatsView.js' }
+        ];
+        
+        async function testarModulos() {
+            resultado.innerHTML = '';
+            
+            for (const modulo of modulos) {
+                try {
+                    await import(modulo.caminho);
+                    resultado.innerHTML += `<div class="ok">✅ ${modulo.nome} carregado com sucesso!</div>`;
+                    sucesso++;
+                } catch (erro) {
+                    resultado.innerHTML += `<div class="erro">❌ ${modulo.nome}: ${erro.message}</div>`;
+                    falha++;
+                }
+            }
+            
+            resultado.innerHTML += `<br><strong>Total: ${sucesso} sucesso, ${falha} falhas</strong>`;
+            
+            if (falha === 0) {
+                resultado.innerHTML += '<br><br><a href="index.html" style="color: #0f0;">🚀 Tudo funcionando! Clique aqui para abrir KC V2</a>';
+            }
+        }
+        
+        testarModulos();
+    </script>
+</body>
+</html>

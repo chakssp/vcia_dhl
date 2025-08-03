@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Persistence Layer V2 - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .demo-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .demo-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .demo-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .demo-card h4 {
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        .output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            white-space: pre-wrap;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background: #2ecc71; }
+        .status-offline { background: #e74c3c; }
+        .status-unknown { background: #95a5a6; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Persistence Layer V2</h1>
+            <p>Sistema Unificado de Persistência - Demonstração Interativa</p>
+        </div>
+
+        <div class="content">
+            <!-- Status Section -->
+            <div class="demo-section">
+                <h3>📊 Status do Sistema</h3>
+                <div class="stats-grid" id="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="status-indicator">
+                            <span class="status-indicator status-unknown"></span>
+                            Inicializando...
+                        </div>
+                        <div class="stat-label">Status do Serviço</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="active-backend">-</div>
+                        <div class="stat-label">Backend Ativo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="cache-size">0</div>
+                        <div class="stat-label">Itens em Cache</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="sync-queue">0</div>
+                        <div class="stat-label">Sync Queue</div>
+                    </div>
+                </div>
+                <button class="btn" onclick="updateStats()">🔄 Atualizar Status</button>
+                <button class="btn btn-secondary" onclick="showDiagnosis()">🔧 Diagnóstico Completo</button>
+            </div>
+
+            <!-- Basic Operations -->
+            <div class="demo-section">
+                <h3>💾 Operações Básicas</h3>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h4>Save & Load</h4>
+                        <p>Testar operações básicas de save/load</p>
+                        <button class="btn" onclick="testBasicOperations()">Executar Teste</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Compressão</h4>
+                        <p>Testar compressão de dados grandes</p>
+                        <button class="btn" onclick="testCompression()">Testar Compressão</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Cache & TTL</h4>
+                        <p>Testar sistema de cache com TTL</p>
+                        <button class="btn" onclick="testCache()">Testar Cache</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Query Operations</h4>
+                        <p>Testar operações de consulta</p>
+                        <button class="btn" onclick="testQueries()">Testar Queries</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Migration -->
+            <div class="demo-section">
+                <h3>🔄 Sistema de Migração</h3>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h4>Analisar Migração</h4>
+                        <p>Verificar se há dados V1 para migrar</p>
+                        <button class="btn" onclick="analyzeMigration()">Analisar</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Simular Dados V1</h4>
+                        <p>Criar dados V1 falsos para teste</p>
+                        <button class="btn btn-secondary" onclick="createMockV1Data()">Simular</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Executar Migração</h4>
+                        <p>Migrar dados V1 para V2</p>
+                        <button class="btn btn-success" onclick="executeMigration()">Migrar</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Backup & Restore</h4>
+                        <p>Criar e gerenciar backups</p>
+                        <button class="btn" onclick="testBackup()">Testar Backup</button>
+                    </div>
+                </div>
+                <div class="progress-bar" id="migration-progress" style="display: none;">
+                    <div class="progress-fill" id="migration-progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Advanced Features -->
+            <div class="demo-section">
+                <h3>⚡ Recursos Avançados</h3>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <h4>Batch Operations</h4>
+                        <p>Operações em lote para performance</p>
+                        <button class="btn" onclick="testBatchOperations()">Testar Batch</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Fallback Chain</h4>
+                        <p>Testar cadeia de fallback</p>
+                        <button class="btn" onclick="testFallback()">Testar Fallback</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Offline Mode</h4>
+                        <p>Simular modo offline</p>
+                        <button class="btn" onclick="testOfflineMode()">Testar Offline</button>
+                    </div>
+                    <div class="demo-card">
+                        <h4>Performance</h4>
+                        <p>Benchmark de performance</p>
+                        <button class="btn" onclick="testPerformance()">Benchmark</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management -->
+            <div class="demo-section">
+                <h3>🛠️ Gerenciamento</h3>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpar Todos os Dados</button>
+                <button class="btn btn-secondary" onclick="exportData()">📤 Exportar Dados</button>
+                <button class="btn btn-secondary" onclick="showCompressionStats()">📊 Estatísticas Compressão</button>
+                <button class="btn" onclick="runFullDemo()">🎬 Demo Completa</button>
+            </div>
+
+            <!-- Output -->
+            <div class="demo-section">
+                <h3>📋 Log de Saída</h3>
+                <button class="btn btn-secondary" onclick="clearOutput()">Limpar Log</button>
+                <div class="output" id="output">Aguardando comandos...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import persistenceService from './js/services/PersistenceService.js';
+        import compressionUtils from './js/utils/CompressionUtils.js';
+        import migrationManager from './js/services/MigrationManager.js';
+
+        // Global variables
+        window.persistenceService = persistenceService;
+        window.compressionUtils = compressionUtils;
+        window.migrationManager = migrationManager;
+        window.isInitialized = false;
+
+        // Utility functions
+        window.log = function(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '📝';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        };
+
+        window.clearOutput = function() {
+            document.getElementById('output').textContent = '';
+        };
+
+        // Initialize system
+        window.initializeSystem = async function() {
+            try {
+                log('Inicializando Persistence Layer V2...', 'info');
+                const success = await persistenceService.initialize();
+                
+                if (success) {
+                    log('Sistema inicializado com sucesso!', 'success');
+                    window.isInitialized = true;
+                    updateStatusIndicator('online');
+                } else {
+                    log('Falha na inicialização, usando modo degradado', 'warning');
+                    updateStatusIndicator('offline');
+                }
+
+                await updateStats();
+                
+            } catch (error) {
+                log(`Erro na inicialização: ${error.message}`, 'error');
+                updateStatusIndicator('offline');
+            }
+        };
+
+        // Update status indicator
+        window.updateStatusIndicator = function(status) {
+            const indicator = document.getElementById('status-indicator');
+            const statusSpan = indicator.querySelector('.status-indicator');
+            
+            statusSpan.className = `status-indicator status-${status}`;
+            indicator.innerHTML = statusSpan.outerHTML + 
+                (status === 'online' ? 'Online' : 
+                 status === 'offline' ? 'Offline' : 'Inicializando...');
+        };
+
+        // Update stats
+        window.updateStats = async function() {
+            if (!window.isInitialized) return;
+
+            try {
+                const stats = persistenceService.getStats();
+                
+                document.getElementById('active-backend').textContent = stats.activeBackend || '-';
+                document.getElementById('cache-size').textContent = stats.cache?.size || 0;
+                document.getElementById('sync-queue').textContent = stats.sync?.queueSize || 0;
+                
+                log(`Stats atualizadas - Backend: ${stats.activeBackend}, Cache: ${stats.cache?.size}`);
+                
+            } catch (error) {
+                log(`Erro ao atualizar stats: ${error.message}`, 'error');
+            }
+        };
+
+        // Show diagnosis
+        window.showDiagnosis = async function() {
+            try {
+                const diagnosis = persistenceService.diagnose();
+                log('=== DIAGNÓSTICO COMPLETO ===');
+                log(`Inicializado: ${diagnosis.service.initialized}`);
+                log(`Backend Ativo: ${diagnosis.service.activeBackend}`);
+                log(`Backends Disponíveis: ${diagnosis.service.availableBackends.join(', ')}`);
+                log(`Online: ${diagnosis.service.online}`);
+                log(`Cache Size: ${diagnosis.cache.size}`);
+                log(`Sync Queue: ${diagnosis.syncQueue.length}`);
+                log('=== FIM DIAGNÓSTICO ===');
+                
+            } catch (error) {
+                log(`Erro no diagnóstico: ${error.message}`, 'error');
+            }
+        };
+
+        // Test basic operations
+        window.testBasicOperations = async function() {
+            try {
+                log('=== TESTE OPERAÇÕES BÁSICAS ===');
+                
+                // Save data
+                const testData = {
+                    id: 'test_001',
+                    name: 'Teste Básico',
+                    timestamp: new Date().toISOString(),
+                    data: 'Dados de exemplo para teste'
+                };
+                
+                log('Salvando dados de teste...');
+                await persistenceService.save('demo', 'basic_test', testData);
+                log('✅ Dados salvos com sucesso');
+                
+                // Load data
+                log('Carregando dados...');
+                const loadedData = await persistenceService.load('demo', 'basic_test');
+                
+                if (JSON.stringify(testData) === JSON.stringify(loadedData)) {
+                    log('✅ Dados carregados e verificados com sucesso');
+                } else {
+                    log('❌ Dados não coincidem!', 'error');
+                }
+                
+                // Update data
+                testData.updated = new Date().toISOString();
+                await persistenceService.save('demo', 'basic_test', testData);
+                log('✅ Dados atualizados');
+                
+                // Test non-existent data
+                const notFound = await persistenceService.load('demo', 'not_found', 'default_value');
+                log(`Teste dados inexistentes: ${notFound}`);
+                
+                log('=== TESTE BÁSICO CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste básico: ${error.message}`, 'error');
+            }
+        };
+
+        // Test compression
+        window.testCompression = async function() {
+            try {
+                log('=== TESTE COMPRESSÃO ===');
+                
+                // Create large data
+                const largeData = {
+                    id: 'large_doc',
+                    content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(200),
+                    metadata: {
+                        size: 'large',
+                        created: new Date().toISOString()
+                    },
+                    array: Array.from({ length: 100 }, (_, i) => ({
+                        id: i,
+                        text: `Item ${i} with description`
+                    }))
+                };
+                
+                const originalSize = JSON.stringify(largeData).length;
+                log(`Dados originais: ${originalSize} bytes`);
+                
+                // Test compression directly
+                log('Testando compressão direta...');
+                const compressed = await compressionUtils.compress(largeData);
+                const decompressed = await compressionUtils.decompress(compressed);
+                
+                const compressedSize = JSON.stringify(compressed).length;
+                const ratio = Math.round((compressedSize / originalSize) * 100);
+                
+                log(`Comprimido: ${compressedSize} bytes (${ratio}%)`);
+                log(`Algoritmo: ${compressed.algorithm}`);
+                
+                // Verify integrity
+                if (JSON.stringify(largeData) === JSON.stringify(decompressed)) {
+                    log('✅ Integridade verificada');
+                } else {
+                    log('❌ Perda de integridade!', 'error');
+                }
+                
+                // Test with persistence service
+                log('Salvando dados grandes com compressão...');
+                await persistenceService.save('demo', 'large_doc', largeData, {
+                    compression: true
+                });
+                
+                const loadedLarge = await persistenceService.load('demo', 'large_doc');
+                
+                if (loadedLarge && loadedLarge.content.length === largeData.content.length) {
+                    log('✅ Dados grandes salvos e carregados com sucesso');
+                } else {
+                    log('❌ Erro nos dados grandes', 'error');
+                }
+                
+                log('=== TESTE COMPRESSÃO CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste de compressão: ${error.message}`, 'error');
+            }
+        };
+
+        // Test cache
+        window.testCache = async function() {
+            try {
+                log('=== TESTE CACHE E TTL ===');
+                
+                const cacheData = {
+                    id: 'cache_test',
+                    data: 'Dados para teste de cache',
+                    timestamp: Date.now()
+                };
+                
+                // Save with TTL
+                log('Salvando dados com TTL de 3 segundos...');
+                await persistenceService.save('demo', 'cache_test', cacheData, {
+                    ttl: 3000 // 3 seconds
+                });
+                
+                // Load immediately (should be from cache)
+                log('Carregando imediatamente (cache)...');
+                const cached1 = await persistenceService.load('demo', 'cache_test');
+                log(`✅ Carregado: ${cached1.id}`);
+                
+                // Load again (should still be from cache)
+                const cached2 = await persistenceService.load('demo', 'cache_test');
+                log(`✅ Segundo carregamento: ${cached2.id}`);
+                
+                // Force refresh
+                log('Forçando refresh...');
+                const refreshed = await persistenceService.load('demo', 'cache_test', null, {
+                    forceRefresh: true
+                });
+                log(`✅ Refresh forçado: ${refreshed.id}`);
+                
+                // Test TTL expiration
+                log('Aguardando expiração do TTL (4 segundos)...');
+                setTimeout(async () => {
+                    try {
+                        const afterTTL = await persistenceService.load('demo', 'cache_test', 'EXPIRED');
+                        log(`Após TTL: ${afterTTL === 'EXPIRED' ? 'Expirado ✅' : 'Ainda válido ⚠️'}`);
+                    } catch (error) {
+                        log(`Erro no teste TTL: ${error.message}`, 'error');
+                    }
+                }, 4000);
+                
+                log('=== TESTE CACHE INICIADO (aguarde 4s para conclusão) ===');
+                
+            } catch (error) {
+                log(`Erro no teste de cache: ${error.message}`, 'error');
+            }
+        };
+
+        // Test queries
+        window.testQueries = async function() {
+            try {
+                log('=== TESTE QUERIES ===');
+                
+                // Create test data
+                const items = [
+                    { id: 1, category: 'electronics', name: 'Laptop', price: 1000 },
+                    { id: 2, category: 'electronics', name: 'Mouse', price: 50 },
+                    { id: 3, category: 'books', name: 'JavaScript Guide', price: 30 },
+                    { id: 4, category: 'books', name: 'CSS Handbook', price: 25 },
+                    { id: 5, category: 'electronics', name: 'Keyboard', price: 80 }
+                ];
+                
+                log('Salvando itens de teste...');
+                for (const item of items) {
+                    await persistenceService.save('products', `item_${item.id}`, item);
+                }
+                log(`✅ ${items.length} itens salvos`);
+                
+                // Query all
+                log('Consultando todos os produtos...');
+                const allProducts = await persistenceService.query('products');
+                log(`📊 Total encontrado: ${allProducts.length}`);
+                
+                // Query with filter (note: filtering depends on backend implementation)
+                log('Consultando eletrônicos...');
+                const electronics = await persistenceService.query('products', {
+                    category: 'electronics'
+                });
+                log(`💻 Eletrônicos: ${electronics.length}`);
+                
+                // Query with limit
+                log('Consultando primeiros 3 itens...');
+                const limited = await persistenceService.query('products', {}, {
+                    limit: 3
+                });
+                log(`📝 Limitados: ${limited.length}`);
+                
+                log('=== TESTE QUERIES CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste de queries: ${error.message}`, 'error');
+            }
+        };
+
+        // Create mock V1 data
+        window.createMockV1Data = function() {
+            log('=== CRIANDO DADOS V1 SIMULADOS ===');
+            
+            // Mock localStorage V1 data
+            localStorage.setItem('kc_demo_data', JSON.stringify({
+                version: '1.0.0',
+                data: 'Dados de demonstração V1',
+                timestamp: new Date().toISOString()
+            }));
+            
+            localStorage.setItem('kc_categories', JSON.stringify([
+                { id: 1, name: 'Insights', color: '#4CAF50' },
+                { id: 2, name: 'Decisões', color: '#2196F3' }
+            ]));
+            
+            localStorage.setItem('kc_config', JSON.stringify({
+                theme: 'dark',
+                language: 'pt-BR',
+                autoSave: true
+            }));
+            
+            localStorage.setItem('kc_files', JSON.stringify([
+                { id: 'f1', name: 'doc1.md', size: 1024 },
+                { id: 'f2', name: 'notes.txt', size: 512 }
+            ]));
+            
+            log('✅ Dados V1 simulados criados:');
+            log('- kc_demo_data');
+            log('- kc_categories');
+            log('- kc_config');
+            log('- kc_files');
+        };
+
+        // Analyze migration
+        window.analyzeMigration = async function() {
+            try {
+                log('=== ANALISANDO MIGRAÇÃO ===');
+                
+                const analysis = await migrationManager.migrate({ onlyCheck: true });
+                
+                log(`Migração necessária: ${analysis.plan.total > 0 ? 'SIM' : 'NÃO'}`);
+                log(`Total de migrações: ${analysis.plan.total}`);
+                log(`Tempo estimado: ${analysis.plan.estimatedTime}ms`);
+                log(`Tamanho dos dados: ${analysis.plan.dataSize} bytes`);
+                
+                if (analysis.plan.migrations.length > 0) {
+                    log('Migrações identificadas:');
+                    analysis.plan.migrations.forEach(m => {
+                        log(`- ${m.name}: ${m.reason}`);
+                    });
+                }
+                
+                log('=== ANÁLISE CONCLUÍDA ===');
+                
+            } catch (error) {
+                log(`Erro na análise: ${error.message}`, 'error');
+            }
+        };
+
+        // Execute migration
+        window.executeMigration = async function() {
+            try {
+                log('=== EXECUTANDO MIGRAÇÃO ===');
+                
+                const progressBar = document.getElementById('migration-progress');
+                const progressFill = document.getElementById('migration-progress-fill');
+                
+                progressBar.style.display = 'block';
+                progressFill.style.width = '0%';
+                
+                // Listen for migration progress
+                const handleProgress = (event) => {
+                    const percent = (event.current / event.total) * 100;
+                    progressFill.style.width = `${percent}%`;
+                    log(`Progresso: ${event.current}/${event.total} - ${event.migration.name}`);
+                };
+                
+                // Note: EventBus might not be available, so we'll simulate progress
+                
+                const result = await migrationManager.migrate({
+                    skipBackup: true // Para demo
+                });
+                
+                progressFill.style.width = '100%';
+                
+                if (result.success) {
+                    log('✅ Migração completa!', 'success');
+                    if (result.backupId) {
+                        log(`Backup ID: ${result.backupId}`);
+                    }
+                    if (result.results) {
+                        log(`Resultados: ${result.results.length} migrações executadas`);
+                    }
+                } else {
+                    log(`❌ Migração falhou: ${result.message}`, 'error');
+                }
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                }, 2000);
+                
+                log('=== MIGRAÇÃO CONCLUÍDA ===');
+                
+            } catch (error) {
+                log(`Erro na migração: ${error.message}`, 'error');
+                document.getElementById('migration-progress').style.display = 'none';
+            }
+        };
+
+        // Test backup
+        window.testBackup = async function() {
+            try {
+                log('=== TESTE BACKUP E RESTORE ===');
+                
+                // Create backup
+                log('Criando backup...');
+                const backupId = await migrationManager.createFullBackup();
+                log(`✅ Backup criado: ${backupId}`);
+                
+                // List backups
+                log('Listando backups...');
+                const backups = await migrationManager.listBackups();
+                log(`📦 Backups disponíveis: ${backups.length}`);
+                
+                backups.forEach(backup => {
+                    log(`- ${backup.id} (${backup.timestamp})`);
+                });
+                
+                log('=== TESTE BACKUP CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste de backup: ${error.message}`, 'error');
+            }
+        };
+
+        // Test batch operations
+        window.testBatchOperations = async function() {
+            try {
+                log('=== TESTE OPERAÇÕES BATCH ===');
+                
+                const startTime = Date.now();
+                const operations = [];
+                
+                // Create multiple save operations
+                for (let i = 0; i < 20; i++) {
+                    operations.push(
+                        persistenceService.save('batch', `item_${i}`, {
+                            id: i,
+                            timestamp: Date.now(),
+                            data: `Batch item ${i}`
+                        })
+                    );
+                }
+                
+                log(`Executando ${operations.length} operações em paralelo...`);
+                
+                const results = await Promise.allSettled(operations);
+                const successful = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.length - successful;
+                
+                const duration = Date.now() - startTime;
+                
+                log(`✅ Concluído em ${duration}ms`);
+                log(`✅ Sucessos: ${successful}`);
+                if (failed > 0) {
+                    log(`❌ Falhas: ${failed}`, 'warning');
+                }
+                
+                log('=== TESTE BATCH CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste batch: ${error.message}`, 'error');
+            }
+        };
+
+        // Test fallback
+        window.testFallback = async function() {
+            try {
+                log('=== TESTE FALLBACK CHAIN ===');
+                
+                const stats = persistenceService.getStats();
+                log(`Backend atual: ${stats.activeBackend}`);
+                log(`Backends disponíveis: ${stats.availableBackends.join(', ')}`);
+                
+                // Save data that should work with any backend
+                const fallbackData = {
+                    test: 'fallback',
+                    timestamp: Date.now(),
+                    backend: stats.activeBackend
+                };
+                
+                await persistenceService.save('fallback', 'test', fallbackData);
+                const loaded = await persistenceService.load('fallback', 'test');
+                
+                if (loaded && loaded.test === 'fallback') {
+                    log('✅ Fallback funcionando corretamente');
+                } else {
+                    log('❌ Problema no fallback', 'error');
+                }
+                
+                log('=== TESTE FALLBACK CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste de fallback: ${error.message}`, 'error');
+            }
+        };
+
+        // Test offline mode
+        window.testOfflineMode = async function() {
+            try {
+                log('=== TESTE MODO OFFLINE ===');
+                
+                // Check current online status
+                log(`Status atual: ${navigator.onLine ? 'Online' : 'Offline'}`);
+                
+                const offlineData = {
+                    id: 'offline_test',
+                    timestamp: Date.now(),
+                    mode: 'offline_simulation'
+                };
+                
+                // This will be queued if offline, or saved normally if online
+                await persistenceService.save('offline', 'test', offlineData);
+                log('✅ Dados processados (salvos ou enfileirados)');
+                
+                const stats = persistenceService.getStats();
+                log(`Sync queue: ${stats.sync.queueSize} itens`);
+                
+                log('=== TESTE OFFLINE CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no teste offline: ${error.message}`, 'error');
+            }
+        };
+
+        // Test performance
+        window.testPerformance = async function() {
+            try {
+                log('=== BENCHMARK PERFORMANCE ===');
+                
+                const tests = [
+                    { name: 'Save pequeno', size: 'small', count: 50 },
+                    { name: 'Save médio', size: 'medium', count: 20 },
+                    { name: 'Load cache', size: 'cached', count: 100 }
+                ];
+                
+                for (const test of tests) {
+                    log(`Testando: ${test.name} (${test.count}x)`);
+                    
+                    const startTime = Date.now();
+                    const operations = [];
+                    
+                    for (let i = 0; i < test.count; i++) {
+                        let data;
+                        
+                        if (test.size === 'small') {
+                            data = { id: i, test: 'small' };
+                        } else if (test.size === 'medium') {
+                            data = { id: i, content: 'Medium data '.repeat(100) };
+                        } else {
+                            // For cached test, load existing data
+                            operations.push(persistenceService.load('demo', 'basic_test', null));
+                            continue;
+                        }
+                        
+                        operations.push(persistenceService.save('perf', `${test.size}_${i}`, data));
+                    }
+                    
+                    await Promise.all(operations);
+                    const duration = Date.now() - startTime;
+                    const avgTime = duration / test.count;
+                    
+                    log(`✅ ${test.name}: ${duration}ms total, ${avgTime.toFixed(2)}ms/op`);
+                }
+                
+                log('=== BENCHMARK CONCLUÍDO ===');
+                
+            } catch (error) {
+                log(`Erro no benchmark: ${error.message}`, 'error');
+            }
+        };
+
+        // Show compression stats
+        window.showCompressionStats = function() {
+            const stats = compressionUtils.getStats();
+            
+            log('=== ESTATÍSTICAS COMPRESSÃO ===');
+            log(`Compressões: ${stats.compressions}`);
+            log(`Descompressões: ${stats.decompressions}`);
+            log(`Ratio médio: ${stats.averageRatio}`);
+            log(`Espaço salvo: ${stats.spaceSavedKB} KB`);
+            log(`Erros: ${stats.errors}`);
+            log(`Algoritmos: ${stats.algorithms.join(', ')}`);
+            log('=== FIM ESTATÍSTICAS ===');
+        };
+
+        // Clear all data
+        window.clearAllData = async function() {
+            try {
+                if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                    log('=== LIMPANDO TODOS OS DADOS ===');
+                    
+                    await persistenceService.clear();
+                    log('✅ Dados do PersistenceService limpos');
+                    
+                    // Clear mock V1 data
+                    ['kc_demo_data', 'kc_categories', 'kc_config', 'kc_files'].forEach(key => {
+                        localStorage.removeItem(key);
+                    });
+                    log('✅ Dados V1 simulados removidos');
+                    
+                    // Reset compression stats
+                    compressionUtils.resetStats();
+                    log('✅ Estatísticas de compressão resetadas');
+                    
+                    await updateStats();
+                    log('=== LIMPEZA CONCLUÍDA ===');
+                }
+            } catch (error) {
+                log(`Erro na limpeza: ${error.message}`, 'error');
+            }
+        };
+
+        // Export data
+        window.exportData = async function() {
+            try {
+                log('=== EXPORTANDO DADOS ===');
+                
+                const exportData = await persistenceService.export();
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+                    type: 'application/json'
+                });
+                
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `persistence_export_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                log('✅ Dados exportados com sucesso');
+                log(`Collections: ${Object.keys(exportData.collections).length}`);
+                
+                log('=== EXPORTAÇÃO CONCLUÍDA ===');
+                
+            } catch (error) {
+                log(`Erro na exportação: ${error.message}`, 'error');
+            }
+        };
+
+        // Run full demo
+        window.runFullDemo = async function() {
+            log('🎬 INICIANDO DEMO COMPLETA...');
+            log('Este processo pode levar alguns minutos.');
+            
+            const demos = [
+                { name: 'Operações Básicas', func: testBasicOperations },
+                { name: 'Compressão', func: testCompression },
+                { name: 'Cache', func: testCache },
+                { name: 'Queries', func: testQueries },
+                { name: 'Dados V1', func: createMockV1Data },
+                { name: 'Análise Migração', func: analyzeMigration },
+                { name: 'Batch Operations', func: testBatchOperations },
+                { name: 'Performance', func: testPerformance }
+            ];
+            
+            for (let i = 0; i < demos.length; i++) {
+                const demo = demos[i];
+                log(`\n[${i + 1}/${demos.length}] Executando: ${demo.name}`);
+                
+                try {
+                    await demo.func();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Pause between demos
+                } catch (error) {
+                    log(`Erro em ${demo.name}: ${error.message}`, 'error');
+                }
+            }
+            
+            log('\n🎉 DEMO COMPLETA CONCLUÍDA!');
+            await updateStats();
+        };
+
+        // Auto-initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initializeSystem();
+            
+            // Update stats every 10 seconds
+            setInterval(updateStats, 10000);
+        });
+
+        // Export functions to window for button clicks
+        Object.assign(window, {
+            testBasicOperations,
+            testCompression,
+            testCache,
+            testQueries,
+            createMockV1Data,
+            analyzeMigration,
+            executeMigration,
+            testBackup,
+            testBatchOperations,
+            testFallback,
+            testOfflineMode,
+            testPerformance,
+            showCompressionStats,
+            clearAllData,
+            exportData,
+            runFullDemo
+        });
+
+    </script>
+</body>
+</html>

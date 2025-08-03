@@ -424,8 +424,9 @@ export class DiscoveryView {
    */
   renderFileCard(file) {
     const isSelected = this.selectedFiles.has(file.id);
-    const relevancePercent = Math.round((file.relevanceScore || 0) * 100);
-    const confidencePercent = Math.round((file.confidenceScore || 0) * 100);
+    // relevanceScore já está em formato 0-100, não precisa multiplicar
+    const relevancePercent = Math.round(file.relevanceScore || 0);
+    const confidencePercent = Math.round(file.confidenceScore || 0);
     
     return `
       <div class="file-card ${isSelected ? 'selected' : ''}" 
@@ -939,13 +940,34 @@ export class DiscoveryView {
    */
   async startDiscovery() {
     try {
-      // Call V1 discovery through bridge
-      await legacyBridge.executeV1Function('DiscoveryManager.startDiscovery');
-      console.log('[DiscoveryView] Discovery started');
+      // Importa o serviço de descoberta V2
+      const { fileDiscoveryService } = await import('../services/FileDiscoveryService.js');
+      
+      // Mostra loading
+      this.showNotification('Iniciando descoberta de arquivos...', 'info');
+      
+      // Executa descoberta
+      const files = await fileDiscoveryService.startDiscovery();
+      
+      if (files.length > 0) {
+        // Atualiza estado com arquivos descobertos
+        this.files = files;
+        await appState.set('discovery.files', files);
+        
+        // Atualiza UI
+        this.updateFileList();
+        this.updateStats();
+        
+        this.showNotification(`${files.length} arquivos descobertos!`, 'success');
+      } else {
+        this.showNotification('Nenhum arquivo encontrado ou descoberta cancelada', 'warning');
+      }
+      
+      console.log('[DiscoveryView] Discovery completed:', files.length);
       
     } catch (error) {
       console.error('[DiscoveryView] Discovery failed:', error);
-      this.showNotification('Failed to start discovery: ' + error.message, 'error');
+      this.showNotification('Erro na descoberta: ' + error.message, 'error');
     }
   }
 
@@ -1383,6 +1405,61 @@ export class DiscoveryView {
     } else {
       console.log(message);
     }
+  }
+
+  /**
+   * Update file list display
+   */
+  updateFileList(files = null) {
+    try {
+      // Get files from parameter or from AppState
+      if (!files) {
+        files = AppState.get('discoveredFiles') || [];
+      }
+      
+      // Update internal files array
+      this.files = files.map((file, index) => ({
+        ...file,
+        id: file.id || `file-${index}`,
+        displayName: file.name || 'Unknown',
+        icon: this.getFileIcon(file.type || file.name),
+        statusBadge: this.getStatusBadge(file.status || 'pending'),
+        relevanceScore: file.relevanceScore || 0, // Keep in 0-100 range
+        confidenceScore: file.confidenceScore || 0 // Keep in 0-100 range
+      }));
+      
+      // Update filtered files
+      this.filteredFiles = [...this.files];
+      
+      // Update pagination
+      this.updatePagination();
+      
+      // Re-render
+      this.throttledRender();
+      
+      console.log('[DiscoveryView] File list updated:', this.files.length, 'files');
+    } catch (error) {
+      console.error('[DiscoveryView] Error updating file list:', error);
+    }
+  }
+  
+  /**
+   * Update discovery stats
+   */
+  updateStats() {
+    const totalFiles = this.files.length;
+    const selectedCount = this.selectedFiles.size;
+    
+    // Update stats in UI
+    const statsElements = {
+      total: document.querySelector('.stat-value[data-stat="total"]'),
+      shown: document.querySelector('.stat-value[data-stat="shown"]'),
+      selected: document.querySelector('.stat-value[data-stat="selected"]')
+    };
+    
+    if (statsElements.total) statsElements.total.textContent = totalFiles;
+    if (statsElements.shown) statsElements.shown.textContent = this.filteredFiles.length;
+    if (statsElements.selected) statsElements.selected.textContent = selectedCount;
   }
 
   /**

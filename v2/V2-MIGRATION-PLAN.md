@@ -61,7 +61,9 @@ Este documento apresenta o plano completo para migração do Knowledge Consolida
 
 ##### **List View (Principal)**
 ```
-File Name               | Relevance | Date       | Status
+File Name               | Relevance | Date       | Statu.
+
+
 ──────────────────────────────────────────────────────────
 📄 project-plan.md     | ████░ 80% | Dec 15     | Analyzed
 📄 meeting-notes.txt   | ███░░ 60% | Dec 14     | Pending

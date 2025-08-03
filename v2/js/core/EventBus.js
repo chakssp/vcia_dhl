@@ -2,7 +2,7 @@
  * EventBus - Central event management system
  */
 
-export class EventBus {
+class EventBus {
   constructor() {
     this.events = new Map();
     this.eventLog = [];
@@ -158,6 +158,18 @@ export const Events = {
   FILE_ANALYZED: 'file:analyzed',
   FILE_CATEGORIZED: 'file:categorized',
   
+  // Category operations (NEW V2)
+  CATEGORY_CREATED: 'category:created',
+  CATEGORY_UPDATED: 'category:updated',
+  CATEGORY_DELETED: 'category:deleted',
+  CATEGORY_ASSIGNED: 'category:assigned',
+  CATEGORY_REMOVED: 'category:removed',
+  CATEGORY_MIGRATION_COMPLETE: 'category:migration:complete',
+  CATEGORY_IMPORTED: 'category:imported',
+  CATEGORY_RESET: 'category:reset',
+  CATEGORY_MANAGER_READY: 'category:manager:ready',
+  CATEGORY_EXTERNAL_CHANGE: 'category:external:change',
+  
   // API operations
   API_REQUEST: 'api:request',
   API_RESPONSE: 'api:response',
@@ -180,4 +192,7 @@ export const Events = {
 
 // Create singleton instance
 const eventBus = new EventBus();
+
+// Export both the class and the instance
+export { EventBus };
 export default eventBus;

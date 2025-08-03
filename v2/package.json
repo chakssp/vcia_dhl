@@ -1,0 +1,37 @@
+{
+  "name": "knowledge-consolidator-v2",
+  "version": "2.0.0",
+  "description": "Knowledge Consolidator V2 - Power User Interface with Terminal Aesthetics",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "npx live-server --port=3000 --host=localhost --entry-file=index.html",
+    "test": "node js/tests/TestRunner.js",
+    "test:unit": "node js/tests/ComponentTests.js",
+    "test:integration": "node js/tests/V1BridgeTests.js",
+    "test:e2e": "node js/tests/FullWorkflowTests.js",
+    "test:benchmark": "node js/tests/BenchmarkTests.js",
+    "build": "node js/utils/BundleOptimizer.js",
+    "serve": "npx http-server -p 3000 -c-1",
+    "docker:build": "docker build -t kc-v2:latest .",
+    "docker:run": "docker run -p 3000:80 kc-v2:latest",
+    "deploy": "bash deployment/deploy.sh"
+  },
+  "keywords": [
+    "knowledge-management",
+    "personal-knowledge",
+    "consolidator",
+    "power-user",
+    "terminal-ui"
+  ],
+  "author": "KC Development Team",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "http-server": "^14.1.1"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

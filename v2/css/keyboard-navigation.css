@@ -1,0 +1,454 @@
+/**
+ * Keyboard Navigation Indicators for KC V2
+ * Visual feedback for keyboard navigation and shortcuts
+ */
+
+/* Focus Styles */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip Links */
+.skip-links {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--bg-primary);
+  padding: 8px;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-links:focus-within {
+  top: 0;
+}
+
+.skip-link {
+  display: inline-block;
+  padding: 8px 16px;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Keyboard Hints */
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.1);
+  margin: 0 2px;
+  text-transform: uppercase;
+}
+
+.kbd-combo {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kbd-plus {
+  font-size: 16px;
+  color: var(--text-tertiary);
+  margin: 0 2px;
+}
+
+/* Navigation Shortcuts Display */
+.nav-shortcut {
+  margin-left: auto;
+  opacity: 0.5;
+  font-size: 11px;
+  transition: opacity 0.2s ease;
+}
+
+.nav-item:hover .nav-shortcut,
+.nav-item:focus .nav-shortcut {
+  opacity: 1;
+}
+
+/* Focus Ring Animation */
+@keyframes focus-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(var(--primary-rgb), 0);
+  }
+}
+
+.focus-ring:focus {
+  animation: focus-ring 0.4s ease;
+}
+
+/* Keyboard Navigation Mode */
+body.keyboard-nav *:focus {
+  outline: 3px solid var(--primary-color) !important;
+  outline-offset: 2px !important;
+}
+
+body.keyboard-nav .btn:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+/* Tab Focus Indicators */
+[tabindex]:focus {
+  position: relative;
+}
+
+[tabindex]:focus::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--primary-color);
+  border-radius: 6px;
+  pointer-events: none;
+  animation: focus-pulse 1s ease infinite;
+}
+
+@keyframes focus-pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Navigation Helper */
+.nav-helper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 300px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 90;
+}
+
+.nav-helper.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.nav-helper-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.nav-helper-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-helper-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Active Element Indicator */
+.active-element-indicator {
+  position: fixed;
+  pointer-events: none;
+  border: 3px solid var(--primary-color);
+  border-radius: 4px;
+  z-index: 9999;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.active-element-indicator.show {
+  opacity: 1;
+}
+
+/* Command Palette Focus */
+.command-palette {
+  position: relative;
+}
+
+.command-palette:focus-within::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 2px solid var(--primary-color);
+  border-radius: 12px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.command-item:focus {
+  background: var(--bg-secondary);
+  box-shadow: inset 0 0 0 2px var(--primary-color);
+}
+
+/* Keyboard Shortcut Overlay */
+.shortcuts-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.shortcuts-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.shortcuts-modal {
+  background: var(--bg-primary);
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.shortcuts-overlay.show .shortcuts-modal {
+  transform: scale(1);
+}
+
+.shortcuts-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.shortcuts-section {
+  margin-bottom: 24px;
+}
+
+.shortcuts-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shortcut-item:last-child {
+  border-bottom: none;
+}
+
+.shortcut-desc {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.shortcut-keys {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Focus Trap */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap-start,
+.focus-trap-end {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Roving TabIndex */
+[role="menu"] [role="menuitem"][tabindex="-1"],
+[role="tablist"] [role="tab"][tabindex="-1"],
+[role="radiogroup"] [role="radio"][tabindex="-1"] {
+  outline: none;
+}
+
+[role="menu"] [role="menuitem"][tabindex="0"]:focus,
+[role="tablist"] [role="tab"][tabindex="0"]:focus,
+[role="radiogroup"] [role="radio"][tabindex="0"]:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Arrow Key Navigation Hints */
+.arrow-hint {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.arrow-hint.show {
+  opacity: 0.8;
+}
+
+.arrow-hint-up {
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.arrow-hint-down {
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.arrow-hint-left {
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.arrow-hint-right {
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Quick Actions Bar */
+.quick-actions {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px 8px 0 0;
+  padding: 8px 16px;
+  display: flex;
+  gap: 16px;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 80;
+}
+
+.quick-actions.show {
+  opacity: 1;
+  bottom: 0;
+}
+
+.quick-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Accessibility Announcements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 3px;
+    outline-style: solid;
+  }
+  
+  .kbd {
+    border-width: 2px;
+    font-weight: 700;
+  }
+  
+  [tabindex]:focus::after {
+    border-width: 3px;
+  }
+}
+
+/* Touch Device Adjustments */
+@media (hover: none) {
+  .nav-shortcut {
+    display: none;
+  }
+  
+  .nav-helper {
+    display: none;
+  }
+  
+  .quick-actions {
+    display: none;
+  }
+}

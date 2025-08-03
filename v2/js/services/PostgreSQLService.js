@@ -9,8 +9,8 @@ class PostgreSQLService {
       host: 'localhost',
       port: 5432,
       database: 'kc_v2',
-      user: process.env.PG_USER || 'postgres',
-      password: process.env.PG_PASSWORD || 'd14172577127a87c06df94de6047d7b6'
+      user: window.PG_USER || 'postgres',
+      password: window.PG_PASSWORD || 'd14172577127a87c06df94de6047d7b6'
     };
     
     this.db = null;

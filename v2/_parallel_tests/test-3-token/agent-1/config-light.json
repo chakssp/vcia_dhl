@@ -1,0 +1,27 @@
+{
+  "test_config": {
+    "name": "token-threshold-test-light",
+    "type": "minimal_load",
+    "agent_id": "light-1",
+    "timestamp": "2025-08-02",
+    "settings": {
+      "max_tokens": 2000,
+      "response_limit": 1000,
+      "processing_mode": "fast",
+      "priority": "low",
+      "timeout": 30,
+      "retry_attempts": 2
+    },
+    "features": {
+      "logging": true,
+      "metrics": false,
+      "debug": false,
+      "cache": true
+    },
+    "test_parameters": {
+      "file_operations": 3,
+      "expected_duration": "< 10s",
+      "memory_usage": "minimal"
+    }
+  }
+}
