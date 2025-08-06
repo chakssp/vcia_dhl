@@ -620,7 +620,9 @@
                                 // SPRINT 1.3.1: DESATIVADO - Sem filtros automáticos
                                 // Aplica filtros de data e tamanho
                                 // if (this._passesFilters(file, config)) {
-                                    const metadata = await this._extractRealMetadata(file, entry, parentPath || directoryHandle.name);
+                                    // Usa parentPath ou o nome do diretório raiz
+                                    const currentDirPath = parentPath || directoryHandle.name || '/';
+                                    const metadata = await this._extractRealMetadata(file, entry, currentDirPath);
                                     files.push(metadata);
                                 
                                 // Atualiza estatísticas
@@ -946,7 +948,7 @@
                 type: file.type,
                 extension: '.' + file.name.split('.').pop().toLowerCase(),
                 path: `${directoryPath}/${file.name}`,
-                relativePath: file.name,
+                relativePath: directoryPath, // Mostra o caminho da pasta, não o nome do arquivo
                 handle: fileHandle, // Para acesso futuro se necessário
                 status: 'pending',
                 relevanceScore: 0,

@@ -485,7 +485,7 @@
 .file-name-compact {
     font-weight: 500;
     font-size: 0.9rem;
-    color: #e0e0e0; /* Cor clara para dark mode */
+    color: #333; /* Cor escura para melhor leitura */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -495,7 +495,7 @@
 .compact-view .file-path-compact,
 .file-path-compact {
     font-size: 0.85rem;
-    color: #999; /* Cinza claro */
+    color: #666; /* Cinza médio para melhor leitura */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -514,7 +514,7 @@
 .compact-view .file-date-compact,
 .file-date-compact {
     font-size: 0.85rem;
-    color: #888; /* Cinza médio */
+    color: #555; /* Cinza escuro para melhor contraste */
     text-align: right;
     display: block !important;
 }
@@ -531,8 +531,15 @@
 
 /* Hover em modo compacto */
 .compact-view .file-entry:hover {
-    background: var(--hover-bg);
+    background: rgba(102, 126, 234, 0.1); /* Azul claro com transparência */
     cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+/* Linha inteira clicável em modo compacto */
+.compact-view .file-entry {
+    cursor: pointer;
+    user-select: none; /* Evita seleção de texto ao clicar */
 }
 
 /* Selecionado em modo compacto */

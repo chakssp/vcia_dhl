@@ -377,6 +377,10 @@
                 console.error(`FileRenderer: Container ${containerId} não encontrado`);
                 return false;
             }
+            // Adiciona classe compact-view se estiver em modo lista
+            if (this.viewMode === 'list') {
+                this.container.classList.add('compact-view');
+            }
             return true;
         }
 
@@ -427,8 +431,20 @@
             // AIDEV-NOTE: filter-transparency; show filter info to user
             this.renderFilterInfo();
 
-            // Limpa container
+            // Limpa container ANTES de adicionar classes (preserve as classes)
             this.container.innerHTML = '';
+            
+            // Garante que container mantém a classe files-container
+            if (!this.container.classList.contains('files-container')) {
+                this.container.classList.add('files-container');
+            }
+            
+            // Atualiza classe compact-view baseado no modo de visualização
+            if (this.viewMode === 'list') {
+                this.container.classList.add('compact-view');
+            } else {
+                this.container.classList.remove('compact-view');
+            }
             
             // Renderiza controles de paginação no topo
             this.renderPaginationControls('top');
@@ -503,8 +519,22 @@
                 </div>
             `;
             
-            // Adiciona event listeners
-            this.attachEventListeners(fileDiv, file);
+            // Adiciona listener para checkbox
+            const checkbox = fileDiv.querySelector('.file-select-checkbox');
+            if (checkbox) {
+                checkbox.addEventListener('change', (e) => {
+                    this.handleFileSelection(file.id || file.name, e.target.checked);
+                });
+            }
+            
+            // Adiciona listener para clique em toda a linha (exceto no checkbox)
+            fileDiv.addEventListener('click', (e) => {
+                // Evita duplo toggle se clicar no checkbox
+                if (e.target.type !== 'checkbox' && checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    this.handleFileSelection(file.id || file.name, checkbox.checked);
+                }
+            });
             
             return fileDiv;
         }
@@ -2409,7 +2439,7 @@
             }
             
             // Re-renderiza a lista
-            this.renderFiles();
+            this.renderFileList();
             
             // Atualiza barra para refletir o novo botão
             this.updateBulkActionsBar();
