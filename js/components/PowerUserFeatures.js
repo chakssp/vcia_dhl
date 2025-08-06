@@ -1149,16 +1149,34 @@
         }
     }
 
-    // Inicializar quando KC estiver pronto
-    if (KC.EventBus) {
-        KC.EventBus.on('APP_READY', () => {
-            new PowerUserFeatures();
-        });
+    // Inicializar quando KC estiver pronto - COM VERIFICAÇÃO ROBUSTA
+    function initializePowerUserFeatures() {
+        if (!window.KC) {
+            // KC ainda não existe, tentar novamente
+            setTimeout(initializePowerUserFeatures, 100);
+            return;
+        }
+        
+        // KC existe, criar e atribuir PowerUserFeatures
+        if (!KC.PowerUserFeatures) {
+            KC.PowerUserFeatures = new PowerUserFeatures();
+            console.log('✅ PowerUserFeatures inicializado e atribuído a KC');
+        }
+    }
+    
+    // Tentar inicializar imediatamente
+    if (window.KC) {
+        if (KC.EventBus) {
+            KC.EventBus.on('APP_READY', () => {
+                initializePowerUserFeatures();
+            });
+        } else {
+            // Sem EventBus, inicializar diretamente
+            initializePowerUserFeatures();
+        }
     } else {
-        // Fallback se EventBus não estiver disponível
-        setTimeout(() => {
-            new PowerUserFeatures();
-        }, 1000);
+        // KC não existe ainda, iniciar polling
+        setTimeout(initializePowerUserFeatures, 100);
     }
 
 })(window);

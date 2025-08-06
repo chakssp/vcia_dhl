@@ -7,7 +7,7 @@
 
 :root {
     /* Ajuste este valor para controlar o zoom */
-    --zoom-level: 0.6;
+    --zoom-level: 1.0;
 }
 
 /* Aplicação do zoom com suporte cross-browser */
@@ -50,7 +50,8 @@ body {
 .floating-actions,
 .quick-filters-bar,
 .progress-global,
-.quick-access-modal {
+.quick-access-modal,
+.qdrant-modal {
     /* Reseta o zoom para elementos fixos/absolutos */
     zoom: calc(1 / var(--zoom-level));
     -moz-transform: scale(calc(1 / var(--zoom-level)));

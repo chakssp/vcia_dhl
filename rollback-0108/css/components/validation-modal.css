@@ -1,0 +1,124 @@
+/* ========================================
+   VALIDATION & SUMMARY MODALS - Estilos para modais de validação e resumo
+   ======================================== */
+
+/* === VALIDATION MODAL === */
+.validation-modal {
+    padding: var(--spacing-lg);
+}
+
+.validation-modal h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--primary-color);
+}
+
+.validation-stats {
+    background: var(--background-light);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-row strong.success {
+    color: var(--success-color);
+}
+
+.stat-row strong.warning {
+    color: var(--warning-color);
+}
+
+.validation-requirements {
+    margin-bottom: var(--spacing-lg);
+}
+
+.validation-requirements h4 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+}
+
+.validation-requirements ul {
+    list-style: none;
+    padding: 0;
+}
+
+.validation-requirements li {
+    padding: var(--spacing-xs) 0;
+}
+
+.validation-requirements li.check {
+    color: var(--success-color);
+}
+
+.validation-requirements li.cross {
+    color: var(--danger-color);
+}
+
+.validation-result {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    text-align: center;
+    font-weight: 600;
+}
+
+.validation-result.success {
+    background: var(--success-light);
+    color: var(--success-dark);
+    border: 1px solid var(--success-color);
+}
+
+.validation-result.warning {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+    border: 1px solid var(--warning-color);
+}
+
+/* === SUMMARY MODAL === */
+.summary-modal {
+    padding: var(--spacing-lg);
+}
+
+.summary-modal h3 {
+    margin-bottom: var(--spacing-lg);
+    color: var(--primary-color);
+}
+
+.summary-section {
+    background: var(--background-light);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.summary-section h4 {
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-secondary);
+}
+
+.summary-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.summary-section li {
+    padding: var(--spacing-xs) 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}

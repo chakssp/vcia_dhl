@@ -1,0 +1,218 @@
+/**
+ * processing-logs.css - Estilos para o Painel de Logs de Processamento
+ * 
+ * Interface otimizada para visualização de logs em tempo real
+ * com controles e área de texto de alto desempenho.
+ */
+
+/* Container principal */
+.processing-logs-panel {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    background: var(--bg-secondary, #1a1a1a);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Header com controles */
+.logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-tertiary, #262626);
+    border-bottom: 1px solid var(--border-color, #333);
+}
+
+.logs-header h4 {
+    margin: 0;
+    color: var(--text-primary, #e5e5e5);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+/* Controles */
+.logs-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.logs-controls .btn-small {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: var(--bg-secondary, #1a1a1a);
+    color: var(--text-secondary, #999);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.logs-controls .btn-small:hover {
+    background: var(--bg-hover, #2a2a2a);
+    color: var(--text-primary, #e5e5e5);
+    border-color: var(--border-hover, #444);
+}
+
+.logs-controls .btn-small.active {
+    background: var(--accent-color, #0ff);
+    color: var(--bg-primary, #0a0a0a);
+    border-color: var(--accent-color, #0ff);
+}
+
+.logs-controls .btn-small.paused {
+    background: var(--warning-color, #f59e0b);
+    color: var(--bg-primary, #0a0a0a);
+    border-color: var(--warning-color, #f59e0b);
+}
+
+/* Estatísticas */
+.logs-stats {
+    margin-left: 16px;
+    padding-left: 16px;
+    border-left: 1px solid var(--border-color, #333);
+    color: var(--text-secondary, #999);
+    font-size: 13px;
+}
+
+.logs-stats #logs-count {
+    color: var(--accent-color, #0ff);
+    font-weight: 600;
+}
+
+/* Área de texto */
+.logs-textarea {
+    width: 100%;
+    height: 200px;
+    padding: 12px;
+    background: var(--bg-primary, #0a0a0a);
+    color: var(--text-logs, #0ff);
+    border: none;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+}
+
+.logs-textarea::placeholder {
+    color: var(--text-muted, #666);
+}
+
+/* Scrollbar customizada */
+.logs-textarea::-webkit-scrollbar {
+    width: 8px;
+    background: var(--bg-secondary, #1a1a1a);
+}
+
+.logs-textarea::-webkit-scrollbar-track {
+    background: var(--bg-secondary, #1a1a1a);
+}
+
+.logs-textarea::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, #444);
+    border-radius: 4px;
+}
+
+.logs-textarea::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-hover, #555);
+}
+
+/* Estados e animações */
+.processing-logs-panel.processing {
+    border-color: var(--accent-color, #0ff);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.processing-logs-panel.error {
+    border-color: var(--error-color, #ef4444);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    
+    .logs-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .logs-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .logs-stats {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+        margin-top: 8px;
+    }
+}
+
+/* Tema escuro (padrão) */
+.processing-logs-panel {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #262626;
+    --bg-hover: #2a2a2a;
+    --text-primary: #e5e5e5;
+    --text-secondary: #999;
+    --text-muted: #666;
+    --text-logs: #0ff;
+    --border-color: #333;
+    --border-hover: #444;
+    --accent-color: #0ff;
+    --error-color: #ef4444;
+    --warning-color: #f59e0b;
+    --scrollbar-thumb: #444;
+    --scrollbar-hover: #555;
+}
+
+/* Animação de entrada */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.processing-logs-panel {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Indicador de atividade */
+.logs-header::after {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--text-muted, #666);
+    border-radius: 50%;
+    margin-left: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.processing-logs-panel.active .logs-header::after {
+    background: var(--accent-color, #0ff);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}

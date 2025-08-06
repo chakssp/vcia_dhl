@@ -1,0 +1,680 @@
+/* ========================================
+   DARK MODE - Knowledge Consolidator
+   ======================================== */
+
+/* Dark mode por padrão */
+:root {
+  /* === CORES DE BACKGROUND === */
+  --bg-primary: #1A1A1A;
+  --bg-secondary: #1A1A1A;
+  --bg-tertiary: #242424;
+  --bg-dark: #000000;
+  --bg-form-group: #4D4D4D;
+  --bg-obsidian: #1D134A;
+  
+  /* === CORES DE TEXTO === */
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
+  --text-inverse: #0f0f0f;
+  
+  /* === CORES DE BORDA === */
+  --border-light: #666666;
+  --border-medium: #808080;
+  --border-dark: #999999;
+  --border-width-default: 1.5px;
+  
+  /* === CORES PRINCIPAIS AJUSTADAS === */
+  --primary-color: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-light: #1e3a8a;
+  --primary-dark: #2563eb;
+  
+  --secondary-color: #8b5cf6;
+  --secondary-hover: #a78bfa;
+  --secondary-light: #5b21b6;
+  
+  --success-color: #10b981;
+  --success-hover: #34d399;
+  --success-light: #064e3b;
+  
+  --warning-color: #f59e0b;
+  --warning-hover: #fbbf24;
+  --warning-light: #78350f;
+  
+  --danger-color: #ef4444;
+  --danger-hover: #f87171;
+  --danger-light: #7f1d1d;
+  
+  --info-color: #3b82f6;
+  --info-hover: #60a5fa;
+  --info-light: #1e3a8a;
+  
+  /* === CORES NEUTRAS DARK === */
+  --gray-50: #18181b;
+  --gray-100: #27272a;
+  --gray-200: #3f3f46;
+  --gray-300: #52525b;
+  --gray-400: #71717a;
+  --gray-500: #a1a1aa;
+  --gray-600: #d4d4d8;
+  --gray-700: #e4e4e7;
+  --gray-800: #f4f4f5;
+  --gray-900: #fafafa;
+  
+  /* === SOMBRAS DARK MODE === */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  
+  /* === ESTADOS DE ARQUIVO DARK === */
+  --status-pending: #fbbf24;
+  --status-analyzed: #34d399;
+  --status-archived: #6b7280;
+  --status-error: #f87171;
+  
+  /* === RELEVÂNCIA DARK === */
+  --relevance-high: #34d399;
+  --relevance-medium: #60a5fa;
+  --relevance-low: #6b7280;
+  
+  /* === CORES DE CATEGORIAS DARK === */
+  --category-tech: #60a5fa;
+  --category-strategic: #a78bfa;
+  --category-conceptual: #f472b6;
+  --category-development: #34d399;
+  --category-business: #fbbf24;
+  --category-methodological: #2dd4bf;
+  --category-breakthrough: #f87171;
+  --category-personal: #818cf8;
+  
+  /* === ALIASES DARK === */
+  --hover-bg: var(--gray-100);
+  --white: #0f0f0f;
+  --black: #fafafa;
+  
+  /* === CORES POR ETAPA DO WORKFLOW === */
+  --step1-color: #3b82f6;  /* Azul - Descoberta */
+  --step1-hover: #60a5fa;
+  --step1-border: #60a5fa;
+  --step2-color: #10b981;  /* Verde - Pré-Análise */
+  --step2-hover: #34d399;
+  --step2-border: #34d399;
+  --step3-color: #f59e0b;  /* Laranja - Análise IA */
+  --step3-hover: #fbbf24;
+  --step3-border: #fbbf24;
+  --step4-color: #8b5cf6;  /* Roxo - Organização */
+  --step4-hover: #a78bfa;
+  --step4-border: #a78bfa;
+}
+
+/* Classe para light mode (opcional) */
+body.light-mode {
+  /* === CORES DE BACKGROUND === */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-dark: #111827;
+  
+  /* === CORES DE TEXTO === */
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;
+  --text-inverse: #ffffff;
+  
+  /* === CORES DE BORDA === */
+  --border-light: #e5e7eb;
+  --border-medium: #d1d5db;
+  --border-dark: #9ca3af;
+  
+  /* === CORES PRINCIPAIS === */
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #dbeafe;
+  --primary-dark: #1e40af;
+  
+  --secondary-color: #7c3aed;
+  --secondary-hover: #6d28d9;
+  --secondary-light: #ede9fe;
+  
+  --success-color: #10b981;
+  --success-hover: #059669;
+  --success-light: #d1fae5;
+  
+  --warning-color: #f59e0b;
+  --warning-hover: #d97706;
+  --warning-light: #fef3c7;
+  
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --danger-light: #fee2e2;
+  
+  --info-color: #3b82f6;
+  --info-hover: #2563eb;
+  --info-light: #dbeafe;
+  
+  /* === CORES NEUTRAS === */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  
+  /* === SOMBRAS === */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  
+  /* === ALIASES === */
+  --hover-bg: #f3f4f6;
+  --white: #ffffff;
+  --black: #000000;
+}
+
+/* Transições suaves para mudança de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Ajustes específicos para elementos em dark mode */
+input, textarea, select {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: var(--border-width-default) solid var(--border-light);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Form groups com background específico */
+.form-group {
+  background-color: var(--bg-form-group);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+}
+
+/* Garantir contraste em form-group */
+.form-group label,
+.form-group .form-label {
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Obsidian support com background específico */
+.obsidian-support {
+  background-color: var(--bg-obsidian);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  border: var(--border-width-default) solid var(--border-light);
+}
+
+/* Garantir que todos os textos em obsidian-support sejam claros */
+.obsidian-support * {
+  color: var(--text-primary);
+}
+
+/* Scrollbar estilizada para dark mode */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-500);
+}
+
+/* Code blocks em dark mode */
+pre, code {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em elementos com background escuro */
+.panel-container,
+.filter-section,
+.files-section {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em badges e labels */
+.tab-badge,
+.badge,
+.label {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em modais */
+.modal-content {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.modal-header,
+.modal-footer {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em tooltips */
+.tooltip {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em alertas e notificações */
+.alert,
+.notification {
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em tabelas */
+table {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+th {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+td {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Garantir contraste em selects e dropdowns */
+select {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-default) solid var(--border-light) !important;
+}
+
+select option {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Forçar contraste em TODOS os inputs, selects e textareas */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select,
+.config-select,
+.form-control,
+.form-select {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-default) solid var(--border-light) !important;
+}
+
+/* Garantir que placeholders sejam visíveis */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-secondary) !important;
+  opacity: 0.8 !important;
+}
+
+/* Garantir contraste em small e help text */
+small,
+.config-help,
+.form-help,
+.help-text {
+  color: var(--text-secondary) !important;
+  opacity: 1 !important;
+}
+
+/* Garantir texto visível em elementos com text-secondary */
+.file-meta,
+.file-path,
+.file-size,
+.file-date,
+.stat-label,
+.form-help,
+.status-text,
+.category-count {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+
+/* Ajustar texto secundário quando em backgrounds escuros */
+.form-group .text-secondary,
+.form-group small,
+.form-group .form-help {
+  color: var(--text-secondary);
+}
+
+/* Garantir visibilidade de badges e labels */
+.badge,
+.label,
+.tag {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+/* Sobrescrever estilos inline em modais e divs */
+[style*="background: #f0f9ff"],
+[style*="background: #fef3c7"],
+[style*="background: #f3f4f6"],
+[style*="background: #f5f5f5"],
+[style*="background: #d1fae5"],
+[style*="background: #fee2e2"] {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Garantir contraste em divs com classes específicas */
+.obsidian-support,
+.obsidian-highlight,
+.api-config-banner,
+.filter-hint,
+.test-results {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Garantir que small e spans em modais tenham cor visível */
+.modal-body small,
+.modal-body span,
+.obsidian-support small,
+.api-config-banner p,
+.filter-hint span {
+  color: var(--text-primary) !important;
+}
+
+/* Modal de configuração de API - garantir contraste total */
+.api-config-modal,
+.config-modal,
+.modal-content {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Garantir que TODOS os elementos dentro de modais tenham contraste */
+.modal-body * {
+  color: var(--text-primary) !important;
+}
+
+.modal-body small,
+.modal-body .config-help {
+  color: var(--text-secondary) !important;
+}
+
+/* FORÇAR CONTRASTE EM TODOS OS SELECT OPTIONS */
+select option,
+select optgroup,
+.config-select option,
+.form-select option,
+.form-control option {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  padding: 8px !important;
+}
+
+/* Garantir que select:focus mantenha contraste */
+select:focus,
+.config-select:focus,
+.form-select:focus {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  outline: 2px solid var(--primary-color) !important;
+  outline-offset: -2px !important;
+}
+
+/* Forçar dark mode em TODOS os campos desabilitados */
+input:disabled,
+textarea:disabled,
+select:disabled,
+input[readonly],
+textarea[readonly],
+select[readonly] {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-tertiary) !important;
+  opacity: 0.8 !important;
+  cursor: not-allowed !important;
+}
+
+/* Forçar dark mode em elementos de configuração */
+.config-field,
+.config-group,
+.provider-config {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+.config-field label,
+.config-group label {
+  color: var(--text-primary) !important;
+}
+
+/* Notification container */
+.notification-container {
+  background-color: transparent !important;
+}
+
+.notification {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+/* Botão toggle para light/dark mode - sempre visível */
+.theme-toggle {
+  background: var(--primary-color);
+  color: var(--text-primary);
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.theme-toggle:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+/* Go to Top Button - específico */
+.go-to-top {
+  background: var(--secondary-color);
+  color: var(--text-primary);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.go-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.go-to-top:hover {
+  background: var(--secondary-hover);
+  border-color: var(--secondary-hover);
+}
+
+/* Go to Filters Button - sempre visível */
+.go-to-filters {
+  background: var(--info-color);
+  color: white;
+  opacity: 1;
+  visibility: visible;
+}
+
+.go-to-filters:hover {
+  background: var(--info-hover);
+  border-color: var(--info-hover);
+}
+
+/* Coluna de Ações Flutuantes */
+.floating-actions {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+/* Ajuste para todos os botões flutuantes */
+.floating-actions .action-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: var(--border-width-default) solid var(--border-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.floating-actions .action-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Botão de Filtros Rápidos na floating-actions */
+.quick-filters-toggle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: var(--border-width-default) solid var(--border-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.quick-filters-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Responsividade para floating actions */
+@media (max-width: 480px) {
+  .floating-actions {
+    bottom: 10px;
+    right: 10px;
+  }
+  
+  .floating-actions .action-btn,
+  .quick-filters-toggle {
+    width: 45px;
+    height: 45px;
+    font-size: 1.3rem;
+  }
+}
+
+/* FORÇAR CONTRASTE EM LABELS E LEGENDS */
+label,
+legend,
+.form-label,
+.config-label {
+  color: var(--text-primary) !important;
+  opacity: 1 !important;
+}
+
+/* Garantir visibilidade de todos os tipos de input */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary-color) !important;
+  background-color: var(--bg-tertiary) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+/* Garantir contraste em fieldsets e form groups */
+fieldset {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--border-light) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Garantir que TODAS as divs de notificação tenham contraste */
+.notification-container *,
+.alert *,
+.message *,
+.toast * {
+  color: var(--text-primary) !important;
+}
+
+/* Forçar contraste em TODOS os botões */
+button,
+.btn,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+button:hover,
+.btn:hover,
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Garantir contraste em elementos com fundo inline */
+[style*="background: white"],
+[style*="background-color: white"],
+[style*="background: #fff"],
+[style*="background-color: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: #ffffff"],
+[style*="background: rgb(255"],
+[style*="background-color: rgb(255"] {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
