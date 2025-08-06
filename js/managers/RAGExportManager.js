@@ -988,73 +988,113 @@
          * @private
          */
         async _insertWithRetry(points, maxRetries = 3) {
-            let retries = maxRetries;
-            let lastError = null;
-            
-            // Usar QdrantManager para verificar duplicatas e fazer merge
-            if (KC.QdrantManager) {
-                try {
-                    KC.Logger?.info('RAGExportManager', `Processando ${points.length} pontos com QdrantManager`);
-                    
-                    const processedPoints = [];
-                    let skippedCount = 0;
-                    let updatedCount = 0;
-                    
-                    for (const point of points) {
-                        const result = await KC.QdrantManager.insertOrUpdate(point);
-                        
-                        if (result.action === 'skipped') {
-                            skippedCount++;
-                        } else if (result.action === 'updated') {
-                            updatedCount++;
-                            processedPoints.push(result.point);
-                        } else if (result.action === 'inserted') {
-                            processedPoints.push(result.point);
-                        }
-                    }
-                    
-                    KC.Logger?.info('RAGExportManager', 
-                        `Resultado: ${processedPoints.length} inseridos/atualizados, ${skippedCount} ignorados, ${updatedCount} atualizados`);
-                    
-                    return {
-                        success: true,
-                        inserted: processedPoints.length,
-                        skipped: skippedCount,
-                        updated: updatedCount
-                    };
-                    
-                } catch (error) {
-                    KC.Logger?.error('RAGExportManager', 'Erro ao processar com QdrantManager:', error);
-                    lastError = error;
+            // VERIFICAÇÃO CRÍTICA: QdrantManager DEVE estar disponível
+            if (!KC.QdrantManager) {
+                const errorMsg = '❌ ERRO CRÍTICO: QdrantManager não está carregado! Verificação de duplicatas NÃO está funcionando!';
+                
+                // Log no console com destaque
+                console.error('═══════════════════════════════════════════');
+                console.error(errorMsg);
+                console.error('ISSO VAI CAUSAR DUPLICAÇÃO DE DADOS!');
+                console.error('Verifique se QdrantManager.js está no index.html');
+                console.error('═══════════════════════════════════════════');
+                
+                // Notificação visual para o usuário
+                if (KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'error',
+                        message: '⚠️ FALLBACK ATIVADO - QdrantManager não disponível!',
+                        details: 'ATENÇÃO: Dados podem ser DUPLICADOS! Avise o desenvolvedor!',
+                        duration: 10000
+                    });
                 }
+                
+                // Emitir evento de erro
+                KC.EventBus?.emit('CRITICAL_ERROR', {
+                    component: 'RAGExportManager',
+                    error: 'QdrantManager não disponível',
+                    impact: 'Duplicação de dados possível'
+                });
+                
+                // NÃO CONTINUAR SEM PROTEÇÃO CONTRA DUPLICATAS
+                throw new Error('QdrantManager não está disponível - operação cancelada para evitar duplicação');
             }
             
-            // Fallback para inserção direta se QdrantManager não estiver disponível
-            while (retries > 0) {
-                try {
-                    const result = await KC.QdrantService?.insertBatch(points);
+            // Processar com QdrantManager (única opção válida)
+            try {
+                KC.Logger?.info('RAGExportManager', `Processando ${points.length} pontos com QdrantManager`);
+                
+                // Notificação de início
+                console.log(`✅ QdrantManager ativo - verificando duplicatas para ${points.length} pontos`);
+                
+                const processedPoints = [];
+                let skippedCount = 0;
+                let updatedCount = 0;
+                let insertedCount = 0;
+                
+                for (const point of points) {
+                    const result = await KC.QdrantManager.insertOrUpdate(point);
                     
-                    if (result?.success) {
-                        return result;
-                    }
-                    
-                    throw new Error(result?.error || 'Erro desconhecido ao inserir no Qdrant');
-                    
-                } catch (error) {
-                    lastError = error;
-                    retries--;
-                    
-                    if (retries > 0) {
-                        KC.Logger?.info('RAGExportManager', `Tentando inserir novamente no Qdrant (${retries} tentativas restantes)`);
-                        await this._delay(2000 * (maxRetries - retries));
+                    if (result.action === 'skipped') {
+                        skippedCount++;
+                        console.log(`⏭️ Ignorado (já existe): ${point.payload?.fileName || point.id}`);
+                    } else if (result.action === 'updated') {
+                        updatedCount++;
+                        processedPoints.push(result.point);
+                        console.log(`🔄 Atualizado: ${point.payload?.fileName || point.id}`);
+                    } else if (result.action === 'inserted') {
+                        insertedCount++;
+                        processedPoints.push(result.point);
+                        console.log(`✅ Inserido: ${point.payload?.fileName || point.id}`);
                     }
                 }
+                
+                // Log detalhado do resultado
+                const resultMsg = `
+════════════════════════════════════════════
+📊 RESULTADO DO PROCESSAMENTO COM QdrantManager:
+✅ Novos inseridos: ${insertedCount}
+🔄 Atualizados: ${updatedCount}
+⏭️ Ignorados (duplicatas): ${skippedCount}
+📦 Total processado: ${points.length}
+════════════════════════════════════════════`;
+                
+                console.log(resultMsg);
+                KC.Logger?.info('RAGExportManager', resultMsg);
+                
+                // Notificação visual do resultado
+                if (skippedCount > 0 && KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'info',
+                        message: `✅ Proteção contra duplicatas funcionou!`,
+                        details: `${skippedCount} documentos já existentes foram ignorados`,
+                        duration: 5000
+                    });
+                }
+                
+                return {
+                    success: true,
+                    inserted: insertedCount,
+                    updated: updatedCount,
+                    skipped: skippedCount,
+                    total: processedPoints.length
+                };
+                
+            } catch (error) {
+                KC.Logger?.error('RAGExportManager', 'Erro ao processar com QdrantManager:', error);
+                
+                // Notificação de erro
+                if (KC.NotificationSystem?.show) {
+                    KC.NotificationSystem.show({
+                        type: 'error',
+                        message: '❌ Erro no QdrantManager',
+                        details: error.message,
+                        duration: 7000
+                    });
+                }
+                
+                throw error; // Propagar erro em vez de esconder
             }
-            
-            return {
-                success: false,
-                error: lastError?.message || 'Falha ao inserir no Qdrant após múltiplas tentativas'
-            };
         }
 
         /**
