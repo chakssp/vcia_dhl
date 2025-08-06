@@ -116,10 +116,21 @@ class QdrantManager {
         const content = file.content || file.chunkText || file.preview || '';
         const path = file.filePath || file.path || file.fileName || '';
         const size = file.size || content.length || 0;
-        const timestamp = file.lastModified || Date.now();
         
-        // Combinar informações para ID único
-        const uniqueString = `${path}|${size}|${timestamp}|${content.substring(0, 100)}`;
+        // NÃO usar Date.now() - usar timestamp fixo do arquivo ou 0
+        // Isso garante que o mesmo arquivo sempre gera o mesmo ID
+        const timestamp = file.lastModified || file.timestamp || 0;
+        
+        // Adicionar índice do chunk se existir para diferenciar chunks do mesmo arquivo
+        const chunkIndex = file.chunkIndex !== undefined ? file.chunkIndex : '';
+        
+        // Combinar informações para ID único e ESTÁVEL
+        const uniqueString = `${path}|${size}|${timestamp}|${chunkIndex}|${content.substring(0, 100)}`;
+        
+        // Log para debug
+        if (file.chunkIndex === 0 || !file.chunkIndex) {
+            console.log(`🔑 Gerando ID para: ${path} | chunk: ${chunkIndex} | timestamp: ${timestamp}`);
+        }
         
         // Gerar um hash numérico positivo para usar como ID
         let hash = 0;
