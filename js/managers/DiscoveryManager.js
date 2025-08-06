@@ -943,11 +943,13 @@
             const metadata = {
                 id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 name: file.name,
+                fileName: file.name, // Adiciona fileName para compatibilidade com Qdrant
                 size: file.size,
                 lastModified: new Date(file.lastModified),
                 type: file.type,
                 extension: '.' + file.name.split('.').pop().toLowerCase(),
                 path: `${directoryPath}/${file.name}`,
+                filePath: `${directoryPath}/${file.name}`, // Adiciona filePath para Qdrant
                 relativePath: directoryPath, // Mostra o caminho da pasta, não o nome do arquivo
                 handle: fileHandle, // Para acesso futuro se necessário
                 status: 'pending',
@@ -955,7 +957,9 @@
                 category: null,
                 analysis: null,
                 discovered: true,
-                discoveredAt: new Date().toISOString()
+                discoveredAt: new Date().toISOString(),
+                isDuplicate: false, // Novo campo para marcar duplicatas
+                duplicateInfo: null // Informações sobre duplicata se existir
             };
 
             // Extrai conteúdo para análise (com limite de segurança)
@@ -1021,7 +1025,68 @@
                 metadata.warning = 'Arquivo muito grande para leitura automática';
             }
 
+            // NOVO: Verificar duplicata no Qdrant se o serviço estiver disponível
+            if (window.KC?.QdrantManager && window.KC.QdrantManager.initialized) {
+                try {
+                    const duplicateCheck = await window.KC.QdrantManager.checkDuplicate(metadata);
+                    if (duplicateCheck.isDuplicate) {
+                        metadata.isDuplicate = true;
+                        metadata.duplicateInfo = {
+                            existingId: duplicateCheck.existingId,
+                            similarity: duplicateCheck.similarity,
+                            existingPoint: duplicateCheck.existingPoint
+                        };
+                        
+                        // Adicionar indicador visual de duplicata
+                        metadata.name = `🔁 ${metadata.name}`;
+                        console.warn(`⚠️ Duplicata detectada: ${file.name} (ID existente: ${duplicateCheck.existingId})`);
+                    }
+                } catch (error) {
+                    console.warn('Não foi possível verificar duplicata:', error.message);
+                    // Continua sem verificação de duplicata se falhar
+                }
+            }
+
             return metadata;
+        }
+
+        /**
+         * Verifica duplicatas em batch para otimização
+         * @param {Array} files - Array de metadados de arquivos
+         * @returns {Array} Arquivos com informação de duplicata
+         */
+        async checkDuplicatesInBatch(files) {
+            if (!window.KC?.QdrantManager || !window.KC.QdrantManager.initialized) {
+                console.log('QdrantManager não disponível - pulando verificação de duplicatas');
+                return files;
+            }
+
+            console.log(`🔍 Verificando duplicatas para ${files.length} arquivos...`);
+            
+            const promises = files.map(async (file) => {
+                try {
+                    const duplicateCheck = await window.KC.QdrantManager.checkDuplicate(file);
+                    if (duplicateCheck.isDuplicate) {
+                        file.isDuplicate = true;
+                        file.duplicateInfo = {
+                            existingId: duplicateCheck.existingId,
+                            similarity: duplicateCheck.similarity
+                        };
+                    }
+                } catch (error) {
+                    console.warn(`Erro ao verificar duplicata para ${file.name}:`, error.message);
+                }
+                return file;
+            });
+
+            const checkedFiles = await Promise.all(promises);
+            
+            const duplicatesCount = checkedFiles.filter(f => f.isDuplicate).length;
+            if (duplicatesCount > 0) {
+                console.warn(`⚠️ ${duplicatesCount} duplicatas encontradas de ${files.length} arquivos`);
+            }
+            
+            return checkedFiles;
         }
 
         /**

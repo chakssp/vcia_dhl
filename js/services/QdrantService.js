@@ -285,10 +285,22 @@ class QdrantService {
         const response = await this.request(
             'POST',
             `/collections/${this.config.collectionName}/points`,
-            { ids: ids }
+            { 
+                ids: ids,
+                with_payload: true,
+                with_vector: false
+            }
         );
 
         return response.result;
+    }
+
+    /**
+     * Busca um único ponto por ID
+     */
+    async getPoint(id) {
+        const points = await this.getPoints([id]);
+        return points && points.length > 0 ? points[0] : null;
     }
 
     /**
@@ -299,10 +311,24 @@ class QdrantService {
 
         const params = {
             limit: options.limit || 100,
-            with_payload: options.withPayload !== false,
-            with_vector: options.withVector || false,
-            offset: options.offset
+            with_payload: options.withPayload !== false && options.with_payload !== false,
+            with_vector: options.withVector || options.with_vector || false
         };
+        
+        // Adicionar offset se fornecido
+        if (options.offset !== undefined) {
+            params.offset = options.offset;
+        }
+        
+        // IMPORTANTE: Adicionar filtro se fornecido
+        if (options.filter) {
+            params.filter = options.filter;
+        }
+        
+        // Se with_payload for um array, incluir apenas campos específicos
+        if (Array.isArray(options.withPayload) || Array.isArray(options.with_payload)) {
+            params.with_payload = options.withPayload || options.with_payload;
+        }
 
         const response = await this.request(
             'POST',
@@ -311,6 +337,13 @@ class QdrantService {
         );
 
         return response.result;
+    }
+
+    /**
+     * Alias para scrollPoints (compatibilidade)
+     */
+    async scroll(options = {}) {
+        return this.scrollPoints(options);
     }
 
     /**
@@ -421,39 +454,12 @@ class QdrantService {
     }
 
     /**
-     * Percorre pontos da coleção (scroll)
+     * Percorre pontos da coleção (scroll) - MÉTODO DUPLICADO REMOVIDO
+     * O método principal está na linha 305
      */
-    async scrollPoints(options = {}) {
-        if (!this.initialized) await this.initialize();
-
-        try {
-            const params = {
-                limit: options.limit || 10,
-                with_payload: options.with_payload !== undefined ? options.with_payload : true,
-                with_vector: options.with_vector || false
-            };
-
-            // Se with_payload for um array, incluir apenas campos específicos
-            if (Array.isArray(options.with_payload)) {
-                params.with_payload = options.with_payload;
-            }
-
-            // Adicionar offset se fornecido
-            if (options.offset !== undefined) {
-                params.offset = options.offset;
-            }
-
-            const response = await this.request('POST', `/collections/${this.config.collectionName}/points/scroll`, params);
-            
-            return {
-                points: response.result?.points || [],
-                next_page_offset: response.result?.next_page_offset
-            };
-        } catch (error) {
-            KC.Logger?.error('QdrantService', 'Erro em scrollPoints', error);
-            throw error;
-        }
-    }
+    // async scrollPoints(options = {}) {
+    //     // REMOVIDO - usar o método principal na linha 305
+    // }
 
     /**
      * Formata ponto para o formato do Qdrant

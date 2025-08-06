@@ -211,6 +211,7 @@ The infinite command implements sophisticated parallel agent coordination:
 ### 🚨 Memory Warnings
 
 - NEVER use PLAYWRIGHT WITHOUT AVOID AND PRIORITIZE USE CONSOLE MESSAGE TO DETERMINE YOUR PROGRESS OR FAIL. EVER USE the message console.
+- Para evitar problemas com o console do Claude durante a depuração, por favor, evite utilizar emojis gráficos do tipo no Código Desenvolvido que bugam todo o console do Agente do Claude Code forever
 
 # IMPORTANT
 - Remember EVER to translate to Brazilian Protuguese before send to User providing Best Experience!

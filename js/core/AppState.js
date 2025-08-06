@@ -412,9 +412,10 @@
                 
                 if (file.content && file.size < MAX_SIZE_FOR_CONTENT && isTextFile) {
                     compressed.content = file.content;
-                    KC.Logger?.debug(`AppState - Mantendo conteúdo completo para: ${file.name} (${(file.size/1024).toFixed(1)}KB)`);
+                    // Log removido para reduzir ruído no console
                 } else if (file.content && file.size >= MAX_SIZE_FOR_CONTENT) {
-                    KC.Logger?.debug(`AppState - Removendo conteúdo de arquivo grande: ${file.name} (${(file.size/1024).toFixed(1)}KB)`);
+                    // Log removido para reduzir ruído no console
+                    // KC.Logger?.debug(`AppState - Removendo conteúdo de arquivo grande: ${file.name} (${(file.size/1024).toFixed(1)}KB)`);
                 }
                 
                 return compressed;
@@ -626,23 +627,12 @@
                 if (saved) {
                     const { state, version } = JSON.parse(saved);
                     
-                    // AIDEV-NOTE: debug-categories; log para debug de categorias
-                    console.log('[AppState] Estado carregado do localStorage:', {
-                        arquivos: state.files?.length || 0,
-                        categorias: state.categories?.length || 0,
-                        customCategories: state.customCategories?.length || 0
-                    });
+                    // AIDEV-NOTE: debug-categories; log removido para reduzir ruído no console
                     
                     // Verifica compatibilidade de versão
                     if (version === '1.0.0') {
                         // Merge com estado inicial para garantir novas propriedades
                         this.state = this._mergeStates(this._getInitialState(), state);
-                        
-                        console.log('[AppState] Estado após merge:', {
-                            arquivos: this.state.files?.length || 0,
-                            categorias: this.state.categories?.length || 0,
-                            customCategories: this.state.customCategories?.length || 0
-                        });
                         
                         EventBus.emit(Events.STATE_RESTORED, { type: 'load' });
                     }
@@ -667,11 +657,6 @@
                     const defaultIds = initial[key].map(cat => cat.id);
                     const customCategories = saved[key].filter(cat => !defaultIds.includes(cat.id));
                     result[key] = [...initial[key], ...customCategories];
-                    console.log('[AppState] Merge de categorias:', {
-                        padrão: initial[key].length,
-                        customizadas: customCategories.length,
-                        total: result[key].length
-                    });
                 } else if (saved[key] !== null && typeof saved[key] === 'object' && !Array.isArray(saved[key])) {
                     result[key] = this._mergeStates(initial[key] || {}, saved[key]);
                 } else {
