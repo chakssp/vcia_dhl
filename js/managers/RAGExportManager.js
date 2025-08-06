@@ -984,13 +984,52 @@
         }
 
         /**
-         * Insere no Qdrant com retry
+         * Insere no Qdrant com retry e verificação de duplicatas
          * @private
          */
         async _insertWithRetry(points, maxRetries = 3) {
             let retries = maxRetries;
             let lastError = null;
             
+            // Usar QdrantManager para verificar duplicatas e fazer merge
+            if (KC.QdrantManager) {
+                try {
+                    KC.Logger?.info('RAGExportManager', `Processando ${points.length} pontos com QdrantManager`);
+                    
+                    const processedPoints = [];
+                    let skippedCount = 0;
+                    let updatedCount = 0;
+                    
+                    for (const point of points) {
+                        const result = await KC.QdrantManager.insertOrUpdate(point);
+                        
+                        if (result.action === 'skipped') {
+                            skippedCount++;
+                        } else if (result.action === 'updated') {
+                            updatedCount++;
+                            processedPoints.push(result.point);
+                        } else if (result.action === 'inserted') {
+                            processedPoints.push(result.point);
+                        }
+                    }
+                    
+                    KC.Logger?.info('RAGExportManager', 
+                        `Resultado: ${processedPoints.length} inseridos/atualizados, ${skippedCount} ignorados, ${updatedCount} atualizados`);
+                    
+                    return {
+                        success: true,
+                        inserted: processedPoints.length,
+                        skipped: skippedCount,
+                        updated: updatedCount
+                    };
+                    
+                } catch (error) {
+                    KC.Logger?.error('RAGExportManager', 'Erro ao processar com QdrantManager:', error);
+                    lastError = error;
+                }
+            }
+            
+            // Fallback para inserção direta se QdrantManager não estiver disponível
             while (retries > 0) {
                 try {
                     const result = await KC.QdrantService?.insertBatch(points);
