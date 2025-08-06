@@ -1,0 +1,169 @@
+{
+  "versao": "1.0.0",
+  "data": "2025-01-17",
+  "descricao": "Schema oficial de triplas semânticas - Knowledge Consolidator",
+  
+  "estrutura": {
+    "modelo": "Legado-Presente-Objetivo",
+    "componentes": {
+      "legado": {
+        "tipo": "SYS.R",
+        "descricao": "O que herdamos, base histórica",
+        "exemplo": "file_123"
+      },
+      "presente": {
+        "tipo": "SUB.R", 
+        "descricao": "Estado/contexto atual",
+        "exemplo": "foiAnalisadoComo"
+      },
+      "objetivo": {
+        "tipo": "ACT.R",
+        "descricao": "Meta/ação desejada",
+        "exemplo": "Breakthrough Técnico"
+      }
+    },
+    "metadados_obrigatorios": {
+      "timestamp": "ISO 8601",
+      "fonte": "string",
+      "confianca": "number (0-1)"
+    }
+  },
+  
+  "predicados": {
+    "metadados": {
+      "temNome": { "dominio": "arquivo", "alcance": "string" },
+      "temTamanho": { "dominio": "arquivo", "alcance": "numero" },
+      "temTipo": { "dominio": "arquivo", "alcance": "string" },
+      "temStatus": { "dominio": "arquivo", "alcance": "string" },
+      "temVersao": { "dominio": "arquivo", "alcance": "string" }
+    },
+    
+    "categorizacao": {
+      "pertenceCategoria": { "dominio": "arquivo", "alcance": "categoria" },
+      "categorizadoComo": { "dominio": "arquivo", "alcance": "categoria", "confianca_padrao": 1.0 },
+      "sugeridaCategoria": { "dominio": "any", "alcance": "categoria", "confianca_padrao": 0.7 }
+    },
+    
+    "analise": {
+      "foiAnalisadoComo": { "dominio": "arquivo", "alcance": "tipoAnalise" },
+      "possuiRelevancia": { "dominio": "arquivo", "alcance": "numero" },
+      "contemPalavraChave": { "dominio": "arquivo", "alcance": "string" },
+      "possuiInsight": { "dominio": "arquivo", "alcance": "string" },
+      "contemCodigo": { "dominio": "arquivo", "alcance": "boolean" },
+      "usaLinguagem": { "dominio": "arquivo", "alcance": "linguagem" }
+    },
+    
+    "acoes": {
+      "requerAcao": { "dominio": "arquivo", "alcance": "acao" },
+      "disparaWorkflow": { "dominio": "evento", "alcance": "string" },
+      "notificaVia": { "dominio": "evento", "alcance": "string" },
+      "ehPotencialSolucao": { "dominio": "arquivo", "alcance": "boolean" }
+    },
+    
+    "relacionamentos": {
+      "evoluiuDe": { "dominio": "arquivo", "alcance": "any" },
+      "mencionaArquivo": { "dominio": "arquivo", "alcance": "any" },
+      "mencionaEntidade": { "dominio": "arquivo", "alcance": "string" },
+      "correlacionaCom": { "dominio": "any", "alcance": "any", "bidirecional": true },
+      "compartilhaCategoriaCom": { "dominio": "arquivo", "alcance": "any" },
+      "segueTemporalmente": { "dominio": "arquivo", "alcance": "any" }
+    },
+    
+    "temporal": {
+      "criadoEm": { "dominio": "arquivo", "alcance": "timestamp" },
+      "atualizadoEm": { "dominio": "arquivo", "alcance": "timestamp" }
+    },
+    
+    "curadoria": {
+      "aprovadoPor": { "dominio": "arquivo", "alcance": "usuario", "confianca_padrao": 1.0 },
+      "rejeitadoPor": { "dominio": "arquivo", "alcance": "usuario" },
+      "comentadoPor": { "dominio": "arquivo", "alcance": "string" }
+    }
+  },
+  
+  "tipos_entidade": {
+    "arquivo": {
+      "prefixo": "file_",
+      "exemplo": "file_123"
+    },
+    "categoria": {
+      "valores": ["tech", "tecnico", "estrategico", "conceitual", "decisivo", "insight", "aprendizado"],
+      "prefixo": "cat_"
+    },
+    "tipoAnalise": {
+      "valores": [
+        "Breakthrough Técnico",
+        "Evolução Conceitual", 
+        "Momento Decisivo",
+        "Insight Estratégico",
+        "Aprendizado Geral"
+      ]
+    },
+    "acao": {
+      "valores": ["revisao_prioritaria", "implementar_ci_cd", "criar_documentacao_api", "atualizar_documentacao"],
+      "prefixo": "action_"
+    },
+    "linguagem": {
+      "valores": ["javascript", "python", "java", "typescript", "sql", "go", "rust", "c++", "c#"]
+    },
+    "boolean": {
+      "valores": ["true", "false"]
+    }
+  },
+  
+  "regras_inferencia": [
+    {
+      "nome": "categoria_por_analise",
+      "descricao": "Infere categoria tech para Breakthrough Técnico",
+      "se": {
+        "presente": "foiAnalisadoComo",
+        "objetivo": "Breakthrough Técnico"
+      },
+      "entao": {
+        "presente": "sugeridaCategoria",
+        "objetivo": "tech",
+        "confianca": 0.8
+      }
+    },
+    {
+      "nome": "acao_por_relevancia",
+      "descricao": "Alta relevância + urgente = revisão prioritária",
+      "se": [
+        { "presente": "possuiRelevancia", "objetivo": ">0.8" },
+        { "presente": "contemPalavraChave", "objetivo": "urgente" }
+      ],
+      "entao": {
+        "presente": "requerAcao",
+        "objetivo": "revisao_prioritaria",
+        "confianca": 0.9
+      }
+    }
+  ],
+  
+  "integracao": {
+    "n8n": {
+      "metadado": "gatilho_n8n",
+      "estrutura": {
+        "workflow": "string",
+        "trigger": "string",
+        "parametros": "object"
+      }
+    },
+    "langchain": {
+      "metadado": "langchain_chain",
+      "valores": ["technical_documentation", "insight_analysis", "pattern_detection"]
+    },
+    "evolution": {
+      "metadado": "evolution_template",
+      "valores": ["new_insight_found", "action_required", "analysis_complete"]
+    }
+  },
+  
+  "estatisticas_implementacao": {
+    "total_predicados": 45,
+    "componentes": 3,
+    "linhas_codigo": 2380,
+    "performance_busca": "<1ms",
+    "capacidade": "10k+ triplas"
+  }
+}

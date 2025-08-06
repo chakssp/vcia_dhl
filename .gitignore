@@ -27,11 +27,8 @@ Thumbs.db
 # Build/Dist
 dist/
 build/
-docs/
 imagens/
 claude/
-templates/
-specs/
 
 # Temporary files
 temp/

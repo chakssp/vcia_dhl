@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Block Builder - Visual Configuration System</title>
+    
+    <style>
+        /* ============================
+           Service Block Builder - UI Innovation 005
+           
+           Innovation: Replace traditional configuration forms with a visual,
+           drag-and-drop block system inspired by AWS architecture diagrams.
+           
+           Key Features:
+           - Drag-and-drop service blocks
+           - Visual connection system with validation
+           - Hierarchical block nesting
+           - Live configuration preview
+           - Export to JSON or visual diagram
+           - LEGO-like building experience
+           ============================ */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #e1e8ed;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Layout */
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            height: 100vh;
+            gap: 1px;
+            background: #1a1f3a;
+        }
+        
+        /* Block Library Panel */
+        .block-library {
+            background: #0f1329;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #1a1f3a;
+        }
+        
+        .library-header {
+            margin-bottom: 20px;
+        }
+        
+        .library-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e1e8ed;
+            margin-bottom: 8px;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 8px;
+            color: #e1e8ed;
+            font-size: 14px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #ff9900;
+        }
+        
+        /* Block Categories */
+        .block-category {
+            margin-bottom: 24px;
+        }
+        
+        .category-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b92a7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .category-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+        
+        /* Library Blocks */
+        .library-block {
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: grab;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .library-block:hover {
+            background: #232943;
+            border-color: #ff9900;
+            transform: translateX(4px);
+        }
+        
+        .library-block.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .block-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .block-info {
+            flex: 1;
+        }
+        
+        .block-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e1e8ed;
+            margin-bottom: 2px;
+        }
+        
+        .block-description {
+            font-size: 12px;
+            color: #8b92a7;
+        }
+        
+        /* Canvas Area */
+        .canvas-container {
+            background: #0a0e27;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .canvas-header {
+            background: #0f1329;
+            padding: 16px 24px;
+            border-bottom: 1px solid #1a1f3a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .canvas-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e1e8ed;
+        }
+        
+        .canvas-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 6px;
+            color: #e1e8ed;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .action-button:hover {
+            background: #232943;
+            border-color: #ff9900;
+        }
+        
+        .action-button.primary {
+            background: #ff9900;
+            border-color: #ff9900;
+            color: #0a0e27;
+        }
+        
+        .action-button.primary:hover {
+            background: #ffb340;
+        }
+        
+        /* Canvas */
+        #canvas {
+            width: 100%;
+            height: calc(100% - 65px);
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 2px 2px, #1a1f3a 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+        
+        /* Canvas Blocks */
+        .canvas-block {
+            position: absolute;
+            background: #1a1f3a;
+            border: 2px solid #2a2f4a;
+            border-radius: 12px;
+            min-width: 200px;
+            cursor: move;
+            transition: box-shadow 0.2s ease;
+            user-select: none;
+        }
+        
+        .canvas-block:hover {
+            box-shadow: 0 8px 24px rgba(255, 153, 0, 0.1);
+        }
+        
+        .canvas-block.selected {
+            border-color: #ff9900;
+            box-shadow: 0 0 0 4px rgba(255, 153, 0, 0.2);
+        }
+        
+        .canvas-block.connecting {
+            border-color: #00a8cc;
+        }
+        
+        .canvas-block.invalid-target {
+            border-color: #ff4444;
+        }
+        
+        .block-header {
+            padding: 16px;
+            border-bottom: 1px solid #2a2f4a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .block-content {
+            padding: 16px;
+        }
+        
+        .block-config-item {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        
+        .config-label {
+            color: #8b92a7;
+            margin-bottom: 4px;
+        }
+        
+        .config-value {
+            color: #e1e8ed;
+            font-weight: 500;
+        }
+        
+        /* Connection Ports */
+        .connection-port {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #2a2f4a;
+            border: 2px solid #ff9900;
+            border-radius: 50%;
+            cursor: crosshair;
+            transition: all 0.2s ease;
+        }
+        
+        .connection-port:hover {
+            transform: scale(1.3);
+            background: #ff9900;
+        }
+        
+        .port-input {
+            top: 50%;
+            left: -8px;
+            transform: translateY(-50%);
+        }
+        
+        .port-output {
+            top: 50%;
+            right: -8px;
+            transform: translateY(-50%);
+        }
+        
+        /* Connections */
+        .connection-line {
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .connection-path {
+            stroke: #ff9900;
+            stroke-width: 3;
+            fill: none;
+            opacity: 0.8;
+        }
+        
+        .connection-path.preview {
+            stroke: #00a8cc;
+            stroke-dasharray: 5, 5;
+            animation: dash 0.5s linear infinite;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+        
+        /* Configuration Panel */
+        .config-panel {
+            background: #0f1329;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 1px solid #1a1f3a;
+        }
+        
+        .config-header {
+            margin-bottom: 24px;
+        }
+        
+        .config-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e1e8ed;
+            margin-bottom: 8px;
+        }
+        
+        .config-subtitle {
+            font-size: 13px;
+            color: #8b92a7;
+        }
+        
+        /* Config Form */
+        .config-section {
+            margin-bottom: 24px;
+        }
+        
+        .config-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8b92a7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .config-field {
+            margin-bottom: 16px;
+        }
+        
+        .config-field label {
+            display: block;
+            font-size: 13px;
+            color: #e1e8ed;
+            margin-bottom: 6px;
+        }
+        
+        .config-field input,
+        .config-field select {
+            width: 100%;
+            padding: 8px 12px;
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 6px;
+            color: #e1e8ed;
+            font-size: 13px;
+        }
+        
+        .config-field input:focus,
+        .config-field select:focus {
+            outline: none;
+            border-color: #ff9900;
+        }
+        
+        /* Nested Blocks Container */
+        .nested-blocks {
+            background: #0a0e27;
+            border: 1px dashed #2a2f4a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            min-height: 80px;
+            position: relative;
+        }
+        
+        .nested-blocks.drag-over {
+            border-color: #ff9900;
+            background: rgba(255, 153, 0, 0.05);
+        }
+        
+        .nested-placeholder {
+            text-align: center;
+            color: #8b92a7;
+            font-size: 12px;
+            padding: 20px;
+        }
+        
+        /* Export Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal {
+            background: #0f1329;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #1a1f3a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e1e8ed;
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1f3a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            background: #2a2f4a;
+        }
+        
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            max-height: calc(80vh - 140px);
+        }
+        
+        .export-options {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .export-option {
+            flex: 1;
+            padding: 16px;
+            background: #1a1f3a;
+            border: 2px solid #2a2f4a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .export-option:hover {
+            border-color: #ff9900;
+            background: #232943;
+        }
+        
+        .export-option.selected {
+            border-color: #ff9900;
+            background: rgba(255, 153, 0, 0.1);
+        }
+        
+        .export-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .export-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e1e8ed;
+            margin-bottom: 4px;
+        }
+        
+        .export-description {
+            font-size: 12px;
+            color: #8b92a7;
+        }
+        
+        .code-preview {
+            background: #0a0e27;
+            border: 1px solid #1a1f3a;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            overflow-x: auto;
+            white-space: pre;
+            color: #e1e8ed;
+        }
+        
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #1a1f3a;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        
+        /* Help Tooltip */
+        .help-tooltip {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: #1a1f3a;
+            border: 1px solid #2a2f4a;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #8b92a7;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+        
+        .help-tooltip strong {
+            color: #ff9900;
+        }
+        
+        /* Loading State */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #1a1f3a;
+            border-top-color: #ff9900;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 240px 1fr;
+            }
+            
+            .config-panel {
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 320px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                box-shadow: -4px 0 24px rgba(0, 0, 0, 0.3);
+                z-index: 100;
+            }
+            
+            .config-panel.active {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Block Library -->
+        <div class="block-library">
+            <div class="library-header">
+                <h2>Service Blocks</h2>
+                <input type="text" class="search-box" placeholder="Search blocks...">
+            </div>
+            
+            <!-- Compute Category -->
+            <div class="block-category">
+                <div class="category-title">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    Compute
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="web-server">
+                    <div class="block-icon" style="background: #ff9900;">🖥️</div>
+                    <div class="block-info">
+                        <div class="block-name">Web Server</div>
+                        <div class="block-description">HTTP server instance</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="app-server">
+                    <div class="block-icon" style="background: #00a8cc;">⚙️</div>
+                    <div class="block-info">
+                        <div class="block-name">App Server</div>
+                        <div class="block-description">Application runtime</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="function">
+                    <div class="block-icon" style="background: #ff5533;">λ</div>
+                    <div class="block-info">
+                        <div class="block-name">Function</div>
+                        <div class="block-description">Serverless function</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Network Category -->
+            <div class="block-category">
+                <div class="category-title">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                    </svg>
+                    Network
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="load-balancer">
+                    <div class="block-icon" style="background: #7aa116;">⚖️</div>
+                    <div class="block-info">
+                        <div class="block-name">Load Balancer</div>
+                        <div class="block-description">Traffic distribution</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="cdn">
+                    <div class="block-icon" style="background: #9d5025;">🌐</div>
+                    <div class="block-info">
+                        <div class="block-name">CDN</div>
+                        <div class="block-description">Content delivery</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="api-gateway">
+                    <div class="block-icon" style="background: #ff9900;">🚪</div>
+                    <div class="block-info">
+                        <div class="block-name">API Gateway</div>
+                        <div class="block-description">API management</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Storage Category -->
+            <div class="block-category">
+                <div class="category-title">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 9h20v4H2V9zm2 3h2v-2H4v2zM2 4v4h20V4H2zm2 3h2V5H4v2z"/>
+                    </svg>
+                    Storage
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="database">
+                    <div class="block-icon" style="background: #3369e7;">🗄️</div>
+                    <div class="block-info">
+                        <div class="block-name">Database</div>
+                        <div class="block-description">Relational database</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="cache">
+                    <div class="block-icon" style="background: #dc382c;">⚡</div>
+                    <div class="block-info">
+                        <div class="block-name">Cache</div>
+                        <div class="block-description">In-memory cache</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="storage">
+                    <div class="block-icon" style="background: #569a31;">🗂️</div>
+                    <div class="block-info">
+                        <div class="block-name">Object Storage</div>
+                        <div class="block-description">File storage</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Category -->
+            <div class="block-category">
+                <div class="category-title">
+                    <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                    Security
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="firewall">
+                    <div class="block-icon" style="background: #dd344c;">🛡️</div>
+                    <div class="block-info">
+                        <div class="block-name">Firewall</div>
+                        <div class="block-description">Network security</div>
+                    </div>
+                </div>
+                
+                <div class="library-block" draggable="true" data-block-type="auth">
+                    <div class="block-icon" style="background: #f79e05;">🔐</div>
+                    <div class="block-info">
+                        <div class="block-name">Auth Service</div>
+                        <div class="block-description">Authentication</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Canvas -->
+        <div class="canvas-container">
+            <div class="canvas-header">
+                <div class="canvas-title">Architecture Builder</div>
+                <div class="canvas-actions">
+                    <button class="action-button" onclick="clearCanvas()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+                        </svg>
+                        Clear
+                    </button>
+                    <button class="action-button" onclick="autoLayout()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="14" y="14" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                        </svg>
+                        Auto Layout
+                    </button>
+                    <button class="action-button primary" onclick="exportConfig()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Export
+                    </button>
+                </div>
+            </div>
+            
+            <div id="canvas">
+                <svg id="connections" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;"></svg>
+                
+                <!-- Help Tooltip -->
+                <div class="help-tooltip">
+                    <strong>Drag</strong> blocks from library • <strong>Connect</strong> via ports • <strong>Double-click</strong> to configure
+                </div>
+            </div>
+        </div>
+        
+        <!-- Configuration Panel -->
+        <div class="config-panel" id="configPanel">
+            <div class="config-header">
+                <h3>Block Configuration</h3>
+                <p class="config-subtitle">Select a block to configure</p>
+            </div>
+            
+            <div id="configContent">
+                <!-- Config content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Export Configuration</h3>
+                <div class="modal-close" onclick="closeExportModal()">✕</div>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="export-option selected" onclick="selectExportType('json')">
+                        <div class="export-icon">{ }</div>
+                        <div class="export-title">JSON Config</div>
+                        <div class="export-description">Machine-readable format</div>
+                    </div>
+                    <div class="export-option" onclick="selectExportType('diagram')">
+                        <div class="export-icon">📊</div>
+                        <div class="export-title">Visual Diagram</div>
+                        <div class="export-description">PNG/SVG image</div>
+                    </div>
+                    <div class="export-option" onclick="selectExportType('terraform')">
+                        <div class="export-icon">🏗️</div>
+                        <div class="export-title">Terraform</div>
+                        <div class="export-description">Infrastructure as Code</div>
+                    </div>
+                </div>
+                
+                <div id="exportPreview" class="code-preview"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="action-button" onclick="closeExportModal()">Cancel</button>
+                <button class="action-button primary" onclick="downloadExport()">Download</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Service Block Builder Implementation
+        
+        // Block Definitions
+        const blockDefinitions = {
+            'load-balancer': {
+                name: 'Load Balancer',
+                icon: '⚖️',
+                color: '#7aa116',
+                inputs: 0,
+                outputs: ['http'],
+                config: {
+                    algorithm: { type: 'select', options: ['round-robin', 'least-connections', 'ip-hash'], default: 'round-robin' },
+                    healthCheck: { type: 'text', default: '/health' },
+                    timeout: { type: 'number', default: 30, unit: 's' }
+                }
+            },
+            'web-server': {
+                name: 'Web Server',
+                icon: '🖥️',
+                color: '#ff9900',
+                inputs: ['http'],
+                outputs: ['app'],
+                config: {
+                    instances: { type: 'number', default: 2 },
+                    port: { type: 'number', default: 80 },
+                    root: { type: 'text', default: '/var/www/html' }
+                }
+            },
+            'app-server': {
+                name: 'App Server',
+                icon: '⚙️',
+                color: '#00a8cc',
+                inputs: ['app'],
+                outputs: ['data'],
+                config: {
+                    runtime: { type: 'select', options: ['node', 'python', 'java', 'ruby'], default: 'node' },
+                    memory: { type: 'number', default: 512, unit: 'MB' },
+                    environment: { type: 'select', options: ['development', 'staging', 'production'], default: 'production' }
+                }
+            },
+            'database': {
+                name: 'Database',
+                icon: '🗄️',
+                color: '#3369e7',
+                inputs: ['data'],
+                outputs: [],
+                config: {
+                    engine: { type: 'select', options: ['mysql', 'postgresql', 'mongodb', 'redis'], default: 'postgresql' },
+                    version: { type: 'text', default: '13.4' },
+                    storage: { type: 'number', default: 100, unit: 'GB' },
+                    replicas: { type: 'number', default: 1 }
+                }
+            },
+            'cache': {
+                name: 'Cache',
+                icon: '⚡',
+                color: '#dc382c',
+                inputs: ['data'],
+                outputs: ['data'],
+                config: {
+                    engine: { type: 'select', options: ['redis', 'memcached'], default: 'redis' },
+                    memory: { type: 'number', default: 256, unit: 'MB' },
+                    eviction: { type: 'select', options: ['lru', 'lfu', 'ttl'], default: 'lru' }
+                }
+            },
+            'cdn': {
+                name: 'CDN',
+                icon: '🌐',
+                color: '#9d5025',
+                inputs: ['http'],
+                outputs: [],
+                config: {
+                    locations: { type: 'select', options: ['global', 'us-only', 'eu-only', 'asia-only'], default: 'global' },
+                    caching: { type: 'select', options: ['aggressive', 'standard', 'minimal'], default: 'standard' }
+                }
+            },
+            'api-gateway': {
+                name: 'API Gateway',
+                icon: '🚪',
+                color: '#ff9900',
+                inputs: ['http'],
+                outputs: ['api'],
+                config: {
+                    rateLimit: { type: 'number', default: 1000, unit: 'req/min' },
+                    authentication: { type: 'select', options: ['api-key', 'oauth2', 'jwt', 'none'], default: 'api-key' }
+                }
+            },
+            'function': {
+                name: 'Function',
+                icon: 'λ',
+                color: '#ff5533',
+                inputs: ['api', 'event'],
+                outputs: ['data', 'event'],
+                config: {
+                    runtime: { type: 'select', options: ['nodejs14', 'python3.9', 'go1.16', 'java11'], default: 'nodejs14' },
+                    memory: { type: 'number', default: 128, unit: 'MB' },
+                    timeout: { type: 'number', default: 3, unit: 's' }
+                }
+            },
+            'storage': {
+                name: 'Object Storage',
+                icon: '🗂️',
+                color: '#569a31',
+                inputs: ['data'],
+                outputs: [],
+                config: {
+                    redundancy: { type: 'select', options: ['standard', 'reduced', 'glacier'], default: 'standard' },
+                    versioning: { type: 'select', options: ['enabled', 'disabled'], default: 'enabled' },
+                    encryption: { type: 'select', options: ['aes256', 'kms', 'none'], default: 'aes256' }
+                }
+            },
+            'firewall': {
+                name: 'Firewall',
+                icon: '🛡️',
+                color: '#dd344c',
+                inputs: [],
+                outputs: ['http'],
+                config: {
+                    rules: { type: 'select', options: ['strict', 'moderate', 'permissive'], default: 'moderate' },
+                    ddosProtection: { type: 'select', options: ['enabled', 'disabled'], default: 'enabled' }
+                }
+            },
+            'auth': {
+                name: 'Auth Service',
+                icon: '🔐',
+                color: '#f79e05',
+                inputs: ['api'],
+                outputs: ['auth'],
+                config: {
+                    provider: { type: 'select', options: ['cognito', 'auth0', 'okta', 'custom'], default: 'cognito' },
+                    mfa: { type: 'select', options: ['required', 'optional', 'disabled'], default: 'optional' }
+                }
+            }
+        };
+        
+        // Global State
+        let blocks = [];
+        let connections = [];
+        let selectedBlock = null;
+        let connectingFrom = null;
+        let draggedBlock = null;
+        let blockIdCounter = 1;
+        let currentExportType = 'json';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDragAndDrop();
+            initializeCanvas();
+            createDemoArchitecture();
+        });
+        
+        // Drag and Drop
+        function initializeDragAndDrop() {
+            // Library blocks
+            document.querySelectorAll('.library-block').forEach(block => {
+                block.addEventListener('dragstart', handleLibraryDragStart);
+                block.addEventListener('dragend', handleLibraryDragEnd);
+            });
+            
+            // Canvas
+            const canvas = document.getElementById('canvas');
+            canvas.addEventListener('dragover', handleCanvasDragOver);
+            canvas.addEventListener('drop', handleCanvasDrop);
+        }
+        
+        function handleLibraryDragStart(e) {
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('blockType', e.target.dataset.blockType);
+        }
+        
+        function handleLibraryDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        function handleCanvasDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+        
+        function handleCanvasDrop(e) {
+            e.preventDefault();
+            const blockType = e.dataTransfer.getData('blockType');
+            if (blockType) {
+                const rect = e.target.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                createBlock(blockType, x, y);
+            }
+        }
+        
+        // Block Creation
+        function createBlock(type, x, y, id = null) {
+            const definition = blockDefinitions[type];
+            if (!definition) return;
+            
+            const block = {
+                id: id || `block-${blockIdCounter++}`,
+                type: type,
+                x: x - 100,
+                y: y - 50,
+                config: {},
+                nestedBlocks: []
+            };
+            
+            // Initialize config with defaults
+            Object.entries(definition.config).forEach(([key, field]) => {
+                block.config[key] = field.default;
+            });
+            
+            blocks.push(block);
+            renderBlock(block);
+            updateConnections();
+        }
+        
+        function renderBlock(block) {
+            const definition = blockDefinitions[block.type];
+            const div = document.createElement('div');
+            div.className = 'canvas-block';
+            div.id = block.id;
+            div.style.left = block.x + 'px';
+            div.style.top = block.y + 'px';
+            
+            // Header
+            const header = document.createElement('div');
+            header.className = 'block-header';
+            header.innerHTML = `
+                <div class="block-icon" style="background: ${definition.color};">${definition.icon}</div>
+                <div class="block-name">${definition.name}</div>
+            `;
+            div.appendChild(header);
+            
+            // Content
+            const content = document.createElement('div');
+            content.className = 'block-content';
+            
+            // Display main config
+            Object.entries(block.config).forEach(([key, value]) => {
+                const configItem = document.createElement('div');
+                configItem.className = 'block-config-item';
+                configItem.innerHTML = `
+                    <div class="config-label">${key}:</div>
+                    <div class="config-value">${value}${definition.config[key].unit || ''}</div>
+                `;
+                content.appendChild(configItem);
+            });
+            
+            // Nested blocks container
+            if (canHaveNestedBlocks(block.type)) {
+                const nestedContainer = document.createElement('div');
+                nestedContainer.className = 'nested-blocks';
+                nestedContainer.dataset.parentId = block.id;
+                
+                if (block.nestedBlocks.length === 0) {
+                    nestedContainer.innerHTML = '<div class="nested-placeholder">Drop blocks here</div>';
+                }
+                
+                content.appendChild(nestedContainer);
+            }
+            
+            div.appendChild(content);
+            
+            // Connection ports
+            if (definition.inputs.length > 0) {
+                const inputPort = document.createElement('div');
+                inputPort.className = 'connection-port port-input';
+                inputPort.dataset.blockId = block.id;
+                inputPort.dataset.portType = 'input';
+                div.appendChild(inputPort);
+            }
+            
+            if (definition.outputs.length > 0) {
+                const outputPort = document.createElement('div');
+                outputPort.className = 'connection-port port-output';
+                outputPort.dataset.blockId = block.id;
+                outputPort.dataset.portType = 'output';
+                div.appendChild(outputPort);
+            }
+            
+            // Event listeners
+            div.addEventListener('mousedown', handleBlockMouseDown);
+            div.addEventListener('dblclick', handleBlockDoubleClick);
+            
+            // Port event listeners
+            div.querySelectorAll('.connection-port').forEach(port => {
+                port.addEventListener('mousedown', handlePortMouseDown);
+            });
+            
+            document.getElementById('canvas').appendChild(div);
+        }
+        
+        function canHaveNestedBlocks(type) {
+            return ['web-server', 'app-server', 'function'].includes(type);
+        }
+        
+        // Block Interactions
+        function handleBlockMouseDown(e) {
+            if (e.target.classList.contains('connection-port')) return;
+            
+            e.preventDefault();
+            const block = blocks.find(b => b.id === e.currentTarget.id);
+            if (!block) return;
+            
+            selectedBlock = block;
+            document.querySelectorAll('.canvas-block').forEach(b => b.classList.remove('selected'));
+            e.currentTarget.classList.add('selected');
+            
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const origX = block.x;
+            const origY = block.y;
+            
+            function handleMouseMove(e) {
+                block.x = origX + (e.clientX - startX);
+                block.y = origY + (e.clientY - startY);
+                e.currentTarget.style.left = block.x + 'px';
+                e.currentTarget.style.top = block.y + 'px';
+                updateConnections();
+            }
+            
+            function handleMouseUp() {
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+        
+        function handleBlockDoubleClick(e) {
+            const block = blocks.find(b => b.id === e.currentTarget.id);
+            if (block) {
+                showBlockConfig(block);
+            }
+        }
+        
+        // Connection Management
+        function handlePortMouseDown(e) {
+            e.stopPropagation();
+            const blockId = e.target.dataset.blockId;
+            const portType = e.target.dataset.portType;
+            
+            if (portType === 'output') {
+                connectingFrom = { blockId, port: e.target };
+                document.addEventListener('mousemove', handleConnectionDrag);
+                document.addEventListener('mouseup', handleConnectionEnd);
+            }
+        }
+        
+        function handleConnectionDrag(e) {
+            if (!connectingFrom) return;
+            
+            // Draw preview connection
+            const svg = document.getElementById('connections');
+            let preview = svg.querySelector('.connection-preview');
+            if (!preview) {
+                preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                preview.classList.add('connection-path', 'connection-preview');
+                svg.appendChild(preview);
+            }
+            
+            const fromRect = connectingFrom.port.getBoundingClientRect();
+            const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+            
+            const x1 = fromRect.left - canvasRect.left + fromRect.width / 2;
+            const y1 = fromRect.top - canvasRect.top + fromRect.height / 2;
+            const x2 = e.clientX - canvasRect.left;
+            const y2 = e.clientY - canvasRect.top;
+            
+            preview.setAttribute('d', createConnectionPath(x1, y1, x2, y2));
+            
+            // Highlight valid targets
+            document.querySelectorAll('.canvas-block').forEach(block => {
+                block.classList.remove('connecting', 'invalid-target');
+                if (canConnect(connectingFrom.blockId, block.id)) {
+                    block.classList.add('connecting');
+                }
+            });
+        }
+        
+        function handleConnectionEnd(e) {
+            document.removeEventListener('mousemove', handleConnectionDrag);
+            document.removeEventListener('mouseup', handleConnectionEnd);
+            
+            // Remove preview
+            const preview = document.querySelector('.connection-preview');
+            if (preview) preview.remove();
+            
+            // Remove highlights
+            document.querySelectorAll('.canvas-block').forEach(block => {
+                block.classList.remove('connecting', 'invalid-target');
+            });
+            
+            // Check if dropped on valid input port
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            if (target && target.classList.contains('port-input')) {
+                const toBlockId = target.dataset.blockId;
+                if (canConnect(connectingFrom.blockId, toBlockId)) {
+                    createConnection(connectingFrom.blockId, toBlockId);
+                }
+            }
+            
+            connectingFrom = null;
+        }
+        
+        function canConnect(fromId, toId) {
+            if (fromId === toId) return false;
+            
+            const fromBlock = blocks.find(b => b.id === fromId);
+            const toBlock = blocks.find(b => b.id === toId);
+            
+            if (!fromBlock || !toBlock) return false;
+            
+            const fromDef = blockDefinitions[fromBlock.type];
+            const toDef = blockDefinitions[toBlock.type];
+            
+            // Check if connection types are compatible
+            const hasCompatibleType = fromDef.outputs.some(output => 
+                toDef.inputs.includes(output)
+            );
+            
+            // Check if connection already exists
+            const connectionExists = connections.some(c => 
+                c.from === fromId && c.to === toId
+            );
+            
+            return hasCompatibleType && !connectionExists;
+        }
+        
+        function createConnection(fromId, toId) {
+            connections.push({ from: fromId, to: toId });
+            updateConnections();
+        }
+        
+        function updateConnections() {
+            const svg = document.getElementById('connections');
+            svg.innerHTML = '';
+            
+            connections.forEach(conn => {
+                const fromBlock = document.getElementById(conn.from);
+                const toBlock = document.getElementById(conn.to);
+                
+                if (!fromBlock || !toBlock) return;
+                
+                const fromPort = fromBlock.querySelector('.port-output');
+                const toPort = toBlock.querySelector('.port-input');
+                
+                if (!fromPort || !toPort) return;
+                
+                const fromRect = fromPort.getBoundingClientRect();
+                const toRect = toPort.getBoundingClientRect();
+                const canvasRect = document.getElementById('canvas').getBoundingClientRect();
+                
+                const x1 = fromRect.left - canvasRect.left + fromRect.width / 2;
+                const y1 = fromRect.top - canvasRect.top + fromRect.height / 2;
+                const x2 = toRect.left - canvasRect.left + toRect.width / 2;
+                const y2 = toRect.top - canvasRect.top + toRect.height / 2;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.classList.add('connection-path');
+                path.setAttribute('d', createConnectionPath(x1, y1, x2, y2));
+                svg.appendChild(path);
+            });
+        }
+        
+        function createConnectionPath(x1, y1, x2, y2) {
+            const dx = x2 - x1;
+            const cp1x = x1 + dx * 0.5;
+            const cp2x = x2 - dx * 0.5;
+            return `M ${x1} ${y1} C ${cp1x} ${y1}, ${cp2x} ${y2}, ${x2} ${y2}`;
+        }
+        
+        // Configuration Panel
+        function showBlockConfig(block) {
+            selectedBlock = block;
+            const definition = blockDefinitions[block.type];
+            const configContent = document.getElementById('configContent');
+            
+            configContent.innerHTML = `
+                <div class="config-section">
+                    <div class="config-section-title">General Settings</div>
+                    <div class="config-field">
+                        <label>Block ID</label>
+                        <input type="text" value="${block.id}" disabled>
+                    </div>
+                    <div class="config-field">
+                        <label>Type</label>
+                        <input type="text" value="${definition.name}" disabled>
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <div class="config-section-title">Configuration</div>
+                    ${Object.entries(definition.config).map(([key, field]) => `
+                        <div class="config-field">
+                            <label>${key}${field.unit ? ` (${field.unit})` : ''}</label>
+                            ${renderConfigField(key, field, block.config[key])}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Add event listeners for config changes
+            configContent.querySelectorAll('input, select').forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const key = e.target.dataset.key;
+                    block.config[key] = e.target.type === 'number' ? 
+                        parseInt(e.target.value) : e.target.value;
+                    updateBlockDisplay(block);
+                });
+            });
+            
+            // Show config panel on mobile
+            if (window.innerWidth <= 1024) {
+                document.getElementById('configPanel').classList.add('active');
+            }
+        }
+        
+        function renderConfigField(key, field, value) {
+            switch (field.type) {
+                case 'select':
+                    return `
+                        <select data-key="${key}">
+                            ${field.options.map(opt => `
+                                <option value="${opt}" ${value === opt ? 'selected' : ''}>${opt}</option>
+                            `).join('')}
+                        </select>
+                    `;
+                case 'number':
+                    return `<input type="number" data-key="${key}" value="${value}">`;
+                default:
+                    return `<input type="text" data-key="${key}" value="${value}">`;
+            }
+        }
+        
+        function updateBlockDisplay(block) {
+            const element = document.getElementById(block.id);
+            if (!element) return;
+            
+            const definition = blockDefinitions[block.type];
+            const content = element.querySelector('.block-content');
+            
+            // Update config display
+            const configItems = content.querySelectorAll('.block-config-item');
+            Object.entries(block.config).forEach(([key, value], index) => {
+                if (configItems[index]) {
+                    configItems[index].querySelector('.config-value').textContent = 
+                        value + (definition.config[key].unit || '');
+                }
+            });
+        }
+        
+        // Canvas Functions
+        function initializeCanvas() {
+            // Resize connection SVG on window resize
+            window.addEventListener('resize', updateConnections);
+        }
+        
+        function clearCanvas() {
+            if (confirm('Clear all blocks and connections?')) {
+                blocks = [];
+                connections = [];
+                selectedBlock = null;
+                document.querySelectorAll('.canvas-block').forEach(b => b.remove());
+                updateConnections();
+            }
+        }
+        
+        function autoLayout() {
+            // Simple auto-layout algorithm
+            const layers = [];
+            const visited = new Set();
+            
+            // Find root blocks (no inputs or only from outside)
+            const roots = blocks.filter(block => {
+                const hasIncoming = connections.some(c => c.to === block.id);
+                return !hasIncoming || blockDefinitions[block.type].inputs.length === 0;
+            });
+            
+            // Build layers
+            function assignLayer(block, layer = 0) {
+                if (visited.has(block.id)) return;
+                visited.add(block.id);
+                
+                if (!layers[layer]) layers[layer] = [];
+                layers[layer].push(block);
+                
+                // Find connected blocks
+                connections
+                    .filter(c => c.from === block.id)
+                    .forEach(c => {
+                        const nextBlock = blocks.find(b => b.id === c.to);
+                        if (nextBlock) assignLayer(nextBlock, layer + 1);
+                    });
+            }
+            
+            roots.forEach(root => assignLayer(root));
+            
+            // Position blocks
+            const layerWidth = 250;
+            const blockHeight = 150;
+            const startX = 100;
+            const startY = 100;
+            
+            layers.forEach((layer, layerIndex) => {
+                layer.forEach((block, blockIndex) => {
+                    block.x = startX + layerIndex * layerWidth;
+                    block.y = startY + blockIndex * blockHeight;
+                    
+                    const element = document.getElementById(block.id);
+                    if (element) {
+                        element.style.left = block.x + 'px';
+                        element.style.top = block.y + 'px';
+                    }
+                });
+            });
+            
+            updateConnections();
+        }
+        
+        // Export Functions
+        function exportConfig() {
+            const modal = document.getElementById('exportModal');
+            modal.style.display = 'flex';
+            updateExportPreview();
+        }
+        
+        function closeExportModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+        
+        function selectExportType(type) {
+            currentExportType = type;
+            document.querySelectorAll('.export-option').forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            updateExportPreview();
+        }
+        
+        function updateExportPreview() {
+            const preview = document.getElementById('exportPreview');
+            
+            switch (currentExportType) {
+                case 'json':
+                    preview.textContent = JSON.stringify(generateConfigJSON(), null, 2);
+                    break;
+                case 'terraform':
+                    preview.textContent = generateTerraformConfig();
+                    break;
+                case 'diagram':
+                    preview.innerHTML = '<div style="text-align: center; padding: 40px;">Visual diagram will be generated as PNG/SVG</div>';
+                    break;
+            }
+        }
+        
+        function generateConfigJSON() {
+            return {
+                version: '1.0',
+                architecture: {
+                    blocks: blocks.map(block => ({
+                        id: block.id,
+                        type: block.type,
+                        config: block.config,
+                        position: { x: block.x, y: block.y },
+                        nestedBlocks: block.nestedBlocks
+                    })),
+                    connections: connections,
+                    metadata: {
+                        created: new Date().toISOString(),
+                        blocksCount: blocks.length,
+                        connectionsCount: connections.length
+                    }
+                }
+            };
+        }
+        
+        function generateTerraformConfig() {
+            let terraform = '# Generated Terraform Configuration\n\n';
+            
+            blocks.forEach(block => {
+                const definition = blockDefinitions[block.type];
+                terraform += `# ${definition.name}\n`;
+                terraform += `resource "aws_${block.type.replace('-', '_')}" "${block.id}" {\n`;
+                
+                Object.entries(block.config).forEach(([key, value]) => {
+                    terraform += `  ${key} = "${value}"\n`;
+                });
+                
+                terraform += '}\n\n';
+            });
+            
+            return terraform;
+        }
+        
+        function downloadExport() {
+            let content, filename, type;
+            
+            switch (currentExportType) {
+                case 'json':
+                    content = JSON.stringify(generateConfigJSON(), null, 2);
+                    filename = 'architecture-config.json';
+                    type = 'application/json';
+                    break;
+                case 'terraform':
+                    content = generateTerraformConfig();
+                    filename = 'infrastructure.tf';
+                    type = 'text/plain';
+                    break;
+                case 'diagram':
+                    // In real implementation, would generate PNG/SVG
+                    alert('Diagram export would generate a visual image of the architecture');
+                    return;
+            }
+            
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            closeExportModal();
+        }
+        
+        // Demo Architecture
+        function createDemoArchitecture() {
+            // Create a simple web application architecture
+            createBlock('load-balancer', 200, 300, 'demo-lb');
+            createBlock('web-server', 450, 200, 'demo-web-1');
+            createBlock('web-server', 450, 400, 'demo-web-2');
+            createBlock('app-server', 700, 300, 'demo-app');
+            createBlock('cache', 950, 200, 'demo-cache');
+            createBlock('database', 950, 400, 'demo-db');
+            
+            // Create connections
+            setTimeout(() => {
+                createConnection('demo-lb', 'demo-web-1');
+                createConnection('demo-lb', 'demo-web-2');
+                createConnection('demo-web-1', 'demo-app');
+                createConnection('demo-web-2', 'demo-app');
+                createConnection('demo-app', 'demo-cache');
+                createConnection('demo-app', 'demo-db');
+            }, 100);
+        }
+        
+        // Search functionality
+        document.querySelector('.search-box').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.library-block').forEach(block => {
+                const name = block.querySelector('.block-name').textContent.toLowerCase();
+                const description = block.querySelector('.block-description').textContent.toLowerCase();
+                const matches = name.includes(query) || description.includes(query);
+                block.style.display = matches ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

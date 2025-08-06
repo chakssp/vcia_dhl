@@ -1,0 +1,70 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Users\\AIOBrito\\AppData\\Roaming\\Claude",
+        "C:\\Users\\AIOBrito\\Desktop",
+        "C:\\Users\\AIOBrito\\Documents",
+        "C:\\Users\\AIOBrito\\Downloads",
+        "F:\\vcia-1307",
+        "F:\\vcia-1307\\vcia_dhl",
+        "F:\\vcia-1307\\vcia_site",
+      	"F:\\site_vps"
+      ]
+    },
+    "memory": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory",
+        "--storage-path",
+        "F:\\vcia-1307"
+      ]
+    },
+    "server-sequential-thinking": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "github": {
+      "command": "npx.cmd",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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",
+        "APPDATA": "C:\\Users\\AIOBrito\\AppData\\Roaming"
+      }
+    },
+    "brave-search": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\AIOBrito\\AppData\\Roaming\\npm\\node_modules\\@modelcontextprotocol\\server-brave-search\\dist\\index.js"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "BSA3gt8RUoPiAsDu8kcU8Qw0K552pQG",
+        "APPDATA": "C:\\Users\\AIOBrito\\AppData\\Roaming"
+      }
+    },
+    "n8n-mcp": {
+      "command": "docker",
+      "args": [
+        "run", "-i", "--rm", "--network=host",
+        "--add-host=n8n.vcia.com.br:85.31.230.28",
+        "-e", "MCP_MODE=stdio",
+        "-e", "LOG_LEVEL=error",
+        "-e", "DISABLE_CONSOLE_OUTPUT=true", 
+        "-e", "N8N_API_URL=https://n8n.vcia.com.br",
+        "-e", "N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzZDY0Y2EwMy0zYTEzLTQ0YWMtYmM3OS01ZjhkYWUxN2E5MDgiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzUxODEwNDU3LCJleHAiOjE3NTQzNjI4MDB9.9a-d0d-dzjXZSC7t14ZtCf9GZ56E0zxIQu4qz2FVvvA",
+        "-e", "NODE_TLS_REJECT_UNAUTHORIZED=0",
+        "ghcr.io/czlonkowski/n8n-mcp:latest"
+      ]
+    }
+  }
+}

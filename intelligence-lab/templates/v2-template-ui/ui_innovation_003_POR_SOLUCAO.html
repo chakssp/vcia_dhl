@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Innovation 003: Flow Builder Input - Visual Programming for Multi-Step Wizards</title>
+    
+    <!-- Documentation Header -->
+    <!--
+    UI Innovation 003: Flow Builder Input
+    =====================================
+    
+    Innovation: Replace traditional multi-step wizards with visual node-based flows
+    
+    Key Features:
+    - Visual programming interface for form flows
+    - Draggable, connectable nodes representing form steps
+    - Conditional branching based on user inputs
+    - Real-time data flow visualization with animated particles
+    - Custom path creation through node connections
+    - Dynamic flow execution with visual feedback
+    
+    Benefits:
+    1. Intuitive flow visualization
+    2. Non-linear navigation support
+    3. Conditional logic made visible
+    4. Better understanding of data dependencies
+    5. Engaging user experience
+    
+    Technical Implementation:
+    - SVG-based node rendering and connections
+    - Bezier curves for smooth connection paths
+    - Canvas particles for data flow animation
+    - Drag-and-drop node manipulation
+    - Real-time flow validation
+    
+    Use Cases:
+    - Product configuration wizards
+    - Multi-step registration forms
+    - Complex workflow builders
+    - Interactive questionnaires
+    - Decision tree interfaces
+    -->
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        
+        /* Flow Builder Container */
+        .flow-builder {
+            background: #1a1a1a;
+            border-radius: 16px;
+            border: 1px solid #333;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            height: 600px;
+            position: relative;
+            margin-bottom: 40px;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            background: #0f0f0f;
+            border-bottom: 1px solid #333;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toolbar-title {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #3a3a3a;
+            border-color: #666;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        /* Split Layout */
+        .flow-content {
+            display: flex;
+            height: calc(100% - 61px);
+        }
+        
+        /* Node Palette */
+        .node-palette {
+            width: 200px;
+            background: #0f0f0f;
+            border-right: 1px solid #333;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .palette-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        
+        .palette-node {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .palette-node:hover {
+            background: #3a3a3a;
+            border-color: #666;
+            transform: translateX(5px);
+        }
+        
+        .palette-node-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .palette-node-text {
+            font-size: 14px;
+        }
+        
+        /* Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #1a1a2e 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #16213e 0%, transparent 50%);
+        }
+        
+        .canvas-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        /* Flow Nodes */
+        .flow-node {
+            position: absolute;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 12px;
+            min-width: 180px;
+            cursor: move;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .flow-node.active {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .flow-node.completed {
+            border-color: #4ade80;
+        }
+        
+        .flow-node-header {
+            background: #2a2a2a;
+            padding: 12px 16px;
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .flow-node-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .flow-node-content {
+            padding: 16px;
+        }
+        
+        .flow-node-input {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .flow-node-select {
+            background: #0f0f0f;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .flow-node-ports {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        .port {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border: 2px solid #1a1a1a;
+            border-radius: 50%;
+            cursor: crosshair;
+            pointer-events: all;
+            transition: all 0.2s;
+        }
+        
+        .port:hover {
+            transform: scale(1.5);
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.8);
+        }
+        
+        .port.input {
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .port.output {
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        /* Connections */
+        .connection {
+            fill: none;
+            stroke: #667eea;
+            stroke-width: 3;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+        }
+        
+        .connection.active {
+            stroke: #4ade80;
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes flowPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; stroke-width: 4; }
+        }
+        
+        /* Traditional Stepper Comparison */
+        .comparison-section {
+            margin-top: 60px;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        .comparison-box {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .comparison-title {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        /* Traditional Stepper */
+        .traditional-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            z-index: 1;
+        }
+        
+        .step.active .step-circle {
+            background: #667eea;
+            border-color: #667eea;
+        }
+        
+        .step.completed .step-circle {
+            background: #4ade80;
+            border-color: #4ade80;
+        }
+        
+        .step-line {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #444;
+            z-index: 0;
+        }
+        
+        .step:last-child .step-line {
+            display: none;
+        }
+        
+        .step-label {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+        
+        /* Design Documentation */
+        .documentation {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+        
+        .doc-section {
+            margin-bottom: 30px;
+        }
+        
+        .doc-title {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .feature-list li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .feature-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+        
+        /* Result Panel */
+        .result-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 250px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        .result-panel.show {
+            display: block;
+        }
+        
+        .result-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .result-key {
+            color: #888;
+        }
+        
+        .result-value {
+            color: #4ade80;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flow Builder Input</h1>
+        <p class="subtitle">Visual Programming Interface for Multi-Step Wizards</p>
+        
+        <!-- Flow Builder -->
+        <div class="flow-builder">
+            <div class="toolbar">
+                <div class="toolbar-title">Product Configuration Flow</div>
+                <div class="toolbar-actions">
+                    <button class="btn" onclick="resetFlow()">Reset Flow</button>
+                    <button class="btn" onclick="autoLayout()">Auto Layout</button>
+                    <button class="btn btn-primary" onclick="executeFlow()">Execute Flow</button>
+                </div>
+            </div>
+            
+            <div class="flow-content">
+                <!-- Node Palette -->
+                <div class="node-palette">
+                    <div class="palette-title">Available Nodes</div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="product-select">
+                        <div class="palette-node-icon">📦</div>
+                        <div class="palette-node-text">Product Select</div>
+                    </div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="feature-choice">
+                        <div class="palette-node-icon">⚡</div>
+                        <div class="palette-node-text">Feature Choice</div>
+                    </div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="customization">
+                        <div class="palette-node-icon">🎨</div>
+                        <div class="palette-node-text">Customization</div>
+                    </div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="pricing">
+                        <div class="palette-node-icon">💰</div>
+                        <div class="palette-node-text">Pricing Calc</div>
+                    </div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="condition">
+                        <div class="palette-node-icon">🔀</div>
+                        <div class="palette-node-text">Condition</div>
+                    </div>
+                    
+                    <div class="palette-node" draggable="true" data-node-type="payment">
+                        <div class="palette-node-icon">💳</div>
+                        <div class="palette-node-text">Payment</div>
+                    </div>
+                </div>
+                
+                <!-- Canvas -->
+                <div class="canvas-container" id="canvas">
+                    <svg class="canvas-svg" id="connectionsSvg"></svg>
+                    <canvas class="particle-canvas" id="particleCanvas"></canvas>
+                    
+                    <!-- Result Panel -->
+                    <div class="result-panel" id="resultPanel">
+                        <div class="result-title">Configuration Result</div>
+                        <div id="resultContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Comparison Section -->
+        <div class="comparison-section">
+            <h2 style="font-size: 2em; margin-bottom: 10px;">Traditional vs. Flow Builder</h2>
+            <p style="color: #888; margin-bottom: 30px;">Comparing linear steppers with visual flow programming</p>
+            
+            <div class="comparison-grid">
+                <!-- Traditional Stepper -->
+                <div class="comparison-box">
+                    <h3 class="comparison-title">Traditional Stepper</h3>
+                    
+                    <div class="traditional-stepper">
+                        <div class="step completed">
+                            <div class="step-circle">1</div>
+                            <div class="step-label">Product</div>
+                            <div class="step-line"></div>
+                        </div>
+                        <div class="step completed">
+                            <div class="step-circle">2</div>
+                            <div class="step-label">Features</div>
+                            <div class="step-line"></div>
+                        </div>
+                        <div class="step active">
+                            <div class="step-circle">3</div>
+                            <div class="step-label">Customize</div>
+                            <div class="step-line"></div>
+                        </div>
+                        <div class="step">
+                            <div class="step-circle">4</div>
+                            <div class="step-label">Payment</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #0f0f0f; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                        <p style="color: #888; font-size: 14px;">
+                            ❌ Linear progression only<br>
+                            ❌ No conditional branching<br>
+                            ❌ Hidden dependencies<br>
+                            ❌ Fixed navigation path
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Flow Builder Advantages -->
+                <div class="comparison-box">
+                    <h3 class="comparison-title">Flow Builder Approach</h3>
+                    
+                    <div style="background: #0f0f0f; padding: 20px; border-radius: 8px;">
+                        <p style="color: #4ade80; font-size: 14px; line-height: 2;">
+                            ✓ Visual flow representation<br>
+                            ✓ Conditional branching<br>
+                            ✓ Custom path creation<br>
+                            ✓ Real-time data flow<br>
+                            ✓ Non-linear navigation<br>
+                            ✓ Clear dependencies
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Design Documentation -->
+        <div class="documentation">
+            <div class="doc-section">
+                <h3 class="doc-title">Design Principles</h3>
+                <ul class="feature-list">
+                    <li>Visual programming paradigm for form flows</li>
+                    <li>Node-based interface inspired by shader editors</li>
+                    <li>Real-time flow execution with visual feedback</li>
+                    <li>Drag-and-drop simplicity with powerful branching</li>
+                    <li>Data flow visualization through animated particles</li>
+                </ul>
+            </div>
+            
+            <div class="doc-section">
+                <h3 class="doc-title">Technical Features</h3>
+                <ul class="feature-list">
+                    <li>SVG-based connection rendering with bezier curves</li>
+                    <li>Canvas particle system for data flow animation</li>
+                    <li>Drag-and-drop node creation and positioning</li>
+                    <li>Automatic connection validation</li>
+                    <li>Real-time flow execution engine</li>
+                    <li>Conditional branching with visual indicators</li>
+                </ul>
+            </div>
+            
+            <div class="doc-section">
+                <h3 class="doc-title">Use Cases</h3>
+                <ul class="feature-list">
+                    <li>Complex product configurators</li>
+                    <li>Multi-path registration flows</li>
+                    <li>Interactive questionnaires with branching logic</li>
+                    <li>Workflow builders for business processes</li>
+                    <li>Decision tree interfaces</li>
+                    <li>Dynamic form builders</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Flow Builder Engine
+        class FlowBuilder {
+            constructor() {
+                this.nodes = new Map();
+                this.connections = new Map();
+                this.particles = [];
+                this.flowData = {};
+                this.nodeIdCounter = 0;
+                this.draggingNode = null;
+                this.connectingFrom = null;
+                this.animationFrame = null;
+                
+                this.canvas = document.getElementById('canvas');
+                this.svgElement = document.getElementById('connectionsSvg');
+                this.particleCanvas = document.getElementById('particleCanvas');
+                this.particleCtx = this.particleCanvas.getContext('2d');
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupDragAndDrop();
+                this.setupCanvas();
+                this.createInitialFlow();
+                this.startParticleAnimation();
+            }
+            
+            setupCanvas() {
+                const resizeCanvas = () => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.particleCanvas.width = rect.width;
+                    this.particleCanvas.height = rect.height;
+                };
+                
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+            }
+            
+            setupDragAndDrop() {
+                // Palette drag start
+                document.querySelectorAll('.palette-node').forEach(node => {
+                    node.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('nodeType', node.dataset.nodeType);
+                    });
+                });
+                
+                // Canvas drop
+                this.canvas.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                
+                this.canvas.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const nodeType = e.dataTransfer.getData('nodeType');
+                    if (nodeType) {
+                        const rect = this.canvas.getBoundingClientRect();
+                        const x = e.clientX - rect.left - 90;
+                        const y = e.clientY - rect.top - 50;
+                        this.createNode(nodeType, x, y);
+                    }
+                });
+            }
+            
+            createNode(type, x, y) {
+                const nodeId = `node-${this.nodeIdCounter++}`;
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'flow-node';
+                nodeElement.id = nodeId;
+                nodeElement.style.left = `${x}px`;
+                nodeElement.style.top = `${y}px`;
+                
+                const nodeConfig = this.getNodeConfig(type);
+                nodeElement.innerHTML = `
+                    <div class="flow-node-header">
+                        <div class="flow-node-icon">${nodeConfig.icon}</div>
+                        <span>${nodeConfig.title}</span>
+                    </div>
+                    <div class="flow-node-content">
+                        ${nodeConfig.content}
+                    </div>
+                    <div class="flow-node-ports">
+                        ${type !== 'product-select' ? '<div class="port input"></div>' : ''}
+                        ${type !== 'payment' ? '<div class="port output"></div>' : ''}
+                    </div>
+                `;
+                
+                this.canvas.appendChild(nodeElement);
+                
+                // Store node data
+                this.nodes.set(nodeId, {
+                    id: nodeId,
+                    type: type,
+                    element: nodeElement,
+                    x: x,
+                    y: y,
+                    data: {}
+                });
+                
+                // Setup node interactions
+                this.setupNodeInteractions(nodeElement);
+            }
+            
+            getNodeConfig(type) {
+                const configs = {
+                    'product-select': {
+                        icon: '📦',
+                        title: 'Select Product',
+                        content: `
+                            <select class="flow-node-select" data-field="product">
+                                <option value="">Choose product...</option>
+                                <option value="basic">Basic Plan</option>
+                                <option value="pro">Pro Plan</option>
+                                <option value="enterprise">Enterprise</option>
+                            </select>
+                        `
+                    },
+                    'feature-choice': {
+                        icon: '⚡',
+                        title: 'Choose Features',
+                        content: `
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" data-field="feature-analytics"> Analytics
+                            </label>
+                            <label style="display: block; margin-bottom: 8px;">
+                                <input type="checkbox" data-field="feature-api"> API Access
+                            </label>
+                            <label style="display: block;">
+                                <input type="checkbox" data-field="feature-support"> Priority Support
+                            </label>
+                        `
+                    },
+                    'customization': {
+                        icon: '🎨',
+                        title: 'Customization',
+                        content: `
+                            <input type="text" class="flow-node-input" 
+                                placeholder="Brand name" data-field="brand">
+                            <input type="color" class="flow-node-input" 
+                                style="height: 40px; cursor: pointer;"
+                                value="#667eea" data-field="color">
+                        `
+                    },
+                    'pricing': {
+                        icon: '💰',
+                        title: 'Pricing Calculator',
+                        content: `
+                            <div style="text-align: center; padding: 10px;">
+                                <div style="font-size: 24px; font-weight: bold; color: #4ade80;">
+                                    $<span id="price-display">0</span>/mo
+                                </div>
+                            </div>
+                        `
+                    },
+                    'condition': {
+                        icon: '🔀',
+                        title: 'Condition',
+                        content: `
+                            <select class="flow-node-select" data-field="condition">
+                                <option value="product">If Product Type</option>
+                                <option value="price">If Price Range</option>
+                                <option value="features">If Features</option>
+                            </select>
+                        `
+                    },
+                    'payment': {
+                        icon: '💳',
+                        title: 'Payment',
+                        content: `
+                            <input type="text" class="flow-node-input" 
+                                placeholder="Card number" data-field="card">
+                            <button class="btn btn-primary" 
+                                style="width: 100%; margin-top: 10px;"
+                                onclick="flowBuilder.completeFlow()">
+                                Complete Order
+                            </button>
+                        `
+                    }
+                };
+                
+                return configs[type] || configs['product-select'];
+            }
+            
+            setupNodeInteractions(nodeElement) {
+                // Dragging
+                let isDragging = false;
+                let startX, startY, offsetX, offsetY;
+                
+                nodeElement.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.port') || e.target.tagName === 'INPUT' || 
+                        e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON') {
+                        return;
+                    }
+                    
+                    isDragging = true;
+                    const rect = nodeElement.getBoundingClientRect();
+                    const canvasRect = this.canvas.getBoundingClientRect();
+                    
+                    offsetX = e.clientX - rect.left;
+                    offsetY = e.clientY - rect.top;
+                    
+                    nodeElement.style.cursor = 'grabbing';
+                    nodeElement.style.zIndex = '1000';
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const canvasRect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - canvasRect.left - offsetX;
+                    const y = e.clientY - canvasRect.top - offsetY;
+                    
+                    nodeElement.style.left = `${x}px`;
+                    nodeElement.style.top = `${y}px`;
+                    
+                    // Update node position
+                    const nodeId = nodeElement.id;
+                    const node = this.nodes.get(nodeId);
+                    if (node) {
+                        node.x = x;
+                        node.y = y;
+                    }
+                    
+                    this.updateConnections();
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        nodeElement.style.cursor = 'move';
+                        nodeElement.style.zIndex = '';
+                    }
+                });
+                
+                // Port connections
+                const ports = nodeElement.querySelectorAll('.port');
+                ports.forEach(port => {
+                    port.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.handlePortClick(nodeElement, port);
+                    });
+                });
+                
+                // Input handling
+                const inputs = nodeElement.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const nodeId = nodeElement.id;
+                        const node = this.nodes.get(nodeId);
+                        if (node) {
+                            node.data[input.dataset.field] = 
+                                input.type === 'checkbox' ? input.checked : input.value;
+                            this.onNodeDataChange(node);
+                        }
+                    });
+                });
+            }
+            
+            handlePortClick(nodeElement, port) {
+                const nodeId = nodeElement.id;
+                const isOutput = port.classList.contains('output');
+                
+                if (!this.connectingFrom) {
+                    if (isOutput) {
+                        this.connectingFrom = { nodeId, port };
+                        port.style.background = '#4ade80';
+                    }
+                } else {
+                    if (!isOutput && this.connectingFrom.nodeId !== nodeId) {
+                        // Create connection
+                        this.createConnection(this.connectingFrom.nodeId, nodeId);
+                        this.connectingFrom.port.style.background = '';
+                        this.connectingFrom = null;
+                    } else {
+                        // Cancel connection
+                        this.connectingFrom.port.style.background = '';
+                        this.connectingFrom = null;
+                    }
+                }
+            }
+            
+            createConnection(fromId, toId) {
+                const connectionId = `${fromId}-${toId}`;
+                
+                // Avoid duplicate connections
+                if (this.connections.has(connectionId)) return;
+                
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.classList.add('connection');
+                path.id = connectionId;
+                
+                this.svgElement.appendChild(path);
+                
+                this.connections.set(connectionId, {
+                    from: fromId,
+                    to: toId,
+                    path: path
+                });
+                
+                this.updateConnections();
+            }
+            
+            updateConnections() {
+                this.connections.forEach((connection) => {
+                    const fromNode = this.nodes.get(connection.from);
+                    const toNode = this.nodes.get(connection.to);
+                    
+                    if (fromNode && toNode) {
+                        const fromRect = fromNode.element.getBoundingClientRect();
+                        const toRect = toNode.element.getBoundingClientRect();
+                        const canvasRect = this.canvas.getBoundingClientRect();
+                        
+                        const x1 = fromRect.right - canvasRect.left;
+                        const y1 = fromRect.top + fromRect.height / 2 - canvasRect.top;
+                        const x2 = toRect.left - canvasRect.left;
+                        const y2 = toRect.top + toRect.height / 2 - canvasRect.top;
+                        
+                        // Bezier curve
+                        const dx = Math.abs(x2 - x1);
+                        const cp1x = x1 + dx * 0.5;
+                        const cp1y = y1;
+                        const cp2x = x2 - dx * 0.5;
+                        const cp2y = y2;
+                        
+                        const d = `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`;
+                        connection.path.setAttribute('d', d);
+                    }
+                });
+            }
+            
+            onNodeDataChange(node) {
+                // Update pricing if needed
+                if (node.type === 'product-select' || node.type === 'feature-choice') {
+                    this.updatePricing();
+                }
+            }
+            
+            updatePricing() {
+                const productNode = Array.from(this.nodes.values())
+                    .find(n => n.type === 'product-select');
+                const featureNode = Array.from(this.nodes.values())
+                    .find(n => n.type === 'feature-choice');
+                const pricingNode = Array.from(this.nodes.values())
+                    .find(n => n.type === 'pricing');
+                
+                if (pricingNode) {
+                    let price = 0;
+                    
+                    // Base price
+                    if (productNode && productNode.data.product) {
+                        const prices = { basic: 29, pro: 79, enterprise: 199 };
+                        price = prices[productNode.data.product] || 0;
+                    }
+                    
+                    // Feature add-ons
+                    if (featureNode) {
+                        if (featureNode.data['feature-analytics']) price += 20;
+                        if (featureNode.data['feature-api']) price += 30;
+                        if (featureNode.data['feature-support']) price += 50;
+                    }
+                    
+                    const priceDisplay = pricingNode.element.querySelector('#price-display');
+                    if (priceDisplay) {
+                        priceDisplay.textContent = price;
+                    }
+                }
+            }
+            
+            createInitialFlow() {
+                // Create a sample flow
+                setTimeout(() => {
+                    this.createNode('product-select', 50, 100);
+                    this.createNode('feature-choice', 300, 50);
+                    this.createNode('customization', 300, 200);
+                    this.createNode('pricing', 550, 125);
+                    this.createNode('payment', 800, 125);
+                    
+                    // Create connections after nodes are rendered
+                    setTimeout(() => {
+                        this.createConnection('node-0', 'node-1');
+                        this.createConnection('node-0', 'node-2');
+                        this.createConnection('node-1', 'node-3');
+                        this.createConnection('node-2', 'node-3');
+                        this.createConnection('node-3', 'node-4');
+                    }, 100);
+                }, 100);
+            }
+            
+            executeFlow() {
+                // Reset all nodes
+                this.nodes.forEach(node => {
+                    node.element.classList.remove('active', 'completed');
+                });
+                
+                // Animate through the flow
+                const nodeSequence = this.getExecutionSequence();
+                let index = 0;
+                
+                const animateNext = () => {
+                    if (index < nodeSequence.length) {
+                        const node = nodeSequence[index];
+                        
+                        // Mark previous as completed
+                        if (index > 0) {
+                            nodeSequence[index - 1].element.classList.remove('active');
+                            nodeSequence[index - 1].element.classList.add('completed');
+                        }
+                        
+                        // Mark current as active
+                        node.element.classList.add('active');
+                        
+                        // Animate connections
+                        this.animateConnections(node.id);
+                        
+                        // Create particles
+                        if (index > 0) {
+                            this.createFlowParticles(nodeSequence[index - 1], node);
+                        }
+                        
+                        index++;
+                        setTimeout(animateNext, 1000);
+                    } else {
+                        // Mark last as completed
+                        if (nodeSequence.length > 0) {
+                            nodeSequence[nodeSequence.length - 1].element.classList.remove('active');
+                            nodeSequence[nodeSequence.length - 1].element.classList.add('completed');
+                        }
+                    }
+                };
+                
+                animateNext();
+            }
+            
+            getExecutionSequence() {
+                // Simple BFS to get execution order
+                const sequence = [];
+                const visited = new Set();
+                const queue = [];
+                
+                // Find start node (no incoming connections)
+                const startNode = Array.from(this.nodes.values())
+                    .find(node => !Array.from(this.connections.values())
+                        .some(conn => conn.to === node.id));
+                
+                if (startNode) {
+                    queue.push(startNode);
+                    visited.add(startNode.id);
+                }
+                
+                while (queue.length > 0) {
+                    const node = queue.shift();
+                    sequence.push(node);
+                    
+                    // Find connected nodes
+                    this.connections.forEach(conn => {
+                        if (conn.from === node.id && !visited.has(conn.to)) {
+                            const nextNode = this.nodes.get(conn.to);
+                            if (nextNode) {
+                                queue.push(nextNode);
+                                visited.add(conn.to);
+                            }
+                        }
+                    });
+                }
+                
+                return sequence;
+            }
+            
+            animateConnections(nodeId) {
+                this.connections.forEach(conn => {
+                    if (conn.from === nodeId) {
+                        conn.path.classList.add('active');
+                        setTimeout(() => {
+                            conn.path.classList.remove('active');
+                        }, 1000);
+                    }
+                });
+            }
+            
+            createFlowParticles(fromNode, toNode) {
+                const fromRect = fromNode.element.getBoundingClientRect();
+                const toRect = toNode.element.getBoundingClientRect();
+                const canvasRect = this.canvas.getBoundingClientRect();
+                
+                const startX = fromRect.right - canvasRect.left;
+                const startY = fromRect.top + fromRect.height / 2 - canvasRect.top;
+                const endX = toRect.left - canvasRect.left;
+                const endY = toRect.top + toRect.height / 2 - canvasRect.top;
+                
+                // Create multiple particles
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        this.particles.push({
+                            x: startX,
+                            y: startY,
+                            targetX: endX,
+                            targetY: endY,
+                            progress: 0,
+                            speed: 0.02 + Math.random() * 0.01,
+                            size: 2 + Math.random() * 2,
+                            opacity: 1
+                        });
+                    }, i * 100);
+                }
+            }
+            
+            startParticleAnimation() {
+                const animate = () => {
+                    this.particleCtx.clearRect(0, 0, this.particleCanvas.width, this.particleCanvas.height);
+                    
+                    // Update and draw particles
+                    for (let i = this.particles.length - 1; i >= 0; i--) {
+                        const particle = this.particles[i];
+                        
+                        // Update position
+                        particle.progress += particle.speed;
+                        
+                        if (particle.progress >= 1) {
+                            this.particles.splice(i, 1);
+                            continue;
+                        }
+                        
+                        // Bezier curve interpolation
+                        const t = particle.progress;
+                        const dx = Math.abs(particle.targetX - particle.x);
+                        
+                        const cp1x = particle.x + dx * 0.5;
+                        const cp1y = particle.y;
+                        const cp2x = particle.targetX - dx * 0.5;
+                        const cp2y = particle.targetY;
+                        
+                        // Calculate bezier point
+                        const x = Math.pow(1 - t, 3) * particle.x +
+                                 3 * Math.pow(1 - t, 2) * t * cp1x +
+                                 3 * (1 - t) * Math.pow(t, 2) * cp2x +
+                                 Math.pow(t, 3) * particle.targetX;
+                                 
+                        const y = Math.pow(1 - t, 3) * particle.y +
+                                 3 * Math.pow(1 - t, 2) * t * cp1y +
+                                 3 * (1 - t) * Math.pow(t, 2) * cp2y +
+                                 Math.pow(t, 3) * particle.targetY;
+                        
+                        // Draw particle
+                        this.particleCtx.save();
+                        this.particleCtx.globalAlpha = particle.opacity * (1 - t * 0.5);
+                        this.particleCtx.fillStyle = '#667eea';
+                        this.particleCtx.shadowBlur = 10;
+                        this.particleCtx.shadowColor = '#667eea';
+                        
+                        this.particleCtx.beginPath();
+                        this.particleCtx.arc(x, y, particle.size, 0, Math.PI * 2);
+                        this.particleCtx.fill();
+                        
+                        this.particleCtx.restore();
+                    }
+                    
+                    this.animationFrame = requestAnimationFrame(animate);
+                };
+                
+                animate();
+            }
+            
+            completeFlow() {
+                // Collect all data
+                const flowData = {};
+                this.nodes.forEach(node => {
+                    flowData[node.type] = node.data;
+                });
+                
+                // Show result panel
+                const resultPanel = document.getElementById('resultPanel');
+                const resultContent = document.getElementById('resultContent');
+                
+                let html = '';
+                if (flowData['product-select']?.product) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-key">Product:</span>
+                            <span class="result-value">${flowData['product-select'].product.toUpperCase()}</span>
+                        </div>
+                    `;
+                }
+                
+                const features = flowData['feature-choice'];
+                if (features) {
+                    const selectedFeatures = Object.entries(features)
+                        .filter(([key, value]) => value)
+                        .map(([key]) => key.replace('feature-', ''));
+                    
+                    if (selectedFeatures.length > 0) {
+                        html += `
+                            <div class="result-item">
+                                <span class="result-key">Features:</span>
+                                <span class="result-value">${selectedFeatures.join(', ')}</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (flowData['customization']?.brand) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-key">Brand:</span>
+                            <span class="result-value">${flowData['customization'].brand}</span>
+                        </div>
+                    `;
+                }
+                
+                // Calculate final price
+                const priceDisplay = document.querySelector('#price-display');
+                if (priceDisplay) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-key">Total:</span>
+                            <span class="result-value">$${priceDisplay.textContent}/mo</span>
+                        </div>
+                    `;
+                }
+                
+                resultContent.innerHTML = html;
+                resultPanel.classList.add('show');
+                
+                // Hide after 5 seconds
+                setTimeout(() => {
+                    resultPanel.classList.remove('show');
+                }, 5000);
+            }
+            
+            reset() {
+                // Clear all nodes and connections
+                this.nodes.forEach(node => {
+                    node.element.remove();
+                });
+                this.nodes.clear();
+                
+                this.connections.forEach(conn => {
+                    conn.path.remove();
+                });
+                this.connections.clear();
+                
+                this.particles = [];
+                this.nodeIdCounter = 0;
+                
+                // Hide result panel
+                document.getElementById('resultPanel').classList.remove('show');
+            }
+            
+            autoLayout() {
+                const nodeArray = Array.from(this.nodes.values());
+                const levels = this.calculateLevels();
+                
+                levels.forEach((level, levelIndex) => {
+                    const levelNodes = level.map(id => this.nodes.get(id)).filter(n => n);
+                    const spacing = this.canvas.offsetHeight / (levelNodes.length + 1);
+                    
+                    levelNodes.forEach((node, nodeIndex) => {
+                        const x = 100 + levelIndex * 250;
+                        const y = spacing * (nodeIndex + 1) - 50;
+                        
+                        node.element.style.left = `${x}px`;
+                        node.element.style.top = `${y}px`;
+                        node.x = x;
+                        node.y = y;
+                    });
+                });
+                
+                this.updateConnections();
+            }
+            
+            calculateLevels() {
+                const levels = [];
+                const visited = new Set();
+                const nodeLevel = new Map();
+                
+                // Find nodes with no incoming connections (start nodes)
+                const startNodes = Array.from(this.nodes.keys()).filter(nodeId => 
+                    !Array.from(this.connections.values()).some(conn => conn.to === nodeId)
+                );
+                
+                if (startNodes.length === 0 && this.nodes.size > 0) {
+                    startNodes.push(this.nodes.keys().next().value);
+                }
+                
+                // BFS to assign levels
+                const queue = startNodes.map(id => ({ id, level: 0 }));
+                
+                while (queue.length > 0) {
+                    const { id, level } = queue.shift();
+                    
+                    if (visited.has(id)) continue;
+                    visited.add(id);
+                    
+                    if (!levels[level]) levels[level] = [];
+                    levels[level].push(id);
+                    nodeLevel.set(id, level);
+                    
+                    // Find connected nodes
+                    this.connections.forEach(conn => {
+                        if (conn.from === id && !visited.has(conn.to)) {
+                            queue.push({ id: conn.to, level: level + 1 });
+                        }
+                    });
+                }
+                
+                return levels;
+            }
+        }
+        
+        // Initialize Flow Builder
+        const flowBuilder = new FlowBuilder();
+        
+        // Global functions
+        function resetFlow() {
+            flowBuilder.reset();
+            flowBuilder.createInitialFlow();
+        }
+        
+        function autoLayout() {
+            flowBuilder.autoLayout();
+        }
+        
+        function executeFlow() {
+            flowBuilder.executeFlow();
+        }
+    </script>
+</body>
+</html>
