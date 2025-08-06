@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Categorias JSONL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="grid">
+            <!-- Coluna Esquerda - Editor -->
+            <div>
+                <div class="card">
+                    <h2 class="title">Gerenciador de Categorias</h2>
+                    
+                    <!-- Upload de Arquivo -->
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </div>
+                        <p class="upload-text">Arraste seu arquivo .jsonl aqui ou clique para selecionar</p>
+                        <input type="file" id="fileInput" accept=".jsonl">
+                    </div>
+
+                    <!-- Formulário de Edição -->
+                    <form id="categoryForm">
+                        <div class="form-group">
+                            <label class="label">Nome da Categoria</label>
+                            <input type="text" id="categoryName" class="input" placeholder="Digite o nome da categoria">
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="label">Cor</label>
+                                <div class="color-row">
+                                    <div id="colorPreview" class="color-preview" style="background-color: #1e40af;"></div>
+                                    <input type="text" id="categoryColor" class="input" value="#1e40af" placeholder="#1e40af">
+                                </div>
+                                <div id="colorPicker" class="color-picker hidden">
+                                    <div class="color-grid" id="colorGrid"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="label">Ícone</label>
+                                <div class="icon-row">
+                                    <div id="iconPreview" class="icon-preview">🎯</div>
+                                    <input type="text" id="categoryIcon" class="input" value="🎯" placeholder="🎯">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="label">Segmento</label>
+                            <div class="segment-container">
+                                <input type="text" id="categorySegment" class="input" value="default" placeholder="Digite ou selecione um segmento">
+                                <div id="segmentSuggestions" class="segment-suggestions hidden"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="categoryActive" class="checkbox" checked>
+                                <label for="categoryActive" class="label" style="margin: 0;">Categoria ativa</label>
+                            </div>
+                        </div>
+
+                        <div class="button-row">
+                            <button type="submit" class="button button-primary">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="m18.5 2.5 a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                                <span id="saveButtonText">Salvar</span>
+                            </button>
+                            <button type="button" class="button button-success" id="newCategoryBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14"/>
+                                    <path d="M12 5v14"/>
+                                </svg>
+                                Nova
+                            </button>
+                        </div>
+
+                        <button type="button" class="button button-purple hidden" id="exportBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Exportar categories.jsonl
+                        </button>
+                    </form>
+
+                    <!-- Painel de Ícones - Sempre Visível -->
+                    <div class="emoji-panel">
+                        <h4 class="emoji-title">Selecione um ícone:</h4>
+                        <div class="emoji-grid" id="emojiGrid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita - Lista de Categorias -->
+            <div class="card category-list">
+                <div class="category-header">
+                    <h3 class="category-count">Categorias Importadas (<span id="categoryCount">0</span>)</h3>
+                    <button type="button" class="button-clear hidden" id="clearAllBtn" title="Limpar todas as categorias">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="category-scroll" id="categoryList">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7,10 12,15 17,10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </div>
+                        <p class="empty-title">Nenhuma categoria importada</p>
+                        <p class="empty-subtitle">Importe um arquivo .jsonl para começar<br><small>💡 Importações são cumulativas - adicione múltiplos arquivos</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

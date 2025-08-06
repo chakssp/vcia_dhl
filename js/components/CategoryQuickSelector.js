@@ -40,7 +40,65 @@
          */
         open(fileId, currentCategories = []) {
             this.currentFileId = fileId;
-            this.selectedCategories = [...currentCategories];
+            
+            // NOVA LÓGICA: Processar categorias do histórico
+            const processedCategories = [];
+            const existingCategoryManager = KC.CategoryManager;
+            
+            // Processar cada categoria do arquivo (agora vem como nomes do DOM)
+            (currentCategories || []).forEach(cat => {
+                let categoryName = null;
+                
+                // Agora vem sempre como string (nome da categoria do DOM)
+                if (typeof cat === 'string') {
+                    categoryName = cat.trim();
+                } else if (cat && typeof cat === 'object') {
+                    categoryName = cat.name || cat.id;
+                }
+                
+                if (!categoryName) return;
+                
+                // Buscar categoria por nome (já que agora vem do DOM)
+                const allCategories = existingCategoryManager.getCategories();
+                let existingCategory = allCategories.find(c => 
+                    c.name === categoryName || 
+                    c.id === categoryName ||
+                    c.name.toLowerCase() === categoryName.toLowerCase()
+                );
+                
+                // Se existe, usar o ID existente
+                if (existingCategory) {
+                    processedCategories.push(existingCategory.id);
+                    console.log(`[CategoryQuickSelector] Categoria existente encontrada: ${existingCategory.name}`);
+                } else {
+                    // CRIAR CATEGORIA QUE NÃO EXISTE
+                    console.log(`[CategoryQuickSelector] Criando categoria do histórico: ${categoryName}`);
+                    
+                    // Determinar cor e ícone baseado no nome ou usar padrões
+                    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+                    const icons = ['📁', '🏷️', '📌', '🔖', '💼', '📊', '🎯'];
+                    const randomIndex = Math.floor(Math.random() * colors.length);
+                    
+                    // Gerar ID baseado no nome
+                    const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
+                    
+                    const newCategory = existingCategoryManager.createCategory({
+                        id: categoryId,
+                        name: categoryName,
+                        color: colors[randomIndex],
+                        icon: icons[randomIndex]
+                    });
+                    
+                    if (newCategory) {
+                        processedCategories.push(newCategory.id);
+                        console.log(`[CategoryQuickSelector] Nova categoria criada: ${newCategory.name} (${newCategory.id})`);
+                    }
+                }
+            });
+            
+            // Usar as categorias processadas
+            this.selectedCategories = processedCategories;
+            console.log(`[CategoryQuickSelector] Total de categorias selecionadas: ${this.selectedCategories.length}`);
             
             // Adicionar classe ao body para prevenir scroll
             document.body.classList.add('category-popup-open');

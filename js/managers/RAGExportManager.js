@@ -584,12 +584,7 @@
                 let enrichedData = consolidatedData;
                 let enrichmentStats = null;
                 
-                // LOG: Rastrear categorias antes do enriquecimento
-                KC.Logger?.info('[CATEGORY-TRACE] Antes do enriquecimento', {
-                    totalDocs: consolidatedData.documents.length,
-                    docsWithCategories: consolidatedData.documents.filter(d => d.categories && d.categories.length > 0).length,
-                    sampleCategories: consolidatedData.documents[0]?.categories?.slice(0, 2)
-                });
+                // Log removido para evitar poluição durante processamento em lote
                 
                 if (KC.IntelligenceEnrichmentPipeline && options.enableEnrichment !== false) {
                     KC.Logger?.info('RAGExportManager', 'Iniciando enriquecimento com inteligência');
@@ -658,13 +653,7 @@
                             totalChunks: enrichedData.documents.reduce((sum, d) => sum + (d.chunks?.length || 0), 0)
                         });
                         
-                        // LOG: Rastrear categorias após enriquecimento
-                        KC.Logger?.info('[CATEGORY-TRACE] Após enriquecimento e preservação de chunks', {
-                            totalDocs: enrichedData.documents.length,
-                            docsWithCategories: enrichedData.documents.filter(d => d.categories && d.categories.length > 0).length,
-                            sampleCategories: enrichedData.documents[0]?.categories?.slice(0, 2),
-                            categoriesFormat: enrichedData.documents[0]?.categories ? typeof enrichedData.documents[0].categories[0] : 'none'
-                        });
+                        // Log removido para evitar poluição durante processamento em lote
                         
                         // Salvar metadados globais
                         if (enrichmentResult.metadata) {
@@ -783,14 +772,7 @@
                     let chunksProcessed = 0;
                     
                     // LOG: Rastrear categorias no processamento
-                    KC.Logger?.info('[CATEGORY-TRACE] Processando documento', {
-                        docId: doc.id,
-                        docName: doc.name,
-                        hasCategories: !!(doc.categories && doc.categories.length > 0),
-                        categoriesCount: doc.categories?.length || 0,
-                        categoriesFormat: doc.categories && doc.categories[0] ? typeof doc.categories[0] : 'none',
-                        sampleCategories: doc.categories?.slice(0, 2)
-                    });
+                    // Log removido para evitar poluição durante processamento em lote
                     
                     // Verifica se o documento tem chunks
                     if (!doc.chunks || doc.chunks.length === 0) {
@@ -826,18 +808,6 @@
                                 // Gera ID numérico único baseado em timestamp + índice
                                 const pointId = Date.now() * 1000 + points.length;
                                 
-                                // LOG CRÍTICO: Debug de dados vazios
-                                console.log('📋 DEBUG PAYLOAD - Documento:', {
-                                    docId: doc.id,
-                                    docName: doc.name,
-                                    docFileName: doc.source?.fileName,
-                                    docCategories: doc.categories,
-                                    docAnalysisCategories: doc.analysis?.categories,
-                                    docRelevance: doc.relevanceScore,
-                                    docAnalysisRelevance: doc.analysis?.relevanceScore,
-                                    docAnalysisType: doc.analysisType,
-                                    docAnalysisAnalysisType: doc.analysis?.type
-                                });
                                 
                                 // Criar payload base
                                 const basePayload = {
@@ -846,18 +816,14 @@
                                     fileName: doc.name || doc.source?.fileName || 'Documento sem nome',
                                     chunkId: chunk.id,
                                     content: chunk.content,
+                                    // CORRIGIDO: Adicionar size e relevanceScore no nível raiz
+                                    size: chunk.content ? chunk.content.length : 0,
+                                    relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || doc.relevanceInheritance || 50,
                                     // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
                                     // DEBUG: Log para rastrear onde o analysisType está sendo encontrado
                                     analysisType: (() => {
                                         const type = doc.analysisType || doc.analysis?.type || 'Aprendizado Geral';
-                                        KC.Logger?.debug('RAGExportManager', 'Determinando analysisType', {
-                                            docName: doc.name,
-                                            docAnalysisType: doc.analysisType,
-                                            docAnalysisTypeExists: !!doc.analysisType,
-                                            analysisType: doc.analysis?.type,
-                                            analysisTypeExists: !!doc.analysis?.type,
-                                            finalType: type
-                                        });
+                                        // Log removido para evitar poluição durante processamento em lote
                                         return type;
                                     })(),
                                     metadata: {
@@ -1082,15 +1048,12 @@
                     
                     if (result.action === 'skipped') {
                         skippedCount++;
-                        console.log(`⏭️ Ignorado (já existe): ${point.payload?.fileName || point.id}`);
                     } else if (result.action === 'updated') {
                         updatedCount++;
                         processedPoints.push(result.point || point);
-                        console.log(`🔄 Atualizado: ${point.payload?.fileName || point.id}`);
                     } else if (result.action === 'inserted') {
                         insertedCount++;
                         processedPoints.push(result.point || point);
-                        console.log(`✅ Inserido: ${point.payload?.fileName || point.id}`);
                     }
                 }
                 
@@ -1673,8 +1636,12 @@
                                 }
                             };
                             
-                            // Inserir no Qdrant
-                            await KC.QdrantService.insertPoint(point);
+                            // CORREÇÃO: Usar insertOrUpdate para atualizar arquivos existentes
+                            // preservando categorias e curadoria humana
+                            await KC.QdrantManager.insertOrUpdate(point, {
+                                duplicateAction: 'update',
+                                preserveFields: ['categories', 'approved', 'analysisType', 'metadata']
+                            });
                         }
                         
                         // Marcar arquivo como processado

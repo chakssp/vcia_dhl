@@ -255,18 +255,26 @@
                 EventBus.on(Events.CATEGORIES_SELECTED, (data) => {
                     console.log('FileRenderer: Evento CATEGORIES_SELECTED recebido', data);
                     
-                    // Remove todas as categorias antigas
+                    // CORREÇÃO: Não remove categorias antigas, apenas adiciona/remove conforme seleção
                     const file = this.files.find(f => f.id === data.fileId);
-                    if (file && file.categories) {
-                        file.categories.forEach(catId => {
-                            KC.CategoryManager.removeCategoryFromFiles([data.fileId], catId);
+                    if (file) {
+                        const existingCategories = file.categories || [];
+                        const selectedCategories = data.categories || [];
+                        
+                        // Remove categorias que foram desmarcadas
+                        existingCategories.forEach(catId => {
+                            if (!selectedCategories.includes(catId)) {
+                                KC.CategoryManager.removeCategoryFromFiles([data.fileId], catId);
+                            }
+                        });
+                        
+                        // Adiciona apenas categorias novas (que não existiam)
+                        selectedCategories.forEach(categoryId => {
+                            if (!existingCategories.includes(categoryId)) {
+                                KC.CategoryManager.assignCategoryToFiles([data.fileId], categoryId);
+                            }
                         });
                     }
-                    
-                    // Aplica novas categorias usando CategoryManager
-                    data.categories.forEach(categoryId => {
-                        KC.CategoryManager.assignCategoryToFiles([data.fileId], categoryId);
-                    });
                     
                     // Emite evento para sincronizar componentes
                     EventBus.emit(Events.FILES_UPDATED, {
@@ -1083,19 +1091,31 @@
         categorizeFile(file, buttonElement) {
             console.log(`FileRenderer: Abrindo categorização de ${file.name}`);
             
-            // Usa o novo CategoryQuickSelector
-            if (KC.CategoryQuickSelector) {
-                KC.CategoryQuickSelector.open(file.id, file.categories || []);
-            } else {
-                // Fallback para o modal antigo se o novo não estiver disponível
-                const modal = this.createCategoryModal(file);
-                document.body.appendChild(modal);
-                
-                // Mostra modal
-                setTimeout(() => {
-                    modal.classList.add('show');
-                }, 10);
-            }
+            // NOVA LÓGICA: Pegar categorias direto do DOM (já renderizadas na tela)
+            const fileElement = buttonElement.closest('.file-entry');
+            const categoryTags = fileElement.querySelectorAll('.file-category-tag');
+            const currentCategories = [];
+            
+            // Extrair o texto de cada tag de categoria visível
+            categoryTags.forEach(tag => {
+                const categoryName = tag.textContent.trim();
+                if (categoryName) {
+                    currentCategories.push(categoryName);
+                    console.log(`[FileRenderer] Categoria encontrada no DOM: ${categoryName}`);
+                }
+            });
+            
+            console.log(`[FileRenderer] Total de categorias no DOM: ${currentCategories.length}`);
+            
+            // SIMPLIFICAÇÃO: Sempre usa o modal tradicional que funciona
+            // Removido CategoryQuickSelector complexo por solicitação do usuário
+            const modal = this.createCategoryModal(file);
+            document.body.appendChild(modal);
+            
+            // Mostra modal
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
         }
 
         /**
@@ -2648,18 +2668,8 @@ Modificado: ${meta.lastModified ? new Date(meta.lastModified).toLocaleDateString
                 return;
             }
             
-            // Usa o CategoryQuickSelector para categorização em lote
-            if (KC.CategoryQuickSelector && this.selectedFiles.size === 1) {
-                // Se apenas um arquivo selecionado, usa o seletor rápido
-                const fileId = this.selectedFiles.values().next().value;
-                const file = this.getCurrentFiles().find(f => f.id === fileId);
-                if (file) {
-                    KC.CategoryQuickSelector.open(file.id, file.categories || []);
-                    return;
-                }
-            }
-            
-            // Para múltiplos arquivos, ainda usa o modal tradicional
+            // SIMPLIFICAÇÃO: Sempre usa o modal tradicional para todos os casos
+            // Removido CategoryQuickSelector por solicitação do usuário
             const selectedArray = Array.from(this.selectedFiles);
             const categories = this.getAvailableCategories();
             

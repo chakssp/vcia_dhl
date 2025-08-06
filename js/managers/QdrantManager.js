@@ -127,10 +127,7 @@ class QdrantManager {
         // Combinar informações para ID único e ESTÁVEL
         const uniqueString = `${path}|${size}|${timestamp}|${chunkIndex}|${content.substring(0, 100)}`;
         
-        // Log para debug
-        if (file.chunkIndex === 0 || !file.chunkIndex) {
-            console.log(`🔑 Gerando ID para: ${path} | chunk: ${chunkIndex} | timestamp: ${timestamp}`);
-        }
+        // Log removido para evitar poluição no console durante processamento em lote
         
         // Gerar um hash numérico positivo para usar como ID
         let hash = 0;
@@ -184,7 +181,7 @@ class QdrantManager {
         try {
             const content = file.content || file.chunkText || file.preview || '';
             const contentHash = this.generateHash(content);
-            const filePath = file.filePath || file.path || file.fileName || '';
+            const filePath = file.filePath || file.path || file.fileName || file.name || '';
             
             // Se não tem caminho válido, não pode ser duplicata
             if (!filePath || filePath.trim() === '') {
@@ -234,7 +231,46 @@ class QdrantManager {
                 }
             }
             
-            // Se não encontrou por caminho, tentar por hash de conteúdo
+            // NOVO: Se não encontrou por caminho completo, buscar pelo campo fileName que é onde está salvo
+            const fileName = file.name || file.fileName || filePath.split('/').pop() || filePath.split('\\').pop() || '';
+            if (fileName) {
+                // Buscar diretamente no campo fileName onde sabemos que está o nome
+                filter = {
+                    must: [
+                        {
+                            key: "fileName",
+                            match: { value: fileName }
+                        }
+                    ]
+                };
+                
+                results = await this.qdrantService.scrollPoints({
+                    filter: filter,
+                    limit: 100,
+                    withPayload: true
+                });
+                
+                if (results && results.points && results.points.length > 0) {
+                    // Para arquivos encontrados por nome, assumir que é o mesmo arquivo
+                    // O hash pode ser diferente entre chunks e arquivo completo
+                    const point = results.points[0]; // Pegar o primeiro match
+                    this.stats.duplicatesFound++;
+                    return {
+                        isDuplicate: true,
+                        existingPoint: point,
+                        existingId: point.id,
+                        similarity: 0.95,
+                        summary: {
+                            version: point.payload?.version || 1,
+                            enrichmentLevel: point.payload?.enrichmentLevel || 0,
+                            categories: point.payload?.categories || [],
+                            analysisType: point.payload?.analysisType
+                        }
+                    };
+                }
+            }
+            
+            // Se não encontrou por caminho ou nome, tentar por hash de conteúdo
             filter = {
                 must: [
                     {
@@ -348,22 +384,30 @@ class QdrantManager {
     async insertNewPoint(file, options = {}) {
         try {
             const uniqueId = this.generateUniqueId(file);
-            const contentHash = this.generateHash(file.content || file.chunkText || '');
+            
+            // Pegar o conteúdo para hash - usar contentHash se já vier pronto
+            const textForHash = file.contentHash || file.content || file.chunkText || file.preview || '';
+            
+            // Se já tem um hash válido, usar ele
+            const contentHash = file.contentHash && !textForHash.includes('demo-') 
+                ? file.contentHash 
+                : this.generateHash(textForHash);
             
             // Preparar payload completo
             const payload = {
                 ...file,
                 id: uniqueId,
                 contentHash: contentHash,
-                filePath: file.filePath || file.path || file.fileName || '',
+                filePath: file.filePath || file.path || file.fileName || file.name || '',
                 fileName: file.fileName || file.name || '',
                 content: file.content || file.chunkText || file.preview || '',
-                size: file.size || 0,
+                size: file.size || (file.content ? file.content.length : 0) || (file.chunkText ? file.chunkText.length : 0) || 0,
                 insertedAt: new Date().toISOString(),
                 lastModified: new Date().toISOString(),
                 enrichmentLevel: 0, // Começa sem enriquecimento
                 version: 1
             };
+            
             
             // Gerar embedding se necessário
             let vector = file.vector;

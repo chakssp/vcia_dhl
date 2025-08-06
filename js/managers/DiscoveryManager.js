@@ -249,6 +249,39 @@
                 const existingFiles = AppState.get('files') || [];
                 const mergedFiles = this._mergeWithExistingFiles(finalFiles, existingFiles);
                 
+                // NOVO: Verificar arquivos no Qdrant antes de salvar
+                if (KC.QdrantManager && mergedFiles.length > 0) {
+                    try {
+                        console.log('🔍 Verificando ' + mergedFiles.length + ' arquivos no Qdrant...');
+                        
+                        // Garantir inicialização
+                        if (!KC.QdrantManager.initialized) {
+                            await KC.QdrantManager.initialize();
+                        }
+                        
+                        // Enriquecer arquivos com dados do Qdrant
+                        const enrichmentStats = await this.enrichFilesWithQdrantData(mergedFiles);
+                        
+                        // Notificação visual
+                        if (enrichmentStats.enriched > 0) {
+                            console.log('📦 ' + enrichmentStats.enriched + ' arquivos já existem no Qdrant');
+                            
+                            if (KC.NotificationSystem?.show) {
+                                KC.NotificationSystem.show({
+                                    type: 'info',
+                                    message: '📦 Detectados ' + enrichmentStats.enriched + ' arquivos já processados',
+                                    details: 'Versão e enriquecimento preservados do Qdrant',
+                                    duration: 5000
+                                });
+                            }
+                        }
+                        
+                        console.log('✅ Enriquecimento concluído: ' + enrichmentStats.enriched + ' existentes, ' + enrichmentStats.new + ' novos');
+                    } catch (error) {
+                        console.error('Erro ao verificar Qdrant:', error);
+                    }
+                }
+                
                 // Salva no estado preservando campos personalizados
                 AppState.set('files', mergedFiles);
                 AppState.update({
@@ -1807,6 +1840,16 @@
                         // Enriquecer com dados do Qdrant
                         const payload = qdrantCheck.existingPoint.payload;
                         
+                        // DEBUG: Ver o que está vindo do Qdrant
+                        if (file.name && file.name.includes('LGPD')) {
+                            console.log(`📦 Dados do Qdrant para ${file.name}:`, {
+                                categories: payload.categories,
+                                metadata_categories: payload.metadata?.categories,
+                                approved: payload.approved,
+                                analysisType: payload.analysisType
+                            });
+                        }
+                        
                         // Adicionar campos de controle do Qdrant
                         file.qdrantMetadata = {
                             id: qdrantCheck.existingId,
@@ -1818,8 +1861,10 @@
                         };
                         
                         // Preservar curadoria humana (categorias, aprovação, etc.)
-                        if (payload.categories && payload.categories.length > 0) {
-                            file.categories = payload.categories;
+                        // Categorias estão em metadata.categories no Qdrant
+                        const categories = payload.metadata?.categories || payload.categories || [];
+                        if (categories && categories.length > 0) {
+                            file.categories = categories;
                         }
                         if (payload.approved !== undefined) {
                             file.approved = payload.approved;
@@ -1831,16 +1876,24 @@
                         // Marcar visualmente para o usuário
                         file.isDuplicate = true;
                         file.badgeText = `Qdrant v${payload.version || 1}`;
-                        file.badgeColor = payload.enrichmentLevel > 50 ? 'green' : 'yellow';
+                        file.badgeColor = payload.enrichmentLevel > 50 ? '#10b981' : '#3b82f6'; // Verde ou Azul
                         
                         enrichmentStats.enriched++;
-                        console.log(`Arquivo enriquecido: ${file.fileName} (v${payload.version}, ${payload.enrichmentLevel}% completo)`);
+                        
+                        // Log visual para cada arquivo encontrado no Qdrant
+                        const version = payload.version || 1;
+                        const enrichLevel = payload.enrichmentLevel || 0;
+                        const enrichIcon = enrichLevel > 75 ? '💎' : enrichLevel > 50 ? '💚' : enrichLevel > 25 ? '🟡' : '⚪';
+                        console.log(`✅ Qdrant: ${file.name || file.fileName} [v${version}] [${enrichIcon} ${enrichLevel}%]`);
                     } else {
                         // Arquivo novo
                         file.isNew = true;
                         file.badgeText = 'Novo';
-                        file.badgeColor = 'blue';
+                        file.badgeColor = '#ef4444'; // Vermelho para destacar novos
                         enrichmentStats.new++;
+                        
+                        // Log visual para arquivo novo
+                        console.log(`➕ Novo: ${file.name || file.fileName}`);
                     }
                 } catch (error) {
                     console.error(`Erro ao enriquecer ${file.fileName}:`, error);

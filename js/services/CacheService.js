@@ -373,10 +373,11 @@
                 }
             }
 
-            // Limpa IndexedDB
-            if (this.db) {
-                const transaction = this.db.transaction([this.storeName], 'readwrite');
-                const store = transaction.objectStore(this.storeName);
+            // Limpa IndexedDB - verificar se DB está aberta
+            if (this.db && this.db.readyState !== 'closed') {
+                try {
+                    const transaction = this.db.transaction([this.storeName], 'readwrite');
+                    const store = transaction.objectStore(this.storeName);
                 const index = store.index('timestamp');
                 const range = IDBKeyRange.upperBound(now - this.config.indexedDBTTL);
                 
@@ -389,6 +390,12 @@
                         cursor.continue();
                     }
                 };
+                } catch (error) {
+                    // Silenciar erro se DB está fechando
+                    if (error.name !== 'InvalidStateError') {
+                        console.error('[CacheService] Erro no cleanup:', error);
+                    }
+                }
             }
         }
 

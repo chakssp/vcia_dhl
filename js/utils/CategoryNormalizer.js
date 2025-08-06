@@ -250,6 +250,9 @@
          * @private
          */
         _logTrace(context, status, data, result, extra = {}) {
+            // Log removido para evitar poluição durante processamento em lote
+            // Descomente para debug de categorias se necessário
+            /*
             KC.Logger?.info('[CATEGORY-TRACE]', {
                 context,
                 status,
@@ -259,6 +262,7 @@
                 sample: Array.isArray(data) ? data.slice(0, 2) : data,
                 ...extra
             });
+            */
         }
 
         /**
