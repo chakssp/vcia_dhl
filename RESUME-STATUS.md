@@ -809,6 +809,17 @@ Itens anteriores a esta data em @ARQUIVADIS EM @RESUME_ARCHIVE.md(AIAPIManager e
 - Sprint 1.2 concluída
 - PreviewUtils e FilterManager implementados
 
+### 08/08/2025 - CORREÇÕES NO MODO LISTA DE ARQUIVOS
+- ✅ **Problema Resolvido**: Arquivos não apareciam no modo lista (apenas checkbox visível)
+- ✅ **Caminho Corrigido**: Agora mostra pasta em vez de repetir nome do arquivo
+- ✅ **Seleção Melhorada**: Clique em qualquer parte da linha seleciona o arquivo
+- ✅ **Visual Aprimorado**: Cores com melhor contraste e hover suave
+- 🔧 **Arquivos Modificados**:
+  - `css/components/file-list.css`: Ajustes de cores e estilos
+  - `js/components/FileRenderer.js`: Correção de classes e eventos
+  - `js/managers/DiscoveryManager.js`: Correção do caminho do arquivo
+- 📝 **Commit**: `9951c19` - Fix: Correções na visualização de arquivos em modo lista
+
 ---
 
 ## 💡 LIÇÕES APRENDIDAS - EVITANDO RETRABALHO
