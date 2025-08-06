@@ -514,6 +514,25 @@
                     return f.approved && !f.archived;
                 });
                 
+                // LOG CRÍTICO: Debug de arquivos aprovados
+                console.log('🔍 DEBUG ARQUIVOS APROVADOS:', {
+                    total: approvedFiles.length,
+                    primeiro: approvedFiles[0] ? {
+                        id: approvedFiles[0].id,
+                        name: approvedFiles[0].name,
+                        categories: approvedFiles[0].categories,
+                        relevanceScore: approvedFiles[0].relevanceScore,
+                        analysisType: approvedFiles[0].analysisType,
+                        hasContent: !!approvedFiles[0].content,
+                        hasPreview: !!approvedFiles[0].preview
+                    } : null,
+                    todosCategorias: approvedFiles.map(f => ({
+                        name: f.name,
+                        categories: f.categories,
+                        relevance: f.relevanceScore
+                    }))
+                });
+                
                 if (approvedFiles.length === 0) {
                     KC.Logger?.warning('RAGExportManager - Nenhum arquivo aprovado encontrado');
                     
@@ -806,6 +825,19 @@
                                 // Prepara ponto para inserção
                                 // Gera ID numérico único baseado em timestamp + índice
                                 const pointId = Date.now() * 1000 + points.length;
+                                
+                                // LOG CRÍTICO: Debug de dados vazios
+                                console.log('📋 DEBUG PAYLOAD - Documento:', {
+                                    docId: doc.id,
+                                    docName: doc.name,
+                                    docFileName: doc.source?.fileName,
+                                    docCategories: doc.categories,
+                                    docAnalysisCategories: doc.analysis?.categories,
+                                    docRelevance: doc.relevanceScore,
+                                    docAnalysisRelevance: doc.analysis?.relevanceScore,
+                                    docAnalysisType: doc.analysisType,
+                                    docAnalysisAnalysisType: doc.analysis?.type
+                                });
                                 
                                 // Criar payload base
                                 const basePayload = {
