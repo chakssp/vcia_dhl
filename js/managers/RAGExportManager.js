@@ -1065,18 +1065,31 @@
                 let insertedCount = 0;
                 
                 for (const point of points) {
-                    const result = await KC.QdrantManager.insertOrUpdate(point);
+                    // QdrantManager espera um arquivo, não um point completo
+                    // Vamos adaptar o formato
+                    const fileFormat = {
+                        ...point.payload,
+                        id: point.id,
+                        vector: point.vector,
+                        // Garantir que campos essenciais existam
+                        filePath: point.payload.filePath || point.payload.path || '',
+                        fileName: point.payload.fileName || point.payload.name || '',
+                        content: point.payload.content || point.payload.chunkText || '',
+                        chunkIndex: point.payload.chunkIndex
+                    };
+                    
+                    const result = await KC.QdrantManager.insertOrUpdate(fileFormat);
                     
                     if (result.action === 'skipped') {
                         skippedCount++;
                         console.log(`⏭️ Ignorado (já existe): ${point.payload?.fileName || point.id}`);
                     } else if (result.action === 'updated') {
                         updatedCount++;
-                        processedPoints.push(result.point);
+                        processedPoints.push(result.point || point);
                         console.log(`🔄 Atualizado: ${point.payload?.fileName || point.id}`);
                     } else if (result.action === 'inserted') {
                         insertedCount++;
-                        processedPoints.push(result.point);
+                        processedPoints.push(result.point || point);
                         console.log(`✅ Inserido: ${point.payload?.fileName || point.id}`);
                     }
                 }
