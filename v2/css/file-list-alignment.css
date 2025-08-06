@@ -1,0 +1,278 @@
+/* File List Alignment Fixes */
+
+/* File item container */
+.file-item {
+    display: grid;
+    grid-template-columns: 40px 1fr 120px 100px 100px auto;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+    min-height: 60px;
+}
+
+.file-item:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Checkbox column */
+.file-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.file-checkbox.checked::after {
+    content: "✓";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* File info column */
+.file-info {
+    min-width: 0; /* Allow text truncation */
+    overflow: hidden;
+}
+
+.file-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.file-path {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Relevance column */
+.file-relevance {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.relevance-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.relevance-bar {
+    width: 80px;
+    height: 4px;
+    background: var(--bg-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.relevance-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Date column */
+.file-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Status column */
+.file-status {
+    display: flex;
+    justify-content: center;
+}
+
+.status-btn {
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.status-btn.pending {
+    border-color: var(--warning-color);
+    color: var(--warning-color);
+}
+
+.status-btn.archived {
+    border-color: var(--success-color);
+    color: var(--success-color);
+}
+
+.status-btn:hover {
+    background: var(--hover-bg);
+    transform: translateY(-1px);
+}
+
+/* Action buttons column */
+.file-item-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    justify-self: end;
+}
+
+.file-item:hover .file-item-actions {
+    opacity: 1;
+}
+
+.file-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--button-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.file-action-btn:hover {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+.file-action-btn .icon {
+    font-size: 14px;
+}
+
+/* Hide text on small screens */
+@media (max-width: 1200px) {
+    .file-action-btn span:not(.icon) {
+        display: none;
+    }
+    
+    .file-item {
+        grid-template-columns: 40px 1fr 100px 80px 80px auto;
+        gap: 8px;
+    }
+}
+
+/* File list header alignment */
+.file-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Main content area fix */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-primary);
+}
+
+.content-body {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+.view-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    flex-direction: column;
+}
+
+.view-container.active {
+    display: flex;
+}
+
+.file-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Ensure list view takes full height */
+#list-view {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Empty state styling */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    font-size: 14px;
+    max-width: 400px;
+}
+
+/* Fix for split container */
+.split-container {
+    display: flex;
+    height: calc(100vh - 40px); /* Subtract status bar height */
+    overflow: hidden;
+}
+
+/* Sidebar transitions */
+.split-container.sidebar-collapsed .sidebar {
+    width: 60px;
+}
+
+.split-container.sidebar-collapsed .main-content {
+    margin-left: 0;
+}

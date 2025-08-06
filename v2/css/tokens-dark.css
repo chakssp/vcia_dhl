@@ -33,6 +33,11 @@
   --color-text-warning: #d29922;        /* Warnings */
   --color-text-danger: #f85149;         /* Errors */
   
+  /* Custom modal colors */
+  --color-modal-bg: #303030;             /* Background dos modais */
+  --color-input-bg: #424242;             /* Caixas de texto */
+  --color-border-custom: #3D331F;        /* Bordas customizadas */
+  
   /* Terminal Colors */
   --color-terminal-green: #3fb950;      /* Success, online */
   --color-terminal-yellow: #d29922;     /* Warning, pending */
@@ -242,6 +247,24 @@
     /* Light mode overrides if needed */
     /* Currently optimized for dark mode only */
   }
+}
+
+/* ===== Global Font Rendering ===== */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Apply to all text inputs and textareas */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===== System Font Scale Support ===== */

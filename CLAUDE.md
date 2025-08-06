@@ -8,18 +8,18 @@ This repository contains the specification for "Consolidador de Conhecimento Pes
 
 **Vision:** Transform scattered knowledge into actionable insights, establishing a pre-structured foundation that will feed IA automation flows for internal project proposition and strategic decision-making.
 
-## 🚀 ESTADO ATUAL DO PROJETO - 28/07/2025
+## 🚀 ESTADO ATUAL DO PROJETO - 03/08/2025
 
 ### 📊 Status Geral
 - **Sistema 100% Funcional**: Todas as 10 Waves implementadas e em produção
-- **Sprint Atual**: FASE 2 - Fundação Semântica ✅ CONCLUÍDA
-- **Última Atualização**: 28/07/2025 - Menu Quick Access implementado e correções de modais
+- **Sprint Atual**: AGUARDANDO PRIMEIRA CARGA DE DADOS REAIS
+- **Última Atualização**: 03/08/2025 17:45 - Padrão EVER implementado para eliminar retrabalho
 - **Estrutura**: Projeto reorganizado com separação clara entre produção e temporários
 
 ### 🔍 Observações Importantes
-- Nao se esquecer da Data Atual Desta Ultima Atualização 28/07/2025 22:22
-- A partir deste ponto deve ser seguido o timeline de acordo com a evolução
-- Qualquer data anterior ao mês de JULHO (07) deve ser ajustada para evitar conflitos de espaço/tempo
+- Data Atual: 03/08/2025 17:45 BRT
+- **CRÍTICO P0**: Padrão EVER estabelecido para eliminar perda de contexto
+- Sistema pronto aguardando stakeholder fornecer arquivos para primeira carga
 
 ### 🎯 Conquistas Principais
 1. **Knowledge Consolidator Base** (Waves 1-4) ✅
@@ -59,21 +59,33 @@ vcia_dhl/
 - **TripleStoreService**: Extração de triplas semânticas
 - **ML Confidence System**: Sistema completo de confiança
 
-## 🚨 PROTOCOLO DE INÍCIO DE SESSÃO OBRIGATÓRIO
+## 🚨 PROTOCOLO DE INÍCIO DE SESSÃO OBRIGATÓRIO - PADRÃO EVER
 
-**ATENÇÃO**: Existe um protocolo formal para início de sessão em `/INICIO-SESSAO.md`
+**⚠️ CRÍTICO P0**: O não cumprimento deste protocolo EVER causa RETRABALHO CONSTANTE e PERDA TOTAL DE CONTEXTO
 
-Para evitar retrabalho (que já causou 3+ horas de perda), SEMPRE:
+### 🔴 PADRÃO EVER (Enhance Validation & Extensive Recording)
 
-1. Leia este arquivo (CLAUDE.md) primeiro para entender as LEIS
-2. Leia RESUME-STATUS.md para entender o estado atual
-3. Siga as instruções em INICIO-SESSAO.md
+**OBRIGATÓRIO EM TODA SESSÃO**:
 
-**Comando padrão de início**:
+1. **BUSCA PRÉVIA**: Use `mcp__memory-serve__search_nodes` com query "EVER checkpoint sessão contexto"
+2. **TIMESTAMP**: Use `mcp__time__get_current_time` para registro preciso
+3. **LEITURA SEQUENCIAL**:
+   - Leia @CLAUDE.md para entender as LEIS
+   - Leia @RESUME-STATUS.md para estado atual
+   - Leia @INICIO-SESSAO.md para protocolo
+4. **CHECKPOINT INICIAL**: Crie entidade EVER-Session-[Data]-[Hora] na memória
+5. **VALIDAÇÃO**: Execute kcdiag() em http://127.0.0.1:5500
+
+**Comando padrão de início com EVER**:
 
 ```
-Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
+1. Buscar contexto: mcp__memory-serve__search_nodes "EVER checkpoint"
+2. Ler documentos: @CLAUDE.md, @RESUME-STATUS.md, @INICIO-SESSAO.md
+3. Criar checkpoint: EVER-Session-YYYYMMDD-HHMM
+4. Validar sistema: kcdiag() em http://127.0.0.1:5500
 ```
+
+**FREQUÊNCIA**: A cada 30 minutos ou mudança significativa, criar novo checkpoint EVER
 
 # Estilo de Código
 
@@ -105,9 +117,19 @@ Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-S
 <LEIS>
 ### LEIS do projeto
 
-[... previous content remains the same ...]
+### 🔴 LEI #14 - PADRÃO EVER OBRIGATÓRIO (03/08/2025) - CRÍTICO P0
 
-### 📌 Recursos MCP (OBRIGATÓRIOS - 28/01/2025)
+**EVER (Enhance Validation & Extensive Recording)** é MANDATÓRIO para eliminar retrabalho:
+
+1. **BUSCA SEMPRE**: Antes de qualquer ação, buscar contexto com `mcp__memory-serve__search_nodes`
+2. **SALVE SEMPRE**: Após ações significativas, criar entidades EVER-[Tipo]-[Data]-[Hora]
+3. **CONECTE SEMPRE**: Usar `create_relations` para conectar entidades relacionadas
+4. **VALIDE SEMPRE**: Confirmar que salvamento foi bem-sucedido
+5. **CHECKPOINT REGULAR**: A cada 30 minutos ou mudança crítica
+
+**PENALIDADE**: Não seguir EVER = RETRABALHO GARANTIDO + PERDA DE CONTEXTO
+
+### 📌 Recursos MCP (OBRIGATÓRIOS - 03/08/2025)
 
 - **Recursos que DEVEM ser utilizados:**
   - **Puppeteer**: Automação de browser, testes E2E e screenshots

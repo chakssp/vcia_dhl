@@ -642,4 +642,5 @@ if (typeof window !== 'undefined') {
   window.KC.CompressionUtils = compressionUtils;
 }
 
+// Exportar para ES6 modules
 export default compressionUtils;

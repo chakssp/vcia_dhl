@@ -69,17 +69,26 @@ class DiscoveryManager {
       const config = ConfigManager.get('discovery', {});
       const patterns = options.patterns || config.patterns || {};
 
-      // Check if we have File System Access API and not forcing mock
-      if ('showDirectoryPicker' in window && !options.useMockData) {
+      // Check if we have File System Access API
+      if ('showDirectoryPicker' in window) {
         try {
           await this.discoverWithFileSystemAPI(patterns);
         } catch (error) {
-          console.warn('[DiscoveryManager] File System API failed, using mock data:', error.message);
-          await this.discoverWithMockData(patterns);
+          if (error.name === 'AbortError') {
+            console.log('[DiscoveryManager] User cancelled directory selection');
+            EventBus.emit('discovery:cancelled', { reason: 'User cancelled' });
+          } else {
+            console.error('[DiscoveryManager] File System API failed:', error);
+            EventBus.emit('discovery:error', { error: error.message });
+          }
+          throw error; // Re-throw to be handled by caller
         }
       } else {
-        // Fallback to mock data for now
-        await this.discoverWithMockData(patterns);
+        // File System Access API not supported
+        const errorMsg = 'File System Access API not supported in this browser';
+        console.error('[DiscoveryManager]', errorMsg);
+        EventBus.emit('discovery:error', { error: errorMsg });
+        throw new Error(errorMsg);
       }
 
       // Update stats
@@ -249,94 +258,6 @@ class DiscoveryManager {
     return Math.min(100, Math.max(0, score));
   }
 
-  /**
-   * Fallback to mock data for testing
-   */
-  async discoverWithMockData(patterns) {
-    console.log('[DiscoveryManager] Using mock data for testing');
-
-    // Generate mock files
-    const mockFiles = [
-      {
-        id: 'mock-1',
-        name: 'projeto-decisao-estrategica.md',
-        path: '/documents/projeto-decisao-estrategica.md',
-        size: 2048,
-        type: 'text/markdown',
-        lastModified: new Date('2025-01-15'),
-        preview: '# Decisão Estratégica Q1 2024\n\nEste documento contém as principais decisões estratégicas tomadas no primeiro trimestre...',
-        relevanceScore: 95,
-        categories: [],
-        status: 'pending'
-      },
-      {
-        id: 'mock-2',
-        name: 'relatorio-tecnico-ml.txt',
-        path: '/reports/relatorio-tecnico-ml.txt',
-        size: 5120,
-        type: 'text/plain',
-        lastModified: new Date('2025-02-01'),
-        preview: 'Relatório Técnico: Implementação de ML\n\nBreakthrough: Descobrimos que usando embeddings vetoriais conseguimos 85% de acurácia...',
-        relevanceScore: 88,
-        categories: [],
-        status: 'pending'
-      },
-      {
-        id: 'mock-3',
-        name: 'ata-reuniao-produto.docx',
-        path: '/meetings/ata-reuniao-produto.docx',
-        size: 15360,
-        type: 'application/docx',
-        lastModified: new Date('2025-02-10'),
-        preview: 'Ata de Reunião - Definição de Produto\n\nDecisões tomadas:\n1. Priorizar integração com Supabase\n2. Implementar categorias dinâmicas...',
-        relevanceScore: 75,
-        categories: [],
-        status: 'pending'
-      },
-      {
-        id: 'mock-4',
-        name: 'insights-conhecimento-pessoal.md',
-        path: '/knowledge/insights-conhecimento-pessoal.md',
-        size: 8192,
-        type: 'text/markdown',
-        lastModified: new Date('2025-01-20'),
-        preview: '# Insights sobre Gestão de Conhecimento Pessoal\n\nApós anos de experiência, identifiquei padrões importantes...',
-        relevanceScore: 92,
-        categories: [],
-        status: 'pending'
-      },
-      {
-        id: 'mock-5',
-        name: 'roadmap-v2-completo.md',
-        path: '/specs/roadmap-v2-completo.md',
-        size: 12288,
-        type: 'text/markdown',
-        lastModified: new Date('2025-02-15'),
-        preview: '# Roadmap V2 Completo\n\nFase 1: Migração Core\n- CategoryManager com Supabase\n- Persistence Layer...',
-        relevanceScore: 85,
-        categories: [],
-        status: 'pending'
-      }
-    ];
-
-    // Simulate discovery delay
-    for (const file of mockFiles) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      this.discoveredFiles.push(file);
-      this.stats.processedFiles++;
-      
-      EventBus.emit('discovery:file-found', { file });
-      
-      // Emit progress
-      EventBus.emit('discovery:progress', {
-        processed: this.stats.processedFiles,
-        total: mockFiles.length
-      });
-    }
-
-    this.stats.totalFiles = mockFiles.length;
-    console.log(`[DiscoveryManager] Mock discovery complete: ${mockFiles.length} files`);
-  }
 
   /**
    * Check if file matches patterns

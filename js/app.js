@@ -92,6 +92,7 @@
             'QdrantExplorer',
             'SimilaritySearchService',
             'SchemaOrgMapper',
+            'PowerUserFeatures', // Funcionalidades do Power User v2
             // Wave 10 Production Components
             'SystemIntegrationOrchestrator',
             'CompleteSystemDeployment',

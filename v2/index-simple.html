@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Consolidator - Power User v2 (Simple)</title>
+    
+    <!-- CSS Imports -->
+    <link rel="stylesheet" href="css/tokens-dark.css">
+    <link rel="stylesheet" href="css/layout-split.css">
+    <link rel="stylesheet" href="css/components-dense.css">
+</head>
+<body class="terminal-theme">
+    <!-- Command Palette Overlay -->
+    <div id="command-palette" class="command-palette" role="dialog" aria-hidden="true">
+        <div class="command-palette-backdrop"></div>
+        <div class="command-palette-content">
+            <div class="command-palette-header">
+                <input type="text" id="command-input" class="command-input" placeholder="Type a command or search...">
+                <kbd class="shortcut-hint">Esc</kbd>
+            </div>
+            <div class="command-palette-body">
+                <div id="command-results" class="command-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Layout -->
+    <div class="app-container">
+        <!-- Status Bar -->
+        <header class="status-bar">
+            <div class="status-left">
+                <span class="status-item">
+                    <span class="status-text">KC v2.0</span>
+                </span>
+                <span class="status-item">
+                    <span id="files-count">0 files</span>
+                </span>
+            </div>
+            <div class="status-center">
+                <span id="current-operation">Ready</span>
+            </div>
+            <div class="status-right">
+                <button class="command-trigger">⌘K</button>
+            </div>
+        </header>
+
+        <!-- Split Pane Layout -->
+        <main class="split-container">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Navigation</h2>
+                    <button class="collapse-btn">‹</button>
+                </div>
+                
+                <!-- Quick Actions -->
+                <section class="quick-actions">
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="action-grid">
+                        <button class="action-btn" data-action="discover">
+                            <span>🔍 Discover</span>
+                        </button>
+                        <button class="action-btn" data-action="analyze">
+                            <span>🧠 Analyze</span>
+                        </button>
+                        <button class="action-btn" data-action="export">
+                            <span>📤 Export</span>
+                        </button>
+                        <button class="action-btn" data-action="settings">
+                            <span>⚙️ Settings</span>
+                        </button>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <header class="content-header">
+                    <h1>Knowledge Consolidator</h1>
+                </header>
+                
+                <div class="content-body">
+                    <div id="file-list" class="file-list">
+                        <div class="empty-state">
+                            <div class="empty-icon">📁</div>
+                            <h3>No files discovered yet</h3>
+                            <p>Click "Discover" to start</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Panel -->
+            <aside class="details-panel">
+                <div class="panel-header">
+                    <h2>Details</h2>
+                    <button class="panel-close">×</button>
+                </div>
+                <div class="panel-content">
+                    <p>Select a file to view details</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Processing...</span>
+    </div>
+
+    <!-- JavaScript - Versão simplificada -->
+    <script type="module" src="js/keyboard-manager.js"></script>
+    <script type="module" src="js/command-palette.js"></script>
+    <script type="module" src="js/power-app-simple.js"></script>
+</body>
+</html>

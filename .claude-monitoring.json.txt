@@ -1,4 +1,4 @@
-.claude-monitoring.json
+// .claude-monitoring.json
 
 {
   "version": "1.0",

@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "3ada50d938559048",
+        "id": "99f118e2fa5b94fb",
         "type": "tabs",
         "children": [
           {
-            "id": "a33c279c21077796",
+            "id": "6eeb9d56b64d24c5",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "enevr-protocol.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "Nova aba"
+              "title": "enevr-protocol"
             }
           }
         ]
@@ -164,19 +168,25 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "a33c279c21077796",
+  "active": "a0b6e01b9c36fc35",
   "lastOpenFiles": [
+    "v2/js/views/DiscoveryView.js.tmp.7664.1754271497203",
+    "v2/js/utils/FileUtils.js",
+    "v2/index.html.tmp.7664.1754270889171",
+    "v2/index.html.tmp.7664.1754270823514",
+    "v2/docs/CHECKPOINT-MIGRACAO-V2-04082025.md",
+    "v2/css/filter-panel.css",
+    "v2/js/components/FilterPanel.js",
+    "v2/js/managers/FilterManager.js",
+    "v2/index.html.tmp.7664.1754267805658",
+    "v2/js/services/FileSystemService.js",
+    "v2/js/services/FileSystemService.js.tmp.7664.1754261053249",
     "v2/Multi-Agent Orchestration Template for KC V2 Migration.md",
     "v2/Meth-NEVER/Wiki_Robot-Map vs Google_Pagerank-Relevance-Rich.md",
     "v2/Meth-NEVER/The Semantic Convergence - Why 2000s Metadata is 2025s AI Gold.md",
     "Captura de tela 2025-08-02 144421.png",
     "v2/refactor-fase2.md",
     "v2/_parallel_workspaces/agent-6-docs",
-    "v2/_parallel_workspaces/agent-5-tests",
-    "v2/_parallel_workspaces/agent-4-backend",
-    "v2/_parallel_workspaces/agent-3-ui",
-    "v2/_parallel_workspaces/agent-2-integration",
-    "v2/_parallel_workspaces/agent-1-components",
     "v2/VALIDATION_CONVERGENCE_COMPLETE.md",
     "v2/PARALLEL_VALIDATION_INDEX.md",
     "v2/VALIDATION_SUMMARY.md",
@@ -187,12 +197,8 @@
     "v2/FINAL_VALIDATION_REPORT.md",
     "v2/_parallel_validation/FINAL_VALIDATION_REPORT.md",
     "v2/_parallel_validation/TEST3_HEAVY_ANALYSIS.md",
-    "v2/_parallel_tests/test-3-token/agent-3/exhaustive-tests-heavy.spec.js",
-    "v2/_parallel_tests/test-3-token/agent-2/feature-module-heavy.js",
     "v2/_parallel_tests/test-3-token/agent-1/system-docs-heavy.md",
-    "v2/_parallel_tests/test-3-token/token-test.log",
     "v2/_parallel_validation/TEST3_MEDIUM_ANALYSIS.md",
-    "v2/_parallel_tests/test-3-token/agent-3/test-medium.spec.js",
     "v2/_parallel_tests/test-3-token/agent-1/docs-medium.md",
     "v2/_parallel_tests/test-3-token/agent-2/README-light.md",
     "v2/_parallel_validation/TEST2_ANALYSIS.md",
@@ -200,8 +206,6 @@
     "v2/_parallel_validation/TEST1_ANALYSIS.md",
     "v2/_parallel_tests/test-1-read/agent-2/analysis.md",
     "v2/_parallel_tests/test-1-read/agent-3/analysis.md",
-    "v2/_parallel_tests/test-1-read/agent-1/analysis.md",
-    "v2/MISSAO VISAO VALORES ENEVR.md",
-    "docs/analise-prd.md"
+    "v2/_parallel_tests/test-1-read/agent-1/analysis.md"
   ]
 }

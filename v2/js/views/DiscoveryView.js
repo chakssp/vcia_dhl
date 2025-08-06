@@ -1,21 +1,11 @@
 /**
  * DiscoveryView.js - Main file discovery interface for KC V2
- * 
- * Provides file grid display, real-time filtering, multiple selection,
- * and integration with V1's File System Access API through LegacyBridge
- * 
- * Features:
- * - Terminal-inspired UI with V2 design system
- * - Real-time sync with V1 file discovery
- * - Efficient handling of 1000+ files
- * - Smart preview on hover
- * - Bulk operations with keyboard shortcuts
- * - Pattern configuration interface
+ * Updated to match V1 functionality with file preview
  */
 
 import appState from '../core/AppState.js';
 import eventBus, { Events } from '../core/EventBus.js';
-import { legacyBridge } from '../core/LegacyBridge.js';
+import FilterPanel from '../components/FilterPanel.js';
 
 export class DiscoveryView {
   constructor() {
@@ -24,57 +14,24 @@ export class DiscoveryView {
     this.filteredFiles = [];
     this.selectedFiles = new Set();
     this.isInitialized = false;
-    this.hoverTimeout = null;
-    this.previewModal = null;
     
-    // Current state
-    this.currentFilter = 'all';
-    this.currentSort = 'relevance';
-    this.searchQuery = '';
-    this.viewMode = 'grid'; // grid, list
+    // Pattern configuration
+    this.includePatterns = ['*.md', '*.txt'];
+    this.excludePatterns = ['.git/', 'node_modules/', '*.tmp', '*.cache'];
     
-    // Pagination for performance
-    this.pagination = {
-      currentPage: 1,
-      itemsPerPage: 100,
-      totalPages: 0,
-      totalItems: 0
-    };
+    // Directory management
+    this.directories = [];
     
-    // Performance optimization
-    this.renderThrottle = null;
-    this.renderDelay = 16; // 60fps
+    // Currently selected file for preview
+    this.currentPreviewFile = null;
     
-    // File type icons mapping
-    this.fileIcons = {
-      'md': '📝',
-      'txt': '📄',
-      'docx': '📘',
-      'pdf': '📕',
-      'gdoc': '📗',
-      'default': '📄'
-    };
+    // Filter panel instance
+    this.filterPanel = new FilterPanel();
     
-    // Filter options
-    this.filterOptions = [
-      { value: 'all', label: 'All Files', count: 0 },
-      { value: 'analyzed', label: 'Analyzed', count: 0 },
-      { value: 'pending', label: 'Pending Analysis', count: 0 },
-      { value: 'approved', label: 'Approved', count: 0 },
-      { value: 'high-relevance', label: 'High Relevance (>70%)', count: 0 },
-      { value: 'categorized', label: 'Categorized', count: 0 }
-    ];
+    // Make this instance globally accessible for inline handlers
+    window._discoveryView = this;
     
-    // Sort options
-    this.sortOptions = [
-      { value: 'relevance', label: 'Relevance Score' },
-      { value: 'name', label: 'File Name' },
-      { value: 'date', label: 'Last Modified' },
-      { value: 'size', label: 'File Size' },
-      { value: 'confidence', label: 'Confidence Score' }
-    ];
-    
-    console.log('[DiscoveryView] Initialized with V1 bridge integration');
+    console.log('[DiscoveryView] Initialized');
   }
 
   /**
@@ -84,890 +41,182 @@ export class DiscoveryView {
     try {
       this.container = container;
       
-      // Ensure legacy bridge is ready
-      if (!legacyBridge.initialized) {
-        await legacyBridge.initialize();
+      // Setup event listeners
+      this.setupEventListeners();
+      
+      // Wait for next tick to ensure DOM is ready
+      setTimeout(() => {
+        // Initialize filter panel
+        const filterPanelContainer = document.getElementById('filter-panel-container');
+        console.log('[DiscoveryView] Filter panel container:', filterPanelContainer);
+        if (filterPanelContainer) {
+          console.log('[DiscoveryView] Initializing FilterPanel...');
+          this.filterPanel.initialize(filterPanelContainer);
+          console.log('[DiscoveryView] FilterPanel initialized');
+        } else {
+          console.error('[DiscoveryView] Filter panel container not found');
+        }
+      }, 0);
+      
+      // Load any existing files from AppState
+      const existingFiles = appState.get('files') || appState.get('discoveredFiles') || [];
+      if (existingFiles.length > 0) {
+        this.files = existingFiles;
       }
       
-      this.setupEventListeners();
-      this.render();
-      await this.syncWithV1();
+      // Always update file list to show templates if no files
+      this.updateFileList();
+      
+      // Attach UI event listeners
+      this.attachUIEventListeners();
       
       this.isInitialized = true;
       console.log('[DiscoveryView] Initialized successfully');
       
-      // Load initial files
-      this.loadFiles();
-      
     } catch (error) {
       console.error('[DiscoveryView] Initialization failed:', error);
-      this.renderError('Failed to initialize Discovery View. Please ensure V1 system is loaded.');
     }
   }
 
   /**
-   * Setup event listeners for V1 sync and user interactions
+   * Setup event listeners for file discovery events
    */
   setupEventListeners() {
-    // V1 sync events
-    eventBus.on('v1:files_updated', (data) => {
-      console.log('[DiscoveryView] V1 files updated:', data);
-      this.loadFiles();
-    });
-    
-    eventBus.on('v1:state_changed', ({ key, newValue }) => {
-      if (key === 'files') {
-        this.loadFiles();
+    // File discovery events
+    eventBus.on('discovery:completed', (data) => {
+      console.log('[DiscoveryView] Discovery completed:', data);
+      if (data.files) {
+        this.files = data.files;
+        this.updateFileList();
+        this.updateStats();
       }
     });
     
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => this.handleKeyboard(e));
+    eventBus.on('discovery:progress', (data) => {
+      console.log('[DiscoveryView] Discovery progress:', data);
+    });
     
-    // Window resize for responsive layout
-    window.addEventListener('resize', () => this.throttledRender());
+    eventBus.on('discovery:error', (data) => {
+      console.error('[DiscoveryView] Discovery error:', data);
+      this.showNotification(data.error || 'Discovery failed', 'error');
+    });
     
-    // Prevent memory leaks
-    window.addEventListener('beforeunload', () => this.cleanup());
-  }
-
-  /**
-   * Sync with V1 state
-   */
-  async syncWithV1() {
-    try {
-      // Get files from V1 through bridge
-      const v1Files = appState.getFiles();
-      console.log('[DiscoveryView] Synced files from V1:', v1Files.length);
-      
-      // Transform and store
-      this.files = this.transformV1Files(v1Files);
-      this.updateFilterCounts();
-      this.applyFilters();
-      
-    } catch (error) {
-      console.error('[DiscoveryView] V1 sync failed:', error);
-    }
-  }
-
-  /**
-   * Transform V1 files to V2 format with additional metadata
-   */
-  transformV1Files(v1Files) {
-    if (!Array.isArray(v1Files)) return [];
-    
-    return v1Files.map(file => ({
-      ...file,
-      // Ensure required fields
-      id: file.id || this.generateFileId(file),
-      displayName: this.getDisplayName(file),
-      icon: this.getFileIcon(file),
-      statusBadge: this.getStatusBadge(file),
-      searchableText: this.getSearchableText(file),
-      // V2 specific fields
-      v2: {
-        selected: false,
-        lastViewed: null,
-        bookmarked: false,
-        notes: '',
-        tags: []
+    // State change events
+    eventBus.on('state:changed', ({ key, newValue }) => {
+      if (key === 'files' || key === 'discoveredFiles') {
+        this.files = newValue || [];
+        this.updateFileList();
       }
-    }));
-  }
-
-  /**
-   * Load files from app state
-   */
-  loadFiles() {
-    const files = appState.getFiles();
-    this.files = this.transformV1Files(files);
-    this.updateFilterCounts();
-    this.applyFilters();
-    this.throttledRender();
-  }
-
-  /**
-   * Apply current filters and search
-   */
-  applyFilters() {
-    let filtered = [...this.files];
+    });
     
-    // Apply filter
-    if (this.currentFilter !== 'all') {
-      filtered = filtered.filter(file => this.matchesFilter(file, this.currentFilter));
-    }
+    // Filter change events
+    eventBus.on('filters:changed', () => {
+      this.updateFileList();
+    });
     
-    // Apply search
-    if (this.searchQuery.trim()) {
-      const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(file => 
-        file.searchableText.toLowerCase().includes(query)
-      );
-    }
-    
-    // Apply sort
-    filtered = this.sortFiles(filtered, this.currentSort);
-    
-    this.filteredFiles = filtered;
-    this.updatePagination();
-  }
-
-  /**
-   * Check if file matches filter
-   */
-  matchesFilter(file, filter) {
-    switch (filter) {
-      case 'analyzed':
-        return file.analyzed === true;
-      case 'pending':
-        return !file.analyzed;
-      case 'approved':
-        return file.approved === true;
-      case 'high-relevance':
-        return (file.relevanceScore || 0) > 0.7;
-      case 'categorized':
-        return file.categories && file.categories.length > 0;
-      default:
-        return true;
-    }
-  }
-
-  /**
-   * Sort files by criteria
-   */
-  sortFiles(files, sortBy) {
-    return files.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'date':
-          return new Date(b.lastModified || 0) - new Date(a.lastModified || 0);
-        case 'size':
-          return (b.size || 0) - (a.size || 0);
-        case 'confidence':
-          return (b.confidenceScore || 0) - (a.confidenceScore || 0);
-        case 'relevance':
-        default:
-          return (b.relevanceScore || 0) - (a.relevanceScore || 0);
-      }
+    eventBus.on('filters:reset', () => {
+      this.updateFileList();
     });
   }
 
   /**
-   * Update filter counts
+   * Attach UI event listeners
    */
-  updateFilterCounts() {
-    this.filterOptions.forEach(option => {
-      if (option.value === 'all') {
-        option.count = this.files.length;
-      } else {
-        option.count = this.files.filter(file => this.matchesFilter(file, option.value)).length;
-      }
+  attachUIEventListeners() {
+    // Main action buttons
+    const selectDirBtn = document.getElementById('btn-select-directory');
+    if (selectDirBtn) {
+      selectDirBtn.addEventListener('click', () => this.startDiscovery());
+    }
+    
+    const scanOptionsBtn = document.getElementById('btn-scan-options');
+    if (scanOptionsBtn) {
+      scanOptionsBtn.addEventListener('click', () => this.openPatternConfiguration());
+    }
+    
+    // Directory management
+    const locateFolderBtn = document.getElementById('btn-locate-folder');
+    if (locateFolderBtn) {
+      locateFolderBtn.addEventListener('click', () => this.locateFolder());
+    }
+    
+    const addLocationsBtn = document.getElementById('btn-add-locations');
+    if (addLocationsBtn) {
+      addLocationsBtn.addEventListener('click', () => this.addLocations());
+    }
+    
+    const resetDirsBtn = document.getElementById('btn-reset-dirs');
+    if (resetDirsBtn) {
+      resetDirsBtn.addEventListener('click', () => this.resetDirectories());
+    }
+    
+    // Pattern configuration
+    const patternChips = document.querySelectorAll('.pattern-chip');
+    patternChips.forEach(chip => {
+      chip.addEventListener('click', (e) => this.togglePatternChip(e.target));
     });
-  }
-
-  /**
-   * Update pagination
-   */
-  updatePagination() {
-    this.pagination.totalItems = this.filteredFiles.length;
-    this.pagination.totalPages = Math.ceil(this.filteredFiles.length / this.pagination.itemsPerPage);
-    this.pagination.currentPage = Math.min(this.pagination.currentPage, this.pagination.totalPages || 1);
-  }
-
-  /**
-   * Get current page files
-   */
-  getCurrentPageFiles() {
-    const start = (this.pagination.currentPage - 1) * this.pagination.itemsPerPage;
-    const end = start + this.pagination.itemsPerPage;
-    return this.filteredFiles.slice(start, end);
-  }
-
-  /**
-   * Render the discovery view
-   */
-  render() {
-    if (!this.container) return;
     
-    this.container.innerHTML = `
-      <div class="discovery-view">
-        ${this.renderHeader()}
-        ${this.renderControls()}
-        ${this.renderFileGrid()}
-        ${this.renderPagination()}
-        ${this.renderBulkActions()}
-      </div>
-    `;
-    
-    this.attachEventListeners();
-    this.updateFileGridHeight();
-  }
-
-  /**
-   * Render header with stats
-   */
-  renderHeader() {
-    const stats = this.getStats();
-    
-    return `
-      <div class="discovery-header">
-        <div class="discovery-title">
-          <h2>📁 File Discovery</h2>
-          <div class="discovery-stats">
-            <span class="stat-item">
-              <span class="stat-value">${stats.total}</span>
-              <span class="stat-label">files</span>
-            </span>
-            <span class="stat-item">
-              <span class="stat-value">${stats.filtered}</span>
-              <span class="stat-label">shown</span>
-            </span>
-            <span class="stat-item">
-              <span class="stat-value">${stats.selected}</span>
-              <span class="stat-label">selected</span>
-            </span>
-          </div>
-        </div>
-        
-        <div class="discovery-actions">
-          <button class="btn btn-primary" id="start-discovery">
-            🔍 Discover Files
-          </button>
-          <button class="btn btn-secondary" id="configure-patterns">
-            ⚙️ Configure Patterns
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render filter and search controls
-   */
-  renderControls() {
-    return `
-      <div class="discovery-controls">
-        <div class="search-section">
-          <div class="search-input-wrapper">
-            <input 
-              type="text" 
-              id="file-search" 
-              class="search-input" 
-              placeholder="🔍 Search files..."
-              value="${this.searchQuery}"
-            >
-            <button class="btn-icon search-clear ${this.searchQuery ? 'visible' : ''}" id="clear-search">
-              ✕
-            </button>
-          </div>
-        </div>
-        
-        <div class="filter-section">
-          <div class="filter-group">
-            <label>Filter:</label>
-            <select id="file-filter" class="filter-select">
-              ${this.filterOptions.map(option => `
-                <option value="${option.value}" ${option.value === this.currentFilter ? 'selected' : ''}>
-                  ${option.label} (${option.count})
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          
-          <div class="filter-group">
-            <label>Sort:</label>
-            <select id="file-sort" class="filter-select">
-              ${this.sortOptions.map(option => `
-                <option value="${option.value}" ${option.value === this.currentSort ? 'selected' : ''}>
-                  ${option.label}
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          
-          <div class="view-toggle">
-            <button class="btn-icon ${this.viewMode === 'grid' ? 'active' : ''}" id="view-grid" title="Grid View">
-              ⚏
-            </button>
-            <button class="btn-icon ${this.viewMode === 'list' ? 'active' : ''}" id="view-list" title="List View">
-              ☰
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render file grid/list
-   */
-  renderFileGrid() {
-    const files = this.getCurrentPageFiles();
-    const isEmpty = files.length === 0;
-    
-    if (isEmpty) {
-      return this.renderEmptyState();
-    }
-    
-    return `
-      <div class="file-grid-wrapper">
-        <div class="file-grid ${this.viewMode}" id="file-grid">
-          ${files.map(file => this.renderFileCard(file)).join('')}
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render individual file card
-   */
-  renderFileCard(file) {
-    const isSelected = this.selectedFiles.has(file.id);
-    // relevanceScore já está em formato 0-100, não precisa multiplicar
-    const relevancePercent = Math.round(file.relevanceScore || 0);
-    const confidencePercent = Math.round(file.confidenceScore || 0);
-    
-    return `
-      <div class="file-card ${isSelected ? 'selected' : ''}" 
-           data-file-id="${file.id}"
-           data-file-path="${file.path || ''}"
-           tabindex="0">
-        
-        <div class="file-card-header">
-          <div class="file-checkbox">
-            <input type="checkbox" 
-                   id="file-${file.id}" 
-                   ${isSelected ? 'checked' : ''}
-                   onclick="event.stopPropagation()">
-          </div>
-          
-          <div class="file-info">
-            <div class="file-name">
-              <span class="file-icon">${file.icon}</span>
-              <span class="file-title" title="${file.name}">${file.displayName}</span>
-            </div>
-            
-            <div class="file-path" title="${file.path || 'Unknown path'}">
-              ${this.truncatePath(file.path || 'Unknown path')}
-            </div>
-          </div>
-          
-          <div class="file-status">
-            ${file.statusBadge}
-          </div>
-        </div>
-        
-        <div class="file-card-body">
-          ${this.renderFilePreview(file)}
-        </div>
-        
-        <div class="file-card-footer">
-          <div class="file-meta">
-            <span class="meta-item" title="File size">
-              📏 ${this.formatFileSize(file.size || 0)}
-            </span>
-            <span class="meta-item" title="Last modified">
-              📅 ${this.formatDate(file.lastModified)}
-            </span>
-          </div>
-          
-          <div class="file-scores">
-            <div class="score-item relevance" title="Relevance Score">
-              <div class="score-bar">
-                <div class="score-fill" style="width: ${relevancePercent}%"></div>
-              </div>
-              <span class="score-text">${relevancePercent}%</span>
-            </div>
-            
-            ${file.confidenceScore ? `
-              <div class="score-item confidence" title="Confidence Score">
-                <div class="score-bar">
-                  <div class="score-fill" style="width: ${confidencePercent}%"></div>
-                </div>
-                <span class="score-text">${confidencePercent}%</span>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-        
-        <div class="file-card-actions">
-          <button class="btn-icon" onclick="discoveryView.analyzeFile('${file.id}')" title="Analyze with AI">
-            🧠
-          </button>
-          <button class="btn-icon" onclick="discoveryView.previewFile('${file.id}')" title="Preview Content">
-            👁️
-          </button>
-          <button class="btn-icon" onclick="discoveryView.categorizeFile('${file.id}')" title="Categorize">
-            🏷️
-          </button>
-          <button class="btn-icon" onclick="discoveryView.approveFile('${file.id}')" title="Approve">
-            ✅
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render file preview section
-   */
-  renderFilePreview(file) {
-    if (!file.preview) return '<div class="file-preview-empty">No preview available</div>';
-    
-    // Get first segment or first 150 characters
-    const preview = file.preview.segment1 || 
-                   (typeof file.preview === 'string' ? file.preview : '') ||
-                   (file.content ? file.content.substring(0, 150) + '...' : '');
-    
-    return `
-      <div class="file-preview">
-        <p>${this.escapeHtml(preview)}</p>
-        ${file.categories && file.categories.length > 0 ? `
-          <div class="file-categories">
-            ${file.categories.map(cat => `
-              <span class="tag" style="background-color: ${cat.color || '#4A90E2'}20; color: ${cat.color || '#4A90E2'}">
-                ${cat.name}
-              </span>
-            `).join('')}
-          </div>
-        ` : ''}
-      </div>
-    `;
-  }
-
-  /**
-   * Render pagination controls
-   */
-  renderPagination() {
-    if (this.pagination.totalPages <= 1) return '';
-    
-    const { currentPage, totalPages, totalItems, itemsPerPage } = this.pagination;
-    const startItem = (currentPage - 1) * itemsPerPage + 1;
-    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-    
-    return `
-      <div class="pagination-wrapper">
-        <div class="pagination-info">
-          Showing ${startItem}-${endItem} of ${totalItems} files
-        </div>
-        
-        <div class="pagination-controls">
-          <button class="btn btn-secondary" 
-                  id="prev-page" 
-                  ${currentPage === 1 ? 'disabled' : ''}>
-            ← Previous
-          </button>
-          
-          <div class="pagination-pages">
-            ${this.renderPageNumbers()}
-          </div>
-          
-          <button class="btn btn-secondary" 
-                  id="next-page" 
-                  ${currentPage === totalPages ? 'disabled' : ''}>
-            Next →
-          </button>
-        </div>
-        
-        <div class="items-per-page">
-          <label>Items per page:</label>
-          <select id="items-per-page">
-            <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50</option>
-            <option value="100" ${itemsPerPage === 100 ? 'selected' : ''}>100</option>
-            <option value="200" ${itemsPerPage === 200 ? 'selected' : ''}>200</option>
-            <option value="500" ${itemsPerPage === 500 ? 'selected' : ''}>500</option>
-          </select>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render page numbers
-   */
-  renderPageNumbers() {
-    const { currentPage, totalPages } = this.pagination;
-    const pages = [];
-    
-    // Show first page
-    if (currentPage > 3) {
-      pages.push(`<button class="page-btn" data-page="1">1</button>`);
-      if (currentPage > 4) {
-        pages.push(`<span class="page-ellipsis">...</span>`);
-      }
-    }
-    
-    // Show pages around current
-    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-      pages.push(`
-        <button class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">
-          ${i}
-        </button>
-      `);
-    }
-    
-    // Show last page
-    if (currentPage < totalPages - 2) {
-      if (currentPage < totalPages - 3) {
-        pages.push(`<span class="page-ellipsis">...</span>`);
-      }
-      pages.push(`<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`);
-    }
-    
-    return pages.join('');
-  }
-
-  /**
-   * Render bulk actions panel
-   */
-  renderBulkActions() {
-    const selectedCount = this.selectedFiles.size;
-    
-    if (selectedCount === 0) return '';
-    
-    return `
-      <div class="bulk-actions-panel">
-        <div class="bulk-actions-header">
-          <span class="selected-count">${selectedCount} files selected</span>
-          <button class="btn-icon" id="clear-selection" title="Clear selection">✕</button>
-        </div>
-        
-        <div class="bulk-actions-buttons">
-          <button class="btn btn-primary" id="bulk-analyze">
-            🧠 Analyze Selected
-          </button>
-          <button class="btn btn-secondary" id="bulk-categorize">
-            🏷️ Categorize Selected
-          </button>
-          <button class="btn btn-success" id="bulk-approve">
-            ✅ Approve Selected
-          </button>
-          <button class="btn btn-danger" id="bulk-remove">
-            🗑️ Remove Selected
-          </button>
-        </div>
-        
-        <div class="bulk-actions-shortcuts">
-          <span class="shortcut">Ctrl+A: Select All</span>
-          <span class="shortcut">Ctrl+I: Analyze</span>
-          <span class="shortcut">Ctrl+K: Categorize</span>
-          <span class="shortcut">Ctrl+D: Approve</span>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Render empty state
-   */
-  renderEmptyState() {
-    const hasFiles = this.files.length > 0;
-    
-    if (!hasFiles) {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">📁</div>
-          <h3>No Files Discovered</h3>
-          <p>Start by discovering files from your directories or Obsidian vaults.</p>
-          <button class="btn btn-primary" id="start-discovery">
-            🔍 Start Discovery
-          </button>
-        </div>
-      `;
-    } else {
-      return `
-        <div class="empty-state">
-          <div class="empty-icon">🔍</div>
-          <h3>No Files Match Current Filter</h3>
-          <p>Try adjusting your search terms or filter criteria.</p>
-          <button class="btn btn-secondary" id="clear-filters">
-            Clear Filters
-          </button>
-        </div>
-      `;
-    }
-  }
-
-  /**
-   * Render error state
-   */
-  renderError(message) {
-    if (!this.container) return;
-    
-    this.container.innerHTML = `
-      <div class="error-state">
-        <div class="error-icon">⚠️</div>
-        <h3>Discovery View Error</h3>
-        <p>${message}</p>
-        <button class="btn btn-primary" onclick="location.reload()">
-          🔄 Reload Page
-        </button>
-      </div>
-    `;
-  }
-
-  /**
-   * Attach event listeners after render
-   */
-  attachEventListeners() {
-    // Search input
-    const searchInput = document.getElementById('file-search');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        this.searchQuery = e.target.value;
-        this.applyFilters();
-        this.throttledRender();
-        
-        // Update clear button visibility
-        const clearBtn = document.getElementById('clear-search');
-        if (clearBtn) {
-          clearBtn.classList.toggle('visible', e.target.value.length > 0);
+    const customPatternInput = document.getElementById('custom-include-pattern');
+    if (customPatternInput) {
+      customPatternInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          this.addCustomPattern(e.target.value);
+          e.target.value = '';
         }
       });
     }
     
-    // Clear search
-    const clearSearch = document.getElementById('clear-search');
-    if (clearSearch) {
-      clearSearch.addEventListener('click', () => {
-        this.searchQuery = '';
-        this.applyFilters();
-        this.throttledRender();
-      });
+    const applyExclusionsBtn = document.getElementById('btn-apply-exclusions');
+    if (applyExclusionsBtn) {
+      applyExclusionsBtn.addEventListener('click', () => this.applyExclusions());
     }
-    
-    // Filter select
-    const filterSelect = document.getElementById('file-filter');
-    if (filterSelect) {
-      filterSelect.addEventListener('change', (e) => {
-        this.currentFilter = e.target.value;
-        this.applyFilters();
-        this.throttledRender();
-      });
-    }
-    
-    // Sort select
-    const sortSelect = document.getElementById('file-sort');
-    if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
-        this.currentSort = e.target.value;
-        this.applyFilters();
-        this.throttledRender();
-      });
-    }
-    
-    // View toggle
-    document.getElementById('view-grid')?.addEventListener('click', () => {
-      this.viewMode = 'grid';
-      this.throttledRender();
-    });
-    
-    document.getElementById('view-list')?.addEventListener('click', () => {
-      this.viewMode = 'list';
-      this.throttledRender();
-    });
-    
-    // File cards
-    this.attachFileCardListeners();
-    
-    // Pagination
-    this.attachPaginationListeners();
-    
-    // Bulk actions
-    this.attachBulkActionListeners();
-    
-    // Discovery actions
-    document.getElementById('start-discovery')?.addEventListener('click', () => {
-      this.startDiscovery();
-    });
-    
-    document.getElementById('configure-patterns')?.addEventListener('click', () => {
-      this.openPatternConfiguration();
-    });
   }
 
   /**
-   * Attach file card event listeners
+   * Activate view when shown
    */
-  attachFileCardListeners() {
-    const fileCards = document.querySelectorAll('.file-card');
-    
-    fileCards.forEach(card => {
-      const fileId = card.dataset.fileId;
-      
-      // Click to select
-      card.addEventListener('click', (e) => {
-        if (e.target.type !== 'checkbox' && !e.target.closest('.file-card-actions')) {
-          this.toggleFileSelection(fileId);
-        }
-      });
-      
-      // Checkbox
-      const checkbox = card.querySelector('input[type="checkbox"]');
-      if (checkbox) {
-        checkbox.addEventListener('change', () => {
-          this.toggleFileSelection(fileId);
-        });
-      }
-      
-      // Hover for preview
-      card.addEventListener('mouseenter', () => {
-        this.showFilePreview(fileId, card);
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        this.hideFilePreview();
-      });
-      
-      // Keyboard navigation
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.toggleFileSelection(fileId);
-        }
-      });
-    });
+  activate() {
+    console.log('[DiscoveryView] View activated');
+    this.attachUIEventListeners();
   }
-
+  
   /**
-   * Attach pagination event listeners
+   * Deactivate view when hidden
    */
-  attachPaginationListeners() {
-    // Page buttons
-    document.querySelectorAll('.page-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const page = parseInt(btn.dataset.page);
-        this.goToPage(page);
-      });
-    });
-    
-    // Previous/Next
-    document.getElementById('prev-page')?.addEventListener('click', () => {
-      this.goToPage(this.pagination.currentPage - 1);
-    });
-    
-    document.getElementById('next-page')?.addEventListener('click', () => {
-      this.goToPage(this.pagination.currentPage + 1);
-    });
-    
-    // Items per page
-    document.getElementById('items-per-page')?.addEventListener('change', (e) => {
-      this.pagination.itemsPerPage = parseInt(e.target.value);
-      this.pagination.currentPage = 1;
-      this.updatePagination();
-      this.throttledRender();
-    });
+  deactivate() {
+    console.log('[DiscoveryView] View deactivated');
   }
 
   /**
-   * Attach bulk action event listeners
-   */
-  attachBulkActionListeners() {
-    document.getElementById('clear-selection')?.addEventListener('click', () => {
-      this.clearSelection();
-    });
-    
-    document.getElementById('bulk-analyze')?.addEventListener('click', () => {
-      this.bulkAnalyze();
-    });
-    
-    document.getElementById('bulk-categorize')?.addEventListener('click', () => {
-      this.bulkCategorize();
-    });
-    
-    document.getElementById('bulk-approve')?.addEventListener('click', () => {
-      this.bulkApprove();
-    });
-    
-    document.getElementById('bulk-remove')?.addEventListener('click', () => {
-      this.bulkRemove();
-    });
-    
-    // Clear filters
-    document.getElementById('clear-filters')?.addEventListener('click', () => {
-      this.clearFilters();
-    });
-  }
-
-  /**
-   * Handle keyboard shortcuts
-   */
-  handleKeyboard(e) {
-    // Only handle if discovery view is active
-    if (!this.container || !this.container.contains(document.activeElement)) {
-      return;
-    }
-    
-    // Ignore if typing in input
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      return;
-    }
-    
-    if (e.ctrlKey || e.metaKey) {
-      switch (e.key) {
-        case 'a':
-          e.preventDefault();
-          this.selectAll();
-          break;
-        case 'i':
-          e.preventDefault();
-          this.bulkAnalyze();
-          break;
-        case 'k':
-          e.preventDefault();
-          this.bulkCategorize();
-          break;
-        case 'd':
-          e.preventDefault();
-          this.bulkApprove();
-          break;
-        case '/':
-          e.preventDefault();
-          document.getElementById('file-search')?.focus();
-          break;
-      }
-    } else if (e.key === 'Escape') {
-      this.clearSelection();
-      document.getElementById('file-search')?.blur();
-    }
-  }
-
-  // === FILE OPERATIONS ===
-
-  /**
-   * Start file discovery process
+   * Start file discovery
    */
   async startDiscovery() {
     try {
-      // Importa o serviço de descoberta V2
-      const { fileDiscoveryService } = await import('../services/FileDiscoveryService.js');
+      // Import the real DiscoveryManager
+      const DiscoveryManager = (await import('../managers/DiscoveryManager.js')).default;
       
-      // Mostra loading
-      this.showNotification('Iniciando descoberta de arquivos...', 'info');
+      // Get pattern configuration
+      const patterns = {
+        include: this.getActiveIncludePatterns(),
+        exclude: this.getExcludePatterns()
+      };
       
-      // Executa descoberta
-      const files = await fileDiscoveryService.startDiscovery();
+      console.log('[DiscoveryView] Starting discovery with patterns:', patterns);
       
-      if (files.length > 0) {
-        // Atualiza estado com arquivos descobertos
-        this.files = files;
-        await appState.set('discovery.files', files);
-        
-        // Atualiza UI
-        this.updateFileList();
-        this.updateStats();
-        
-        this.showNotification(`${files.length} arquivos descobertos!`, 'success');
-      } else {
-        this.showNotification('Nenhum arquivo encontrado ou descoberta cancelada', 'warning');
+      // Show loading state
+      this.showNotification('Starting file discovery...', 'info');
+      
+      // Start real discovery
+      const success = await DiscoveryManager.startDiscovery({ patterns });
+      
+      if (success) {
+        const files = appState.get('files') || appState.get('discoveredFiles') || [];
+        this.showNotification(`${files.length} files discovered!`, 'success');
       }
-      
-      console.log('[DiscoveryView] Discovery completed:', files.length);
       
     } catch (error) {
       console.error('[DiscoveryView] Discovery failed:', error);
-      this.showNotification('Erro na descoberta: ' + error.message, 'error');
+      this.showNotification('Error: ' + error.message, 'error');
     }
   }
 
@@ -977,353 +226,533 @@ export class DiscoveryView {
   openPatternConfiguration() {
     // TODO: Implement pattern configuration modal
     console.log('[DiscoveryView] Opening pattern configuration');
-    this.showNotification('Pattern configuration not yet implemented', 'info');
+    this.showNotification('Advanced pattern configuration coming soon', 'info');
   }
 
   /**
-   * Analyze single file
+   * Locate folder using File System Access API
    */
-  async analyzeFile(fileId) {
+  async locateFolder() {
     try {
-      const file = this.files.find(f => f.id === fileId);
-      if (!file) return;
+      const dirHandle = await window.showDirectoryPicker({
+        mode: 'read'
+      });
       
-      await legacyBridge.executeV1Function('AnalysisManager.analyzeFile', file);
-      this.showNotification(`Analysis started for ${file.name}`, 'success');
+      const path = dirHandle.name;
+      this.addDirectoryToList(path, dirHandle);
       
-    } catch (error) {
-      console.error('[DiscoveryView] File analysis failed:', error);
-      this.showNotification('Analysis failed: ' + error.message, 'error');
-    }
-  }
-
-  /**
-   * Preview file content
-   */
-  previewFile(fileId) {
-    const file = this.files.find(f => f.id === fileId);
-    if (!file) return;
-    
-    // TODO: Implement file preview modal
-    console.log('[DiscoveryView] Previewing file:', file.name);
-    this.showNotification('File preview not yet implemented', 'info');
-  }
-
-  /**
-   * Categorize single file
-   */
-  categorizeFile(fileId) {
-    const file = this.files.find(f => f.id === fileId);
-    if (!file) return;
-    
-    // TODO: Implement categorization modal
-    console.log('[DiscoveryView] Categorizing file:', file.name);
-    this.showNotification('File categorization not yet implemented', 'info');
-  }
-
-  /**
-   * Approve single file
-   */
-  async approveFile(fileId) {
-    try {
-      const file = this.files.find(f => f.id === fileId);
-      if (!file) return;
-      
-      // Update file status through V1
-      file.approved = true;
-      legacyBridge.setV1Data('files', this.files);
-      
-      this.loadFiles();
-      this.showNotification(`${file.name} approved`, 'success');
-      
-    } catch (error) {
-      console.error('[DiscoveryView] File approval failed:', error);
-      this.showNotification('Approval failed: ' + error.message, 'error');
-    }
-  }
-
-  // === SELECTION OPERATIONS ===
-
-  /**
-   * Toggle file selection
-   */
-  toggleFileSelection(fileId) {
-    if (this.selectedFiles.has(fileId)) {
-      this.selectedFiles.delete(fileId);
-    } else {
-      this.selectedFiles.add(fileId);
-    }
-    
-    this.updateFileCardSelection(fileId);
-    this.throttledRender();
-  }
-
-  /**
-   * Update file card selection visual state
-   */
-  updateFileCardSelection(fileId) {
-    const card = document.querySelector(`[data-file-id="${fileId}"]`);
-    const checkbox = card?.querySelector('input[type="checkbox"]');
-    
-    if (card && checkbox) {
-      const isSelected = this.selectedFiles.has(fileId);
-      card.classList.toggle('selected', isSelected);
-      checkbox.checked = isSelected;
-    }
-  }
-
-  /**
-   * Select all visible files
-   */
-  selectAll() {
-    const currentFiles = this.getCurrentPageFiles();
-    currentFiles.forEach(file => this.selectedFiles.add(file.id));
-    this.throttledRender();
-  }
-
-  /**
-   * Clear all selections
-   */
-  clearSelection() {
-    this.selectedFiles.clear();
-    this.throttledRender();
-  }
-
-  /**
-   * Clear all filters
-   */
-  clearFilters() {
-    this.currentFilter = 'all';
-    this.currentSort = 'relevance';
-    this.searchQuery = '';
-    this.applyFilters();
-    this.throttledRender();
-  }
-
-  // === BULK OPERATIONS ===
-
-  /**
-   * Bulk analyze selected files
-   */
-  async bulkAnalyze() {
-    const selectedFiles = this.getSelectedFiles();
-    if (selectedFiles.length === 0) return;
-    
-    try {
-      for (const file of selectedFiles) {
-        await legacyBridge.executeV1Function('AnalysisManager.analyzeFile', file);
+      // Update textarea
+      const textarea = document.getElementById('directory-paths');
+      if (textarea) {
+        const currentPaths = textarea.value.trim();
+        textarea.value = currentPaths ? currentPaths + '\n' + path : path;
       }
       
-      this.showNotification(`Analysis started for ${selectedFiles.length} files`, 'success');
-      this.clearSelection();
-      
     } catch (error) {
-      console.error('[DiscoveryView] Bulk analysis failed:', error);
-      this.showNotification('Bulk analysis failed: ' + error.message, 'error');
+      if (error.name !== 'AbortError') {
+        console.error('[DiscoveryView] Error selecting directory:', error);
+        this.showNotification('Error selecting directory', 'error');
+      }
     }
   }
 
   /**
-   * Bulk categorize selected files
+   * Add locations from textarea
    */
-  bulkCategorize() {
-    const selectedFiles = this.getSelectedFiles();
-    if (selectedFiles.length === 0) return;
+  addLocations() {
+    const textarea = document.getElementById('directory-paths');
+    if (!textarea) return;
     
-    // TODO: Implement bulk categorization modal
-    console.log('[DiscoveryView] Bulk categorizing files:', selectedFiles.length);
-    this.showNotification('Bulk categorization not yet implemented', 'info');
+    const paths = textarea.value.split('\n').filter(p => p.trim());
+    paths.forEach(path => {
+      if (!this.directories.find(d => d.path === path)) {
+        this.addDirectoryToList(path);
+      }
+    });
+    
+    textarea.value = '';
   }
 
   /**
-   * Bulk approve selected files
+   * Add directory to list
    */
-  async bulkApprove() {
-    const selectedFiles = this.getSelectedFiles();
-    if (selectedFiles.length === 0) return;
-    
-    try {
-      selectedFiles.forEach(file => file.approved = true);
-      legacyBridge.setV1Data('files', this.files);
-      
-      this.loadFiles();
-      this.clearSelection();
-      this.showNotification(`${selectedFiles.length} files approved`, 'success');
-      
-    } catch (error) {
-      console.error('[DiscoveryView] Bulk approval failed:', error);
-      this.showNotification('Bulk approval failed: ' + error.message, 'error');
-    }
+  addDirectoryToList(path, handle = null) {
+    this.directories.push({ path, handle });
+    this.renderDirectoryList();
   }
 
   /**
-   * Bulk remove selected files
+   * Render directory list
    */
-  async bulkRemove() {
-    const selectedFiles = this.getSelectedFiles();
-    if (selectedFiles.length === 0) return;
+  renderDirectoryList() {
+    const dirList = document.getElementById('directory-list');
+    if (!dirList) return;
     
-    if (!confirm(`Remove ${selectedFiles.length} files from discovery?`)) {
+    if (this.directories.length === 0) {
+      dirList.innerHTML = '<div class="directory-item">No directories added</div>';
       return;
     }
     
+    dirList.innerHTML = this.directories.map((dir, index) => `
+      <div class="directory-item">
+        <span>${dir.path}</span>
+        <span class="directory-remove" onclick="window._discoveryView.removeDirectory(${index})">×</span>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Remove directory
+   */
+  removeDirectory(index) {
+    this.directories.splice(index, 1);
+    this.renderDirectoryList();
+  }
+
+  /**
+   * Reset directories
+   */
+  resetDirectories() {
+    this.directories = [];
+    this.renderDirectoryList();
+    
+    const textarea = document.getElementById('directory-paths');
+    if (textarea) textarea.value = '';
+  }
+
+  /**
+   * Toggle pattern chip
+   */
+  togglePatternChip(chip) {
+    chip.classList.toggle('active');
+  }
+
+  /**
+   * Get active include patterns
+   */
+  getActiveIncludePatterns() {
+    const patterns = [];
+    document.querySelectorAll('.pattern-chip.active').forEach(chip => {
+      patterns.push(chip.dataset.pattern);
+    });
+    return patterns.length > 0 ? patterns : ['*'];
+  }
+
+  /**
+   * Get exclude patterns
+   */
+  getExcludePatterns() {
+    const textarea = document.getElementById('exclude-patterns');
+    if (!textarea) return [];
+    
+    return textarea.value.split('\n')
+      .map(p => p.trim())
+      .filter(p => p.length > 0);
+  }
+
+  /**
+   * Add custom pattern
+   */
+  addCustomPattern(pattern) {
+    if (!pattern.trim()) return;
+    
+    // Create new chip
+    const chipsContainer = document.querySelector('.pattern-chips');
+    if (chipsContainer) {
+      const chip = document.createElement('span');
+      chip.className = 'pattern-chip active';
+      chip.dataset.pattern = pattern;
+      chip.textContent = pattern;
+      chip.addEventListener('click', (e) => this.togglePatternChip(e.target));
+      chipsContainer.appendChild(chip);
+    }
+  }
+
+  /**
+   * Apply exclusions
+   */
+  applyExclusions() {
+    this.excludePatterns = this.getExcludePatterns();
+    this.showNotification('Exclusion patterns applied', 'success');
+    
+    // Re-filter files if any are loaded
+    if (this.files.length > 0) {
+      this.updateFileList();
+    }
+  }
+
+  /**
+   * Show template preview files when no real files discovered
+   */
+  showTemplatePreview(container) {
+    // Generate sample files with Brazilian context
+    const templateFiles = [
+      {
+        id: 'template-1',
+        name: 'projeto-modernizacao-sistema.md',
+        path: '/Documents/Projects/2024/Modernização',
+        size: 24576,
+        lastModified: new Date('2024-01-15'),
+        relevanceScore: 95,
+        preview: 'Proposta de Modernização do Sistema Legado\n\nObjetivo: Migrar sistema monolítico para arquitetura de microserviços...\n\nJustificativa: O sistema atual apresenta limitações de escalabilidade e manutenção. A modernização permitirá maior agilidade no desenvolvimento de novas funcionalidades e redução de custos operacionais.\n\nDecisão Estratégica: Adotar containerização com Kubernetes para garantir alta disponibilidade...',
+        categories: ['Projetos', 'Arquitetura'],
+        icon: '📋'
+      },
+      {
+        id: 'template-2', 
+        name: 'analise-migracao-cloud-aws.md',
+        path: '/Documents/Análises/Cloud/2024',
+        size: 18432,
+        lastModified: new Date('2024-02-20'),
+        relevanceScore: 88,
+        preview: 'Análise de Migração para AWS Cloud\n\nContexto: Avaliação da viabilidade técnica e financeira para migração completa da infraestrutura on-premise para AWS...\n\nPontos Críticos Identificados:\n- Redução de 40% nos custos operacionais\n- Aumento da disponibilidade para 99.99%\n- Necessidade de treinamento da equipe\n\nRecomendação: Iniciar com projeto piloto...',
+        categories: ['Cloud', 'Análises Técnicas'],
+        icon: '☁️'
+      },
+      {
+        id: 'template-3',
+        name: 'decisao-framework-frontend.md', 
+        path: '/Documents/Decisões/Tech/2024',
+        size: 15360,
+        lastModified: new Date('2024-03-10'),
+        relevanceScore: 92,
+        preview: 'Decisão: Adoção do React como Framework Frontend Padrão\n\nApós análise comparativa entre React, Angular e Vue.js, decidimos adotar React pelos seguintes motivos:\n\n1. Maior pool de desenvolvedores no mercado brasileiro\n2. Ecossistema maduro e estável\n3. Performance superior em nossa POC\n4. Melhor integração com nossa stack atual...',
+        categories: ['Decisões Técnicas', 'Frontend'],
+        icon: '⚛️'
+      },
+      {
+        id: 'template-4',
+        name: 'retrospectiva-sprint-42.md',
+        path: '/Documents/Sprints/2024/Q1',
+        size: 12288,
+        lastModified: new Date('2024-03-25'),
+        relevanceScore: 75,
+        preview: 'Retrospectiva Sprint 42 - Time Phoenix\n\nPontos Positivos:\n- Entrega do módulo de pagamentos no prazo\n- Redução de bugs em 30%\n- Melhoria na comunicação entre squads\n\nPontos de Melhoria:\n- Reuniões muito longas\n- Falta de documentação técnica\n\nAções para próxima sprint:\n- Implementar timebox rígido nas dailies\n- Criar templates de documentação...',
+        categories: ['Sprints', 'Retrospectivas'],
+        icon: '🔄'
+      },
+      {
+        id: 'template-5',
+        name: 'plano-implementacao-lgpd.md',
+        path: '/Documents/Compliance/LGPD/2024',
+        size: 28672,
+        lastModified: new Date('2024-01-30'),
+        relevanceScore: 98,
+        preview: 'Plano de Implementação LGPD - Fase 2\n\nObjetivo: Garantir conformidade total com a Lei Geral de Proteção de Dados\n\nAções Prioritárias:\n1. Mapeamento de todos os dados pessoais processados\n2. Implementação de consentimento explícito\n3. Criação de política de retenção de dados\n4. Desenvolvimento de APIs para solicitações de titulares\n\nPrazo crítico: Junho/2024...',
+        categories: ['Compliance', 'LGPD'],
+        icon: '🔒'
+      }
+    ];
+
+    // Render template files with special styling
+    container.innerHTML = `
+      <div class="template-preview-notice">
+        <div class="notice-header">
+          <span class="notice-icon">🎯</span>
+          <h3>Preview Mode - Exemplos de Arquivos</h3>
+        </div>
+        <p class="notice-text">
+          Estes são arquivos de exemplo para demonstrar as capacidades do sistema.
+          Clique em "Select Directory" para descobrir seus arquivos reais.
+        </p>
+      </div>
+      
+      ${templateFiles.map(file => `
+        <div class="file-item template-file" data-file-id="${file.id}" onclick="window._discoveryView.selectTemplateFile('${file.id}')">
+          <div class="template-badge">EXEMPLO</div>
+          <div class="file-item-header">
+            <div class="file-item-name">
+              <span class="file-icon">${file.icon || this.getFileIcon(file)}</span>
+              <span>${file.name}</span>
+            </div>
+            <span class="file-item-size">${this.formatFileSize(file.size)}</span>
+          </div>
+          
+          <div class="file-item-path">${file.path}</div>
+          
+          <div class="file-item-preview">
+            ${this.escapeHtml(file.preview.substring(0, 200))}...
+          </div>
+          
+          <div class="file-item-footer">
+            <div class="file-item-meta">
+              <span>Modified: ${this.formatDate(file.lastModified)}</span>
+              <span class="relevance-highlight">Relevance: ${file.relevanceScore}%</span>
+            </div>
+            <div class="file-item-categories">
+              ${file.categories.map(cat => `<span class="category-chip">${cat}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      `).join('')}
+      
+      <style>
+        .template-preview-notice {
+          background: var(--bg-secondary);
+          border: 1px solid var(--accent-primary);
+          border-radius: 8px;
+          padding: 16px;
+          margin-bottom: 20px;
+        }
+        
+        .notice-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
+        
+        .notice-icon {
+          font-size: 24px;
+        }
+        
+        .notice-header h3 {
+          margin: 0;
+          color: var(--accent-primary);
+        }
+        
+        .notice-text {
+          margin: 0;
+          color: var(--text-secondary);
+          font-size: 14px;
+        }
+        
+        .template-file {
+          position: relative;
+          border: 1px dashed var(--border-secondary);
+          background: rgba(var(--accent-rgb), 0.05);
+        }
+        
+        .template-badge {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: var(--accent-primary);
+          color: white;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: bold;
+          letter-spacing: 0.5px;
+        }
+        
+        .relevance-highlight {
+          color: var(--accent-primary);
+          font-weight: 500;
+        }
+        
+        .category-chip {
+          display: inline-block;
+          padding: 2px 8px;
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-light);
+          border-radius: 12px;
+          font-size: 11px;
+          margin-right: 4px;
+        }
+        
+        .file-item-categories {
+          margin-top: 4px;
+        }
+      </style>
+    `;
+    
+    // Store template files for preview
+    this.templateFiles = templateFiles;
+  }
+
+  /**
+   * Select template file for preview
+   */
+  selectTemplateFile(fileId) {
+    const file = this.templateFiles.find(f => f.id === fileId);
+    if (!file) return;
+    
+    // Update selected state
+    document.querySelectorAll('.file-item').forEach(item => {
+      item.classList.toggle('selected', item.dataset.fileId === fileId);
+    });
+    
+    this.currentPreviewFile = file;
+    this.showFilePreview(file);
+  }
+
+  /**
+   * Update file list display
+   */
+  updateFileList() {
+    const fileListContainer = document.getElementById('discovered-files');
+    if (!fileListContainer) return;
+    
+    // Apply exclusion patterns
+    let tempFiles = this.files.filter(file => {
+      const fileName = file.name || '';
+      return !this.excludePatterns.some(pattern => {
+        if (pattern.includes('*')) {
+          const regex = new RegExp(pattern.replace('*', '.*'));
+          return regex.test(fileName);
+        }
+        return fileName.includes(pattern);
+      });
+    });
+    
+    // Apply filters from FilterPanel
+    this.filteredFiles = this.filterPanel.applyFiltersToFiles(tempFiles);
+    
+    // Update stats
+    this.updateStats();
+    
+    if (this.filteredFiles.length === 0) {
+      // Show template preview files when no real files
+      this.showTemplatePreview(fileListContainer);
+      return;
+    }
+    
+    // Render file list
+    fileListContainer.innerHTML = this.filteredFiles.map(file => `
+      <div class="file-item" data-file-id="${file.id}" onclick="window._discoveryView.selectFile('${file.id}')">
+        <div class="file-item-header">
+          <div class="file-item-name">
+            <span class="file-icon">${this.getFileIcon(file)}</span>
+            <span>${file.name}</span>
+          </div>
+          <span class="file-item-size">${this.formatFileSize(file.size)}</span>
+        </div>
+        
+        <div class="file-item-path">${file.path || 'Unknown path'}</div>
+        
+        ${file.preview ? `
+          <div class="file-item-preview">
+            ${this.escapeHtml(file.preview.substring(0, 150))}...
+          </div>
+        ` : ''}
+        
+        <div class="file-item-footer">
+          <div class="file-item-meta">
+            <span>Modified: ${this.formatDate(file.lastModified)}</span>
+            <span>Relevance: ${Math.round(file.relevanceScore || 0)}%</span>
+          </div>
+          <div class="file-item-actions">
+            <button class="btn btn-small" onclick="event.stopPropagation(); window._discoveryView.analyzeFile('${file.id}')">
+              Analyze
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Select file and show preview
+   */
+  async selectFile(fileId) {
+    const file = this.files.find(f => f.id === fileId);
+    if (!file) return;
+    
+    // Update selected state
+    document.querySelectorAll('.file-item').forEach(item => {
+      item.classList.toggle('selected', item.dataset.fileId === fileId);
+    });
+    
+    this.currentPreviewFile = file;
+    await this.showFilePreview(file);
+  }
+
+  /**
+   * Show file preview in right panel
+   */
+  async showFilePreview(file) {
+    const previewContent = document.getElementById('preview-content');
+    const previewFilename = document.getElementById('preview-filename');
+    const previewSize = document.getElementById('preview-size');
+    
+    if (!previewContent) return;
+    
+    // Update header
+    if (previewFilename) previewFilename.textContent = file.name;
+    if (previewSize) previewSize.textContent = this.formatFileSize(file.size);
+    
+    // Show loading state
+    previewContent.innerHTML = '<div class="preview-loading">Loading preview...</div>';
+    
     try {
-      const fileIds = Array.from(this.selectedFiles);
-      this.files = this.files.filter(file => !fileIds.includes(file.id));
+      // Get file content if we have a handle
+      let content = file.content || file.preview || '';
       
-      legacyBridge.setV1Data('files', this.files);
+      if (file.handle && !content) {
+        try {
+          const fileObj = await file.handle.getFile();
+          content = await fileObj.text();
+        } catch (error) {
+          console.error('[DiscoveryView] Error reading file:', error);
+          content = 'Error reading file content';
+        }
+      }
       
-      this.clearSelection();
-      this.loadFiles();
-      this.showNotification(`${selectedFiles.length} files removed`, 'success');
+      // Display content
+      previewContent.innerHTML = `
+        <pre class="preview-text">${this.escapeHtml(content)}</pre>
+      `;
       
     } catch (error) {
-      console.error('[DiscoveryView] Bulk removal failed:', error);
-      this.showNotification('Bulk removal failed: ' + error.message, 'error');
+      console.error('[DiscoveryView] Error showing preview:', error);
+      previewContent.innerHTML = `
+        <div class="preview-error">
+          Error loading preview: ${error.message}
+        </div>
+      `;
     }
   }
 
-  // === PAGINATION ===
-
   /**
-   * Go to specific page
+   * Analyze file
    */
-  goToPage(page) {
-    if (page < 1 || page > this.pagination.totalPages) return;
+  async analyzeFile(fileId) {
+    const file = this.files.find(f => f.id === fileId);
+    if (!file) return;
     
-    this.pagination.currentPage = page;
-    this.throttledRender();
+    console.log('[DiscoveryView] Analyzing file:', file.name);
+    this.showNotification(`Analysis for ${file.name} not yet implemented`, 'info');
+  }
+
+  /**
+   * Update statistics
+   */
+  updateStats() {
+    const totalFiles = document.getElementById('total-files');
+    const filteredFiles = document.getElementById('filtered-files');
     
-    // Scroll to top of file grid
-    document.getElementById('file-grid')?.scrollIntoView({ behavior: 'smooth' });
-  }
-
-  // === PREVIEW SYSTEM ===
-
-  /**
-   * Show file preview tooltip
-   */
-  showFilePreview(fileId, cardElement) {
-    if (this.hoverTimeout) {
-      clearTimeout(this.hoverTimeout);
-    }
-    
-    this.hoverTimeout = setTimeout(() => {
-      const file = this.files.find(f => f.id === fileId);
-      if (!file || !file.preview) return;
-      
-      // TODO: Implement rich preview tooltip
-      console.log('[DiscoveryView] Showing preview for:', file.name);
-    }, 500);
+    if (totalFiles) totalFiles.textContent = `${this.files.length} files`;
+    if (filteredFiles) filteredFiles.textContent = `${this.filteredFiles.length} filtered`;
   }
 
   /**
-   * Hide file preview tooltip
-   */
-  hideFilePreview() {
-    if (this.hoverTimeout) {
-      clearTimeout(this.hoverTimeout);
-      this.hoverTimeout = null;
-    }
-    
-    // TODO: Hide preview tooltip
-  }
-
-  // === UTILITY METHODS ===
-
-  /**
-   * Get selected files
-   */
-  getSelectedFiles() {
-    return this.files.filter(file => this.selectedFiles.has(file.id));
-  }
-
-  /**
-   * Get statistics
-   */
-  getStats() {
-    return {
-      total: this.files.length,
-      filtered: this.filteredFiles.length,
-      selected: this.selectedFiles.size,
-      analyzed: this.files.filter(f => f.analyzed).length,
-      approved: this.files.filter(f => f.approved).length
-    };
-  }
-
-  /**
-   * Generate file ID
-   */
-  generateFileId(file) {
-    return `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  /**
-   * Get display name for file
-   */
-  getDisplayName(file) {
-    const name = file.name || file.path?.split('/').pop() || 'Unknown';
-    return name.length > 30 ? name.substring(0, 27) + '...' : name;
-  }
-
-  /**
-   * Get file icon
+   * Get file icon based on type
    */
   getFileIcon(file) {
     const ext = file.name?.split('.').pop()?.toLowerCase();
-    return this.fileIcons[ext] || this.fileIcons.default;
-  }
-
-  /**
-   * Get status badge
-   */
-  getStatusBadge(file) {
-    if (file.approved) {
-      return '<span class="badge badge-success">✅ Approved</span>';
-    } else if (file.analyzed) {
-      return '<span class="badge badge-primary">🧠 Analyzed</span>';
-    } else {
-      return '<span class="badge">⏳ Pending</span>';
-    }
-  }
-
-  /**
-   * Get searchable text
-   */
-  getSearchableText(file) {
-    const parts = [
-      file.name || '',
-      file.path || '',
-      file.content || '',
-      file.preview?.segment1 || '',
-      ...(file.categories || []).map(cat => cat.name)
-    ];
-    
-    return parts.join(' ').toLowerCase();
-  }
-
-  /**
-   * Truncate path for display
-   */
-  truncatePath(path, maxLength = 50) {
-    if (path.length <= maxLength) return path;
-    
-    const parts = path.split('/');
-    if (parts.length <= 2) return path;
-    
-    return `.../${parts.slice(-2).join('/')}`;
+    const icons = {
+      'md': '📝',
+      'txt': '📄',
+      'docx': '📘',
+      'pdf': '📕',
+      'gdoc': '📗',
+      'json': '📊',
+      'js': '🟨',
+      'html': '🌐',
+      'css': '🎨'
+    };
+    return icons[ext] || '📄';
   }
 
   /**
    * Format file size
    */
   formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    
+    if (!bytes) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
@@ -1332,18 +761,7 @@ export class DiscoveryView {
    */
   formatDate(date) {
     if (!date) return 'Unknown';
-    
     const d = new Date(date);
-    const now = new Date();
-    const diffMs = now - d;
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    
     return d.toLocaleDateString();
   }
 
@@ -1352,150 +770,47 @@ export class DiscoveryView {
    */
   escapeHtml(text) {
     const div = document.createElement('div');
-    div.textContent = text;
+    div.textContent = text || '';
     return div.innerHTML;
-  }
-
-  /**
-   * Update file grid height for responsive layout
-   */
-  updateFileGridHeight() {
-    const gridWrapper = document.querySelector('.file-grid-wrapper');
-    if (!gridWrapper) return;
-    
-    // Calculate available height
-    const header = document.querySelector('.discovery-header');
-    const controls = document.querySelector('.discovery-controls');
-    const pagination = document.querySelector('.pagination-wrapper');
-    const bulkActions = document.querySelector('.bulk-actions-panel');
-    
-    let usedHeight = 0;
-    [header, controls, pagination, bulkActions].forEach(el => {
-      if (el) usedHeight += el.offsetHeight;
-    });
-    
-    const availableHeight = window.innerHeight - usedHeight - 100; // 100px buffer
-    gridWrapper.style.maxHeight = `${Math.max(400, availableHeight)}px`;
-  }
-
-  /**
-   * Throttled render to prevent performance issues
-   */
-  throttledRender() {
-    if (this.renderThrottle) {
-      clearTimeout(this.renderThrottle);
-    }
-    
-    this.renderThrottle = setTimeout(() => {
-      this.render();
-      this.renderThrottle = null;
-    }, this.renderDelay);
   }
 
   /**
    * Show notification
    */
   showNotification(message, type = 'info') {
-    // TODO: Implement notification system
-    console.log(`[DiscoveryView] ${type.toUpperCase()}: ${message}`);
+    console.log(`[DiscoveryView] ${type}: ${message}`);
     
-    // For now, use browser notification
-    if (type === 'error') {
-      console.error(message);
-    } else {
-      console.log(message);
+    // Update status bar
+    const statusMessage = document.getElementById('status-message');
+    if (statusMessage) {
+      statusMessage.textContent = message;
+      statusMessage.classList.add('visible');
+      
+      setTimeout(() => {
+        statusMessage.classList.remove('visible');
+      }, 5000);
     }
+    
+    eventBus.emit('status:message', { message, type });
   }
 
   /**
-   * Update file list display
-   */
-  updateFileList(files = null) {
-    try {
-      // Get files from parameter or from AppState
-      if (!files) {
-        files = AppState.get('discoveredFiles') || [];
-      }
-      
-      // Update internal files array
-      this.files = files.map((file, index) => ({
-        ...file,
-        id: file.id || `file-${index}`,
-        displayName: file.name || 'Unknown',
-        icon: this.getFileIcon(file.type || file.name),
-        statusBadge: this.getStatusBadge(file.status || 'pending'),
-        relevanceScore: file.relevanceScore || 0, // Keep in 0-100 range
-        confidenceScore: file.confidenceScore || 0 // Keep in 0-100 range
-      }));
-      
-      // Update filtered files
-      this.filteredFiles = [...this.files];
-      
-      // Update pagination
-      this.updatePagination();
-      
-      // Re-render
-      this.throttledRender();
-      
-      console.log('[DiscoveryView] File list updated:', this.files.length, 'files');
-    } catch (error) {
-      console.error('[DiscoveryView] Error updating file list:', error);
-    }
-  }
-  
-  /**
-   * Update discovery stats
-   */
-  updateStats() {
-    const totalFiles = this.files.length;
-    const selectedCount = this.selectedFiles.size;
-    
-    // Update stats in UI
-    const statsElements = {
-      total: document.querySelector('.stat-value[data-stat="total"]'),
-      shown: document.querySelector('.stat-value[data-stat="shown"]'),
-      selected: document.querySelector('.stat-value[data-stat="selected"]')
-    };
-    
-    if (statsElements.total) statsElements.total.textContent = totalFiles;
-    if (statsElements.shown) statsElements.shown.textContent = this.filteredFiles.length;
-    if (statsElements.selected) statsElements.selected.textContent = selectedCount;
-  }
-
-  /**
-   * Cleanup resources
+   * Cleanup
    */
   cleanup() {
-    if (this.hoverTimeout) {
-      clearTimeout(this.hoverTimeout);
-    }
-    
-    if (this.renderThrottle) {
-      clearTimeout(this.renderThrottle);
-    }
-    
-    this.selectedFiles.clear();
-    
-    // Remove event listeners
-    document.removeEventListener('keydown', this.handleKeyboard);
-    window.removeEventListener('resize', this.throttledRender);
+    this.files = [];
+    this.filteredFiles = [];
+    this.directories = [];
+    this.currentPreviewFile = null;
   }
 
   /**
-   * Destroy the view
+   * Destroy view
    */
   destroy() {
     this.cleanup();
-    
-    if (this.container) {
-      this.container.innerHTML = '';
-    }
-    
     console.log('[DiscoveryView] Destroyed');
   }
 }
-
-// Create global instance for onclick handlers
-window.discoveryView = null;
 
 export default DiscoveryView;

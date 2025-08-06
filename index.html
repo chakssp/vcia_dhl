@@ -38,6 +38,103 @@
     
     <!-- Vis.js para visualização de grafos -->
     <link rel="stylesheet" href="https://unpkg.com/vis-network@latest/dist/dist/vis-network.min.css">
+    
+    <!-- Power User Features CSS -->
+    <style>
+        /* Estilos do Power User Features */
+        .file-checkbox {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .file-checkbox.checked::after {
+            content: "✓";
+            color: white;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .file-item:hover {
+            background: #f6f8fa !important;
+        }
+        .file-item.selected {
+            background: #e1e8f0 !important;
+        }
+        .category-item:hover {
+            background: #f0f3f6;
+        }
+        .category-item.active {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+        }
+        .modal-overlay {
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        /* Filtros customizados */
+        select {
+            padding: 6px 10px;
+            border: 1px solid #d1d5da;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+        select:focus {
+            outline: none;
+            border-color: #0366d6;
+            box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
+        }
+        
+        /* Sidebar de Categorias */
+        .categories-sidebar {
+            transition: transform 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Power Filters */
+        .power-filters {
+            background: #f6f8fa;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        /* Bulk Actions */
+        #bulk-actions {
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        /* File List */
+        #file-list {
+            max-height: calc(100vh - 350px);
+            overflow-y: auto;
+        }
+        
+        /* Category Dots */
+        .category-dot {
+            transition: transform 0.2s ease;
+        }
+        .category-dot:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Modal Styling (v2 compatibility) */
+        .modal-overlay {
+            background: rgba(48, 48, 48, 0.15) !important;
+            backdrop-filter: blur(1px);
+        }
+        
+        .modal-overlay > div {
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
 </head>
 <body>
     <!-- Header Principal -->
@@ -54,6 +151,16 @@
                 <button id="export-state" class="btn-export-state" title="Exportar Estado da Aplicação">
                     💾 Exportar Estado
                 </button>
+                <!-- Power User Actions -->
+                <button onclick="KC.PowerUserFeatures?.showSettingsDialog()" title="Configurações">
+                    ⚙️ Configurações
+                </button>
+                <button onclick="KC.PowerUserFeatures?.showSearchPatternsDialog()" title="Gerenciar Patterns de Busca">
+                    🔍 Patterns
+                </button>
+                <button onclick="KC.PowerUserFeatures?.showAddCategoryDialog()" title="Gerenciar Categorias">
+                    🏷️ Categorias
+                </button>
                 <span class="nav-status" id="nav-status">
                     Sprint 1 - Sistema Base
                 </span>
@@ -63,6 +170,21 @@
 
     <!-- Container Principal -->
     <main class="main-container">
+        <!-- Sidebar de Categorias (Power User) -->
+        <aside class="categories-sidebar" id="categories-sidebar" style="position: fixed; left: 0; top: 60px; width: 250px; height: calc(100% - 60px); background: #f6f8fa; border-right: 1px solid #e1e4e8; padding: 20px; overflow-y: auto; display: none;">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">Categorias</h3>
+            <div id="categories-list">
+                <!-- Lista de categorias será renderizada aqui -->
+            </div>
+            <button onclick="KC.PowerUserFeatures?.showAddCategoryDialog()" style="width: 100%; margin-top: 15px; padding: 8px; background: #238636; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                + Nova Categoria
+            </button>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e1e4e8;">
+                <p style="font-size: 12px; color: #586069; margin-bottom: 10px;">
+                    <strong>Dica:</strong> Clique para atribuir aos selecionados. Shift+Click para filtrar.
+                </p>
+            </div>
+        </aside>
         <!-- Workflow de 4 Etapas -->
         <section class="workflow-section" id="workflow-section">
             <div class="container">
@@ -122,6 +244,45 @@
                                 </select>
                             </div>
                             
+                            <!-- Power User Filters -->
+                            <div class="power-filters" style="display: flex; gap: 10px; align-items: center;">
+                                <select id="relevance-filter" title="Filtrar por relevância mínima">
+                                    <option value="all">Toda Relevância</option>
+                                    <option value="30">≥ 30%</option>
+                                    <option value="50">≥ 50%</option>
+                                    <option value="70">≥ 70%</option>
+                                    <option value="90">≥ 90%</option>
+                                </select>
+                                
+                                <select id="status-filter" title="Filtrar por status">
+                                    <option value="all">Todos Status</option>
+                                    <option value="pending">Pendentes</option>
+                                    <option value="analyzed">Analisados</option>
+                                    <option value="categorized">Categorizados</option>
+                                    <option value="archived">Arquivados</option>
+                                </select>
+                                
+                                <select id="time-filter" title="Filtrar por período">
+                                    <option value="all">Todo Período</option>
+                                    <option value="1d">Último Dia</option>
+                                    <option value="1w">Última Semana</option>
+                                    <option value="1m">Último Mês</option>
+                                    <option value="3m">Últimos 3 Meses</option>
+                                    <option value="1y">Último Ano</option>
+                                </select>
+                                
+                                <select id="type-filter" title="Filtrar por tipo">
+                                    <option value="all">Todos Tipos</option>
+                                    <option value="md">Markdown</option>
+                                    <option value="txt">Texto</option>
+                                    <option value="pdf">PDF</option>
+                                    <option value="docx">Word</option>
+                                    <option value="html">HTML</option>
+                                </select>
+                                
+                                <input type="search" id="search-input" placeholder="Buscar arquivos..." style="padding: 6px 10px; border: 1px solid #d1d5da; border-radius: 6px;">
+                            </div>
+                            
                             <div class="filter-bar" id="filter-bar">
                                 <!-- Filtros adicionais serão inseridos via JavaScript -->
                             </div>
@@ -135,15 +296,25 @@
 
                     <!-- Lista de Arquivos -->
                     <div class="files-section" id="files-section" style="display: none;">
-                        <div class="files-header" style="display: none;">
-                            <!-- Header oculto mas preservado para compatibilidade -->
-                            <h2 class="files-title" style="display: none;">Arquivos Descobertos</h2>
+                        <div class="files-header">
+                            <h2 class="files-title">Arquivos Descobertos</h2>
                             <div class="files-actions" id="files-actions">
                                 <!-- Ações em lote -->
+                                <div id="bulk-actions" style="display: none; align-items: center; gap: 15px;">
+                                    <span id="bulk-count" style="font-weight: 600;">0 selecionados</span>
+                                    <button onclick="KC.PowerUserFeatures?.clearSelection()" style="padding: 6px 12px;">Limpar Seleção</button>
+                                    <button onclick="KC.PowerUserFeatures?.handleBulkAction('analyze')" style="padding: 6px 12px; background: #0366d6; color: white; border: none; border-radius: 4px;">Analisar</button>
+                                    <button onclick="KC.PowerUserFeatures?.showCategoryAssignDialog()" style="padding: 6px 12px; background: #238636; color: white; border: none; border-radius: 4px;">Categorizar</button>
+                                    <button onclick="KC.PowerUserFeatures?.handleBulkAction('archive')" style="padding: 6px 12px;">Arquivar</button>
+                                    <button onclick="KC.PowerUserFeatures?.exportData('json')" style="padding: 6px 12px;">Exportar JSON</button>
+                                    <button onclick="KC.PowerUserFeatures?.exportData('markdown')" style="padding: 6px 12px;">Exportar MD</button>
+                                    <button onclick="KC.PowerUserFeatures?.exportData('csv')" style="padding: 6px 12px;">Exportar CSV</button>
+                                </div>
                             </div>
                         </div>
                         <div class="files-container" id="files-container">
                             <!-- Lista de arquivos será renderizada aqui -->
+                            <div id="file-list"></div>
                         </div>
                     </div>
                 </div>
@@ -157,7 +328,13 @@
             <p class="footer-info">
                 <span id="footer-stats">Pronto para iniciar</span>
                 <span class="separator">•</span>
-                <span id="footer-version">v1.0.0</span>
+                <span id="files-count">0 arquivos</span>
+                <span class="separator">•</span>
+                <span id="confidence-avg">0% relevância média</span>
+                <span class="separator">•</span>
+                <span id="analysis-progress">0/0 analisados</span>
+                <span class="separator">•</span>
+                <span id="footer-version">v1.0.0 + Power User</span>
             </p>
         </div>
     </footer>
@@ -341,6 +518,9 @@
     
     <!-- Componente de Processamento Qdrant -->
     <script src="js/components/QdrantProcessButton.js"></script>
+    
+    <!-- Power User Features -->
+    <script src="js/components/PowerUserFeatures.js"></script>
     
     <!-- Script Principal -->
     <script src="js/app.js"></script>

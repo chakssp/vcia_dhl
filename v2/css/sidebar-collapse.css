@@ -1,0 +1,262 @@
+/* Sidebar Collapse Behavior */
+
+/* Base sidebar styles */
+.sidebar {
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+}
+
+/* Collapsed state */
+.sidebar.collapsed {
+    width: 70px;
+}
+
+/* Remove automatic hover expansion - only expand on button click */
+/* .sidebar.collapsed:hover {
+    width: 280px;
+    overflow-y: auto;
+} */
+
+/* Hide text when collapsed */
+.sidebar.collapsed .sidebar-title,
+.sidebar.collapsed .section-title,
+.sidebar.collapsed .filter-label,
+.sidebar.collapsed .action-label,
+.sidebar.collapsed .category-name,
+.sidebar.collapsed .filter-select,
+.sidebar.collapsed .action-shortcut {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show text only when expanded (not on hover) */
+.sidebar:not(.collapsed) .sidebar-title,
+.sidebar:not(.collapsed) .section-title,
+.sidebar:not(.collapsed) .filter-label,
+.sidebar:not(.collapsed) .action-label,
+.sidebar:not(.collapsed) .category-name,
+.sidebar:not(.collapsed) .filter-select,
+.sidebar:not(.collapsed) .action-shortcut {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0.1s;
+}
+
+/* Adjust action grid when collapsed */
+.sidebar.collapsed .action-grid {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 2px;
+}
+
+.sidebar:not(.collapsed) .action-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+/* Center icons when collapsed */
+.sidebar.collapsed .action-btn {
+    padding: 8px;
+    justify-content: center;
+    min-height: 40px;
+    width: 100%;
+}
+
+.sidebar.collapsed .action-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.sidebar:not(.collapsed) .action-btn {
+    padding: 10px;
+    justify-content: flex-start;
+}
+
+.sidebar:not(.collapsed) .action-icon {
+    font-size: 18px;
+}
+
+/* Hide filters when collapsed */
+.sidebar.collapsed .filter-group {
+    padding: 4px;
+}
+
+.sidebar.collapsed .filter-select {
+    width: 0;
+    padding: 0;
+    border: 0;
+}
+
+.sidebar:not(.collapsed) .filter-select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+}
+
+/* Collapse button as centered anchor */
+.collapse-btn {
+    position: absolute;
+    right: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.collapse-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+}
+
+.collapse-btn .icon {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-primary);
+    transition: transform 0.3s ease;
+}
+
+.collapse-btn:hover .icon {
+    color: var(--bg-primary);
+}
+
+/* Collapse button rotation */
+.sidebar.collapsed .collapse-btn .icon {
+    transform: rotate(180deg);
+}
+
+/* Keep sidebar header visible but hide button from header */
+.sidebar-header .collapse-btn {
+    display: none;
+}
+
+/* Tooltip for icons when collapsed */
+.sidebar.collapsed .action-btn,
+.sidebar.collapsed .category-item {
+    position: relative;
+}
+
+.sidebar.collapsed .action-btn::after,
+.sidebar.collapsed .category-item::after {
+    content: attr(title);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 10px;
+    padding: 4px 8px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .action-btn:hover::after,
+.sidebar.collapsed .category-item:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Quick access mode - show only icons */
+.sidebar.collapsed {
+    background: var(--bg-tertiary);
+}
+
+/* Ensure categories are always visible in collapsed mode */
+.sidebar.collapsed .category-color {
+    width: 24px;
+    height: 24px;
+    margin: 0 auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Category adjustments */
+.sidebar.collapsed .category-item {
+    justify-content: center;
+    padding: 6px;
+}
+
+.sidebar:not(.collapsed) .category-item {
+    justify-content: flex-start;
+    padding: 8px 12px;
+}
+
+.sidebar.collapsed .category-count {
+    display: none;
+}
+
+.sidebar:not(.collapsed) .category-count {
+    display: inline-block;
+}
+
+/* Main content adjustment */
+.split-container.sidebar-collapsed .main-content {
+    margin-left: 70px;
+}
+
+/* File item buttons */
+.file-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.file-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.file-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-item:hover .file-item-actions {
+    opacity: 1;
+}
+
+.file-action-btn {
+    padding: 4px 8px;
+    background: var(--button-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-action-btn:hover {
+    background: var(--primary-color);
+    color: var(--bg-primary);
+    border-color: var(--primary-color);
+}
+
+.file-action-btn .icon {
+    margin-right: 4px;
+}

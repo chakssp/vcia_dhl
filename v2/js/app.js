@@ -7,8 +7,8 @@ import AppState from './core/AppState.js';
 import { APIService } from './services/APIService.js';
 import { NavigationController } from './core/NavigationController.js';
 import { CommandPalette } from './components/CommandPalette.js';
-import { Terminal } from './components/Terminal.js';
 import { StatusBar } from './components/StatusBar.js';
+import { FocusMode } from './components/FocusMode.js';
 import { DiscoveryView } from './views/DiscoveryView.js';
 import { AnalysisView } from './views/AnalysisView.js';
 import { OrganizationView } from './views/OrganizationView.js';
@@ -38,6 +38,9 @@ import compressionUtils from './utils/CompressionUtils.js';
 
 // UI Enhancements (Agent 3)
 import { ThemeSwitcher } from './utils/ThemeSwitcher.js';
+
+// V1 Migrated Components
+import filterManager from './managers/FilterManager.js';
 
 class KnowledgeConsolidatorV2 {
   constructor() {
@@ -126,15 +129,18 @@ class KnowledgeConsolidatorV2 {
     // Command Palette
     this.components.commandPalette = new CommandPalette();
     
-    // Terminal
-    this.components.terminal = new Terminal();
-    
     // Status Bar
     this.components.statusBar = new StatusBar(this.api);
     
+    // Focus Mode
+    this.components.focusMode = new FocusMode();
+    
+    // Filter Manager (V1 migrated)
+    this.components.filterManager = filterManager;
+    
     // Initialize all components
     Object.values(this.components).forEach(component => {
-      if (component.initialize) {
+      if (component.initialize && typeof component.initialize === 'function') {
         component.initialize();
       }
     });
@@ -151,8 +157,7 @@ class KnowledgeConsolidatorV2 {
       stats: new StatsView(this.api)
     };
     
-    // Expose discovery view globally for onclick handlers
-    window.discoveryView = this.views.discovery;
+    // Note: Discovery view sets itself as window._discoveryView for inline handlers
     
     // Initialize all views with their containers
     Object.entries(this.views).forEach(([viewName, view]) => {
@@ -179,16 +184,6 @@ class KnowledgeConsolidatorV2 {
     shortcuts.register('ctrl+,', () => this.navigation.navigateTo('settings'));
     shortcuts.register('ctrl+l', () => this.navigation.navigateTo('logs'));
     shortcuts.register('ctrl+s', () => this.navigation.navigateTo('stats'));
-    
-    // Terminal toggle
-    shortcuts.register('ctrl+`', () => {
-      this.components.terminal.toggle();
-    });
-    
-    // Focus terminal
-    shortcuts.register('ctrl+shift+`', () => {
-      this.components.terminal.focus();
-    });
   }
 
   async loadInitialData() {

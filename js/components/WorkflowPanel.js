@@ -257,6 +257,9 @@
                         <button class="btn btn-primary btn-lg" id="discovery-button" onclick="callKC('WorkflowPanel.startDiscovery')">
                             🔍 Iniciar Descoberta
                         </button>
+                        <button class="btn btn-secondary btn-lg" onclick="if(KC.PowerUserFeatures) KC.PowerUserFeatures.discoverRealFiles(); else alert('Power User Features não carregado');">
+                            📁 Descoberta Real (Power User)
+                        </button>
                         <button class="btn btn-danger" id="cancel-discovery" style="display: none;" onclick="callKC('WorkflowPanel.cancelDiscovery')">
                             ⏹ Cancelar
                         </button>

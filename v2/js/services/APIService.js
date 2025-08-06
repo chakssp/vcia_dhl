@@ -97,30 +97,46 @@ export class APIService {
 
   async testConnection() {
     try {
-      // Check if we're running without a real backend
-      const testUrl = `${this.baseURL}/health`;
-      const response = await fetch(testUrl);
+      // First try real services - Ollama and Qdrant
+      const ollamaUrl = 'http://127.0.0.1:11434/api/tags';
+      const qdrantUrl = 'http://qdr.vcia.com.br:6333/collections';
       
-      // If we get HTML back, it means there's no API backend
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
-        console.warn('[API] No backend detected, enabling offline mode');
-        this.offlineMode = true;
-        this.setupMockResponses();
-        return true; // Continue in offline mode
+      console.log('[API] Testing real service connections...');
+      
+      // Test Ollama
+      try {
+        const ollamaResponse = await fetch(ollamaUrl);
+        if (ollamaResponse.ok) {
+          console.log('[API] ✅ Ollama connection successful');
+          this.ollamaAvailable = true;
+        }
+      } catch (e) {
+        console.warn('[API] ❌ Ollama not available:', e.message);
+        this.ollamaAvailable = false;
       }
       
-      if (!response.ok) {
-        throw new Error('API health check failed');
+      // Test Qdrant
+      try {
+        const qdrantResponse = await fetch(qdrantUrl);
+        if (qdrantResponse.ok) {
+          console.log('[API] ✅ Qdrant connection successful');
+          this.qdrantAvailable = true;
+        }
+      } catch (e) {
+        console.warn('[API] ❌ Qdrant not available:', e.message);
+        this.qdrantAvailable = false;
       }
       
+      // Don't force offline mode - let individual services handle their own connections
+      this.offlineMode = false;
+      console.log('[API] Running in REAL mode - services will connect as available');
+      return true;
+      
+    } catch (error) {
+      console.error('[API] Connection test error:', error);
+      // Still don't force offline mode
       this.offlineMode = false;
       return true;
-    } catch (error) {
-      console.warn('[API] Connection test failed, enabling offline mode:', error);
-      this.offlineMode = true;
-      this.setupMockResponses();
-      return true; // Continue in offline mode
     }
   }
 
@@ -170,8 +186,8 @@ export class APIService {
   // HTTP Methods
 
   async request(method, endpoint, options = {}) {
-    // Check if in offline mode
-    if (this.offlineMode) {
+    // Only use mock data if explicitly in offline mode AND no real services available
+    if (this.offlineMode && !this.ollamaAvailable && !this.qdrantAvailable) {
       console.debug(`[API] Offline mode: ${method} ${endpoint}`);
       
       // Find mock data for this endpoint

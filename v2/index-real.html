@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Consolidator - Power User v2 (Real Data)</title>
+    
+    <!-- CSS Imports -->
+    <link rel="stylesheet" href="css/tokens-dark.css">
+    <link rel="stylesheet" href="css/layout-split.css">
+    <link rel="stylesheet" href="css/components-dense.css">
+    <link rel="stylesheet" href="css/sidebar-collapse.css">
+    <link rel="stylesheet" href="css/file-list-alignment.css">
+    
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="js/keyboard-manager.js" as="script">
+    <link rel="preload" href="js/command-palette.js" as="script">
+</head>
+<body class="terminal-theme">
+    <!-- Command Palette Overlay -->
+    <div id="command-palette" class="command-palette" role="dialog" aria-hidden="true" aria-labelledby="command-palette-title">
+        <div class="command-palette-backdrop"></div>
+        <div class="command-palette-content">
+            <div class="command-palette-header">
+                <input 
+                    type="text" 
+                    id="command-input" 
+                    class="command-input" 
+                    placeholder="Type a command or search..." 
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Command input"
+                >
+                <kbd class="shortcut-hint">Esc</kbd>
+            </div>
+            <div class="command-palette-body">
+                <div id="command-results" class="command-results" role="listbox" aria-label="Command results">
+                    <!-- Dynamic content populated by JS -->
+                </div>
+                <div class="command-palette-footer">
+                    <div class="shortcuts-info">
+                        <span><kbd>↑↓</kbd> Navigate</span>
+                        <span><kbd>Enter</kbd> Execute</span>
+                        <span><kbd>Tab</kbd> Autocomplete</span>
+                        <span><kbd>Esc</kbd> Close</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Layout -->
+    <div class="app-container">
+        <!-- Header with Status Bar -->
+        <header class="status-bar" role="banner">
+            <div class="status-left">
+                <span class="status-item">
+                    <span class="status-indicator online"></span>
+                    <span class="status-text">KC v2.0</span>
+                </span>
+                <span class="status-item">
+                    <span class="status-icon">📁</span>
+                    <span id="files-count">0 files</span>
+                </span>
+                <span class="status-item">
+                    <span class="status-icon">🎯</span>
+                    <span id="active-filter">All</span>
+                </span>
+            </div>
+            
+            <div class="status-center">
+                <span id="current-operation" class="current-operation">Ready</span>
+            </div>
+            
+            <div class="status-right">
+                <span class="status-item">
+                    <span class="status-icon">⚡</span>
+                    <span id="confidence-avg">0%</span>
+                </span>
+                <span class="status-item">
+                    <span class="status-icon">🔍</span>
+                    <span id="analysis-progress">0/0</span>
+                </span>
+                <button class="command-trigger" title="Command Palette (Cmd+K)" aria-label="Open command palette">
+                    <span class="status-icon">⌘</span>
+                    <span class="shortcut-text">K</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Split Pane Layout -->
+        <main class="split-container" role="main">
+            <!-- Left Sidebar (starts collapsed) -->
+            <aside class="sidebar collapsed" role="complementary" aria-label="Navigation and filters">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Navigation</h2>
+                    <button class="collapse-btn" aria-label="Collapse sidebar" title="Toggle sidebar (Ctrl+B)">
+                        <span class="icon">‹</span>
+                    </button>
+                </div>
+                
+                <!-- Quick Actions Panel -->
+                <section class="quick-actions">
+                    <h3 class="section-title">Quick Actions</h3>
+                    <div class="action-grid">
+                        <button class="action-btn" data-action="discover-real" title="Discover Real Files (Ctrl+D)">
+                            <span class="action-icon">🔍</span>
+                            <span class="action-label">Discover Real Files</span>
+                            <kbd class="action-shortcut">Ctrl+D</kbd>
+                        </button>
+                        <button class="action-btn" data-action="analyze" title="Analyze Files (Ctrl+A)">
+                            <span class="action-icon">🧠</span>
+                            <span class="action-label">Analyze</span>
+                            <kbd class="action-shortcut">Ctrl+A</kbd>
+                        </button>
+                        <button class="action-btn" data-action="export" title="Export Data (Ctrl+E)">
+                            <span class="action-icon">📤</span>
+                            <span class="action-label">Export</span>
+                            <kbd class="action-shortcut">Ctrl+E</kbd>
+                        </button>
+                        <button class="action-btn" data-action="settings" title="Settings (Ctrl+,)">
+                            <span class="action-icon">⚙️</span>
+                            <span class="action-label">Settings</span>
+                            <kbd class="action-shortcut">Ctrl+,</kbd>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Filters Panel -->
+                <section class="filters-panel">
+                    <h3 class="section-title">Filters</h3>
+                    
+                    <!-- Relevance Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label" for="relevance-filter">Relevance</label>
+                        <select id="relevance-filter" class="filter-select">
+                            <option value="all">All (0%+)</option>
+                            <option value="30">Low (30%+)</option>
+                            <option value="50">Medium (50%+)</option>
+                            <option value="70">High (70%+)</option>
+                            <option value="90">Critical (90%+)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Status Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label" for="status-filter">Status</label>
+                        <select id="status-filter" class="filter-select">
+                            <option value="all">All Files</option>
+                            <option value="pending">Pending Analysis</option>
+                            <option value="analyzed">Analyzed</option>
+                            <option value="categorized">Categorized</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Time Range Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label" for="time-filter">Time Range</label>
+                        <select id="time-filter" class="filter-select">
+                            <option value="all">All Time</option>
+                            <option value="1d">Last Day</option>
+                            <option value="1w">Last Week</option>
+                            <option value="1m">Last Month</option>
+                            <option value="3m">Last 3 Months</option>
+                            <option value="1y">Last Year</option>
+                        </select>
+                    </div>
+                    
+                    <!-- File Type Filter -->
+                    <div class="filter-group">
+                        <label class="filter-label" for="type-filter">File Type</label>
+                        <select id="type-filter" class="filter-select">
+                            <option value="all">All Types</option>
+                            <option value="md">Markdown (.md)</option>
+                            <option value="txt">Text (.txt)</option>
+                            <option value="pdf">PDF (.pdf)</option>
+                            <option value="docx">Word (.docx)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Categories Panel -->
+                <section class="categories-panel">
+                    <h3 class="section-title">Categories</h3>
+                    <div class="categories-list" id="categories-list">
+                        <div class="category-item">
+                            <span class="category-color" style="background: #3b82f6"></span>
+                            <span class="category-name">Technical</span>
+                            <span class="category-count">0</span>
+                        </div>
+                        <div class="category-item">
+                            <span class="category-color" style="background: #10b981"></span>
+                            <span class="category-name">Business</span>
+                            <span class="category-count">0</span>
+                        </div>
+                        <div class="category-item">
+                            <span class="category-color" style="background: #f59e0b"></span>
+                            <span class="category-name">Personal</span>
+                            <span class="category-count">0</span>
+                        </div>
+                    </div>
+                    <button class="add-category-btn" title="Add Category (+)">
+                        <span class="icon">+</span>
+                        <span>Add Category</span>
+                    </button>
+                </section>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Content Header -->
+                <header class="content-header">
+                    <div class="header-left">
+                        <h1 class="page-title" id="page-title">Knowledge Consolidator</h1>
+                        <div class="breadcrumb" id="breadcrumb">
+                            <span class="breadcrumb-item">Home</span>
+                        </div>
+                    </div>
+                    
+                    <div class="header-right">
+                        <div class="view-controls">
+                            <button class="view-btn active" data-view="list" title="List View (1)" aria-label="Switch to list view">
+                                <span class="icon">☰</span>
+                            </button>
+                            <button class="view-btn" data-view="grid" title="Grid View (2)" aria-label="Switch to grid view">
+                                <span class="icon">⊞</span>
+                            </button>
+                            <button class="view-btn" data-view="graph" title="Graph View (3)" aria-label="Switch to graph view">
+                                <span class="icon">⊚</span>
+                            </button>
+                        </div>
+                        
+                        <div class="search-controls">
+                            <input 
+                                type="text" 
+                                id="search-input" 
+                                class="search-input" 
+                                placeholder="Search files... (Ctrl+F)"
+                                aria-label="Search files"
+                            >
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Body -->
+                <div class="content-body" id="content-body">
+                    <!-- File List View -->
+                    <div id="list-view" class="view-container active">
+                        <div class="file-list-header">
+                            <div class="bulk-actions" id="bulk-actions" style="display: none;">
+                                <span class="bulk-count" id="bulk-count">0 selected</span>
+                                <button class="bulk-btn" data-action="analyze" title="Analyze Selected (Shift+A)">
+                                    <span class="icon">🧠</span>
+                                    Analyze
+                                </button>
+                                <button class="bulk-btn" data-action="categorize" title="Categorize Selected (Shift+C)">
+                                    <span class="icon">📂</span>
+                                    Categorize
+                                </button>
+                                <button class="bulk-btn" data-action="archive" title="Archive Selected (Shift+X)">
+                                    <span class="icon">📦</span>
+                                    Archive
+                                </button>
+                            </div>
+                            
+                            <div class="sort-controls">
+                                <label for="sort-select" class="sort-label">Sort by:</label>
+                                <select id="sort-select" class="sort-select">
+                                    <option value="relevance">Relevance</option>
+                                    <option value="date">Date Modified</option>
+                                    <option value="name">Name</option>
+                                    <option value="size">Size</option>
+                                    <option value="confidence">Confidence</option>
+                                </select>
+                                <button class="sort-direction" id="sort-direction" title="Toggle sort direction">
+                                    <span class="icon">↓</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-list" id="file-list" role="grid" aria-label="Files list">
+                            <!-- Dynamic content populated by JS -->
+                            <div class="empty-state">
+                                <div class="empty-icon">📁</div>
+                                <h3>No files discovered yet</h3>
+                                <p>Click "Discover Real Files" to browse your system</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Grid View -->
+                    <div id="grid-view" class="view-container">
+                        <div class="file-grid" id="file-grid" role="grid" aria-label="Files grid">
+                            <!-- Dynamic content populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Graph View -->
+                    <div id="graph-view" class="view-container">
+                        <div class="graph-container" id="graph-container">
+                            <div class="graph-controls">
+                                <button class="graph-btn" data-action="reset-zoom" title="Reset Zoom (R)">
+                                    <span class="icon">🔄</span>
+                                    Reset
+                                </button>
+                                <button class="graph-btn" data-action="center" title="Center Graph (C)">
+                                    <span class="icon">⊙</span>
+                                    Center
+                                </button>
+                                <button class="graph-btn" data-action="physics" title="Toggle Physics (P)">
+                                    <span class="icon">⚡</span>
+                                    Physics
+                                </button>
+                            </div>
+                            <div class="graph-canvas" id="graph-canvas">
+                                <!-- Graph visualization -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel (Resizable) -->
+            <aside class="details-panel" role="complementary" aria-label="File details">
+                <div class="panel-header">
+                    <h2 class="panel-title">Details</h2>
+                    <button class="panel-close" aria-label="Close panel" title="Close Details (Escape)">
+                        <span class="icon">×</span>
+                    </button>
+                </div>
+                
+                <div class="panel-content" id="details-content">
+                    <div class="empty-details">
+                        <div class="empty-icon">📄</div>
+                        <p>Select a file to view details</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Keyboard Shortcuts Help -->
+    <div id="shortcuts-help" class="shortcuts-overlay" role="dialog" aria-hidden="true">
+        <div class="shortcuts-backdrop"></div>
+        <div class="shortcuts-content">
+            <div class="shortcuts-header">
+                <h2>Keyboard Shortcuts</h2>
+                <button class="shortcuts-close" aria-label="Close shortcuts help">×</button>
+            </div>
+            <div class="shortcuts-body">
+                <div class="shortcuts-section">
+                    <h3>Navigation</h3>
+                    <dl class="shortcuts-list">
+                        <dt><kbd>Ctrl</kbd> + <kbd>K</kbd></dt>
+                        <dd>Open command palette</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>B</kbd></dt>
+                        <dd>Toggle sidebar</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>F</kbd></dt>
+                        <dd>Focus search</dd>
+                        <dt><kbd>1</kbd>, <kbd>2</kbd>, <kbd>3</kbd></dt>
+                        <dd>Switch views (List, Grid, Graph)</dd>
+                    </dl>
+                </div>
+                
+                <div class="shortcuts-section">
+                    <h3>Actions</h3>
+                    <dl class="shortcuts-list">
+                        <dt><kbd>Ctrl</kbd> + <kbd>D</kbd></dt>
+                        <dd>Discover files</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>A</kbd></dt>
+                        <dd>Analyze files</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>E</kbd></dt>
+                        <dd>Export data</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>,</kbd></dt>
+                        <dd>Open settings</dd>
+                    </dl>
+                </div>
+                
+                <div class="shortcuts-section">
+                    <h3>Selection</h3>
+                    <dl class="shortcuts-list">
+                        <dt><kbd>Ctrl</kbd> + <kbd>Click</kbd></dt>
+                        <dd>Multi-select files</dd>
+                        <dt><kbd>Shift</kbd> + <kbd>Click</kbd></dt>
+                        <dd>Range select</dd>
+                        <dt><kbd>Ctrl</kbd> + <kbd>A</kbd></dt>
+                        <dd>Select all</dd>
+                        <dt><kbd>Escape</kbd></dt>
+                        <dd>Clear selection</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Processing...</span>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script type="module" src="js/keyboard-manager.js"></script>
+    <script type="module" src="js/command-palette.js"></script>
+    <script type="module" src="js/power-app-real.js"></script>
+</body>
+</html>

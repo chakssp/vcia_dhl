@@ -46,8 +46,8 @@ class PersistenceService {
         level: 'fast' // 'fast' | 'best'
       },
       supabase: {
-        url: process.env.SUPABASE_URL || 'https://mock.supabase.co',
-        key: process.env.SUPABASE_ANON_KEY || 'mock-key',
+        url: (typeof process !== 'undefined' && process.env?.SUPABASE_URL) || 'https://mock.supabase.co',
+        key: (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) || 'mock-key',
         enabled: false // Começar com mock
       },
       indexeddb: {
@@ -1642,4 +1642,6 @@ if (typeof window !== 'undefined') {
   window.KC.PersistenceService = persistenceService;
 }
 
+// Exportar para ES6 modules
+export { persistenceService as PersistenceService };
 export default persistenceService;

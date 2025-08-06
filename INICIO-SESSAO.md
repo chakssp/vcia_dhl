@@ -1,8 +1,27 @@
 # 🚀 PROTOCOLO DE INÍCIO DE SESSÃO - KNOWLEDGE CONSOLIDATOR
 
-> **CRÍTICO**: Este protocolo DEVE ser seguido para evitar retrabalho e garantir continuidade eficiente do desenvolvimento.
-> **ATUALIZADO**: 03/08/2025 - Agora com suporte para PLAYWRIGHT MCP (novo padrão)
-> VERIFIQUE SE EXISTE ALGUMA ENTRADA EM [ ### STATUS ATUAL ]
+> **⚠️ CRÍTICO P0 - PADRÃO EVER OBRIGATÓRIO**: O não cumprimento causa RETRABALHO CONSTANTE e PERDA TOTAL DE CONTEXTO
+> **ATUALIZADO**: 03/08/2025 17:45 - Padrão EVER implementado para eliminar retrabalho
+> **SEVERIDADE**: Problema reportado pelo stakeholder como CRÍTICO P0
+
+## 🔴 PADRÃO EVER - INÍCIO OBRIGATÓRIO
+
+### PASSO 1: BUSCAR CONTEXTO ANTERIOR
+```bash
+# SEMPRE executar primeiro:
+mcp__memory-serve__search_nodes "EVER checkpoint sessão contexto"
+```
+
+### PASSO 2: OBTER TIMESTAMP
+```bash
+mcp__time__get_current_time timezone="America/Sao_Paulo"
+```
+
+### PASSO 3: CRIAR CHECKPOINT INICIAL
+```bash
+# Criar entidade EVER-Session-YYYYMMDD-HHMM
+# Incluir: timestamp, estado do sistema, próximas ações
+```
 
 ## 🎭 NOVO PADRÃO - PLAYWRIGHT MCP
 **Use o protocolo atualizado**: [@INICIO-SESSAO-PLAYWRIGHT.md](./INICIO-SESSAO-PLAYWRIGHT.md)
@@ -12,25 +31,29 @@
 
 ---
 
-## 📋 COMANDO DE INÍCIO OBRIGATÓRIO
+## 📋 COMANDO DE INÍCIO OBRIGATÓRIO COM EVER
 
-### 🚀 NOVO - Comando Ultra-Rápido (Recomendado):
+### 🔴 COMANDO EVER COMPLETO (OBRIGATÓRIO):
 ```
-Leia @CLAUDE.md seção "ESTADO ATUAL DO PROJETO" e "CARREGAMENTO RÁPIDO". Validar sistema com @docs/10-guias-operacionais/validacao-rapida-sistema.md.
+1. BUSCAR: mcp__memory-serve__search_nodes "EVER checkpoint"
+2. TIMESTAMP: mcp__time__get_current_time
+3. LER: @CLAUDE.md (LEI #14 - PADRÃO EVER), @RESUME-STATUS.md (Estado EVER)
+4. CRIAR: Checkpoint EVER-Session-[Data]-[Hora] na memória
+5. VALIDAR: kcdiag() em http://127.0.0.1:5500
 ```
 
-### Comando Completo (se precisar contexto detalhado):
-```
-Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
-```
+### ⚠️ PENALIDADE POR NÃO USAR EVER:
+- **RETRABALHO GARANTIDO**
+- **PERDA TOTAL DE CONTEXTO**
+- **SEVERIDADE CRÍTICA P0**
 
 ---
 
 ## 📖 ORDEM DE LEITURA OBRIGATÓRIA
 
 ### 1️⃣ PRIMEIRO: CLAUDE.md (Seções Essenciais)
-- **"ESTADO ATUAL DO PROJETO"** - Status atualizado em 28/01/2025
-- **"CARREGAMENTO RÁPIDO"** - Guia de início rápido
+- **"ESTADO ATUAL DO PROJETO"** - Status atualizado
+- **"LEI #14 - PADRÃO EVER"** - Crítico P0
 - **"LEIS do projeto"** - Regras invioláveis
 - **Tempo estimado**: 1 minuto (leitura focada)
 
@@ -58,16 +81,21 @@ kcdiag()
 
 ---
 
-## ✅ CHECKLIST PRÉ-DESENVOLVIMENTO
+## ✅ CHECKLIST PRÉ-DESENVOLVIMENTO UTILIZANDO PROTOCOLO EVER / NEVER presente documentado @enevr-protocol.md
 
 **ANTES de fazer QUALQUER modificação:**
 
-- [ ] Li e entendi CLAUDE.md (especialmente as LEIS)
+- [ ] **EVER BUSCA**: Executei busca de contexto anterior
+- [ ] **EVER TIMESTAMP**: Obtive timestamp atual
+- [ ] **EVER CHECKPOINT**: Criei checkpoint inicial na memória
+- [ ] Li e entendi CLAUDE.md (especialmente LEI #14 - PADRÃO EVER)
 - [ ] Li RESUME-STATUS.md (sei o estado atual)
 - [ ] Li docs/servidor.md (entendi que servidor é gerenciado pelo usuário)
-- [ ] Verifiquei acesso ao servidor Five Server (porta 5500)
-- [ ] kcdiag() executado sem erros
-- [ ] Console do browser aberto para debug
+- [ ] Verifiquei acesso ao servidor PLAYWRIGHT (porta 5500)
+  - [ ] kcdiag() executado sem erros
+  - [ ] EVER Console do browser aberto para debug
+  - [ ] EVER Utilizou os logs PROVENIENTES DO CONSOLE onde compartilha da mesma visão que o usuário, EVER SUBMETER os resultados de sua analise do CONSOLE para confirmação do usuário como forma de garantir que a visão sobre a interface e sobre as atividades estão alinhadas a REALIDADE que AMBOS ESTAO COMPARTILHANDO NESTA SESSAO.
+  - [ ] EVER Aguardar de 2~5 segundos entre o Envio de comandos e scripts PARA checar o console novamente PARA validar o SUCESSO / FALHA durante após a sua execução EVER antes de gerar qualquer Screenshot PARA controle/validação visual.
 - [ ] Entendi qual Sprint/tarefa está em andamento
 - [ ] Verificar integridade de dados:
       ```javascript
@@ -81,7 +109,19 @@ kcdiag()
 
 ## 🚫 ERROS QUE CAUSAM RETRABALHO
 
-### ❌ ERRO 1: Criar código novo sem verificar existente
+### ❌ ERRO 1: NÃO USAR PADRÃO EVER
+**SEMPRE** use o padrão EVER:
+```javascript
+// ERRADO
+Começar trabalho sem buscar contexto
+
+// CERTO
+1. mcp__memory-serve__search_nodes "EVER checkpoint"
+2. mcp__time__get_current_time
+3. Criar checkpoint EVER-Session-[Data]-[Hora]
+```
+
+### ❌ ERRO 2: Criar código novo sem verificar existente
 **SEMPRE** verifique se já existe implementação antes de criar:
 ```javascript
 // ERRADO
@@ -93,116 +133,140 @@ criar novo FileRenderer
 3. Apenas adicionar o que falta
 ```
 
-### ❌ ERRO 2: Modificar sem preservar original
+### ❌ ERRO 3: Modificar sem preservar original
 **SEMPRE** mantenha versão comentada:
 ```javascript
 // ORIGINAL - Preservado para rollback
 // function antiga() { ... }
 
-// NOVO - Modificação aprovada
+// NOVA implementação
 function nova() { ... }
 ```
 
-### ❌ ERRO 3: Esquecer de emitir eventos
-**SEMPRE** emita AMBOS eventos ao modificar arquivos:
+### ❌ ERRO 4: Não emitir eventos corretos
+**SEMPRE** emita ambos eventos após modificar arquivos:
 ```javascript
-AppState.set('files', files);
+// Emitir AMBOS eventos
 EventBus.emit(Events.STATE_CHANGED, {...});
-EventBus.emit(Events.FILES_UPDATED, {...}); // CRÍTICO!
+EventBus.emit(Events.FILES_UPDATED, {...});
 ```
 
-### ❌ ERRO 4: Não testar incrementalmente
-**SEMPRE** teste cada mudança:
-1. Faça UMA modificação
-2. Teste no browser
-3. Verifique console
-4. Só então prossiga
+### ❌ ERRO 5: Usar mock data sem permissão
+**NUNCA** use dados simulados sem aprovação:
+```javascript
+// ERRADO
+const mockFiles = generateTestData();
 
----
-
-## 📊 MÉTRICAS DE SUCESSO
-
-Uma sessão é considerada **EFICIENTE** quando:
-- ✅ Setup completo em < 5 minutos
-- ✅ Zero retrabalho por falta de contexto
-- ✅ Funcionalidades implementadas na primeira tentativa
-- ✅ Sem quebrar código existente
-
----
-
-## 🔥 RESUMO EXECUTIVO
-
-### Para começar RÁPIDO e CERTO:
-
-1. **COPIE** o comando de início
-2. **COLE** no chat
-3. **AGUARDE** confirmação de leitura
-4. **VERIFIQUE** servidor Five Server (porta 5500)
-5. **EXECUTE** kcdiag()
-6. **COMECE** desenvolvimento
-
-**Tempo total de setup: 5 minutos**  
-**Tempo economizado: 3+ horas de retrabalho**
-
----
-
-## 📝 TEMPLATE DE PRIMEIRO MENSAJE
-
-Se preferir uma mensagem mais detalhada:
-
-```
-Olá! Vamos continuar o desenvolvimento do Knowledge Consolidator.
-
-1. Por favor, leia @CLAUDE.md para as regras do projeto
-2. Depois leia @RESUME-STATUS.md para o estado atual
-3. O servidor Five Server está rodando em http://127.0.0.1:5500 (veja @docs/servidor.md)
-4. Confirme quando estiver pronto para prosseguir
-
-Contexto adicional: [descreva o que pretende fazer hoje]
-```
-
-### STATUS ATUAL
-
-```
-Leia primeiro @CLAUDE.md para entender as LEIS do projeto, depois leia @RESUME-STATUS.md para entender o estado atual. O servidor Five Server já está rodando na porta 5500 (gerenciado pelo
-  usuário conforme @docs/servidor.md). Acesse http://127.0.0.1:5500 e execute kcdiag() no console para verificar a saúde do sistema antes de prosseguir.
-
-  CONTEXTO DA ÚLTIMA SESSÃO (21/07/2025 - Sprint Fase 2.1 - Correções Críticas):
-  - ✅ Sprint Fase 2 CONCLUÍDA - Todas as 3 fases implementadas
-  - ✅ Sistema 100% FUNCIONAL - Todos os bugs críticos corrigidos
-  - 📚 Timeline completo disponível em @docs/timeline-completo-projeto.md
-  - 📋 Plano de recuperação criado em @docs/sprint/fase2/plano-recuperacao-workflow.md
-
-  🏆 CORREÇÕES DA SESSÃO (21/07/2025):
-  - ✅ BUG #8: TypeError renderFilesList → showFilesSection() corrigido
-  - ✅ BUG #9: Botão apply-exclusion agora atualiza contadores
-  - ✅ BUG #10: Filtro "pending" corrigido (approved vs analyzed)
-
-  📊 ARQUITETURA ATUAL COMPLETA:
-  - ✅ EmbeddingService: Ollama (768 dimensões) com cache
-  - ✅ QdrantService: VPS conectada, CRUD completo
-  - ✅ SimilaritySearchService: Busca semântica multi-modal
-  - ✅ Pipeline RAG: Consolidação → Chunking → Embeddings → Qdrant
-  - ✅ Análise IA: 4 providers (Ollama, OpenAI, Gemini, Anthropic)
-
-  ⚠️ IMPORTANTE: 
-  - Sistema pronto para teste completo do workflow
-  - Use o plano de recuperação para checkpoints durante testes
-  - Todos os bugs conhecidos foram resolvidos
-
-  📌 Documentos essenciais:
-  - Timeline histórico: @docs/timeline-completo-projeto.md
-  - Plano de teste/recuperação: @docs/sprint/fase2/plano-recuperacao-workflow.md
-  - Comandos de debug: Ver seção "Comandos de Debug" em RESUME-STATUS.md
-
-  🎯 Próximo passo imediato:
-  1. Executar teste completo do workflow (Etapas 1-4)
-  2. Usar checkpoints do plano de recuperação
-  3. Validar integração completa end-to-end
-
-  Sistema totalmente operacional e pronto para produção!
+// CERTO
+// Usar File System Access API com dados reais
+const handle = await window.showDirectoryPicker();
 ```
 
 ---
 
-**LEMBRE-SE**: 5 minutos de setup correto economizam HORAS de retrabalho!
+## 🛡️ ESTRATÉGIA ANTI-RETRABALHO COM EVER
+
+### 1. **Checkpoint Regular**
+```javascript
+// A cada 30 minutos ou mudança significativa
+mcp__memory-serve__create_entities([{
+  name: "EVER-Checkpoint-YYYYMMDD-HHMM",
+  entityType: "checkpoint",
+  observations: [
+    "Estado atual: ...",
+    "Próximas ações: ...",
+    "Contexto: ..."
+  ]
+}])
+```
+
+### 2. **Conexões Semânticas**
+```javascript
+// Conectar checkpoints relacionados
+mcp__memory-serve__create_relations([{
+  from: "EVER-Checkpoint-Atual",
+  to: "EVER-Checkpoint-Anterior",
+  relationType: "continues_from"
+}])
+```
+
+### 3. **Validação Contínua**
+```javascript
+// Sempre validar após salvar
+const result = await mcp__memory-serve__search_nodes("EVER-Checkpoint-YYYYMMDD-HHMM");
+if (result.entities.length === 0) {
+  console.error("ERRO: Checkpoint não foi salvo!");
+}
+```
+
+---
+
+## 📊 COMANDOS ÚTEIS DE DEBUG
+
+```javascript
+// Diagnóstico completo
+kcdiag()
+
+// Ver arquivos descobertos
+KC.AppState.get('files')
+
+// Verificar categorias
+KC.CategoryManager.getAll()
+
+// Estado do pipeline
+KC.RAGExportManager.consolidateData()
+
+// Verificar Ollama
+KC.AIAPIManager.checkOllamaAvailability()
+
+// Verificar Qdrant
+KC.QdrantService.checkConnection()
+
+// EVER - Buscar checkpoints
+// Use MCP: mcp__memory-serve__search_nodes "EVER checkpoint"
+```
+
+---
+
+## 🏁 START - EXECUTE AGORA
+
+```javascript
+// 1. BUSCAR contexto anterior
+mcp__memory-serve__search_nodes "EVER checkpoint sessão contexto"
+
+// 2. TIMESTAMP atual
+mcp__time__get_current_time timezone="America/Sao_Paulo"
+
+// 3. CRIAR checkpoint inicial
+// Nome: EVER-Session-YYYYMMDD-HHMM
+
+// 4. VALIDAR sistema
+// Acessar http://127.0.0.1:5500
+// Executar kcdiag()
+
+// 5. COMEÇAR trabalho
+// Sempre salvando checkpoints a cada 30 minutos
+```
+
+---
+
+### STATUS ATUAL - CHECKPOINT EVER
+- **Data**: 03/08/2025 17:45 BRT
+- **Iniciativa Atual**: PRIMEIRA CARGA DE DADOS REAIS
+- **Contexto**: Sistema 100% operacional aguardando stakeholder fornecer arquivos
+- **Objetivo**: Processar primeira carga no Qdrant e validar pipeline E2E
+- **Atividades Pendentes**: 
+  - 🔴 Primeira carga de dados reais
+  - 🔴 Processar arquivos categorizados
+  - 🔴 Testar pipeline completo E2E
+  - 🟡 Integrar PrefixCache com busca semântica
+  - 🟡 Validar visualização de grafo
+
+### PADRÃO EVER - CHECKPOINT A CADA 30 MINUTOS
+- **Próximo checkpoint**: 18:15 BRT
+- **Query de busca**: "EVER checkpoint 03082025"
+- **Validação**: Sempre confirmar salvamento bem-sucedido
+
+---
+
+**FIM DO PROTOCOLO - USE EVER OU PERCA CONTEXTO!**

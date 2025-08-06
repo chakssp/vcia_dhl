@@ -28,8 +28,8 @@ class CategoryManager {
     // Configuração Supabase (mock para desenvolvimento)
     this.supabase = null;
     this.supabaseConfig = {
-      url: process.env.SUPABASE_URL || 'https://mock.supabase.co',
-      key: process.env.SUPABASE_ANON_KEY || 'mock-key',
+      url: (typeof process !== 'undefined' && process.env?.SUPABASE_URL) || 'https://mock.supabase.co',
+      key: (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) || 'mock-key',
       enabled: false // Começar com mock
     };
     
