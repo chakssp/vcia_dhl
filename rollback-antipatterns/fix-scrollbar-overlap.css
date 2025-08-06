@@ -1,0 +1,149 @@
+/**
+ * Correção de Barras de Rolagem Duplas e Sobreposição de Ícones
+ * Data: 06/08/2025
+ */
+
+/* ===== CORREÇÃO DE BARRAS DE ROLAGEM DUPLAS ===== */
+html {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    /* Remove qualquer altura fixa que possa causar scroll duplo */
+    height: auto !important;
+    min-height: 100vh !important;
+}
+
+body {
+    overflow-x: hidden !important;
+    overflow-y: visible !important; /* Permite scroll natural do body */
+    height: auto !important;
+    min-height: 100vh !important;
+    /* Remove margens que podem causar scroll horizontal */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Remove scroll de containers que podem estar causando duplo scroll */
+.main-container {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+.content-section {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+.workflow-section {
+    overflow: visible !important;
+    height: auto !important;
+}
+
+/* Corrige containers com altura fixa que podem causar scroll */
+#file-list {
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+.files-container {
+    max-height: none !important;
+    overflow-y: visible !important;
+}
+
+/* ===== CORREÇÃO DE SOBREPOSIÇÃO DE ÍCONES ===== */
+
+/* Remove TODOS os botões flutuantes antigos */
+.floating-actions {
+    display: none !important;
+}
+
+/* Remove botão go-to-top antigo */
+.go-to-top:not(#simple-go-to-top) {
+    display: none !important;
+}
+
+/* Remove menu lateral problemático completamente */
+#kc-side-menu,
+.quick-access-tab,
+.quick-access-modal {
+    display: none !important;
+}
+
+/* Remove qualquer menu tools duplicado */
+#simple-tools-menu ~ #simple-tools-menu {
+    display: none !important;
+}
+
+/* Garante que apenas os novos botões sejam visíveis */
+#simple-tools-menu {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 80px !important;
+    z-index: 9000 !important;
+}
+
+#simple-go-to-top {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    z-index: 9001 !important;
+}
+
+/* Remove botões de tema e filtros duplicados da floating-actions */
+#theme-toggle,
+#go-to-filters,
+#go-to-top:not(#simple-go-to-top),
+#quick-filters-toggle {
+    display: none !important;
+}
+
+/* ===== AJUSTE DA BARRA DE FILTROS INFERIOR ===== */
+.quick-filters-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 8000 !important;
+    /* Remove qualquer margin que possa causar scroll */
+    margin: 0 !important;
+}
+
+/* Ajusta padding do body para compensar barra inferior */
+body {
+    padding-bottom: 80px !important; /* Espaço para barra de filtros */
+}
+
+/* ===== CORREÇÃO DO ZOOM QUE PODE CAUSAR SCROLL DUPLO ===== */
+:root {
+    --zoom-level: 1.0 !important; /* Reseta zoom para evitar problemas */
+}
+
+html {
+    zoom: 1 !important;
+    -moz-transform: none !important;
+    width: 100% !important;
+}
+
+/* ===== REMOVE ELEMENTOS QUE PODEM CAUSAR OVERFLOW ===== */
+* {
+    max-width: 100% !important;
+}
+
+/* Previne que modais causem scroll */
+.modal-overlay {
+    position: fixed !important;
+    overflow: auto !important;
+}
+
+.modal-content {
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+/* ===== ESPECÍFICO PARA REMOVER ÍCONES DUPLICADOS ===== */
+/* Remove todos os elementos com ícones que não sejam do simple-menu */
+button[title="Alternar tema"]:not(#simple-theme-toggle),
+button[title="Ir para filtros"]:not(#simple-go-to-filters),
+button[title="Ir para o topo"]:not(#simple-go-to-top),
+button[title="Mostrar/Ocultar Filtros Rápidos"]:not(#simple-filters-toggle) {
+    display: none !important;
+}

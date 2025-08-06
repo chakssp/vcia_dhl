@@ -1,0 +1,83 @@
+/**
+ * Correção Específica para o Menu Quick Access
+ * Data: 06/08/2025
+ * 
+ * Corrige posicionamento e aparência do menu lateral
+ */
+
+/* Remove/esconde o menu mal posicionado */
+#kc-side-menu {
+    display: none !important;
+}
+
+/* Remove qualquer modal quick-access duplicado */
+.quick-access-modal {
+    display: none !important;
+}
+
+/* Correção para botões flutuantes */
+.floating-actions {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 100px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    z-index: 8000 !important;
+}
+
+.floating-actions .action-btn {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.floating-actions .action-btn:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+/* Garante que o Go to Top funcione */
+.go-to-top {
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    background: #333 !important;
+    color: white !important;
+    border: none !important;
+    cursor: pointer !important;
+    z-index: 8500 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.go-to-top.visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Remove quaisquer menus coloridos estranhos */
+[style*="background: linear-gradient"] {
+    /* Comentado para não afetar outros elementos */
+    /* display: none !important; */
+}
+
+/* Específico para o menu com problemas */
+div[style*="position: fixed"][style*="right: -280px"],
+div[style*="position: fixed"][style*="right: 0px"] {
+    display: none !important;
+}

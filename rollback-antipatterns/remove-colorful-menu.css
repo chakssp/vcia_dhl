@@ -1,0 +1,112 @@
+/**
+ * Remove Completamente o Menu Colorido Problemático
+ * Data: 06/08/2025
+ * 
+ * CSS específico para remover o menu com gradientes coloridos
+ */
+
+/* Remove QUALQUER elemento com gradientes coloridos específicos */
+[style*="linear-gradient"] {
+    /* Verifica se contém as cores problemáticas */
+}
+
+/* Remove elementos com as cores específicas do menu problemático */
+[style*="ff6b6b"],
+[style*="4ecdc4"],
+[style*="ffd93d"],
+[style*="6bcf7f"],
+[style*="c471ed"],
+[style*="667eea"],
+[style*="f093fb"],
+[style*="f5576c"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+    top: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+/* Remove qualquer div fixa posicionada à direita */
+div[style*="position: fixed"][style*="right"] {
+    display: none !important;
+}
+
+/* Remove elementos com z-index muito alto (típico do menu problemático) */
+[style*="z-index: 9999"],
+[style*="z-index: 10000"],
+[style*="z-index:9999"],
+[style*="z-index:10000"] {
+    display: none !important;
+}
+
+/* Remove elementos com width 280px (largura do menu lateral) */
+[style*="width: 280px"],
+[style*="width:280px"] {
+    display: none !important;
+}
+
+/* Remove elementos com transform translateY(-50%) */
+[style*="transform: translateY(-50%)"],
+[style*="transform:translateY(-50%)"] {
+    display: none !important;
+}
+
+/* Força ocultação de menus conhecidos */
+#kc-side-menu,
+#quick-access-menu,
+#qdrant-menu,
+.quick-access-modal,
+.quick-access-tab,
+.qdrant-modal,
+.side-menu,
+.menu-lateral {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -99999px !important;
+}
+
+/* Garante que apenas o menu simples seja visível */
+#simple-tools-menu {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 80px !important;
+    z-index: 8000 !important;
+}
+
+#simple-go-to-top {
+    display: flex !important;
+    position: fixed !important;
+    right: 20px !important;
+    bottom: 20px !important;
+    z-index: 8001 !important;
+}
+
+/* Remove overflow do body que pode estar causando barras duplas */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+}
+
+body {
+    overflow-y: auto !important;
+    position: relative !important;
+}
+
+/* Corrige elementos que podem estar causando scroll horizontal */
+* {
+    max-width: 100% !important;
+}
+
+.container {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}

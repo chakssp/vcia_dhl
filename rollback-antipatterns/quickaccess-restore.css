@@ -1,0 +1,148 @@
+/**
+ * Restauração do QuickAccessMenu Original
+ * Data: 06/08/2025
+ * 
+ * CSS para garantir que o QuickAccessMenu apareça corretamente
+ */
+
+/* ===== MENU LATERAL QUICK ACCESS - CENTRALIZADO ===== */
+
+/* Menu lateral - FORÇA POSICIONAMENTO CENTRAL */
+#kc-side-menu {
+    position: fixed !important;
+    top: 50% !important;
+    right: -280px !important; /* Escondido por padrão */
+    transform: translateY(-50%) !important;
+    width: 280px !important;
+    height: auto !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    z-index: 10000 !important;
+    transition: right 0.3s ease !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Aba do menu lateral - DENTRO DO MENU */
+#kc-side-menu .quick-access-tab {
+    position: absolute !important;
+    left: -40px !important;
+    top: 50% !important;
+    transform: translateY(-50%) rotate(-90deg) !important;
+    width: auto !important;
+    padding: 10px 20px !important;
+    background: #0ff !important;
+    color: #000 !important;
+    cursor: pointer !important;
+    z-index: 10001 !important;
+    border-radius: 8px 8px 0 0 !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    transition: all 0.3s ease !important;
+    box-shadow: -2px 0 10px rgba(0,255,255,0.5) !important;
+    user-select: none !important;
+}
+
+#kc-side-menu .quick-access-tab:hover {
+    transform: translateY(-50%) rotate(-90deg) scale(1.05) !important;
+    box-shadow: -4px 0 15px rgba(0,255,255,0.7) !important;
+}
+
+/* Menu aberto */
+#kc-side-menu.open,
+.quick-access-modal.open {
+    right: 0 !important; /* Mostra o menu */
+}
+
+/* Botões dentro do menu */
+#kc-side-menu button,
+.quick-access-modal button {
+    width: 100% !important;
+    padding: 12px 20px !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+#kc-side-menu button:hover,
+.quick-access-modal button:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateX(5px) !important;
+}
+
+/* Garante que o menu não seja escondido por outros elementos */
+.quick-access-tab,
+#kc-side-menu,
+.quick-access-modal {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Remove interferências de outros CSS */
+.quick-access-tab:not(.hidden),
+#kc-side-menu:not(.hidden),
+.quick-access-modal:not(.hidden) {
+    display: block !important;
+}
+
+/* Ajusta z-index para ficar acima de tudo */
+.quick-access-tab {
+    z-index: 10001 !important;
+}
+
+#kc-side-menu,
+.quick-access-modal {
+    z-index: 10000 !important;
+}
+
+/* Previne que outros CSS ocultem o menu */
+body .quick-access-tab,
+body #kc-side-menu,
+body .quick-access-modal {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Animação suave */
+@keyframes slideIn {
+    from {
+        right: -280px;
+        opacity: 0;
+    }
+    to {
+        right: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        right: 0;
+        opacity: 1;
+    }
+    to {
+        right: -280px;
+        opacity: 0;
+    }
+}
+
+/* Classes de animação */
+#kc-side-menu.opening,
+.quick-access-modal.opening {
+    animation: slideIn 0.3s ease forwards;
+}
+
+#kc-side-menu.closing,
+.quick-access-modal.closing {
+    animation: slideOut 0.3s ease forwards;
+}
