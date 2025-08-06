@@ -8,18 +8,19 @@ This repository contains the specification for "Consolidador de Conhecimento Pes
 
 **Vision:** Transform scattered knowledge into actionable insights, establishing a pre-structured foundation that will feed IA automation flows for internal project proposition and strategic decision-making.
 
-## 🚀 ESTADO ATUAL DO PROJETO - 03/08/2025
+## 🚀 ESTADO ATUAL DO PROJETO - 06/08/2025
 
 ### 📊 Status Geral
 - **Sistema 100% Funcional**: Todas as 10 Waves implementadas e em produção
-- **Sprint Atual**: AGUARDANDO PRIMEIRA CARGA DE DADOS REAIS
-- **Última Atualização**: 03/08/2025 17:45 - Padrão EVER implementado para eliminar retrabalho
+- **Sprint Atual**: SISTEMA ESTÁVEL COM BACKUP COMPLETO
+- **Última Atualização**: 06/08/2025 01:30 - Sistema de Backup 4 Camadas implementado
 - **Estrutura**: Projeto reorganizado com separação clara entre produção e temporários
 
 ### 🔍 Observações Importantes
-- Data Atual: 03/08/2025 17:45 BRT
-- **CRÍTICO P0**: Padrão EVER estabelecido para eliminar perda de contexto
-- Sistema pronto aguardando stakeholder fornecer arquivos para primeira carga
+- Data Atual: 06/08/2025 01:30 BRT
+- **✅ RESOLVIDO**: Rollback bem-sucedido após loop de correções
+- **✅ IMPLEMENTADO**: Sistema de Backup com 4 camadas de proteção
+- **🛡️ PROTEÇÃO TOTAL**: Git + Backup Local + Branches + Memória MCP
 
 ### 🎯 Conquistas Principais
 1. **Knowledge Consolidator Base** (Waves 1-4) ✅
@@ -86,6 +87,46 @@ vcia_dhl/
 ```
 
 **FREQUÊNCIA**: A cada 30 minutos ou mudança significativa, criar novo checkpoint EVER
+
+## 🛡️ SISTEMA DE BACKUP E VERSIONAMENTO - 4 CAMADAS
+
+### Camada 1: Git com Tags
+```bash
+git tag -a funcional-YYYYMMDD -m "Sistema funcional"
+git checkout funcional-06082025-sistema-estavel  # Voltar para versão estável
+```
+
+### Camada 2: Backup Local Automatizado
+```batch
+backup-local.bat  # Windows - Cria backup em F:\backups-vcia\
+```
+
+### Camada 3: Branch de Proteção
+```bash
+git checkout stable-backup-06082025  # Branch sempre com código estável
+```
+
+### Camada 4: Memória MCP
+```javascript
+// Salvar checkpoints para Claude rastrear
+mcp__memory-serve__create_entities([{
+    name: "CHECKPOINT-FUNCIONAL-" + Date.now(),
+    entityType: "backup_checkpoint",
+    observations: ["estado", "commit", "branch", "arquivos funcionando"]
+}]);
+```
+
+### 📋 Protocolo Antes de Mudanças
+1. Executar `backup-local.bat`
+2. Criar tag se funcional: `git tag -a funcional-YYYYMMDD -m "desc"`
+3. Salvar checkpoint na memória MCP
+4. Atualizar `CHECKPOINT.md`
+
+### 📍 Locais de Backup
+- **Local**: `F:\backups-vcia\ultimo-funcional\`
+- **Branch**: `stable-backup-06082025`
+- **Tag**: `funcional-06082025-sistema-estavel`
+- **Docs**: `README-BACKUP.md` e `CHECKPOINT.md`
 
 # Estilo de Código
 
