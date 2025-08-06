@@ -47,6 +47,28 @@ class QdrantManager {
             pointsEnriched: 0,
             enrichmentErrors: 0
         };
+        
+        // Auto-inicializar de forma lazy quando necessário
+        this._autoInitPromise = null;
+    }
+    
+    /**
+     * Garante que o manager está inicializado (lazy initialization)
+     * @private
+     */
+    async _ensureInitialized() {
+        if (this.initialized) {
+            return true;
+        }
+        
+        // Se já está inicializando, aguardar
+        if (this._autoInitPromise) {
+            return this._autoInitPromise;
+        }
+        
+        // Inicializar
+        this._autoInitPromise = this.initialize();
+        return this._autoInitPromise;
     }
     
     /**
@@ -61,6 +83,8 @@ class QdrantManager {
             this.embeddingService = window.KC?.EmbeddingService;
             
             if (!this.qdrantService) {
+                console.error('❌ QdrantService não encontrado no window.KC');
+                console.log('Disponível em window.KC:', Object.keys(window.KC || {}));
                 throw new Error('QdrantService não encontrado');
             }
             
@@ -249,6 +273,9 @@ class QdrantManager {
      */
     async insertOrUpdate(file, options = {}) {
         try {
+            // Garantir inicialização
+            await this._ensureInitialized();
+            
             // Verificar duplicata
             const duplicate = await this.checkDuplicate(file);
             
