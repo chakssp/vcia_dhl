@@ -36,6 +36,9 @@
             // NOVO: Sistema de seleção múltipla para bulk actions
             this.selectedFiles = new Set();
             this.bulkActionsVisible = false;
+            
+            // Modo de visualização (cards ou list)
+            this.viewMode = localStorage.getItem('fileViewMode') || 'cards';
         }
 
         /**
@@ -460,12 +463,64 @@
         }
 
         /**
+         * Cria elemento compacto para visão lista
+         */
+        createCompactFileElement(file) {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-entry compact';
+            fileDiv.setAttribute('data-file-id', file.id || file.name);
+            
+            const fileId = file.id || file.name;
+            const isSelected = this.selectedFiles.has(fileId);
+            
+            // Extrai o caminho da pasta do arquivo
+            const fullPath = file.path || file.relativePath || file.name;
+            const lastSlash = fullPath.lastIndexOf('/');
+            const folderPath = lastSlash > 0 ? fullPath.substring(0, lastSlash) : '/';
+            const fileName = lastSlash > 0 ? fullPath.substring(lastSlash + 1) : fullPath;
+            
+            // Calcula relevância
+            const relevance = this.calculateRelevance(file);
+            
+            fileDiv.innerHTML = `
+                <div class="file-main-content compact-layout">
+                    <input type="checkbox" 
+                           class="file-select-checkbox" 
+                           data-file-id="${fileId}"
+                           ${isSelected ? 'checked' : ''}>
+                    <div class="file-name-compact">
+                        ${this.escapeHtml(fileName)}
+                    </div>
+                    <div class="file-path-compact">
+                        ${this.escapeHtml(folderPath)}
+                    </div>
+                    <div class="relevance-compact">
+                        ${relevance}%
+                    </div>
+                    <div class="file-date-compact">
+                        ${this.formatDate(file.lastModified)}
+                    </div>
+                </div>
+            `;
+            
+            // Adiciona event listeners
+            this.attachEventListeners(fileDiv, file);
+            
+            return fileDiv;
+        }
+        
+        /**
          * Cria elemento HTML para um arquivo individual - ENHANCED (Task #FE-002)
          */
         createFileElement(file) {
             const fileDiv = document.createElement('div');
             fileDiv.className = 'file-entry';
             fileDiv.setAttribute('data-file-id', file.id || file.name);
+            
+            // Se está em modo lista, usa layout compacto
+            if (this.viewMode === 'list') {
+                return this.createCompactFileElement(file);
+            }
             
             // AIDEV-NOTE: content-storage-dom; armazena conteúdo para acesso posterior
             // Armazena conteúdo no DOM para ContentAccessUtils
@@ -1347,6 +1402,15 @@
                     case 'size':
                         return (b.size || 0) - (a.size || 0);
                     case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'location':
+                        const pathA = a.path || a.relativePath || a.name;
+                        const pathB = b.path || b.relativePath || b.name;
+                        const folderA = pathA.substring(0, pathA.lastIndexOf('/')) || '';
+                        const folderB = pathB.substring(0, pathB.lastIndexOf('/')) || '';
+                        if (folderA !== folderB) {
+                            return folderA.localeCompare(folderB);
+                        }
                         return a.name.localeCompare(b.name);
                     default:
                         return 0;
@@ -2332,30 +2396,49 @@
         }
         
         /**
+         * Alterna entre visão Cards e Lista
+         */
+        toggleView() {
+            this.viewMode = this.viewMode === 'cards' ? 'list' : 'cards';
+            localStorage.setItem('fileViewMode', this.viewMode);
+            
+            // Atualiza classes do container
+            const container = document.querySelector('.files-container');
+            if (container) {
+                container.classList.toggle('compact-view', this.viewMode === 'list');
+            }
+            
+            // Re-renderiza a lista
+            this.renderFiles();
+            
+            // Atualiza barra para refletir o novo botão
+            this.updateBulkActionsBar();
+            
+            console.log(`FileRenderer: Mudou para visão ${this.viewMode}`);
+        }
+        
+        /**
          * NOVO: Atualiza barra de ações em lote
          */
         updateBulkActionsBar() {
             const count = this.selectedFiles.size;
             
-            // Remove barra existente
-            const existingBar = document.querySelector('.bulk-actions-bar');
-            if (existingBar) {
-                existingBar.remove();
+            // Busca barra existente ou cria nova
+            let bar = document.querySelector('.bulk-actions-bar');
+            
+            if (!bar) {
+                // Cria barra apenas se não existir
+                bar = document.createElement('div');
+                bar.className = 'bulk-actions-bar';
+                
+                // Insere no início do container de arquivos
+                const filesSection = document.getElementById('files-section');
+                if (filesSection) {
+                    filesSection.insertBefore(bar, filesSection.firstChild);
+                }
             }
             
-            // Verifica se há checkboxes na página (arquivos visíveis)
-            const hasVisibleFiles = document.querySelectorAll('.file-select-checkbox').length > 0;
-            
-            // Se não há arquivos visíveis, não mostra a barra
-            if (!hasVisibleFiles) {
-                return;
-            }
-            
-            // Cria nova barra
-            const bar = document.createElement('div');
-            bar.className = 'bulk-actions-bar';
-            
-            // Se não há seleção, mostra apenas o botão de selecionar todos
+            // Atualiza conteúdo da barra baseado na seleção
             if (count === 0) {
                 bar.innerHTML = `
                     <div class="bulk-actions-header">
@@ -2366,6 +2449,11 @@
                         </div>
                     </div>
                     <div class="bulk-actions">
+                        <button class="bulk-action-btn" 
+                                onclick="KC.FileRenderer.toggleView()"
+                                title="Alternar entre visão Cards e Lista">
+                            ${this.viewMode === 'list' ? '🃏 Cards' : '📋 Lista'}
+                        </button>
                         <button class="bulk-action-btn primary" 
                                 onclick="KC.FileRenderer.selectAllVisible()"
                                 title="Selecionar todos os arquivos visíveis (Ctrl+A)">
@@ -2388,6 +2476,11 @@
                         </div>
                     </div>
                     <div class="bulk-actions">
+                        <button class="bulk-action-btn" 
+                                onclick="KC.FileRenderer.toggleView()"
+                                title="Alternar entre visão Cards e Lista">
+                            ${this.viewMode === 'list' ? '🃏 Cards' : '📋 Lista'}
+                        </button>
                         <button class="bulk-action-btn primary" 
                                 onclick="KC.FileRenderer.selectAllVisible()"
                                 title="Selecionar todos os arquivos visíveis (Ctrl+A)">
@@ -2433,12 +2526,6 @@
                         </button>
                     </div>
                 `;
-            }
-            
-            // Insere no início do container de arquivos
-            const filesContainer = document.querySelector('.files-container');
-            if (filesContainer && filesContainer.parentNode) {
-                filesContainer.parentNode.insertBefore(bar, filesContainer);
             }
             
             // Atualiza informação de filtros
@@ -2554,6 +2641,23 @@
                         return (b.size || 0) - (a.size || 0); // Maior primeiro
                         
                     case 'name':
+                        return (a.name || '').localeCompare(b.name || '');
+                        
+                    case 'location':
+                        // Ordena por pasta e depois por nome
+                        const pathA = a.path || a.relativePath || a.name;
+                        const pathB = b.path || b.relativePath || b.name;
+                        
+                        // Extrai pasta
+                        const folderA = pathA.substring(0, pathA.lastIndexOf('/')) || '';
+                        const folderB = pathB.substring(0, pathB.lastIndexOf('/')) || '';
+                        
+                        // Compara pastas primeiro
+                        if (folderA !== folderB) {
+                            return folderA.localeCompare(folderB);
+                        }
+                        
+                        // Se mesma pasta, ordena por nome
                         return (a.name || '').localeCompare(b.name || '');
                         
                     default:

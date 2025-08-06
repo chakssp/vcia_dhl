@@ -123,13 +123,13 @@
 .bulk-actions-title {
     font-size: 1.1rem; /* Fonte reduzida */
     font-weight: 600;
-    color: var(--text-primary);
+    color: #e0e0e0; /* Texto claro para dark mode */
     margin: 0;
 }
 
 .selection-count {
     font-weight: 600;
-    color: var(--text-primary); /* Garantir texto escuro */
+    color: #e0e0e0; /* Texto claro para dark mode */
     font-size: 0.9rem; /* Fonte um pouco menor */
 }
 
@@ -446,6 +446,98 @@
     background: var(--bg-primary);
     border-color: var(--danger-color);
     color: var(--danger-color);
+}
+
+/* ========================================
+   VISÃO LISTA COMPACTA
+   ======================================== */
+
+/* Container em modo compacto */
+.files-container.compact-view {
+    gap: 0;
+}
+
+/* Entrada de arquivo em modo compacto */
+.compact-view .file-entry {
+    padding: 8px 12px;
+    margin-bottom: 1px;
+    border-radius: 0;
+    min-height: 40px;
+}
+
+/* Layout horizontal para modo compacto */
+.compact-view .file-main-content,
+.compact-view .compact-layout {
+    display: grid !important;
+    grid-template-columns: 24px minmax(180px, 1fr) minmax(150px, 280px) 70px 85px;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+/* Estilo para cada coluna */
+.compact-view .file-select-checkbox {
+    width: 16px;
+    height: 16px;
+}
+
+.compact-view .file-name-compact,
+.file-name-compact {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #e0e0e0; /* Cor clara para dark mode */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block !important;
+}
+
+.compact-view .file-path-compact,
+.file-path-compact {
+    font-size: 0.85rem;
+    color: #999; /* Cinza claro */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block !important;
+}
+
+.compact-view .relevance-compact,
+.relevance-compact {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #667eea; /* Roxo visível */
+    text-align: center;
+    display: block !important;
+}
+
+.compact-view .file-date-compact,
+.file-date-compact {
+    font-size: 0.85rem;
+    color: #888; /* Cinza médio */
+    text-align: right;
+    display: block !important;
+}
+
+/* Oculta elementos não necessários em modo compacto */
+.compact-view .file-icon,
+.compact-view .file-info,
+.compact-view .file-meta,
+.compact-view .file-actions,
+.compact-view .file-categories,
+.compact-view .file-preview {
+    display: none !important;
+}
+
+/* Hover em modo compacto */
+.compact-view .file-entry:hover {
+    background: var(--hover-bg);
+    cursor: pointer;
+}
+
+/* Selecionado em modo compacto */
+.compact-view .file-entry.selected {
+    background: var(--bg-selected);
 }
 
 /* Responsivo - Mobile */

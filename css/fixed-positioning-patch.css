@@ -21,30 +21,33 @@
 #files-section > div.bulk-actions-bar,
 .bulk-actions-bar {
     position: fixed !important;
-    bottom: 10vh !important; /* Logo acima da barra de filtros */
+    bottom: 0 !important; /* Fixada no fundo da tela para flutuar corretamente */
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
     transform: none !important;
     z-index: 999 !important;
-    background: rgba(var(--bg-tertiary-rgb, 30, 30, 30), 0.95) !important;
+    background: #1a1a1a !important; /* Cor sólida ao invés de rgba */
     backdrop-filter: blur(10px) !important;
     padding: 12px 20px !important;
-    border-top: 1px solid var(--border-light) !important;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2) !important;
+    border-top: 1px solid #333 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
 }
 
-.bulk-actions-bar .bulk-actions-container {
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
+.bulk-actions-bar .bulk-actions-container,
+.bulk-actions-bar .bulk-actions-header,
+.bulk-actions-bar .bulk-actions {
     display: flex !important;
     align-items: center !important;
-    justify-content: space-between !important;
     gap: 20px !important;
+}
+
+.bulk-actions-bar .bulk-actions-header {
+    flex: 1;
+    justify-content: space-between !important;
 }
 
 /* ===== MODAL OVERLAY ===== */
