@@ -687,12 +687,45 @@
          * @private
          */
         _addToHistory() {
-            const stateSnapshot = JSON.stringify(this.state);
-            this.history.push(stateSnapshot);
-            
-            // Mantém histórico no tamanho máximo
-            if (this.history.length > this.maxHistorySize) {
-                this.history.shift();
+            try {
+                // Remove referências circulares antes de serializar
+                const seen = new WeakSet();
+                const stateSnapshot = JSON.stringify(this.state, (key, value) => {
+                    // Ignora valores null ou undefined
+                    if (value === null || value === undefined) {
+                        return value;
+                    }
+                    
+                    // Ignora funções
+                    if (typeof value === 'function') {
+                        return undefined;
+                    }
+                    
+                    // Detecta e remove referências circulares
+                    if (typeof value === 'object') {
+                        if (seen.has(value)) {
+                            return '[Circular Reference]';
+                        }
+                        seen.add(value);
+                    }
+                    
+                    // Propriedades específicas que causam problemas
+                    if (key === 'relatedFiles' || key === 'file' || key === 'handle') {
+                        return undefined;
+                    }
+                    
+                    return value;
+                });
+                
+                this.history.push(stateSnapshot);
+                
+                // Mantém histórico no tamanho máximo
+                if (this.history.length > this.maxHistorySize) {
+                    this.history.shift();
+                }
+            } catch (error) {
+                console.warn('AppState: Erro ao adicionar ao histórico:', error);
+                // Continua sem adicionar ao histórico para não quebrar o fluxo
             }
         }
 
