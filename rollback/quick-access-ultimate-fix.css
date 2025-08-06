@@ -1,0 +1,145 @@
+/**
+ * Quick Access Ultimate Fix - Correção DEFINITIVA de visibilidade
+ * Data: 06/08/2025
+ * 
+ * CSS para garantir que o menu QuickAccess seja IMPOSSÍVEL de não ser visto
+ */
+
+/* Animação NEON pulsante para máxima visibilidade */
+@keyframes pulse-glow {
+    0%, 100% { 
+        box-shadow: -10px 0 30px rgba(0,255,255,0.9);
+        transform: translateY(-50%) scale(1);
+        background: linear-gradient(135deg, #00ffff 0%, #0099ff 100%);
+    }
+    50% { 
+        box-shadow: -15px 0 50px rgba(0,255,255,1), 
+                    -20px 0 80px rgba(0,150,255,0.8);
+        transform: translateY(-50%) scale(1.08);
+        background: linear-gradient(135deg, #00ffff 0%, #00ddff 100%);
+    }
+}
+
+/* Animação de entrada para chamar atenção */
+@keyframes slide-in-bounce {
+    0% {
+        right: -100px;
+        opacity: 0;
+    }
+    60% {
+        right: 10px;
+        opacity: 1;
+    }
+    80% {
+        right: -5px;
+    }
+    100% {
+        right: 0px;
+        opacity: 1;
+    }
+}
+
+/* Garantir que a aba SEMPRE seja visível */
+.quick-access-tab-ultimate,
+#quick-access-tab-main {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    right: 0px !important;
+    z-index: 99999 !important;
+    
+    /* Animação de entrada na primeira vez */
+    animation: slide-in-bounce 0.8s ease-out, pulse-glow 2s infinite 0.8s !important;
+}
+
+/* Hover effect para feedback visual */
+.quick-access-tab-ultimate:hover,
+#quick-access-tab-main:hover {
+    transform: translateY(-50%) translateX(-8px) scale(1.1) !important;
+    box-shadow: -15px 0 60px rgba(0,255,255,1) !important;
+    background: linear-gradient(135deg, #00ffff 0%, #00ff00 100%) !important;
+}
+
+/* Active state */
+.quick-access-tab-ultimate:active,
+#quick-access-tab-main:active {
+    transform: translateY(-50%) translateX(-2px) scale(0.95) !important;
+}
+
+/* Garantir que NADA oculte a aba */
+body .quick-access-tab-ultimate,
+body #quick-access-tab-main {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Remover qualquer transform que possa esconder */
+.quick-access-tab-ultimate:not(:hover),
+#quick-access-tab-main:not(:hover) {
+    transform: translateY(-50%) !important;
+}
+
+/* Media query para telas menores */
+@media (max-width: 768px) {
+    .quick-access-tab-ultimate,
+    #quick-access-tab-main {
+        width: 50px !important;
+        height: 100px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Fallback para garantir visibilidade mesmo com CSS conflicts */
+div[id="quick-access-tab-main"] {
+    position: fixed !important;
+    right: 0px !important;
+    top: 50% !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 99999 !important;
+}
+
+/* Indicador visual de que está carregando */
+.quick-access-loading {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #00ffff;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 100000;
+    animation: pulse-glow 1s infinite;
+}
+
+/* Menu lateral quando aberto */
+#kc-side-menu.open {
+    right: 0px !important;
+    animation: slide-in-bounce 0.3s ease-out !important;
+}
+
+/* Garantir que botões do menu sejam clicáveis */
+#kc-side-menu button {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+}
+
+/* Adicionar indicador de foco para acessibilidade */
+.quick-access-tab-ultimate:focus,
+#quick-access-tab-main:focus {
+    outline: 3px solid #00ff00 !important;
+    outline-offset: 3px !important;
+}
+
+/* Print para debug - remove em produção */
+@media print {
+    .quick-access-tab-ultimate,
+    #quick-access-tab-main {
+        display: none !important;
+    }
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificar Mudanças</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .check {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { 
+            color: green; 
+            font-weight: bold;
+        }
+        .error { 
+            color: red; 
+            font-weight: bold;
+        }
+        .info {
+            color: blue;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Verificação das Correções</h1>
+    
+    <div class="check">
+        <h2>1. Verificar Zoom</h2>
+        <button onclick="checkZoom()">Verificar Zoom</button>
+        <div id="zoom-result"></div>
+    </div>
+    
+    <div class="check">
+        <h2>2. Verificar PowerUserFeatures</h2>
+        <button onclick="checkPowerUser()">Verificar PowerUser</button>
+        <div id="power-result"></div>
+    </div>
+    
+    <div class="check">
+        <h2>3. Verificar QuickAccessMenu</h2>
+        <button onclick="checkQuickAccess()">Verificar Menu</button>
+        <div id="menu-result"></div>
+    </div>
+    
+    <div class="check">
+        <h2>4. Forçar Recarga</h2>
+        <button onclick="forceReload()">Recarregar Sem Cache</button>
+    </div>
+    
+    <script>
+        function checkZoom() {
+            const result = document.getElementById('zoom-result');
+            const computedStyle = window.getComputedStyle(document.documentElement);
+            const zoomLevel = computedStyle.getPropertyValue('--zoom-level');
+            
+            if (zoomLevel && zoomLevel.trim() === '1.0') {
+                result.innerHTML = '<span class="success">✅ Zoom está correto: 1.0 (100%)</span>';
+            } else {
+                result.innerHTML = `<span class="error">❌ Zoom incorreto: ${zoomLevel || 'não definido'}</span>`;
+            }
+            
+            // Verificar zoom real aplicado
+            const htmlZoom = window.getComputedStyle(document.documentElement).zoom;
+            result.innerHTML += `<br><span class="info">Zoom aplicado no HTML: ${htmlZoom || 'não definido'}</span>`;
+        }
+        
+        function checkPowerUser() {
+            const result = document.getElementById('power-result');
+            
+            if (window.opener && window.opener.KC) {
+                if (window.opener.KC.PowerUserFeatures) {
+                    result.innerHTML = '<span class="success">✅ PowerUserFeatures está disponível!</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ PowerUserFeatures NÃO está em KC</span>';
+                }
+            } else {
+                result.innerHTML = '<span class="info">ℹ️ Abra esta página a partir do index.html para testar</span>';
+                
+                // Tentar verificar diretamente
+                if (window.KC && window.KC.PowerUserFeatures) {
+                    result.innerHTML += '<br><span class="success">✅ PowerUserFeatures encontrado localmente</span>';
+                }
+            }
+        }
+        
+        function checkQuickAccess() {
+            const result = document.getElementById('menu-result');
+            
+            // Verificar se a aba existe
+            const tab = document.querySelector('.quick-access-tab');
+            const menu = document.querySelector('#kc-side-menu');
+            
+            let status = '';
+            
+            if (tab) {
+                const tabStyle = window.getComputedStyle(tab);
+                const position = tabStyle.position;
+                const right = tabStyle.right;
+                
+                if (position === 'fixed' && right === '0px') {
+                    status += '<span class="success">✅ Aba está visível e posicionada corretamente</span><br>';
+                } else {
+                    status += `<span class="error">❌ Aba mal posicionada: position=${position}, right=${right}</span><br>`;
+                }
+            } else {
+                status += '<span class="error">❌ Aba não encontrada</span><br>';
+            }
+            
+            if (menu) {
+                status += '<span class="success">✅ Menu existe</span>';
+            } else {
+                status += '<span class="error">❌ Menu não encontrado</span>';
+            }
+            
+            result.innerHTML = status;
+        }
+        
+        function forceReload() {
+            if (window.opener) {
+                window.opener.location.reload(true);
+                alert('Página principal recarregada sem cache!');
+            } else {
+                window.location.href = 'index.html?' + Date.now();
+            }
+        }
+        
+        // Verificar automaticamente ao carregar
+        window.onload = function() {
+            setTimeout(() => {
+                checkZoom();
+                checkPowerUser();
+                checkQuickAccess();
+            }, 500);
+        }
+    </script>
+</body>
+</html>
