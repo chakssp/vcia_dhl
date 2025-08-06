@@ -76,7 +76,13 @@ status/
 .vscode/
 .claude/
 analise-prd.md
-docs/export-schema-intelligence.md
+
+# Documentation (PRIVATE - Contains strategic information)
+docs/
+!docs/lessons-learned/
+# Permitir apenas a pasta lessons-learned ser commitada
+# Toda documentação estratégica fica privada
+
 .space/
 .devcontainer/
 
