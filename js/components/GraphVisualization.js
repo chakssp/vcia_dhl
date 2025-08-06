@@ -393,9 +393,75 @@
          * Exporta o grafo como JSON
          */
         exportGraph() {
+            // Função auxiliar para limpar referências circulares
+            const cleanForExport = (obj) => {
+                const seen = new WeakSet();
+                return JSON.parse(JSON.stringify(obj, (key, value) => {
+                    // Ignorar funções e elementos DOM
+                    if (typeof value === 'function' || value instanceof HTMLElement) {
+                        return undefined;
+                    }
+                    
+                    // Detectar referências circulares
+                    if (typeof value === 'object' && value !== null) {
+                        if (seen.has(value)) {
+                            return '[Referência Circular Removida]';
+                        }
+                        seen.add(value);
+                        
+                        // Remover propriedades problemáticas conhecidas
+                        if (value.analysisDisplay?.relatedFiles) {
+                            const cleaned = { ...value };
+                            cleaned.analysisDisplay = { ...value.analysisDisplay };
+                            delete cleaned.analysisDisplay.relatedFiles;
+                            return cleaned;
+                        }
+                        
+                        // Limpar arrays com propriedade 'file'
+                        if (Array.isArray(value)) {
+                            return value.map(item => {
+                                if (item?.file && typeof item === 'object') {
+                                    const { file, ...rest } = item;
+                                    return rest;
+                                }
+                                return item;
+                            });
+                        }
+                    }
+                    return value;
+                }));
+            };
+            
+            // Limpar nodes e edges antes de exportar
+            const cleanNodes = this.nodes.get().map(node => {
+                const clean = { ...node };
+                // Remover propriedades internas do vis.js
+                delete clean._callbacks;
+                delete clean._data;
+                delete clean.ctxRenderer;
+                delete clean.boundingBox;
+                delete clean.options;
+                
+                // Limpar data aninhado se existir
+                if (clean.data && typeof clean.data === 'object') {
+                    clean.data = cleanForExport(clean.data);
+                }
+                
+                return clean;
+            });
+            
+            const cleanEdges = this.edges.get().map(edge => {
+                const clean = { ...edge };
+                // Remover propriedades internas
+                delete clean._callbacks;
+                delete clean._data;
+                delete clean.ctxRenderer;
+                return clean;
+            });
+            
             const data = {
-                nodes: this.nodes.get(),
-                edges: this.edges.get(),
+                nodes: cleanNodes,
+                edges: cleanEdges,
                 metadata: {
                     exportDate: new Date().toISOString(),
                     nodeCount: this.nodes.length,
@@ -403,7 +469,17 @@
                 }
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            // Tentar serializar com tratamento de erro
+            let jsonString;
+            try {
+                jsonString = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.warn('Primeira tentativa de serialização falhou, aplicando limpeza profunda...');
+                const safeData = cleanForExport(data);
+                jsonString = JSON.stringify(safeData, null, 2);
+            }
+            
+            const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

@@ -232,7 +232,7 @@
                         </div>
                     </div>
 
-                    <div id="graph-network" style="height: 600px; border: 1px solid #ddd; margin-top: 10px;"></div>
+                    <div id="graph-network" style="height: 600px; border: 1px solid #dee2e6; margin-top: 10px; background: #e9ecef;"></div>
                 </div>
 
                 <style>
@@ -242,11 +242,13 @@
                 .view-mode-selector {
                     margin: 10px 0;
                     padding: 10px;
-                    background: #f5f5f5;
+                    background: var(--bg-tertiary);
                     border-radius: 4px;
+                    border: 1px solid var(--border-light);
                 }
                 .view-mode-selector label {
                     margin-right: 20px;
+                    color: var(--text-primary);
                 }
                 .filter-row {
                     margin-bottom: 10px;
@@ -254,8 +256,9 @@
                 .analysis-type-filters {
                     margin: 10px 0;
                     padding: 10px;
-                    background: #f8f9fa;
+                    background: var(--bg-tertiary);
                     border-radius: 4px;
+                    border: 1px solid var(--border-light);
                 }
                 .analysis-type-filters h4 {
                     margin: 0 0 10px 0;
@@ -273,8 +276,20 @@
                 .cluster-stats {
                     margin-top: 10px;
                     padding: 10px;
-                    background: #f8f9fa;
+                    background: var(--bg-tertiary);
                     border-radius: 4px;
+                    border: 1px solid var(--border-light);
+                }
+                #graph-network {
+                    background: var(--bg-tertiary) !important;
+                }
+                #graph-network .vis-network {
+                    background: var(--bg-tertiary) !important;
+                }
+                /* Estilizar também o canvas do vis.js */
+                #graph-network canvas {
+                    background: var(--bg-tertiary) !important;
+                    background-color: var(--bg-tertiary) !important;
                 }
                 </style>
             `;
@@ -311,6 +326,14 @@
             
             this.network = new vis.Network(container, data, this.options);
             
+            // Aplicar estilos de background após a criação do network
+            this.applyCustomStyles();
+            
+            // Também aplicar após o network estar estabilizado
+            this.network.once("stabilizationIterationsDone", () => {
+                this.applyCustomStyles();
+            });
+            
             // Eventos
             this.network.on("click", (params) => {
                 if (params.nodes.length > 0) {
@@ -328,6 +351,63 @@
             });
             
             Logger.info('[GraphVisualizationV2] Rede inicializada');
+        }
+
+        /**
+         * Aplica estilos customizados aos elementos
+         */
+        applyCustomStyles() {
+            // REMOVER aplicação direta de cores - deixar CSS variables funcionarem
+            // As cores agora são controladas pelas variáveis CSS que mudam com dark/light mode
+            
+            // Apenas remover estilos inline que possam estar interferindo
+            const viewModeSelector = document.querySelector('.view-mode-selector');
+            if (viewModeSelector) {
+                viewModeSelector.style.removeProperty('background-color');
+                viewModeSelector.style.removeProperty('background');
+            }
+            
+            const analysisFilters = document.querySelector('.analysis-type-filters');
+            if (analysisFilters) {
+                analysisFilters.style.removeProperty('background-color');
+                analysisFilters.style.removeProperty('background');
+            }
+            
+            const clusterStats = document.querySelector('.cluster-stats');
+            if (clusterStats) {
+                clusterStats.style.removeProperty('background-color');
+                clusterStats.style.removeProperty('background');
+            }
+            
+            // Para o canvas, aplicar a variável CSS em vez de cor fixa
+            const graphNetwork = document.getElementById('graph-network');
+            if (graphNetwork) {
+                graphNetwork.style.backgroundColor = 'var(--bg-tertiary)';
+                
+                // Encontrar o canvas dentro do container
+                const canvas = graphNetwork.querySelector('canvas');
+                if (canvas) {
+                    canvas.style.backgroundColor = 'var(--bg-tertiary)';
+                }
+                
+                // Aplicar também na div vis-network se existir
+                const visNetwork = graphNetwork.querySelector('.vis-network');
+                if (visNetwork) {
+                    visNetwork.style.backgroundColor = 'var(--bg-tertiary)';
+                }
+            }
+            
+            // Aplicar após delay também com variável CSS
+            setTimeout(() => {
+                const canvas = document.querySelector('#graph-network canvas');
+                if (canvas) {
+                    canvas.style.backgroundColor = 'var(--bg-tertiary)';
+                }
+                const visNetworks = document.querySelectorAll('.vis-network');
+                visNetworks.forEach(vn => {
+                    vn.style.backgroundColor = 'var(--bg-tertiary)';
+                });
+            }, 100);
         }
 
         /**
@@ -394,6 +474,11 @@
             
             // Atualizar estatísticas
             this.updateStats();
+            
+            // Aplicar estilos customizados após carregar dados
+            setTimeout(() => {
+                this.applyCustomStyles();
+            }, 200);
         }
 
         /**
@@ -1765,6 +1850,73 @@
         exportGraph() {
             const densityStats = this.calculateDensityStats();
             
+            // Função para remover referências circulares
+            const cleanCircularReferences = (obj) => {
+                const seen = new WeakSet();
+                return JSON.parse(JSON.stringify(obj, (key, value) => {
+                    // Ignorar funções
+                    if (typeof value === 'function') {
+                        return undefined;
+                    }
+                    // Ignorar objetos DOM
+                    if (value instanceof HTMLElement) {
+                        return undefined;
+                    }
+                    // Detectar e remover referências circulares
+                    if (typeof value === 'object' && value !== null) {
+                        if (seen.has(value)) {
+                            return '[Circular Reference]';
+                        }
+                        seen.add(value);
+                        
+                        // Remover propriedades problemáticas conhecidas
+                        if (value.analysisDisplay && value.analysisDisplay.relatedFiles) {
+                            const cleaned = { ...value };
+                            if (cleaned.analysisDisplay) {
+                                cleaned.analysisDisplay = { ...cleaned.analysisDisplay };
+                                delete cleaned.analysisDisplay.relatedFiles;
+                            }
+                            return cleaned;
+                        }
+                        
+                        // Remover propriedade 'file' se ela existir em relatedFiles
+                        if (Array.isArray(value)) {
+                            return value.map(item => {
+                                if (item && typeof item === 'object' && item.file) {
+                                    const { file, ...rest } = item;
+                                    return rest;
+                                }
+                                return item;
+                            });
+                        }
+                    }
+                    return value;
+                }));
+            };
+            
+            // Limpar nodes e edges antes de exportar
+            const cleanNodes = this.nodes.get().map(node => {
+                const cleanNode = { ...node };
+                // Remover propriedades que podem causar circularidade
+                delete cleanNode._callbacks;
+                delete cleanNode._data;
+                delete cleanNode.ctxRenderer;
+                
+                // Limpar propriedades aninhadas
+                if (cleanNode.data) {
+                    cleanNode.data = cleanCircularReferences(cleanNode.data);
+                }
+                
+                return cleanNode;
+            });
+            
+            const cleanEdges = this.edges.get().map(edge => {
+                const cleanEdge = { ...edge };
+                delete cleanEdge._callbacks;
+                delete cleanEdge._data;
+                return cleanEdge;
+            });
+            
             const data = {
                 metadata: {
                     exportDate: new Date().toISOString(),
@@ -1774,8 +1926,8 @@
                     entityCount: this.entityMap.size,
                     densityStats: densityStats
                 },
-                nodes: this.nodes.get(),
-                edges: this.edges.get(),
+                nodes: cleanNodes,
+                edges: cleanEdges,
                 entities: Array.from(this.entityMap.entries()).map(([name, data]) => ({
                     name,
                     fileCount: data.files.size,
@@ -1784,7 +1936,17 @@
                 }))
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            // Usar stringify seguro com detecção de circular
+            let jsonString;
+            try {
+                jsonString = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.warn('Primeira tentativa falhou, usando limpeza profunda...');
+                const safeData = cleanCircularReferences(data);
+                jsonString = JSON.stringify(safeData, null, 2);
+            }
+            
+            const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;

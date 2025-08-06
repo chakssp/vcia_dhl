@@ -184,9 +184,16 @@ class QdrantManager {
                         this.stats.duplicatesFound++;
                         return {
                             isDuplicate: true,
-                            existingPoint: point,
+                            existingPoint: point,  // RETORNA PONTO COMPLETO
                             existingId: point.id,
-                            similarity: 1.0
+                            similarity: 1.0,
+                            // Adicionar resumo para facilitar debug
+                            summary: {
+                                version: point.payload?.version || 1,
+                                enrichmentLevel: point.payload?.enrichmentLevel || 0,
+                                categories: point.payload?.categories || [],
+                                analysisType: point.payload?.analysisType
+                            }
                         };
                     }
                 }
@@ -215,9 +222,17 @@ class QdrantManager {
                 console.log(`Duplicata de conteúdo encontrada: ${filePath} é duplicata de ${firstMatch.payload?.filePath}`);
                 return {
                     isDuplicate: true,
-                    existingPoint: firstMatch,
+                    existingPoint: firstMatch,  // RETORNA PONTO COMPLETO
                     existingId: firstMatch.id,
-                    similarity: 0.9 // Menor similaridade pois é só o conteúdo
+                    similarity: 0.9, // Menor similaridade pois é só o conteúdo
+                    // Adicionar resumo para facilitar debug
+                    summary: {
+                        version: firstMatch.payload?.version || 1,
+                        enrichmentLevel: firstMatch.payload?.enrichmentLevel || 0,
+                        categories: firstMatch.payload?.categories || [],
+                        analysisType: firstMatch.payload?.analysisType,
+                        note: 'Mesmo conteúdo, caminho diferente'
+                    }
                 };
             }
             
@@ -419,38 +434,53 @@ class QdrantManager {
      */
     async mergeWithExisting(existingPoint, newData, options = {}) {
         try {
+            // CAMPOS QUE NUNCA DEVEM VIR DO DISCOVERY - São gerenciados apenas pelo Qdrant
+            const qdrantOnlyFields = [
+                'id', 'version', 'contentHash', 'insertedAt',
+                'enrichmentLevel', 'lastEnriched', 'mergeCount',
+                'lastMerged', 'keywords', 'sentiment',
+                'decisiveMoment', 'breakthrough', 'confidenceScore',
+                'expertiseLevel', 'questionTypes'
+            ];
+            
             const mergedPayload = {};
             
-            // Mesclar campos - priorizar dados novos para campos vazios
-            for (const [key, value] of Object.entries(existingPoint.payload)) {
-                if (value === null || value === '' || 
-                    (Array.isArray(value) && value.length === 0)) {
-                    // Campo vazio - usar novo valor se disponível
-                    mergedPayload[key] = newData[key] || value;
-                } else {
-                    // Campo preenchido - manter existente ou mesclar arrays
-                    if (Array.isArray(value) && Array.isArray(newData[key])) {
-                        // Mesclar arrays removendo duplicatas
-                        mergedPayload[key] = [...new Set([...value, ...newData[key]])];
-                    } else {
-                        // Manter valor existente (pode adicionar lógica customizada)
-                        mergedPayload[key] = value;
-                    }
-                }
-            }
+            // 1. COMEÇAR COM TODOS OS DADOS DO QDRANT
+            Object.assign(mergedPayload, existingPoint.payload);
             
-            // Adicionar novos campos que não existiam
+            // 2. ATUALIZAR APENAS CAMPOS PERMITIDOS DO DISCOVERY
             for (const [key, value] of Object.entries(newData)) {
-                if (!(key in mergedPayload)) {
+                // Skip campos que são gerenciados apenas pelo Qdrant
+                if (qdrantOnlyFields.includes(key)) {
+                    console.log(`Campo '${key}' é gerenciado pelo Qdrant, preservando valor original`);
+                    continue;
+                }
+                
+                // Aplicar lógica de merge para campos permitidos
+                const existingValue = existingPoint.payload[key];
+                
+                if (existingValue === null || existingValue === undefined || existingValue === '') {
+                    // Campo vazio no Qdrant - usar novo valor
+                    mergedPayload[key] = value;
+                } else if (Array.isArray(existingValue) && Array.isArray(value)) {
+                    // Mesclar arrays removendo duplicatas (ex: categories)
+                    mergedPayload[key] = [...new Set([...existingValue, ...value])];
+                    console.log(`Array '${key}' mesclado: ${mergedPayload[key].length} itens únicos`);
+                } else if (value !== undefined && value !== null && value !== '') {
+                    // Atualizar com novo valor se não vazio
                     mergedPayload[key] = value;
                 }
             }
             
-            // Atualizar metadados
+            // 3. ATUALIZAR METADADOS DE CONTROLE (sempre do Qdrant)
+            mergedPayload.version = (mergedPayload.version || 0) + 1;
+            mergedPayload.lastModified = new Date().toISOString();
             mergedPayload.lastMerged = new Date().toISOString();
-            mergedPayload.mergeCount = (existingPoint.payload.mergeCount || 0) + 1;
+            mergedPayload.mergeCount = (mergedPayload.mergeCount || 0) + 1;
             
-            // Atualizar no Qdrant
+            console.log(`Merge concluído - Versão ${mergedPayload.version}, ${Object.keys(newData).length} campos processados`);
+            
+            // 4. EXECUTAR UPDATE
             return await this.updateExistingPoint(
                 existingPoint.id,
                 mergedPayload,

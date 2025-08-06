@@ -222,11 +222,11 @@
                         <p>Processa arquivos aprovados gerando embeddings e inserindo no Qdrant.</p>
                         
                         <!-- Toggle de Enriquecimento -->
-                        <div class="enrichment-toggle" style="margin: 15px 0; padding: 10px; background: #f0f7ff; border-radius: 5px;">
+                        <div class="enrichment-toggle" style="margin: 15px 0; padding: 10px; background: var(--bg-tertiary); border-radius: 5px; border: 1px solid var(--border-light);">
                             <label style="display: flex; align-items: center; cursor: pointer;">
                                 <input type="checkbox" id="enable-enrichment" checked style="margin-right: 10px;">
-                                <span style="font-weight: 500;">🧠 Habilitar Análise de Inteligência</span>
-                                <small style="margin-left: 10px; color: #666;">(Detecta convergências e insights)</small>
+                                <span style="font-weight: 500; color: var(--text-primary);">🧠 Habilitar Análise de Inteligência</span>
+                                <small style="margin-left: 10px; color: var(--text-secondary);">(Detecta convergências e insights)</small>
                             </label>
                         </div>
                         
@@ -794,8 +794,8 @@
                         let enrichmentInfo = '';
                         if (result.results.enrichmentStats) {
                             enrichmentInfo = `
-                                <div class="enrichment-results" style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 5px;">
-                                    <h5>🧠 Análise de Inteligência</h5>
+                                <div class="enrichment-results" style="margin-top: 15px; padding: 10px; background: var(--bg-tertiary); border-radius: 5px; border: 1px solid var(--border-light);">
+                                    <h5 style="color: var(--text-primary);">🧠 Análise de Inteligência</h5>
                                     <ul style="margin: 5px 0;">
                                         <li>Cadeias de convergência: ${result.results.enrichmentStats.chainsFound || 0}</li>
                                         <li>Insights gerados: ${result.results.enrichmentStats.insightsGenerated || 0}</li>

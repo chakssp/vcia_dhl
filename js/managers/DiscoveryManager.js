@@ -1772,6 +1772,170 @@
                 startTime: this.stats.startTime
             });
         }
+
+        /**
+         * Enriquece arquivos com dados do Qdrant
+         * Verifica cada arquivo no Qdrant e adiciona metadados se já existir
+         * @param {Array} files - Arquivos descobertos
+         * @returns {Object} Estatísticas do enriquecimento
+         */
+        async enrichFilesWithQdrantData(files) {
+            console.log(`Verificando ${files.length} arquivos no Qdrant...`);
+            
+            const enrichmentStats = {
+                enriched: 0,
+                new: 0,
+                errors: 0
+            };
+            
+            // Verificar se QdrantManager está disponível
+            if (!KC.QdrantManager) {
+                console.warn('QdrantManager não disponível, pulando enriquecimento');
+                return enrichmentStats;
+            }
+            
+            // Garantir que QdrantManager está inicializado
+            if (!KC.QdrantManager.initialized) {
+                await KC.QdrantManager.initialize();
+            }
+            
+            for (const file of files) {
+                try {
+                    const qdrantCheck = await KC.QdrantManager.checkDuplicate(file);
+                    
+                    if (qdrantCheck.isDuplicate && qdrantCheck.existingPoint) {
+                        // Enriquecer com dados do Qdrant
+                        const payload = qdrantCheck.existingPoint.payload;
+                        
+                        // Adicionar campos de controle do Qdrant
+                        file.qdrantMetadata = {
+                            id: qdrantCheck.existingId,
+                            version: payload.version || 1,
+                            enrichmentLevel: payload.enrichmentLevel || 0,
+                            insertedAt: payload.insertedAt,
+                            lastModified: payload.lastModified,
+                            contentHash: payload.contentHash
+                        };
+                        
+                        // Preservar curadoria humana (categorias, aprovação, etc.)
+                        if (payload.categories && payload.categories.length > 0) {
+                            file.categories = payload.categories;
+                        }
+                        if (payload.approved !== undefined) {
+                            file.approved = payload.approved;
+                        }
+                        if (payload.analysisType) {
+                            file.analysisType = payload.analysisType;
+                        }
+                        
+                        // Marcar visualmente para o usuário
+                        file.isDuplicate = true;
+                        file.badgeText = `Qdrant v${payload.version || 1}`;
+                        file.badgeColor = payload.enrichmentLevel > 50 ? 'green' : 'yellow';
+                        
+                        enrichmentStats.enriched++;
+                        console.log(`Arquivo enriquecido: ${file.fileName} (v${payload.version}, ${payload.enrichmentLevel}% completo)`);
+                    } else {
+                        // Arquivo novo
+                        file.isNew = true;
+                        file.badgeText = 'Novo';
+                        file.badgeColor = 'blue';
+                        enrichmentStats.new++;
+                    }
+                } catch (error) {
+                    console.error(`Erro ao enriquecer ${file.fileName}:`, error);
+                    file.qdrantError = error.message;
+                    enrichmentStats.errors++;
+                }
+            }
+            
+            console.log('Enriquecimento completo:', enrichmentStats);
+            return enrichmentStats;
+        }
+
+        /**
+         * Processa arquivos descobertos com verificação Qdrant-First
+         * Este é o método principal que deve ser chamado após descoberta
+         * @param {Array} files - Arquivos descobertos pelo DiscoveryManager
+         * @returns {Array} Arquivos processados com metadados Qdrant
+         */
+        async processDiscoveredFiles(files) {
+            const processedFiles = [];
+            const stats = {
+                total: files.length,
+                new: 0,
+                duplicates: 0,
+                enrichedFromQdrant: 0
+            };
+            
+            console.log(`Processando ${files.length} arquivos com verificação Qdrant...`);
+            
+            // Verificar se QdrantManager está disponível
+            if (!KC.QdrantManager) {
+                console.warn('QdrantManager não disponível, retornando arquivos sem enriquecimento');
+                return files;
+            }
+            
+            // Garantir inicialização
+            if (!KC.QdrantManager.initialized) {
+                await KC.QdrantManager.initialize();
+            }
+            
+            // Processar cada arquivo
+            for (const file of files) {
+                // 1. VERIFICAR NO QDRANT
+                const qdrantCheck = await KC.QdrantManager.checkDuplicate(file);
+                
+                if (qdrantCheck.isDuplicate) {
+                    // 2. ARQUIVO JÁ EXISTE - ENRIQUECER COM DADOS DO QDRANT
+                    const qdrantData = qdrantCheck.existingPoint.payload;
+                    
+                    // Preservar campos importantes do Qdrant
+                    file.qdrantId = qdrantCheck.existingId;
+                    file.version = qdrantData.version;
+                    file.enrichmentLevel = qdrantData.enrichmentLevel;
+                    file.contentHash = qdrantData.contentHash;
+                    
+                    // Preservar curadoria humana
+                    file.categories = qdrantData.categories || file.categories || [];
+                    file.analysisType = qdrantData.analysisType;
+                    file.approved = qdrantData.approved;
+                    
+                    // Metadados para UI
+                    file.isDuplicate = true;
+                    file.badgeText = `Qdrant v${qdrantData.version}`;
+                    file.badgeColor = qdrantData.enrichmentLevel > 50 ? 'green' : 'yellow';
+                    file.tooltip = `${qdrantData.enrichmentLevel}% enriquecido, ${qdrantData.categories?.length || 0} categorias`;
+                    
+                    stats.duplicates++;
+                    stats.enrichedFromQdrant++;
+                    
+                } else {
+                    // 3. ARQUIVO NOVO
+                    file.isNew = true;
+                    file.badgeText = 'Novo';
+                    file.badgeColor = 'blue';
+                    file.tooltip = 'Arquivo ainda não processado';
+                    stats.new++;
+                }
+                
+                processedFiles.push(file);
+            }
+            
+            // 4. EMITIR EVENTO PARA UI
+            KC.EventBus.emit('DISCOVERY_QDRANT_COMPLETE', {
+                files: processedFiles,
+                stats: stats
+            });
+            
+            // 5. LOG PARA USUÁRIO
+            console.log(`Discovery com Qdrant completo:`);
+            console.log(`- ${stats.new} arquivos novos`);
+            console.log(`- ${stats.duplicates} já existem no Qdrant`);
+            console.log(`- ${stats.enrichedFromQdrant} enriquecidos com dados do Qdrant`);
+            
+            return processedFiles;
+        }
     }
 
     // Cria instância singleton

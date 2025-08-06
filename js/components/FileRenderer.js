@@ -617,6 +617,7 @@
                             ${this.escapeHtml(file.name)}
                             ${file.isDuplicate ? '<span class="duplicate-badge" title="Duplicata detectada">🔄</span>' : ''}
                             ${file.isPrimaryDuplicate ? '<span class="primary-badge" title="Arquivo principal">✓</span>' : ''}
+                            ${this.renderQdrantBadge(file)}
                         </div>
                         <div class="file-path">${this.escapeHtml(file.relativePath || file.path || '')}</div>
                         <div class="file-preview">${this.escapeHtml(preview)}</div>
@@ -2169,6 +2170,77 @@
                     ${source === 'qdrant' ? '<span class="confidence-source-badge">AI</span>' : ''}
                 </div>
             `;
+        }
+
+        /**
+         * Renderiza badge do Qdrant mostrando status do arquivo
+         */
+        renderQdrantBadge(file) {
+            // Verifica se há metadados do Qdrant
+            if (!file.qdrantMetadata && !file.badgeText) {
+                return '';
+            }
+
+            // Usa badgeText e badgeColor se disponíveis (definidos pelo processamento)
+            if (file.badgeText && file.badgeColor) {
+                const tooltip = file.tooltip || 
+                    (file.qdrantMetadata ? 
+                        `Versão ${file.qdrantMetadata.version || 1}, ${file.qdrantMetadata.enrichmentLevel || 0}% enriquecido` : 
+                        '');
+                
+                return `
+                    <span class="qdrant-badge" 
+                          style="background-color: ${file.badgeColor}; 
+                                 color: white; 
+                                 padding: 2px 8px; 
+                                 border-radius: 12px; 
+                                 font-size: 0.75rem; 
+                                 margin-left: 8px;
+                                 font-weight: 500;" 
+                          title="${tooltip}">
+                        ${file.badgeText}
+                    </span>
+                `;
+            }
+
+            // Se tem metadados do Qdrant, cria badge baseado neles
+            if (file.qdrantMetadata) {
+                const meta = file.qdrantMetadata;
+                const version = meta.version || 1;
+                const enrichmentLevel = meta.enrichmentLevel || 0;
+                
+                // Define cor baseada no nível de enriquecimento
+                let badgeColor = '#6b7280'; // gray por padrão
+                if (enrichmentLevel >= 80) {
+                    badgeColor = '#16a34a'; // green
+                } else if (enrichmentLevel >= 50) {
+                    badgeColor = '#eab308'; // yellow
+                } else if (enrichmentLevel >= 20) {
+                    badgeColor = '#ea580c'; // orange
+                }
+                
+                const tooltip = `ID: ${meta.id}
+Versão: ${version}
+Enriquecimento: ${enrichmentLevel}%
+Inserido: ${meta.insertedAt ? new Date(meta.insertedAt).toLocaleDateString() : 'N/A'}
+Modificado: ${meta.lastModified ? new Date(meta.lastModified).toLocaleDateString() : 'N/A'}`;
+                
+                return `
+                    <span class="qdrant-badge" 
+                          style="background-color: ${badgeColor}; 
+                                 color: white; 
+                                 padding: 2px 8px; 
+                                 border-radius: 12px; 
+                                 font-size: 0.75rem; 
+                                 margin-left: 8px;
+                                 font-weight: 500;" 
+                          title="${tooltip}">
+                        Qdrant v${version}
+                    </span>
+                `;
+            }
+
+            return '';
         }
 
         /**

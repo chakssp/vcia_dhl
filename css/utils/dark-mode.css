@@ -115,7 +115,7 @@ body.light-mode {
   /* === CORES DE BACKGROUND === */
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
-  --bg-tertiary: #f3f4f6;
+  --bg-tertiary: #e9ecef;
   --bg-dark: #111827;
   
   /* === CORES DE TEXTO === */
@@ -393,6 +393,7 @@ small,
 }
 
 /* Sobrescrever estilos inline em modais e divs */
+/* COMENTADO TEMPORARIAMENTE - Estava forçando todos os backgrounds específicos
 [style*="background: #f0f9ff"],
 [style*="background: #fef3c7"],
 [style*="background: #f3f4f6"],
@@ -402,6 +403,7 @@ small,
   background: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
 }
+*/
 
 /* Garantir contraste em divs com classes específicas */
 .obsidian-support,
@@ -667,6 +669,7 @@ input[type="reset"]:hover {
 }
 
 /* Garantir contraste em elementos com fundo inline */
+/* COMENTADO TEMPORARIAMENTE - Estava sobrescrevendo estilos específicos do GraphVisualization
 [style*="background: white"],
 [style*="background-color: white"],
 [style*="background: #fff"],
@@ -678,3 +681,4 @@ input[type="reset"]:hover {
   background-color: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
 }
+*/
