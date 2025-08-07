@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "99f118e2fa5b94fb",
+        "id": "95a44aa50d72d58a",
         "type": "tabs",
         "children": [
           {
-            "id": "6eeb9d56b64d24c5",
+            "id": "875a7c09e1096f52",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "enevr-protocol.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "enevr-protocol"
+              "title": "Nova aba"
             }
           }
         ]
@@ -168,44 +164,44 @@
       "command-palette:Abrir paleta de comandos": false
     }
   },
-  "active": "a0b6e01b9c36fc35",
+  "active": "875a7c09e1096f52",
   "lastOpenFiles": [
+    "rag-v1/README.md",
+    "intelligence-lab/ai_model/README.md",
+    "intelligence-lab/GUIA-VISUAL-INTERFACES.md",
+    "intelligence-lab/MAPA-COMPLETO-VISUALIZACOES.md",
+    "intelligence-lab/README.md",
+    "docs/week2-components-implementation.md",
+    "docs/STATUS-CORRECAO-CATEGORIAS-30-01-2025.md",
+    "docs/status-06082025-categoria-manager.md",
+    "docs/RESUME_ARCHIVE.md",
+    "docs/relatorio-qdrant-intelligence-30-01-2025.md",
+    "docs/refatoracao-unified-confidence-fluxo-corrigido.md",
+    "docs/plano-recuperacao-projeto-qdrant.md",
+    "docs/last-state.md",
+    "docs/intelligence-enrichment-fix-30-01-2025.md",
+    "docs/intelligence-enrichment-applications-30-01-2025.md",
+    "docs/INDICE-DOCUMENTACAO.md",
+    "docs/implementacao-integracao-obsidian-31072025.md",
+    "landing-enevr/RESUMO-EXECUTIVO.md",
+    "landing-enevr/RESUMO-EXECUTIVO.md.tmp.468.1754515824057",
+    "docs/fase1-export-schema-org-status.md",
+    "docs/fase1-export-schema-org-implementacao.md",
+    "docs/categories-preservation-fix-30-01-2025.md",
+    "docs/avanco-sessao-30-01-2025.md",
+    "docs/api-integration-report.md",
+    "docs/analise-prd.md",
+    "docs/analise-fluxo-arquivos-contexto.md",
+    "docs/analise-fluxo-analise-arquivos.md",
+    "landing-enevr/assets/graph-mock.html",
     "v2/js/views/DiscoveryView.js.tmp.7664.1754271497203",
     "v2/js/utils/FileUtils.js",
     "v2/index.html.tmp.7664.1754270889171",
     "v2/index.html.tmp.7664.1754270823514",
-    "v2/docs/CHECKPOINT-MIGRACAO-V2-04082025.md",
     "v2/css/filter-panel.css",
     "v2/js/components/FilterPanel.js",
     "v2/js/managers/FilterManager.js",
     "v2/index.html.tmp.7664.1754267805658",
-    "v2/js/services/FileSystemService.js",
-    "v2/js/services/FileSystemService.js.tmp.7664.1754261053249",
-    "v2/Multi-Agent Orchestration Template for KC V2 Migration.md",
-    "v2/Meth-NEVER/Wiki_Robot-Map vs Google_Pagerank-Relevance-Rich.md",
-    "v2/Meth-NEVER/The Semantic Convergence - Why 2000s Metadata is 2025s AI Gold.md",
-    "Captura de tela 2025-08-02 144421.png",
-    "v2/refactor-fase2.md",
-    "v2/_parallel_workspaces/agent-6-docs",
-    "v2/VALIDATION_CONVERGENCE_COMPLETE.md",
-    "v2/PARALLEL_VALIDATION_INDEX.md",
-    "v2/VALIDATION_SUMMARY.md",
-    "v2/TEST3_MEDIUM_ANALYSIS.md",
-    "v2/TEST3_HEAVY_ANALYSIS.md",
-    "v2/TEST2_ANALYSIS.md",
-    "v2/TEST1_ANALYSIS.md",
-    "v2/FINAL_VALIDATION_REPORT.md",
-    "v2/_parallel_validation/FINAL_VALIDATION_REPORT.md",
-    "v2/_parallel_validation/TEST3_HEAVY_ANALYSIS.md",
-    "v2/_parallel_tests/test-3-token/agent-1/system-docs-heavy.md",
-    "v2/_parallel_validation/TEST3_MEDIUM_ANALYSIS.md",
-    "v2/_parallel_tests/test-3-token/agent-1/docs-medium.md",
-    "v2/_parallel_tests/test-3-token/agent-2/README-light.md",
-    "v2/_parallel_validation/TEST2_ANALYSIS.md",
-    "v2/_parallel_validation/VALIDATION_SUMMARY.md",
-    "v2/_parallel_validation/TEST1_ANALYSIS.md",
-    "v2/_parallel_tests/test-1-read/agent-2/analysis.md",
-    "v2/_parallel_tests/test-1-read/agent-3/analysis.md",
-    "v2/_parallel_tests/test-1-read/agent-1/analysis.md"
+    "Captura de tela 2025-08-02 144421.png"
   ]
 }

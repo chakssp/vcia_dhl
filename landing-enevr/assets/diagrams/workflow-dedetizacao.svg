@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400">
+  <defs>
+    <linearGradient id="gradientBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563EB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradientOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FB923C;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EA580C;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="400" fill="#F9FAFB"/>
+  
+  <!-- Title -->
+  <text x="600" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1F2937">
+    Workflow Automatizado - Dedetização e Saúde Pública
+  </text>
+  
+  <!-- Step 1: Técnico no Local -->
+  <g transform="translate(100, 100)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="white" filter="url(#shadow)"/>
+    <circle cx="90" cy="40" r="25" fill="url(#gradientBlue)"/>
+    <text x="90" y="47" text-anchor="middle" fill="white" font-weight="bold" font-size="18">1</text>
+    <text x="90" y="80" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#1F2937">Técnico no Local</text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">Captura evidências</text>
+  </g>
+  
+  <!-- Arrow 1 -->
+  <path d="M 280 160 L 340 160" stroke="#FB923C" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="310" y="150" text-anchor="middle" font-family="Arial" font-size="11" fill="#FB923C">WhatsApp</text>
+  
+  <!-- Step 2: Recepção IA -->
+  <g transform="translate(340, 100)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="white" filter="url(#shadow)"/>
+    <circle cx="90" cy="40" r="25" fill="url(#gradientBlue)"/>
+    <text x="90" y="47" text-anchor="middle" fill="white" font-weight="bold" font-size="18">2</text>
+    <text x="90" y="80" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#1F2937">Recepção IA</text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">Processa e categoriza</text>
+  </g>
+  
+  <!-- Arrow 2 -->
+  <path d="M 520 160 L 580 160" stroke="#FB923C" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="550" y="150" text-anchor="middle" font-family="Arial" font-size="11" fill="#FB923C">N8N</text>
+  
+  <!-- Step 3: Geração Documento -->
+  <g transform="translate(580, 100)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="white" filter="url(#shadow)"/>
+    <circle cx="90" cy="40" r="25" fill="url(#gradientBlue)"/>
+    <text x="90" y="47" text-anchor="middle" fill="white" font-weight="bold" font-size="18">3</text>
+    <text x="90" y="80" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#1F2937">Gera Certificado</text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">Com evidências</text>
+  </g>
+  
+  <!-- Arrow 3 -->
+  <path d="M 760 160 L 820 160" stroke="#FB923C" stroke-width="3" fill="none" marker-end="url(#arrowhead)"/>
+  <text x="790" y="150" text-anchor="middle" font-family="Arial" font-size="11" fill="#FB923C">Automático</text>
+  
+  <!-- Step 4: Entrega Cliente -->
+  <g transform="translate(820, 100)">
+    <rect x="0" y="0" width="180" height="120" rx="10" fill="white" filter="url(#shadow)"/>
+    <circle cx="90" cy="40" r="25" fill="url(#gradientOrange)"/>
+    <text x="90" y="47" text-anchor="middle" fill="white" font-weight="bold" font-size="18">4</text>
+    <text x="90" y="80" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#1F2937">Entrega Instantânea</text>
+    <text x="90" y="100" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">Cliente + Órgão</text>
+  </g>
+  
+  <!-- Tech Stack Below -->
+  <g transform="translate(200, 280)">
+    <rect x="0" y="0" width="800" height="80" rx="10" fill="#EFF6FF" opacity="0.8"/>
+    <text x="400" y="30" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#1F2937">Tecnologias Utilizadas</text>
+    
+    <!-- Tech items -->
+    <text x="100" y="55" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">WhatsApp API</text>
+    <text x="250" y="55" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">4 LLMs</text>
+    <text x="400" y="55" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">Qdrant</text>
+    <text x="550" y="55" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">N8N</text>
+    <text x="700" y="55" text-anchor="middle" font-family="Arial" font-size="12" fill="#6B7280">PostgreSQL</text>
+  </g>
+  
+  <!-- Metrics -->
+  <g transform="translate(100, 250)">
+    <text x="0" y="0" font-family="Arial" font-size="16" font-weight="bold" fill="#10B981">3h → 15min</text>
+  </g>
+  
+  <!-- Arrow marker -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#FB923C"/>
+    </marker>
+  </defs>
+</svg>

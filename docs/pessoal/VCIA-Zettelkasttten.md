@@ -1,3 +1,4 @@
+
 ```mermaid
  graph TD
       KC[Knowledge Consolidator<br/>📦 PROJETO]

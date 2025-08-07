@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enevr - Visualização de Conhecimento</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.6/dist/vis-network.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #F0F9FF 0%, #FFF7ED 50%, #F0FDF4 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            color: #1F2937;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #6B7280;
+            font-size: 1.1rem;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #3B82F6, #FB923C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .controls {
+            background: white;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+        
+        .btn-orange {
+            background: linear-gradient(135deg, #FB923C, #EA580C);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        #graph-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        #mynetwork {
+            width: 100%;
+            height: 100%;
+            min-height: 600px;
+        }
+        
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .stats h3 {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #1F2937;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1F2937;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats, .legend {
+                display: none;
+            }
+            
+            #graph-container {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Central de <span class="highlight">Inteligência enevr</span></h1>
+        <p>Visualização em tempo real do seu conhecimento consolidado</p>
+    </div>
+    
+    <div class="controls">
+        <button class="btn btn-primary" onclick="changeView('vertical')">
+            🎯 Visão por Objetivo
+        </button>
+        <button class="btn btn-secondary" onclick="changeView('entity')">
+            🌐 Visão por Cliente
+        </button>
+        <button class="btn btn-orange" onclick="changeView('temporal')">
+            📈 Visão Temporal
+        </button>
+        <button class="btn btn-primary" onclick="animateInsight()">
+            ✨ Descobrir Insight
+        </button>
+    </div>
+    
+    <div id="graph-container">
+        <div class="stats">
+            <h3>Métricas em Tempo Real</h3>
+            <div class="stat-item">
+                <span>Clientes Mapeados:</span>
+                <span class="stat-value" id="clients">487</span>
+            </div>
+            <div class="stat-item">
+                <span>Oportunidades:</span>
+                <span class="stat-value" id="opportunities">23</span>
+            </div>
+            <div class="stat-item">
+                <span>Insights Gerados:</span>
+                <span class="stat-value" id="insights">156</span>
+            </div>
+            <div class="stat-item">
+                <span>Taxa de Conversão:</span>
+                <span class="stat-value" id="conversion">73%</span>
+            </div>
+        </div>
+        
+        <div id="mynetwork"></div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3B82F6;"></div>
+                <span>Vendas Fechadas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FB923C;"></div>
+                <span>Em Negociação</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10B981;"></div>
+                <span>Oportunidade Detectada</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8B5CF6;"></div>
+                <span>Cliente VIP</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Dados mockados inspirados no GraphVisualizationV2
+        const mockData = {
+            vertical: {
+                nodes: [
+                    // Centro - Tipos de Análise de Vendas
+                    {id: 'vendas', label: 'Vendas\nR$ 2.4M', color: '#3B82F6', size: 50, shape: 'hexagon', font: {size: 18, color: '#fff'}},
+                    {id: 'prospecção', label: 'Prospecção\n156 leads', color: '#FB923C', size: 40, shape: 'hexagon', font: {size: 16, color: '#fff'}},
+                    {id: 'pós-venda', label: 'Pós-Venda\n97% satisfação', color: '#10B981', size: 40, shape: 'hexagon', font: {size: 16, color: '#fff'}},
+                    
+                    // Categorias
+                    {id: 'cat-saude', label: 'Saúde Pública', color: '#94A3B8', size: 30, shape: 'square'},
+                    {id: 'cat-dedet', label: 'Dedetização', color: '#94A3B8', size: 30, shape: 'square'},
+                    {id: 'cat-consultoria', label: 'Consultoria', color: '#94A3B8', size: 30, shape: 'square'},
+                    
+                    // Clientes importantes
+                    {id: 'cli-1', label: 'DedetClean', color: '#8B5CF6', size: 25, shape: 'star'},
+                    {id: 'cli-2', label: 'Prefeitura SP', color: '#8B5CF6', size: 25, shape: 'star'},
+                    {id: 'cli-3', label: 'Hospital Central', color: '#8B5CF6', size: 25, shape: 'star'},
+                    
+                    // Oportunidades
+                    {id: 'op-1', label: 'Contrato Anual\nR$ 450k', color: '#FCD34D', size: 20, shape: 'diamond'},
+                    {id: 'op-2', label: 'Expansão\nR$ 200k', color: '#FCD34D', size: 20, shape: 'diamond'},
+                    {id: 'op-3', label: 'Renovação\nR$ 180k', color: '#FCD34D', size: 20, shape: 'diamond'},
+                ],
+                edges: [
+                    // Conexões principais
+                    {from: 'vendas', to: 'cat-saude', width: 4, color: '#3B82F6'},
+                    {from: 'vendas', to: 'cat-dedet', width: 4, color: '#3B82F6'},
+                    {from: 'prospecção', to: 'cat-consultoria', width: 3, color: '#FB923C'},
+                    {from: 'pós-venda', to: 'cli-1', width: 3, color: '#10B981'},
+                    
+                    // Conexões de clientes
+                    {from: 'cat-saude', to: 'cli-2', width: 2},
+                    {from: 'cat-saude', to: 'cli-3', width: 2},
+                    {from: 'cat-dedet', to: 'cli-1', width: 2},
+                    
+                    // Oportunidades
+                    {from: 'cli-1', to: 'op-1', width: 2, dashes: true, color: '#FCD34D'},
+                    {from: 'cli-2', to: 'op-2', width: 2, dashes: true, color: '#FCD34D'},
+                    {from: 'cli-3', to: 'op-3', width: 2, dashes: true, color: '#FCD34D'},
+                ]
+            },
+            entity: {
+                nodes: [
+                    // Cliente central
+                    {id: 'dedetclean', label: 'DedetClean\nCliente VIP', color: '#8B5CF6', size: 60, shape: 'star', font: {size: 20, color: '#fff'}},
+                    
+                    // Histórico
+                    {id: 'hist-1', label: '2023\n50 atendimentos', color: '#94A3B8', size: 25, shape: 'circle'},
+                    {id: 'hist-2', label: '2024\n200 atendimentos', color: '#6366F1', size: 30, shape: 'circle'},
+                    {id: 'hist-3', label: '2025\n500 atendimentos', color: '#3B82F6', size: 35, shape: 'circle'},
+                    
+                    // Serviços
+                    {id: 'serv-1', label: 'WhatsApp\nAutomático', color: '#10B981', size: 30, shape: 'square'},
+                    {id: 'serv-2', label: 'Documentação\nAutomática', color: '#10B981', size: 30, shape: 'square'},
+                    {id: 'serv-3', label: 'Agendamento\nInteligente', color: '#10B981', size: 30, shape: 'square'},
+                    
+                    // Resultados
+                    {id: 'res-1', label: '10x\nCrescimento', color: '#FCD34D', size: 25, shape: 'diamond'},
+                    {id: 'res-2', label: 'R$ 45k\nEconomia/mês', color: '#FCD34D', size: 25, shape: 'diamond'},
+                    {id: 'res-3', label: '97%\nSatisfação', color: '#FCD34D', size: 25, shape: 'diamond'},
+                ],
+                edges: [
+                    // Timeline
+                    {from: 'dedetclean', to: 'hist-1', width: 2, label: '2023'},
+                    {from: 'dedetclean', to: 'hist-2', width: 3, label: '2024'},
+                    {from: 'dedetclean', to: 'hist-3', width: 4, label: '2025'},
+                    
+                    // Serviços
+                    {from: 'dedetclean', to: 'serv-1', width: 3, color: '#10B981'},
+                    {from: 'dedetclean', to: 'serv-2', width: 3, color: '#10B981'},
+                    {from: 'dedetclean', to: 'serv-3', width: 3, color: '#10B981'},
+                    
+                    // Resultados
+                    {from: 'serv-1', to: 'res-1', width: 2, dashes: true, color: '#FCD34D'},
+                    {from: 'serv-2', to: 'res-2', width: 2, dashes: true, color: '#FCD34D'},
+                    {from: 'serv-3', to: 'res-3', width: 2, dashes: true, color: '#FCD34D'},
+                ]
+            },
+            temporal: {
+                nodes: [
+                    // Meses
+                    {id: 'jan', label: 'Janeiro\n45 vendas', x: -400, y: 0, color: '#94A3B8', size: 30},
+                    {id: 'fev', label: 'Fevereiro\n52 vendas', x: -200, y: 0, color: '#94A3B8', size: 35},
+                    {id: 'mar', label: 'Março\n78 vendas', x: 0, y: 0, color: '#6366F1', size: 40},
+                    {id: 'abr', label: 'Abril\n125 vendas', x: 200, y: 0, color: '#3B82F6', size: 45},
+                    {id: 'mai', label: 'Maio\n198 vendas', x: 400, y: 0, color: '#10B981', size: 50},
+                    
+                    // Eventos importantes
+                    {id: 'evt-1', label: 'Campanha\nWhatsApp', x: -200, y: -150, color: '#FB923C', size: 25, shape: 'diamond'},
+                    {id: 'evt-2', label: 'Automação\nImplementada', x: 0, y: -150, color: '#FB923C', size: 25, shape: 'diamond'},
+                    {id: 'evt-3', label: 'IA\nAtivada', x: 200, y: -150, color: '#FB923C', size: 25, shape: 'diamond'},
+                    
+                    // Insights
+                    {id: 'ins-1', label: 'Padrão:\nPico às 14h', x: -100, y: 150, color: '#8B5CF6', size: 20, shape: 'star'},
+                    {id: 'ins-2', label: 'Descoberta:\n30% conversão', x: 100, y: 150, color: '#8B5CF6', size: 20, shape: 'star'},
+                    {id: 'ins-3', label: 'Previsão:\n+40% próximo mês', x: 300, y: 150, color: '#FCD34D', size: 25, shape: 'star'},
+                ],
+                edges: [
+                    // Timeline
+                    {from: 'jan', to: 'fev', width: 3, arrows: 'to'},
+                    {from: 'fev', to: 'mar', width: 3, arrows: 'to'},
+                    {from: 'mar', to: 'abr', width: 4, arrows: 'to'},
+                    {from: 'abr', to: 'mai', width: 5, arrows: 'to'},
+                    
+                    // Eventos
+                    {from: 'evt-1', to: 'fev', width: 2, dashes: true, color: '#FB923C'},
+                    {from: 'evt-2', to: 'mar', width: 2, dashes: true, color: '#FB923C'},
+                    {from: 'evt-3', to: 'abr', width: 2, dashes: true, color: '#FB923C'},
+                    
+                    // Insights
+                    {from: 'mar', to: 'ins-1', width: 2, color: '#8B5CF6'},
+                    {from: 'abr', to: 'ins-2', width: 2, color: '#8B5CF6'},
+                    {from: 'mai', to: 'ins-3', width: 3, color: '#FCD34D'},
+                ]
+            }
+        };
+        
+        let network;
+        let currentView = 'vertical';
+        
+        // Configurações do vis.js
+        const options = {
+            nodes: {
+                borderWidth: 2,
+                shadow: true,
+                font: {
+                    size: 14,
+                    color: '#1F2937'
+                }
+            },
+            edges: {
+                width: 2,
+                smooth: {
+                    type: 'continuous'
+                },
+                color: {
+                    inherit: 'from'
+                }
+            },
+            physics: {
+                enabled: true,
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springLength: 150,
+                    springConstant: 0.08,
+                    damping: 0.4
+                },
+                solver: 'forceAtlas2Based'
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 300,
+                zoomView: true,
+                dragView: true
+            }
+        };
+        
+        // Inicializar rede
+        function initNetwork() {
+            const container = document.getElementById('mynetwork');
+            const data = {
+                nodes: new vis.DataSet(mockData[currentView].nodes),
+                edges: new vis.DataSet(mockData[currentView].edges)
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Eventos
+            network.on("click", function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const node = data.nodes.get(nodeId);
+                    showNotification(`${node.label} - Clique para ver detalhes completos`);
+                }
+            });
+            
+            network.on("doubleClick", function(params) {
+                if (params.nodes.length > 0) {
+                    animateInsight();
+                }
+            });
+        }
+        
+        // Mudar visualização
+        function changeView(view) {
+            currentView = view;
+            const data = {
+                nodes: new vis.DataSet(mockData[view].nodes),
+                edges: new vis.DataSet(mockData[view].edges)
+            };
+            network.setData(data);
+            
+            // Atualizar métricas
+            updateStats(view);
+            
+            const messages = {
+                vertical: 'Visualização por Objetivo de Negócio',
+                entity: 'Visualização Centrada no Cliente',
+                temporal: 'Análise Temporal de Crescimento'
+            };
+            showNotification(messages[view]);
+        }
+        
+        // Animar descoberta de insight
+        function animateInsight() {
+            // Criar novo nó de insight
+            const insightNode = {
+                id: 'new-insight',
+                label: 'NOVO INSIGHT!\nOportunidade R$ 280k',
+                color: '#DC2626',
+                size: 40,
+                shape: 'star',
+                font: {size: 16, color: '#fff'},
+                x: 0,
+                y: -200
+            };
+            
+            const nodes = network.body.data.nodes;
+            const edges = network.body.data.edges;
+            
+            // Adicionar nó
+            nodes.add(insightNode);
+            
+            // Adicionar conexões
+            setTimeout(() => {
+                edges.add([
+                    {from: 'new-insight', to: nodes.getIds()[0], width: 4, color: '#DC2626'},
+                    {from: 'new-insight', to: nodes.getIds()[1], width: 4, color: '#DC2626'}
+                ]);
+                
+                // Focar no novo insight
+                network.focus('new-insight', {
+                    scale: 1.5,
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+                
+                showNotification('🎯 Novo insight descoberto! Oportunidade de cross-sell identificada.');
+                
+                // Atualizar contador
+                const insightsEl = document.getElementById('insights');
+                insightsEl.textContent = parseInt(insightsEl.textContent) + 1;
+            }, 500);
+            
+            // Remover após 5 segundos
+            setTimeout(() => {
+                nodes.remove('new-insight');
+            }, 5000);
+        }
+        
+        // Atualizar estatísticas
+        function updateStats(view) {
+            const stats = {
+                vertical: {clients: 487, opportunities: 23, insights: 156, conversion: '73%'},
+                entity: {clients: 1, opportunities: 3, insights: 12, conversion: '97%'},
+                temporal: {clients: 487, opportunities: 31, insights: 189, conversion: '82%'}
+            };
+            
+            document.getElementById('clients').textContent = stats[view].clients;
+            document.getElementById('opportunities').textContent = stats[view].opportunities;
+            document.getElementById('insights').textContent = stats[view].insights;
+            document.getElementById('conversion').textContent = stats[view].conversion;
+        }
+        
+        // Mostrar notificação
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Inicializar ao carregar
+        window.addEventListener('load', () => {
+            initNetwork();
+            showNotification('Sistema carregado - Visualização em tempo real ativa');
+            
+            // Simular atualizações periódicas
+            setInterval(() => {
+                const clients = document.getElementById('clients');
+                const current = parseInt(clients.textContent);
+                if (Math.random() > 0.7) {
+                    clients.textContent = current + Math.floor(Math.random() * 3);
+                }
+                
+                const opportunities = document.getElementById('opportunities');
+                if (Math.random() > 0.9) {
+                    opportunities.textContent = parseInt(opportunities.textContent) + 1;
+                    showNotification('📊 Nova oportunidade detectada!');
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

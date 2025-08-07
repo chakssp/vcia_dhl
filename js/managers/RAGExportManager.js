@@ -814,8 +814,11 @@
                                     originalChunkId: chunk.id, // Salva o ID original no payload
                                     documentId: doc.id,
                                     fileName: doc.name || doc.source?.fileName || 'Documento sem nome',
+                                    filePath: doc.path || doc.source?.path || doc.filePath || '',
                                     chunkId: chunk.id,
+                                    chunkIndex: chunk.index || chunk.chunkIndex || doc.chunks.indexOf(chunk), // CRÍTICO: Adicionar chunkIndex
                                     content: chunk.content,
+                                    chunkText: chunk.content, // Adicionar também como chunkText para compatibilidade
                                     // CORRIGIDO: Adicionar size e relevanceScore no nível raiz
                                     size: chunk.content ? chunk.content.length : 0,
                                     relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || doc.relevanceInheritance || 50,
@@ -1597,10 +1600,97 @@
                         // Padronizar dados do arquivo
                         const standardFile = this.standardizeFileData(file);
                         
-                        // Gerar chunks semânticos
-                        const chunks = KC.ChunkingUtils.getSemanticChunks(
-                            standardFile.content || standardFile.preview || ''
-                        );
+                        // CRÍTICO: Garantir que temos conteúdo completo para chunking adequado
+                        // Problema identificado: arquivos só têm preview (~100-300 chars) → 1 chunk
+                        // Solução: carregar conteúdo completo (~1500+ chars) → ~20+ chunks
+                        
+                        // CRITICAL: SEMPRE carregar conteúdo completo - NUNCA usar apenas preview
+                        let contentForChunking = null;
+                        
+                        // Primeiro verificar se já tem conteúdo completo
+                        if (standardFile.content && standardFile.content.length > 1000) {
+                            contentForChunking = standardFile.content;
+                            console.log(`[RAGExportManager] ✅ Usando conteúdo existente: ${contentForChunking.length} caracteres`);
+                        } else if (file.content && file.content.length > 1000) {
+                            contentForChunking = file.content;
+                            console.log(`[RAGExportManager] ✅ Usando conteúdo do arquivo: ${contentForChunking.length} caracteres`);
+                        }
+                        
+                        // Método 1: Carregar via FileRenderer (método preferencial)
+                        if (!contentForChunking || contentForChunking.length < 1000) {
+                            console.log(`[RAGExportManager] 📂 Carregando conteúdo completo para ${file.name}...`);
+                            
+                            // Usar o novo método loadFullContent do FileRenderer
+                            if (window.KC?.FileRenderer?.loadFullContent) {
+                                contentForChunking = await window.KC.FileRenderer.loadFullContent(file);
+                                
+                                if (contentForChunking && contentForChunking.length > 1000) {
+                                    console.log(`[RAGExportManager] ✅ Conteúdo completo carregado via FileRenderer: ${contentForChunking.length} caracteres`);
+                                    standardFile.content = contentForChunking;
+                                }
+                            }
+                        }
+                        
+                        // Método 2: Se ainda não tem conteúdo, tentar handle direto
+                        if (!contentForChunking && file.handle) {
+                            console.log(`[RAGExportManager] Carregando conteúdo completo via handle: ${file.name}`);
+                            try {
+                                const fileObj = await file.handle.getFile();
+                                contentForChunking = await fileObj.text();
+                                console.log(`[RAGExportManager] ✅ Conteúdo carregado via handle: ${contentForChunking.length} caracteres`);
+                            } catch (error) {
+                                console.warn(`[RAGExportManager] ⚠️ Falha ao carregar via handle: ${error.message}`);
+                            }
+                        }
+                        
+                        // Método 2: Se tem fileHandle original (pode estar em file.fileHandle)
+                        if (!contentForChunking && (file.fileHandle || file.originalHandle)) {
+                            const fileHandle = file.fileHandle || file.originalHandle;
+                            console.log(`[RAGExportManager] Tentando carregar via fileHandle: ${file.name}`);
+                            try {
+                                const fileObj = await fileHandle.getFile();
+                                contentForChunking = await fileObj.text();
+                                console.log(`[RAGExportManager] ✅ Conteúdo carregado via fileHandle: ${contentForChunking.length} caracteres`);
+                            } catch (error) {
+                                console.warn(`[RAGExportManager] ⚠️ Falha ao carregar via fileHandle: ${error.message}`);
+                            }
+                        }
+                        
+                        // Método 3: Tentar expandir preview se muito pequeno
+                        if (!contentForChunking || contentForChunking.length < 500) {
+                            // Se o conteúdo é muito pequeno (< 500 chars), pode ser só preview
+                            // Vamos usar o que temos, mas avisar sobre o problema
+                            // VALIDAÇÃO CRÍTICA: NÃO usar preview como fallback
+                            console.error(`[RAGExportManager] ❌ ERRO CRÍTICO: Arquivo ${file.name} sem conteúdo completo!`);
+                            console.error(`[RAGExportManager] ❌ Tamanho atual: ${contentForChunking?.length || 0} caracteres`);
+                            console.error(`[RAGExportManager] ❌ Mínimo necessário: 1000 caracteres`);
+                            console.error(`[RAGExportManager] ❌ PULANDO arquivo - chunking requer conteúdo completo`);
+                            
+                            // Registrar erro mas não interromper processamento de outros arquivos
+                            results.push({
+                                fileId: file.id,
+                                fileName: file.name,
+                                error: 'Conteúdo completo não disponível (min 1000 chars) - arquivo pulado',
+                                contentSize: contentForChunking?.length || 0,
+                                success: false
+                            });
+                            
+                            continue; // Pular para próximo arquivo
+                        }
+                        
+                        // Log informativo sobre origem do conteúdo
+                        console.log(`[RAGExportManager] 📊 ${file.name}: Processando ${contentForChunking.length} caracteres de conteúdo COMPLETO`);
+                        
+                        // Salvar conteúdo carregado para reutilização
+                        if (contentForChunking) {
+                            standardFile.content = contentForChunking;
+                            file.fullContentLoaded = true;
+                        }
+                        
+                        // Gerar chunks semânticos - agora com conteúdo completo quando disponível
+                        const chunks = KC.ChunkingUtils.getSemanticChunks(contentForChunking);
+                        
+                        console.log(`[RAGExportManager] ${file.name}: ${chunks.length} chunks gerados`);
                         
                         // Processar cada chunk
                         for (let i = 0; i < chunks.length; i++) {
@@ -1636,9 +1726,14 @@
                                 }
                             };
                             
-                            // CORREÇÃO: Usar insertOrUpdate para atualizar arquivos existentes
-                            // preservando categorias e curadoria humana
-                            await KC.QdrantManager.insertOrUpdate(point, {
+                            // CORREÇÃO: Passar o payload diretamente com chunkIndex
+                            // O QdrantManager agora considera chunkIndex para evitar duplicatas falsas
+                            await KC.QdrantManager.insertOrUpdate({
+                                ...point.payload,
+                                id: point.id,
+                                vector: point.vector,
+                                chunkIndex: i  // Garantir que chunkIndex está no nível correto
+                            }, {
                                 duplicateAction: 'update',
                                 preserveFields: ['categories', 'approved', 'analysisType', 'metadata']
                             });
@@ -1671,18 +1766,24 @@
                 // 5. Salvar estado atualizado
                 KC.AppState.set('files', files);
                 
+                // Calcular total de chunks gerados
+                const totalChunks = results.reduce((sum, r) => sum + (r.chunks || 0), 0);
+                console.log(`[RAGExportManager] RESUMO: ${processedCount} arquivos → ${totalChunks} chunks no Qdrant`);
+                
                 // 6. Emitir evento de processamento concluído
                 KC.EventBus.emit('CATEGORIZED_FILES_PROCESSED', {
                     total: categorizedFiles.length,
                     processed: processedCount,
+                    totalChunks: totalChunks,
                     results: results
                 });
                 
                 return {
                     success: true,
-                    message: `${processedCount} de ${categorizedFiles.length} arquivos processados com sucesso`,
+                    message: `${processedCount} de ${categorizedFiles.length} arquivos processados com sucesso (${totalChunks} chunks gerados)`,
                     processed: processedCount,
                     total: categorizedFiles.length,
+                    totalChunks: totalChunks,
                     results: results
                 };
                 

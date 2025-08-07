@@ -179,6 +179,60 @@ class QdrantManager {
      */
     async checkDuplicate(file) {
         try {
+            // LÓGICA CORRIGIDA: Verificar duplicatas considerando chunks
+            // 1. Se tem chunkIndex, verificar se ESSE CHUNK específico já existe
+            // 2. Se não tem chunkIndex, verificar se o arquivo completo já existe
+            
+            const hasChunkIndex = file.chunkIndex !== undefined && file.chunkIndex !== null && file.chunkIndex !== -1;
+            
+            if (hasChunkIndex) {
+                // Para chunks, verificar se esse chunk específico já existe
+                const fileName = file.fileName || file.name || '';
+                const chunkIndex = file.chunkIndex;
+                
+                console.log(`🔍 Verificando se chunk ${chunkIndex} de ${fileName} já existe...`);
+                
+                // Buscar por arquivo E chunk específico
+                const filter = {
+                    must: [
+                        {
+                            key: "fileName",
+                            match: { value: fileName }
+                        },
+                        {
+                            key: "chunkIndex", 
+                            match: { value: chunkIndex }
+                        }
+                    ]
+                };
+                
+                try {
+                    const results = await this.qdrantService.scrollPoints({
+                        filter: filter,
+                        limit: 1,
+                        withPayload: true
+                    });
+                    
+                    if (results && results.points && results.points.length > 0) {
+                        console.log(`⚠️ Chunk ${chunkIndex} de ${fileName} JÁ EXISTE no Qdrant`);
+                        this.stats.duplicatesFound++;
+                        return {
+                            isDuplicate: true,
+                            existingPoint: results.points[0],
+                            existingId: results.points[0].id,
+                            reason: 'chunk_already_exists'
+                        };
+                    } else {
+                        console.log(`✅ Chunk ${chunkIndex} de ${fileName} é NOVO - permitindo inserção`);
+                        return { isDuplicate: false };
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar chunk duplicado:', error);
+                    // Em caso de erro, permitir inserção para não bloquear
+                    return { isDuplicate: false };
+                }
+            }
+            
             const content = file.content || file.chunkText || file.preview || '';
             const contentHash = this.generateHash(content);
             const filePath = file.filePath || file.path || file.fileName || file.name || '';
@@ -188,7 +242,7 @@ class QdrantManager {
                 return { isDuplicate: false };
             }
             
-            // Primeiro tentar buscar por caminho exato
+            // Para arquivos sem chunks, verificar por filePath
             let filter = {
                 must: [
                     {

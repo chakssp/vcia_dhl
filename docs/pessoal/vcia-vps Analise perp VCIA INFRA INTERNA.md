@@ -1,3 +1,4 @@
+
 ```mermaid
 graph TD
     A[Claude Desktop MAX] --> B[MCP Servers]

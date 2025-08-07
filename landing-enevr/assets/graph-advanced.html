@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>enevr - Visualização Avançada de Conhecimento</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.6/dist/vis-network.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #334155 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #F1F5F9;
+        }
+        
+        .header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .header h1 {
+            color: #F1F5F9;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #94A3B8;
+            font-size: 1.1rem;
+        }
+        
+        .highlight {
+            background: linear-gradient(135deg, #3B82F6, #FB923C);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .controls {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .view-mode-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 10px 20px;
+            background: rgba(51, 65, 85, 0.5);
+            border-radius: 8px;
+        }
+        
+        .view-mode-selector label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #CBD5E1;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .view-mode-selector label:hover {
+            color: #3B82F6;
+        }
+        
+        .view-mode-selector input[type="radio"] {
+            accent-color: #3B82F6;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(51, 65, 85, 0.8);
+            color: #CBD5E1;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3B82F6;
+        }
+        
+        #graph-container {
+            position: relative;
+            background: rgba(30, 41, 59, 0.5);
+            margin: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            height: calc(100vh - 200px); /* Altura fixa baseada na viewport */
+            min-height: 600px; /* Altura mínima */
+        }
+        
+        #mynetwork {
+            width: 100%;
+            height: 100%; /* Ocupa 100% do container pai */
+            position: absolute; /* Posicionamento absoluto para garantir que ocupe todo o espaço */
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05), transparent);
+        }
+        
+        .stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .stats h3 {
+            font-size: 14px;
+            color: #94A3B8;
+            margin-bottom: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 13px;
+            color: #CBD5E1;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            color: #3B82F6;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+            font-size: 13px;
+            color: #CBD5E1;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        .cluster-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 100;
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            max-width: 250px;
+        }
+        
+        .cluster-info h4 {
+            font-size: 14px;
+            color: #FB923C;
+            margin-bottom: 8px;
+        }
+        
+        .cluster-detail {
+            font-size: 12px;
+            color: #94A3B8;
+            margin: 4px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats, .legend, .cluster-info {
+                display: none;
+            }
+            
+            #graph-container {
+                margin: 10px;
+            }
+            
+            .view-mode-selector {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Central de <span class="highlight">Inteligência enevr</span></h1>
+        <p>Visualização hierárquica do conhecimento consolidado com IA</p>
+    </div>
+    
+    <div class="controls">
+        <div class="view-mode-selector">
+            <label>
+                <input type="radio" name="viewMode" value="vertical-clusters" checked 
+                       onchange="changeView('vertical-clusters')"> 
+                Verticalização por Tipo
+            </label>
+            <label>
+                <input type="radio" name="viewMode" value="entity-centric" 
+                       onchange="changeView('entity-centric')"> 
+                Entidade-Cêntrica
+            </label>
+            <label>
+                <input type="radio" name="viewMode" value="temporal" 
+                       onchange="changeView('temporal')"> 
+                Evolução Temporal
+            </label>
+        </div>
+        
+        <button class="btn" onclick="animateInsight()">
+            ✨ Descobrir Insight
+        </button>
+        <button class="btn" onclick="highlightPath()">
+            🔍 Rastrear Conexão
+        </button>
+        <button class="btn" onclick="togglePhysics()">
+            ⚡ Toggle Física
+        </button>
+    </div>
+    
+    <div id="graph-container">
+        <div class="stats">
+            <h3>Métricas em Tempo Real</h3>
+            <div class="stat-item">
+                <span>Tipos de Análise:</span>
+                <span class="stat-value" id="types">5</span>
+            </div>
+            <div class="stat-item">
+                <span>Categorias:</span>
+                <span class="stat-value" id="categories">12</span>
+            </div>
+            <div class="stat-item">
+                <span>Entidades:</span>
+                <span class="stat-value" id="entities">47</span>
+            </div>
+            <div class="stat-item">
+                <span>Arquivos:</span>
+                <span class="stat-value" id="files">156</span>
+            </div>
+            <div class="stat-item">
+                <span>Densidade:</span>
+                <span class="stat-value" id="density">0.73</span>
+            </div>
+        </div>
+        
+        <div class="cluster-info" id="cluster-info" style="display: none;">
+            <h4 id="cluster-title">Cluster Info</h4>
+            <div class="cluster-detail" id="cluster-detail"></div>
+        </div>
+        
+        <div id="mynetwork"></div>
+        
+        <div class="legend">
+            <h4 style="color: #94A3B8; font-size: 12px; margin: 0 0 10px 0; text-transform: uppercase;">Tipos de Análise</h4>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ef4444;"></div>
+                <span>Legado Corporativo</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #8b5cf6;"></div>
+                <span>Metadados Inteligentes</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f59e0b;"></div>
+                <span>Métodos Consolidados</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10b981;"></div>
+                <span>Insights Acionáveis</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #6366f1;"></div>
+                <span>Intenção Contextualizada</span>
+            </div>
+            
+            <h4 style="color: #94A3B8; font-size: 12px; margin: 15px 0 10px 0; text-transform: uppercase;">Elementos do Grafo</h4>
+            <div class="legend-item">
+                <span style="font-size: 18px;">⬡</span>
+                <span>Centro: Pilar do Conhecimento</span>
+            </div>
+            <div class="legend-item">
+                <span style="color: #10b981;">■</span>
+                <span>Componentes do Pilar</span>
+            </div>
+            <div class="legend-item">
+                <span style="color: #fbbf24;">◆</span>
+                <span>Elementos Contextuais</span>
+            </div>
+            <div class="legend-item">
+                <span style="color: #3b82f6;">●</span>
+                <span>Conhecimento Consolidado</span>
+            </div>
+            <div class="legend-item">
+                <span style="color: #ef4444;">●</span>
+                <span>Alta Relevância (>70%)</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Configuração inspirada no GraphVisualizationV2
+        const nodeColors = {
+            'Legado Corporativo': '#ef4444',
+            'Metadados Inteligentes': '#8b5cf6',
+            'Métodos Consolidados': '#f59e0b',
+            'Insights Acionáveis': '#10b981',
+            'Intenção Contextualizada': '#6366f1',
+            category: '#10b981',
+            entity: '#fbbf24',
+            file: '#3b82f6'
+        };
+
+        // Dados mockados com estrutura hierárquica completa
+        const mockData = {
+            'vertical-clusters': {
+                nodes: [],
+                edges: []
+            },
+            'entity-centric': {
+                nodes: [],
+                edges: []
+            },
+            'temporal': {
+                nodes: [],
+                edges: []
+            }
+        };
+
+        // Gerar dados para modo vertical-clusters (inspirado no GraphVisualizationV2)
+        function generateVerticalClusters() {
+            const nodes = [];
+            const edges = [];
+            const tiposAnalise = [
+                'Breakthrough Técnico',
+                'Evolução Conceitual', 
+                'Momento Decisivo',
+                'Insight Estratégico',
+                'Aprendizado Geral'
+            ];
+
+            // Definir categorias e entidades específicas ANTES do loop
+            const categoriasEspecificas = {
+                'Breakthrough Técnico': ['Automação WhatsApp', 'Integração API', 'Sistema IA'],
+                'Evolução Conceitual': ['Modelo de Negócio', 'Estratégia Digital', 'Inovação'],
+                'Momento Decisivo': ['Fechamento Venda', 'Decisão Cliente', 'Proposta Aceita'],
+                'Insight Estratégico': ['Oportunidade Cross-sell', 'Novo Segmento', 'Expansão'],
+                'Aprendizado Geral': ['Treinamento', 'Documentação', 'Boas Práticas']
+            };
+            
+            const entidadesEspecificas = {
+                'Automação WhatsApp': ['DedetClean', 'Clínica São Lucas', 'Lab Express'],
+                'Integração API': ['Hospital Central', 'Prefeitura SP', 'SAMU Regional'],
+                'Sistema IA': ['Tech Solutions', 'Data Corp', 'AI Health'],
+                'Modelo de Negócio': ['Investidor A', 'Partner B2B', 'Franquia X'],
+                'Estratégia Digital': ['E-commerce Y', 'Marketplace Z', 'SaaS Platform'],
+                'Inovação': ['Startup Alpha', 'Innovation Lab', 'Tech Hub'],
+                'Fechamento Venda': ['Cliente Fechado A', 'Deal Confirmado B', 'Contrato C'],
+                'Decisão Cliente': ['Lead Qualificado', 'Prospect Hot', 'Negociação Final'],
+                'Proposta Aceita': ['Empresa XYZ', 'Grupo ABC', 'Holding 123'],
+                'Oportunidade Cross-sell': ['Cliente Base A', 'Account Premium', 'VIP Customer'],
+                'Novo Segmento': ['Indústria Nova', 'Vertical B2G', 'Setor Educação'],
+                'Expansão': ['Regional Sul', 'Internacional', 'Filial Nordeste'],
+                'Treinamento': ['Equipe Vendas', 'Time Suporte', 'Partners'],
+                'Documentação': ['Manual v2.0', 'API Docs', 'Guia Usuário'],
+                'Boas Práticas': ['ISO 9001', 'LGPD Compliance', 'ESG Framework']
+            };
+
+            // Calcular posições dos clusters
+            const clusterPositions = calculateClusterPositions(tiposAnalise.length);
+
+            tiposAnalise.forEach((tipo, index) => {
+                const basePos = clusterPositions[index];
+                const tipoId = `tipo-${tipo.replace(/\s+/g, '-')}`;
+                const tipoColor = nodeColors[tipo];
+
+                // Nó central: TipoAnalise (hexágono grande)
+                nodes.push({
+                    id: tipoId,
+                    label: tipo,
+                    x: basePos.x,
+                    y: basePos.y,
+                    size: 40,
+                    color: {
+                        background: tipoColor,
+                        border: '#fff',
+                        highlight: {
+                            background: tipoColor,
+                            border: '#fbbf24'
+                        }
+                    },
+                    shape: 'hexagon',
+                    font: { size: 16, color: '#fff', bold: true },
+                    borderWidth: 3,
+                    title: `Tipo de Análise: ${tipo}\n${20 + index * 5} arquivos\n${3 + index} categorias`,
+                    level: 0,
+                    mass: 5
+                });
+
+                // Categorias ao redor (quadrados) - Usar as já definidas
+                const categoriasDoTipo = categoriasEspecificas[tipo] || ['Categoria A', 'Categoria B'];
+                const numCategorias = Math.min(categoriasDoTipo.length, 3);
+                const catPositions = calculateRingPositions(basePos, numCategorias, 120);
+                
+                for (let c = 0; c < numCategorias; c++) {
+                    const catPos = catPositions[c];
+                    const catId = `cat-${tipoId}-${c}`;
+                    const catName = categoriasDoTipo[c];
+
+                    nodes.push({
+                        id: catId,
+                        label: catName,
+                        x: catPos.x,
+                        y: catPos.y,
+                        size: 25,
+                        color: nodeColors.category,
+                        shape: 'square',
+                        font: { size: 11, color: '#fff' },
+                        borderWidth: 2,
+                        borderColor: tipoColor,
+                        title: `Categoria de Negócio: ${catName}\nTipo: ${tipo}\nClientes ativos: ${8 + c * 2}\nDocumentos: ${15 + c * 3}\nÚltima atualização: ${c + 1} dias atrás`,
+                        level: 1,
+                        mass: 3
+                    });
+
+                    // Conectar categoria ao tipo
+                    edges.push({
+                        id: `edge-tipo-cat-${tipoId}-${catId}`,
+                        from: tipoId,
+                        to: catId,
+                        color: { color: tipoColor, opacity: 0.8 },
+                        width: 4,
+                        smooth: { type: 'curvedCW', roundness: 0.1 }
+                    });
+
+                    // Entidades ao redor da categoria (diamantes) - Usar as já definidas
+                    const entidadesDaCategoria = entidadesEspecificas[catName] || ['Cliente A', 'Cliente B', 'Cliente C'];
+                    const numEntidades = Math.min(entidadesDaCategoria.length, 3);
+                    const entPositions = calculateRingPositions(catPos, numEntidades, 60);
+
+                    for (let e = 0; e < numEntidades; e++) {
+                        const entPos = entPositions[e];
+                        const entId = `ent-${catId}-${e}`;
+                        const entName = entidadesDaCategoria[e];
+                        const isProspect = Math.random() > 0.5;
+                        const revenue = Math.floor(Math.random() * 500) + 50;
+
+                        nodes.push({
+                            id: entId,
+                            label: entName,
+                            x: entPos.x,
+                            y: entPos.y,
+                            size: isProspect ? 15 : 20,
+                            color: isProspect ? '#fbbf24' : '#22c55e',
+                            shape: 'diamond',
+                            font: { size: 10 },
+                            borderWidth: 2,
+                            borderColor: isProspect ? '#f59e0b' : '#16a34a',
+                            title: `${isProspect ? '🎯 Prospect' : '✅ Cliente Ativo'}: ${entName}\nCategoria: ${catName}\nPotencial: R$ ${revenue}k/mês\nÚltimo contato: ${e + 1} dias atrás\nStatus: ${isProspect ? 'Em negociação' : 'Contrato ativo'}`,
+                            level: 2,
+                            mass: 2,
+                            isProspect: isProspect,
+                            revenue: revenue
+                        });
+
+                        // Conectar entidade à categoria
+                        edges.push({
+                            id: `edge-ent-cat-${entId}-${catId}`,
+                            from: catId,
+                            to: entId,
+                            color: { color: nodeColors.category, opacity: 0.6 },
+                            width: 2,
+                            smooth: { type: 'continuous' }
+                        });
+                    }
+                }
+
+                // Coletar todas as entidades deste tipo para conectar arquivos
+                const allEntitiesForTipo = [];
+                for (let c = 0; c < numCategorias; c++) {
+                    const catId = `cat-${tipoId}-${c}`;
+                    const catName = categoriasDoTipo[c];
+                    const entidadesDaCategoria = entidadesEspecificas[catName] || [];
+                    const numEnt = Math.min(entidadesDaCategoria.length, 3);
+                    for (let e = 0; e < numEnt; e++) {
+                        allEntitiesForTipo.push({
+                            id: `ent-${catId}-${e}`,
+                            catId: catId,
+                            name: entidadesDaCategoria[e]
+                        });
+                    }
+                }
+
+                // Arquivos na periferia (pontos pequenos) - Conectados às entidades
+                const tiposArquivo = {
+                    'Breakthrough Técnico': ['config_whatsapp.json', 'api_integration.log', 'ai_model.py'],
+                    'Evolução Conceitual': ['business_model.pdf', 'strategy_2025.docx', 'innovation_report.md'],
+                    'Momento Decisivo': ['proposta_comercial.pdf', 'contrato_assinado.doc', 'meeting_notes.md'],
+                    'Insight Estratégico': ['analise_mercado.xlsx', 'oportunidades_q1.ppt', 'expansion_plan.md'],
+                    'Aprendizado Geral': ['manual_usuario.pdf', 'training_video.mp4', 'best_practices.md']
+                };
+                
+                const arquivosDoTipo = tiposArquivo[tipo] || ['documento.pdf', 'relatorio.xlsx', 'analise.md'];
+                const numArquivos = 8 + Math.floor(Math.random() * 7);
+                const filePositions = calculateRingPositions(basePos, numArquivos, 250);
+
+                for (let f = 0; f < numArquivos; f++) {
+                    const filePos = filePositions[f];
+                    const fileId = `file-${tipoId}-${f}`;
+                    const relevance = 30 + Math.floor(Math.random() * 70);
+                    const fileName = arquivosDoTipo[f % arquivosDoTipo.length] || `doc_${f+1}.md`;
+                    const fileDate = new Date(Date.now() - (f * 24 * 60 * 60 * 1000)).toLocaleDateString('pt-BR');
+
+                    nodes.push({
+                        id: fileId,
+                        label: fileName.substring(0, 15) + (fileName.length > 15 ? '...' : ''),
+                        x: filePos.x,
+                        y: filePos.y,
+                        size: 8 + relevance / 20,
+                        color: relevance > 70 ? '#ef4444' : '#3b82f6',
+                        shape: 'dot',
+                        font: { size: 8 },
+                        borderWidth: relevance > 70 ? 3 : 1,
+                        borderColor: relevance > 70 ? '#dc2626' : '#64748b',
+                        title: `📄 Arquivo: ${fileName}\nRelevância: ${relevance}%\nTipo: ${tipo}\nData: ${fileDate}\nTamanho: ${Math.floor(Math.random() * 500) + 10}KB`,
+                        level: 3,
+                        mass: 1,
+                        relevance: relevance
+                    });
+
+                    // Conectar arquivo a uma entidade aleatória (mais lógico)
+                    if (allEntitiesForTipo.length > 0) {
+                        const randomEntity = allEntitiesForTipo[Math.floor(Math.random() * allEntitiesForTipo.length)];
+                        
+                        // Conexão Entidade -> Arquivo
+                        edges.push({
+                            id: `edge-file-ent-${fileId}-${randomEntity.id}`,
+                            from: randomEntity.id,
+                            to: fileId,
+                            label: relevance > 70 ? 'doc importante' : '',
+                            color: { color: relevance > 70 ? '#dc2626' : '#64748b', opacity: relevance > 70 ? 0.6 : 0.3 },
+                            width: relevance > 70 ? 2 : 1,
+                            dashes: relevance <= 70,
+                            title: `Documento relacionado ao cliente ${randomEntity.name}`
+                        });
+                    }
+
+                    // Se alta relevância, criar conexão direta com centro
+                    if (relevance > 70) {
+                        edges.push({
+                            id: `edge-high-rel-${fileId}-${tipoId}`,
+                            from: fileId,
+                            to: tipoId,
+                            color: { color: '#dc2626', opacity: 0.6 },
+                            width: 3,
+                            arrows: { to: { enabled: true, scaleFactor: 1.2 } },
+                            smooth: { type: 'curvedCCW', roundness: 0.3 },
+                            title: `Alta relevância (${relevance}%) sugere insight importante`
+                        });
+                    }
+                }
+            });
+
+            return { nodes, edges };
+        }
+
+        // Gerar dados para modo entity-centric
+        function generateEntityCentric() {
+            const nodes = [];
+            const edges = [];
+            const entidades = ['DedetClean', 'Hospital Central', 'Prefeitura SP', 'Clínica Plus', 'Lab Tech'];
+            
+            // Entidades no centro (estrelas)
+            entidades.forEach((entidade, index) => {
+                const angle = (2 * Math.PI * index) / entidades.length;
+                const radius = index === 0 ? 0 : 100; // Principal no centro absoluto
+                
+                nodes.push({
+                    id: `entity-${entidade.replace(/\s+/g, '-')}`,
+                    label: entidade,
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle),
+                    size: 30 - index * 2,
+                    color: nodeColors.entity,
+                    shape: 'star',
+                    font: { size: 14, bold: true },
+                    title: `Entidade: ${entidade}\nMencionada em ${20 - index * 2} arquivos`,
+                    level: 0
+                });
+            });
+
+            // Categorias no meio
+            const categorias = ['Vendas', 'Prospecção', 'Pós-Venda', 'Suporte'];
+            categorias.forEach((cat, index) => {
+                const angle = (2 * Math.PI * index) / categorias.length;
+                const radius = 200;
+                
+                nodes.push({
+                    id: `category-${cat}`,
+                    label: cat,
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle),
+                    size: 20,
+                    color: nodeColors.category,
+                    shape: 'square',
+                    title: `Categoria: ${cat}`,
+                    level: 1
+                });
+
+                // Conectar categorias às entidades principais
+                edges.push({
+                    from: `entity-DedetClean`,
+                    to: `category-${cat}`,
+                    color: { color: nodeColors.category },
+                    width: 2
+                });
+            });
+
+            // Arquivos na periferia
+            for (let i = 0; i < 20; i++) {
+                const angle = (2 * Math.PI * i) / 20;
+                const radius = 350;
+                
+                nodes.push({
+                    id: `file-${i}`,
+                    label: `arquivo_${i+1}.md`,
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle),
+                    size: 10,
+                    color: '#3b82f6',
+                    shape: 'dot',
+                    font: { size: 8 },
+                    title: `Arquivo ${i+1}`,
+                    level: 2
+                });
+
+                // Conectar arquivos às categorias
+                const catIndex = Math.floor(Math.random() * categorias.length);
+                edges.push({
+                    from: `category-${categorias[catIndex]}`,
+                    to: `file-${i}`,
+                    color: { color: '#64748b' },
+                    width: 1,
+                    dashes: true
+                });
+            }
+
+            return { nodes, edges };
+        }
+
+        // Gerar dados temporais
+        function generateTemporal() {
+            const nodes = [];
+            const edges = [];
+            const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio'];
+            
+            // Timeline principal
+            meses.forEach((mes, index) => {
+                const x = (index - 2) * 200;
+                const vendas = 45 + index * 30 + Math.floor(Math.random() * 20);
+                
+                nodes.push({
+                    id: `mes-${index}`,
+                    label: `${mes}\n${vendas} vendas`,
+                    x: x,
+                    y: 0,
+                    size: 25 + vendas / 10,
+                    color: index < 2 ? '#64748b' : index < 4 ? '#3b82f6' : '#10b981',
+                    shape: 'circle',
+                    font: { size: 12 },
+                    fixed: { x: true, y: true }
+                });
+
+                if (index > 0) {
+                    edges.push({
+                        from: `mes-${index-1}`,
+                        to: `mes-${index}`,
+                        arrows: 'to',
+                        width: 3,
+                        color: '#3b82f6'
+                    });
+                }
+
+                // Eventos importantes
+                if (index % 2 === 1) {
+                    const eventId = `event-${index}`;
+                    const eventos = ['Campanha WhatsApp', 'Automação Implementada', 'IA Ativada', 'Novo Módulo', 'Integração API'];
+                    
+                    nodes.push({
+                        id: eventId,
+                        label: eventos[index],
+                        x: x,
+                        y: -150,
+                        size: 20,
+                        color: '#fb923c',
+                        shape: 'diamond',
+                        title: `Evento: ${eventos[index]}`
+                    });
+
+                    edges.push({
+                        from: eventId,
+                        to: `mes-${index}`,
+                        color: { color: '#fb923c' },
+                        width: 2,
+                        dashes: true
+                    });
+                }
+
+                // Insights descobertos
+                if (index >= 2) {
+                    const insightId = `insight-${index}`;
+                    const insights = ['Padrão: Pico às 14h', 'Taxa: 73% conversão', 'Previsão: +40% próximo mês'];
+                    
+                    nodes.push({
+                        id: insightId,
+                        label: insights[index - 2] || 'Novo Insight',
+                        x: x + 50,
+                        y: 150,
+                        size: 18,
+                        color: '#8b5cf6',
+                        shape: 'star',
+                        title: `Insight descoberto`
+                    });
+
+                    edges.push({
+                        from: `mes-${index}`,
+                        to: insightId,
+                        color: { color: '#8b5cf6' },
+                        width: 2
+                    });
+                }
+            });
+
+            return { nodes, edges };
+        }
+
+        // Funções auxiliares
+        function calculateClusterPositions(count) {
+            const positions = [];
+            const radius = count <= 3 ? 200 : count <= 5 ? 300 : 400;
+            
+            for (let i = 0; i < count; i++) {
+                const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+                positions.push({
+                    x: radius * Math.cos(angle),
+                    y: radius * Math.sin(angle)
+                });
+            }
+            
+            return positions;
+        }
+
+        function calculateRingPositions(center, count, radius) {
+            const positions = [];
+            
+            for (let i = 0; i < count; i++) {
+                const angle = (2 * Math.PI * i) / count;
+                positions.push({
+                    x: center.x + radius * Math.cos(angle),
+                    y: center.y + radius * Math.sin(angle)
+                });
+            }
+            
+            return positions;
+        }
+
+        // Inicializar dados
+        // Inicializar variáveis globais ANTES de usar
+        let network;
+        let currentView = 'vertical-clusters';
+        let physicsEnabled = true;
+        
+        // Gerar dados para os mocks DEPOIS de definir as variáveis
+        mockData['vertical-clusters'] = generateVerticalClusters();
+        mockData['entity-centric'] = generateEntityCentric();
+        mockData['temporal'] = generateTemporal();
+
+        // Configurações do vis.js
+        const options = {
+            nodes: {
+                borderWidth: 2,
+                shadow: true,
+                font: {
+                    size: 14,
+                    color: '#F1F5F9'
+                }
+            },
+            edges: {
+                width: 2,
+                smooth: {
+                    type: 'continuous'
+                },
+                color: {
+                    inherit: 'from'
+                }
+            },
+            physics: {
+                enabled: true,
+                forceAtlas2Based: {
+                    gravitationalConstant: -50,
+                    centralGravity: 0.01,
+                    springLength: 150,
+                    springConstant: 0.08,
+                    damping: 0.4,
+                    avoidOverlap: 0.5
+                },
+                solver: 'forceAtlas2Based',
+                stabilization: {
+                    enabled: true,
+                    iterations: 150,
+                    updateInterval: 50
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 300,
+                zoomView: true,
+                dragView: true
+            }
+        };
+
+        // Inicializar rede
+        function initNetwork() {
+            const container = document.getElementById('mynetwork');
+            const data = {
+                nodes: new vis.DataSet(mockData[currentView].nodes),
+                edges: new vis.DataSet(mockData[currentView].edges)
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Eventos
+            network.on("click", function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const nodes = network.body.data.nodes;
+                    const node = nodes.get(nodeId);
+                    
+                    if (node) {
+                        // Se for um insight novo, torná-lo permanente
+                        if (nodeId.startsWith('new-insight-')) {
+                            makeInsightPermanent(nodeId, node);
+                        } else {
+                            showNodeDetails(node);
+                        }
+                    }
+                }
+            });
+            
+            network.on("doubleClick", function(params) {
+                if (params.nodes.length > 0) {
+                    highlightNodeConnections(params.nodes[0]);
+                }
+            });
+
+            // Estabilizar
+            network.once("stabilizationIterationsDone", function() {
+                showNotification('Sistema carregado - Visualização hierárquica ativa');
+            });
+        }
+
+        // Mudar visualização
+        function changeView(view) {
+            currentView = view;
+            const data = {
+                nodes: new vis.DataSet(mockData[view].nodes),
+                edges: new vis.DataSet(mockData[view].edges)
+            };
+            network.setData(data);
+            
+            updateStats(view);
+            
+            const messages = {
+                'vertical-clusters': 'Visualização Hierárquica por Tipo de Análise',
+                'entity-centric': 'Visualização Centrada em Entidades',
+                'temporal': 'Análise de Evolução Temporal'
+            };
+            showNotification(messages[view]);
+        }
+
+        // Animar descoberta de insight
+        let activeInsights = new Set(); // Rastrear insights ativos
+        
+        function animateInsight() {
+            const nodes = network.body.data.nodes;
+            const edges = network.body.data.edges;
+            
+            // Criar novo nó de insight
+            const insightId = 'new-insight-' + Date.now();
+            const insightNode = {
+                id: insightId,
+                label: 'NOVO INSIGHT!\nOportunidade R$ 280k',
+                color: '#DC2626',
+                size: 35,
+                shape: 'star',
+                font: {size: 14, color: '#fff'},
+                x: 0,
+                y: -200,
+                title: 'Clique para manter o insight\nDesaparece em 8 segundos',
+                level: 0, // Nível alto para aparecer na frente
+                physics: false // Desabilitar física para evitar movimento
+            };
+            
+            nodes.add(insightNode);
+            activeInsights.add(insightId); // Adicionar à lista de ativos
+            
+            // Adicionar conexões
+            setTimeout(() => {
+                const allNodeIds = nodes.getIds();
+                const centerNode = allNodeIds.find(id => id.includes('tipo-')) || allNodeIds[0];
+                
+                if (activeInsights.has(insightId)) { // Verificar se ainda está ativo
+                    edges.add({
+                        id: 'edge-' + insightId,
+                        from: insightId,
+                        to: centerNode,
+                        width: 4,
+                        color: '#DC2626'
+                    });
+                    
+                    network.focus(insightId, {
+                        scale: 1.5,
+                        animation: {
+                            duration: 1000,
+                            easingFunction: 'easeInOutQuad'
+                        }
+                    });
+                }
+                
+                showNotification('🎯 Novo insight descoberto! Oportunidade de cross-sell identificada.');
+                
+                // Atualizar contador
+                const insightsEl = document.getElementById('entities');
+                insightsEl.textContent = parseInt(insightsEl.textContent) + 1;
+            }, 500);
+            
+            // Remover após 8 segundos (mais tempo para interagir)
+            setTimeout(() => {
+                if (activeInsights.has(insightId)) { // Só remover se ainda estiver ativo
+                    try {
+                        nodes.remove(insightId);
+                        edges.remove('edge-' + insightId);
+                        activeInsights.delete(insightId);
+                    } catch (e) {
+                        // Ignorar erro se já foi removido
+                        console.log('Insight já processado:', insightId);
+                    }
+                }
+            }, 8000);
+        }
+
+        // Tornar insight permanente quando clicado
+        function makeInsightPermanent(insightId, node) {
+            if (activeInsights.has(insightId)) {
+                activeInsights.delete(insightId); // Remover da lista de temporários
+                
+                // Atualizar o nó para torná-lo permanente
+                const nodes = network.body.data.nodes;
+                nodes.update({
+                    id: insightId,
+                    label: node.label + '\n(Fixado)',
+                    color: '#991B1B', // Vermelho mais escuro
+                    physics: true, // Habilitar física
+                    title: 'Insight fixado permanentemente'
+                });
+                
+                showNotification('📌 Insight fixado! Agora é permanente no grafo.');
+            }
+        }
+        
+        // Destacar caminho
+        function highlightPath() {
+            const nodes = network.body.data.nodes;
+            const edges = network.body.data.edges;
+            
+            // Selecionar nó aleatório na periferia
+            const allNodes = nodes.get();
+            const peripheralNodes = allNodes.filter(n => n.level === 3 || n.shape === 'dot');
+            
+            if (peripheralNodes.length > 0) {
+                const randomNode = peripheralNodes[Math.floor(Math.random() * peripheralNodes.length)];
+                highlightNodeConnections(randomNode.id);
+                
+                showNotification(`📍 Rastreando conexões de: ${randomNode.label}`);
+            }
+        }
+
+        // Destacar conexões do nó
+        function highlightNodeConnections(nodeId) {
+            const connectedNodes = network.getConnectedNodes(nodeId);
+            const connectedEdges = network.getConnectedEdges(nodeId);
+            
+            const nodes = network.body.data.nodes;
+            const edges = network.body.data.edges;
+            
+            // Reduzir opacidade de todos
+            const allNodes = nodes.get();
+            const updateNodes = allNodes.map(node => {
+                if (node.id === nodeId || connectedNodes.includes(node.id)) {
+                    return { ...node, opacity: 1 };
+                } else {
+                    return { ...node, opacity: 0.2 };
+                }
+            });
+            
+            nodes.update(updateNodes);
+            
+            // Resetar após 3 segundos
+            setTimeout(() => {
+                const resetNodes = allNodes.map(node => ({ ...node, opacity: 1 }));
+                nodes.update(resetNodes);
+            }, 3000);
+        }
+
+        // Toggle física
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            network.setOptions({ physics: { enabled: physicsEnabled } });
+            showNotification(physicsEnabled ? '⚡ Física ativada' : '⚡ Física desativada');
+        }
+
+        // Mostrar detalhes do nó
+        function showNodeDetails(node) {
+            if (!node) return; // Verificação de segurança
+            
+            const clusterInfo = document.getElementById('cluster-info');
+            const clusterTitle = document.getElementById('cluster-title');
+            const clusterDetail = document.getElementById('cluster-detail');
+            
+            // Determinar tipo de elemento e ícone
+            let icon = '📊';
+            let typeLabel = 'Elemento';
+            let bgColor = '#1F2937';
+            
+            if (node.shape === 'hexagon') {
+                icon = '⬡';
+                typeLabel = 'Tipo de Análise';
+                bgColor = node.color.background || node.color;
+            } else if (node.shape === 'square') {
+                icon = '📁';
+                typeLabel = 'Categoria de Negócio';
+                bgColor = '#10b981';
+            } else if (node.shape === 'diamond') {
+                if (node.isProspect) {
+                    icon = '🎯';
+                    typeLabel = 'Prospect';
+                    bgColor = '#f59e0b';
+                } else {
+                    icon = '✅';
+                    typeLabel = 'Cliente Ativo';
+                    bgColor = '#22c55e';
+                }
+            } else if (node.shape === 'dot') {
+                icon = '📄';
+                typeLabel = 'Documento';
+                bgColor = node.relevance > 70 ? '#ef4444' : '#3b82f6';
+            } else if (node.shape === 'star') {
+                icon = '💡';
+                typeLabel = 'Insight';
+                bgColor = '#DC2626';
+            }
+            
+            // Título com ícone e cor
+            clusterTitle.innerHTML = `${icon} ${node.label || 'Sem nome'}`;
+            clusterTitle.style.color = bgColor;
+            
+            // Detalhes formatados de forma mais rica
+            let detailsHtml = `
+                <div class="cluster-detail" style="color: #10b981; font-weight: bold;">${typeLabel}</div>
+            `;
+            
+            // Adicionar detalhes específicos por tipo
+            if (node.shape === 'diamond' && node.revenue) {
+                detailsHtml += `
+                    <div class="cluster-detail">💰 Potencial: <strong>R$ ${node.revenue}k/mês</strong></div>
+                `;
+            }
+            
+            if (node.relevance) {
+                const relevanceColor = node.relevance > 70 ? '#ef4444' : node.relevance > 50 ? '#f59e0b' : '#3b82f6';
+                detailsHtml += `
+                    <div class="cluster-detail">📊 Relevância: <strong style="color: ${relevanceColor}">${node.relevance}%</strong></div>
+                `;
+            }
+            
+            // Adicionar informações do title se existir
+            if (node.title) {
+                const titleLines = node.title.split('\n');
+                titleLines.forEach(line => {
+                    if (line.includes('Status:')) {
+                        detailsHtml += `<div class="cluster-detail">📋 ${line}</div>`;
+                    } else if (line.includes('Data:')) {
+                        detailsHtml += `<div class="cluster-detail">📅 ${line}</div>`;
+                    } else if (line.includes('Tamanho:')) {
+                        detailsHtml += `<div class="cluster-detail">💾 ${line}</div>`;
+                    } else if (line.includes('Último contato:')) {
+                        detailsHtml += `<div class="cluster-detail">📞 ${line}</div>`;
+                    } else if (line.includes('Clientes ativos:')) {
+                        detailsHtml += `<div class="cluster-detail">👥 ${line}</div>`;
+                    } else if (line.includes('Documentos:')) {
+                        detailsHtml += `<div class="cluster-detail">📚 ${line}</div>`;
+                    } else if (!line.includes(node.label) && line.trim()) {
+                        detailsHtml += `<div class="cluster-detail">${line}</div>`;
+                    }
+                });
+            }
+            
+            // Adicionar conexões do nó
+            const connections = network.getConnectedNodes(node.id);
+            if (connections && connections.length > 0) {
+                detailsHtml += `<div class="cluster-detail" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.2);">🔗 Conexões: <strong>${connections.length}</strong></div>`;
+            }
+            
+            clusterDetail.innerHTML = detailsHtml;
+            clusterInfo.style.display = 'block';
+            
+            // Manter visível por mais tempo para elementos importantes
+            const displayTime = (node.shape === 'hexagon' || node.shape === 'star') ? 8000 : 5000;
+            
+            setTimeout(() => {
+                clusterInfo.style.display = 'none';
+            }, displayTime);
+        }
+
+        // Atualizar estatísticas
+        function updateStats(view) {
+            const stats = {
+                'vertical-clusters': { types: 5, categories: 12, entities: 47, files: 156, density: '0.73' },
+                'entity-centric': { types: 3, categories: 4, entities: 5, files: 20, density: '0.65' },
+                'temporal': { types: 5, categories: 5, entities: 8, files: 5, density: '0.45' }
+            };
+            
+            const viewStats = stats[view];
+            document.getElementById('types').textContent = viewStats.types;
+            document.getElementById('categories').textContent = viewStats.categories;
+            document.getElementById('entities').textContent = viewStats.entities;
+            document.getElementById('files').textContent = viewStats.files;
+            document.getElementById('density').textContent = viewStats.density;
+        }
+
+        // Mostrar notificação
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Simular atualizações periódicas
+        function simulateUpdates() {
+            setInterval(() => {
+                // Atualizar entidades ocasionalmente
+                const entities = document.getElementById('entities');
+                if (Math.random() > 0.8) {
+                    entities.textContent = parseInt(entities.textContent) + 1;
+                }
+                
+                // Atualizar densidade
+                const density = document.getElementById('density');
+                const currentDensity = parseFloat(density.textContent);
+                const newDensity = (currentDensity + (Math.random() - 0.5) * 0.05).toFixed(2);
+                if (newDensity > 0 && newDensity < 1) {
+                    density.textContent = newDensity;
+                }
+                
+                // Notificação ocasional
+                if (Math.random() > 0.95) {
+                    const messages = [
+                        '📊 Nova oportunidade detectada!',
+                        '🔍 Padrão identificado nos dados',
+                        '✨ Correlação descoberta',
+                        '📈 Tendência de crescimento detectada'
+                    ];
+                    showNotification(messages[Math.floor(Math.random() * messages.length)]);
+                }
+            }, 5000);
+        }
+
+        // Inicializar ao carregar
+        window.addEventListener('load', () => {
+            initNetwork();
+            simulateUpdates();
+        });
+    </script>
+</body>
+</html>

@@ -98,3 +98,10 @@ claude-output/
 .claude-cache/
 .claude-tmp/
 claude-output/
+landing-enevr/n8n-workflows/DEDETIZACAO-POS-VENDA-README.md
+landing-enevr/n8n-workflows/dedetizacao-pos-venda-workflow.json
+landing-enevr/n8n-workflows/FLUXO-ORCAMENTO-README.md
+landing-enevr/n8n-workflows/orcamento-enevr-workflow.json
+landing-enevr/n8n-workflows/whatsapp-atendimento-completo.json
+landing-enevr/n8n-workflows/WHATSAPP-WORKFLOW-README.md
+landing-enevr/assets/logo/enevr-logo.png

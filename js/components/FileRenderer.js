@@ -2042,6 +2042,64 @@
         }
 
         /**
+         * Carrega conteúdo completo do arquivo via fileHandle
+         * CRÍTICO: Necessário para chunking adequado no Qdrant
+         */
+        async loadFullContent(file) {
+            try {
+                console.log(`[FileRenderer] Carregando conteúdo completo de ${file.name}`);
+                
+                // Método 1: Via fileHandle (preferencial)
+                if (file.fileHandle || file.originalHandle) {
+                    const handle = file.fileHandle || file.originalHandle;
+                    const fileObj = await handle.getFile();
+                    const content = await fileObj.text();
+                    
+                    console.log(`[FileRenderer] ✅ Conteúdo carregado: ${content.length} caracteres`);
+                    
+                    // Salvar no objeto file
+                    file.content = content;
+                    file.fullContentLoaded = true;
+                    
+                    return content;
+                }
+                
+                // Método 2: Via handle manager (verificar se método existe)
+                if (window.KC?.handleManager?.get && file.id) {
+                    try {
+                        const handleData = window.KC.handleManager.get(file.id);
+                        if (handleData && handleData.handle) {
+                            const fileObj = await handleData.handle.getFile();
+                            const content = await fileObj.text();
+                            
+                            console.log(`[FileRenderer] ✅ Conteúdo via HandleManager: ${content.length} caracteres`);
+                            
+                            file.content = content;
+                            file.fullContentLoaded = true;
+                            
+                            return content;
+                        }
+                    } catch (error) {
+                        console.log(`[FileRenderer] HandleManager não disponível ou erro: ${error.message}`);
+                    }
+                }
+                
+                // Se já tem conteúdo completo carregado
+                if (file.content && file.content.length > 1000) {
+                    console.log(`[FileRenderer] Conteúdo já disponível: ${file.content.length} caracteres`);
+                    return file.content;
+                }
+                
+                console.error(`[FileRenderer] ❌ Não foi possível carregar conteúdo completo de ${file.name}`);
+                return null;
+                
+            } catch (error) {
+                console.error(`[FileRenderer] Erro ao carregar conteúdo:`, error);
+                return null;
+            }
+        }
+
+        /**
          * Gera preview expandido para modal
          */
         generateExpandedPreview(file) {

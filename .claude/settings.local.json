@@ -56,7 +56,15 @@
       "mcp__playwright__playwright_console_logs",
       "mcp__curl__curl",
       "mcp__btools__getConsoleErrors",
-      "mcp__playwright__playwright_close"
+      "mcp__playwright__playwright_close",
+      "mcp__playwright__browser_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__server-sequential-thinking__sequentialthinking",
+      "mcp__n8n-mcp__get_node_essentials",
+      "mcp__n8n-mcp__search_nodes",
+      "mcp__mcp-server-time__get_current_time",
+      "mcp__playwright__browser_navigate",
+      "mcp__memory__add_observations"
     ],
     "deny": []
   },

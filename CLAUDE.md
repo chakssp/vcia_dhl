@@ -216,4 +216,12 @@ The infinite command implements sophisticated parallel agent coordination:
 # IMPORTANT
 - Remember EVER to translate to Brazilian Protuguese before send to User providing Best Experience!
 
-[... rest of the previous content remains the same ...]
+### Comandos Úteis Disponíveis
+
+- mcp__playwright__browser_navigate - Navegar para URLs
+- mcp__playwright__browser_evaluate - Executar JavaScript
+- mcp__playwright__browser_screenshot - Capturar telas
+- mcp__playwright__browser_click - Clicar em elementos
+- mcp__playwright__browser_fill - Preencher formulários
+
+Utilizar O Playwright MCP que está pronto para uso! Utilize o acesso completo ao browser através do Claude Code, para automação de testes, e validação do sistema de forma eficiente como padrão for EVER.
