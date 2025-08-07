@@ -1047,7 +1047,11 @@
                         chunkIndex: point.payload.chunkIndex
                     };
                     
-                    const result = await KC.QdrantManager.insertOrUpdate(fileFormat);
+                    // CORREÇÃO: Usar estratégia 'merge' para permitir atualizações de categorias
+                    // Conforme documentado em /qdrant-fase/fluxo-qdrant-first-completo.md
+                    const result = await KC.QdrantManager.insertOrUpdate(fileFormat, {
+                        duplicateAction: 'merge'  // Mescla dados novos com existentes
+                    });
                     
                     if (result.action === 'skipped') {
                         skippedCount++;
