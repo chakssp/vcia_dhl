@@ -1886,14 +1886,24 @@
                         const enrichIcon = enrichLevel > 75 ? '💎' : enrichLevel > 50 ? '💚' : enrichLevel > 25 ? '🟡' : '⚪';
                         console.log(`✅ Qdrant: ${file.name || file.fileName} [v${version}] [${enrichIcon} ${enrichLevel}%]`);
                     } else {
-                        // Arquivo novo
-                        file.isNew = true;
-                        file.badgeText = 'Novo';
-                        file.badgeColor = '#ef4444'; // Vermelho para destacar novos
-                        enrichmentStats.new++;
-                        
-                        // Log visual para arquivo novo
-                        console.log(`➕ Novo: ${file.name || file.fileName}`);
+                        // Verificar se o arquivo já foi marcado como duplicata anteriormente
+                        if (file.isDuplicate || (file.name && file.name.includes('🔁'))) {
+                            // Arquivo marcado como duplicata mas não encontrado no Qdrant agora
+                            // Pode ter sido deletado do Qdrant ou erro na verificação
+                            console.log(`🔁 Existente (aguardando sync): ${(file.name || file.fileName).replace('🔁 ', '')}`);
+                            file.badgeText = 'Sync Pendente';
+                            file.badgeColor = '#f59e0b'; // Âmbar para indicar estado pendente
+                            enrichmentStats.new++; // Ainda conta como novo pois precisa ser re-inserido
+                        } else {
+                            // Arquivo realmente novo
+                            file.isNew = true;
+                            file.badgeText = 'Novo';
+                            file.badgeColor = '#ef4444'; // Vermelho para destacar novos
+                            enrichmentStats.new++;
+                            
+                            // Log visual para arquivo novo
+                            console.log(`➕ Novo: ${file.name || file.fileName}`);
+                        }
                     }
                 } catch (error) {
                     console.error(`Erro ao enriquecer ${file.fileName}:`, error);

@@ -1,50 +1,82 @@
-# Consolidador de Conhecimento Pessoal
+# 🧠 Knowledge Consolidator v2.0
 
-Portal para descoberta, análise e estruturação automatizada de momentos decisivos, potenciais oportunidades baseado em documentos do legado, insights a partir de ideações registradas considera fator de sucesso atender ao desafio de convergir anotações, arquivos de texto, pdf, e em formado markdown registradas em bases de conhecimento pessoal como Obsidian que estejam decentralizados em uma unica estrutura de dados que contenha os principais insights com base no legado para contextualizar o momento presente para projetar o próximo passo (A OBRA colocada em prática).
+**Sistema Inteligente de Consolidação de Conhecimento Pessoal**
+
+[![Status](https://img.shields.io/badge/Status-Production-green)](https://github.com/chakssp/vcia_dhl)
+[![Version](https://img.shields.io/badge/Version-2.0-blue)](https://github.com/chakssp/vcia_dhl)
+[![Qdrant](https://img.shields.io/badge/Qdrant-Integrated-purple)](http://qdr.vcia.com.br:6333)
+
+Portal avançado para descoberta, análise e estruturação automatizada de momentos decisivos e oportunidades em bases de conhecimento pessoal. Transforma anotações dispersas, documentos e ideações em uma estrutura unificada de insights acionáveis.
 
 ## 🎯 Objetivo
 
 Transformar conhecimento disperso em insights acionáveis, estabelecendo uma base pré-estruturada que alimentará fluxos de automação IA para proposição de projetos internos e tomada de decisões estratégicas.
 É importante que a o Efeito UAU seja o principal fator de acesso com foco no interesse e inclusão do próprio Empresário(man-in-the-loop) desde o marco zero quando realiza este assesment para obter os primeiros insights e projeções em seu ultimo estágio enquanto avança no processo em busca de enriquecer ao máximo de contexto que traduza o seu objetivo como fator de sucesso, compreendendo seus pontos fortes, seus desafios e a sua rotina com base histórica através deste portal que deve utilizar estes dados como base de conhecimento e fonte estratégica para entrega de insights e oportunidades que considerem de forma verticalizada os meios viáveis e funcionáis que podem ser impulsionados e potencializados com o auxilio da Inteligencia Artifical estruturando uma base RAG que começa a partir das informações e dados históricos em documentos e arquivos do legado para ativo estratégico que já inicia preparado para o futuro.
 
-## 🚀 Características Principais
+## ✨ Funcionalidades Principais
 
-### ✅ Sistema Base (SPRINT 1.1 & 1.2)
-- **Descoberta Automática**: Integração com File System Access API para acesso real a arquivos
-- **Preview Inteligente**: Economia de 70% em tokens através de extração otimizada de 5 segmentos
-- **Filtros Avançados**: Sistema dinâmico com contadores em tempo real e múltiplos critérios
-- **Análise de Relevância**: Algoritmos configuráveis (Linear, Exponential, Logarithmic)
-- **Gestão de Memória**: Compressão automática do localStorage para grandes volumes
-- **Suporte Obsidian**: Detecção automática de vaults e integração nativa
-- **Exportação RAG-Ready**: Preparado para integração com Qdrant, PostgreSQL e Redis
+### 🔍 Descoberta e Análise
+- **File System Access API**: Acesso direto a arquivos locais
+- **Preview Inteligente**: 70% economia de tokens com extração otimizada
+- **Filtros Avançados**: Relevância, data, tamanho, tipo com contadores real-time
+- **Análise IA Multi-Provider**: Claude, GPT-4, Gemini, Ollama
+- **Suporte Obsidian**: Integração nativa com vaults
 
-### ✅ Sistema Completo (WAVES 1-10 IMPLEMENTADAS)
-- **Knowledge Consolidator Base**: Descoberta, análise e organização (Waves 1-4) ✅
-- **ML Confidence Integration**: Sistema completo com IA avançada (Waves 6-9) ✅
-- **Production Deployment**: Sistema em produção com zero downtime (Wave 10) 🚀
+### 🚀 Integração Qdrant
+- **Vector Database**: Armazenamento e busca semântica
+- **Embeddings 768D**: Via Ollama local
+- **Deduplicação Inteligente**: Detecção automática de duplicatas
+- **Merge Strategy**: 4 estratégias de atualização (Skip, Update, Merge, Preserve)
+- **Chunk Processing**: Divisão otimizada para RAG
+- **Versionamento**: Controle automático de versões
+
+### 📊 Sistema de Categorização
+- **17 Categorias Pré-definidas**: Organizadas por segmentos
+- **Interface Visual**: App categoria-manager dedicado
+- **Merge Inteligente**: União de categorias em re-processamento
+- **Preservação de Curadoria**: Mantém decisões humanas
+
+### ⚡ Performance e Produção
+- **10 Waves Implementadas**: Sistema completo em produção
+- **ML Confidence System**: Scoring e validação avançados
+- **Zero Downtime**: Deploy com rollback automático
+- **4 Camadas de Backup**: Git + Local + Branches + MCP Memory
 
 ## 📋 Pré-requisitos
 
-- Navegador moderno com suporte a ES6+ e File System Access API (Chrome 86+, Edge 86+)
-- Python 3 (para servidor de desenvolvimento)
-- Sem dependências externas em produção
+- **Browser**: Chrome 86+, Edge 86+ (File System Access API)
+- **Qdrant**: Servidor rodando em http://qdr.vcia.com.br:6333
+- **Ollama**: Para embeddings locais (opcional)
+- **Servidor**: Five Server ou Python HTTP Server
+- **Node.js**: 18+ (desenvolvimento)
 
 ## 🛠️ Instalação
 
-1. Clone o repositório
+### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/knowledge-consolidator.git
-cd knowledge-consolidator
+git clone https://github.com/chakssp/vcia_dhl.git
+cd vcia_dhl
 ```
 
-2. Inicie o servidor de desenvolvimento
-```bash
-python -m http.server 8000
-# ou
-python3 -m http.server 8000
+### 2. Configure os serviços
+```javascript
+// js/services/QdrantService.js
+this.baseUrl = 'http://qdr.vcia.com.br:6333';
+
+// js/services/EmbeddingService.js
+this.ollamaUrl = 'http://localhost:11434';
 ```
 
-3. Acesse http://localhost:8000
+### 3. Inicie o servidor
+```bash
+# Opção 1: Five Server (recomendado)
+# Porta 5500 com Live Reload
+
+# Opção 2: Python HTTP Server
+python -m http.server 5500
+```
+
+### 4. Acesse http://localhost:5500
 
 ## 🏗️ Arquitetura
 
@@ -103,6 +135,71 @@ window.KnowledgeConsolidator = {
 - Categorização automática baseada em análise
 - Formatos múltiplos (JSON, Markdown, PDF, HTML)
 - Preparação para RAG (Qdrant-compatible)
+
+## 📖 Uso Rápido
+
+### Comandos Essenciais
+
+```javascript
+// Diagnóstico completo do sistema
+kcdiag()
+
+// Descoberta de arquivos
+KC.DiscoveryManager.startDiscovery()
+
+// Processar e enviar para Qdrant
+KC.RAGExportManager.consolidateData()
+
+// Verificar conexão Qdrant
+KC.QdrantService.checkConnection()
+
+// Estatísticas do Qdrant
+KC.QdrantService.getCollectionStats()
+
+// Ver arquivos descobertos
+KC.AppState.get('files')
+
+// Categorias disponíveis
+KC.CategoryManager.getAll()
+
+// Debug de duplicatas
+debugDuplicateDetection()
+```
+
+## 🔀 Estratégias de Merge (Qdrant)
+
+### Como funciona cada estratégia:
+
+#### 1. **SKIP** (Ignora duplicatas)
+```javascript
+{ duplicateAction: 'skip' }
+// ✅ Preserva tudo no Qdrant
+// ❌ Não atualiza nada
+```
+
+#### 2. **UPDATE** (Substitui tudo)
+```javascript
+{ duplicateAction: 'update' }
+// ❌ Perde categorias antigas
+// ✅ Atualiza com dados novos
+```
+
+#### 3. **MERGE** (Combina - PADRÃO)
+```javascript
+{ duplicateAction: 'merge' }
+// ✅ Une categorias (sem duplicatas)
+// ✅ Preserva enriquecimentos
+// ✅ Incrementa versão
+```
+
+#### 4. **UPDATE+PRESERVE** (Híbrido)
+```javascript
+{ 
+  duplicateAction: 'update',
+  preserveFields: ['categories', 'approved']
+}
+// ✅ Atualiza mas preserva campos específicos
+```
 
 ## 🔧 Funcionalidades Implementadas
 
@@ -225,58 +322,81 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 
 ---
 
-## Usage
+## 🐛 Troubleshooting
 
-Read `.claude/settings.json` to see the permissions and commands allowed.
-
-Start Claude Code: `claude`
-
-Type slash command `/project:infinite` to start the infinite agentic loop.
-
-The infinite command takes three arguments:
-```
-/project:infinite <spec_file> <output_dir> <count>
+### Problema: Arquivos não detectados como duplicatas
+```javascript
+// Execute o script de debug
+load('debug-duplicates-check.js')
+// Ou diretamente:
+debugDuplicateDetection()
 ```
 
-### 4 Command Variants
-
-#### 1. Single Generation
-```bash
-/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src 1
+### Problema: Erro de conexão com Qdrant
+```javascript
+// Verificar conexão
+KC.QdrantService.checkConnection()
+// Ver URL configurada
+KC.QdrantService.baseUrl
 ```
-Generate one new iteration using the UI specification.
 
-#### 2. Small Batch (5 iterations)
-```bash
-/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src_new 5
+### Problema: Embeddings não funcionam
+```javascript
+// Verificar Ollama
+KC.EmbeddingService.checkOllamaAvailability()
+// Ver URL Ollama
+KC.EmbeddingService.ollamaUrl
 ```
-Deploy 5 parallel agents to generate 5 unique iterations simultaneously.
 
-#### 3. Large Batch (20 iterations)  
-```bash
-/project:infinite intelligence-lab/specs/invent_new_ui_v3.md src_new 20
+### Problema: LocalStorage cheio
+```javascript
+// Limpar cache
+KC.AppState.clearCache()
+// Ver uso atual
+KC.AppState.getStorageSize()
 ```
-Generate 20 iterations in coordinated batches of 5 agents for optimal resource management.
 
-#### 4. Infinite Mode
-```bash
-/project:infinite intelligence-lab/specs/invent_new_ui_v3.md infinite_src_new/ infinite
-```
-Continuous generation in waves until context limits are reached, with progressive sophistication.
+---
 
-## How It Works
+## 📚 Documentação Adicional
 
-1. **Specification Analysis**: Reads and understands the spec file requirements
-2. **Directory Reconnaissance**: Analyzes existing iterations to determine starting point
-3. **Parallel Coordination**: Deploys Sub Agents with unique creative directions
-4. **Quality Assurance**: Ensures each iteration is unique and spec-compliant
-5. **Wave Management**: For infinite mode, manages successive waves of agents
+- **[CLAUDE.md](CLAUDE.md)** - Diretrizes e LEIS do projeto
+- **[RESUME-STATUS.md](RESUME-STATUS.md)** - Status atual detalhado
+- **[docs/](docs/)** - Documentação técnica completa
+- **[qdrant-fase/](qdrant-fase/)** - Planejamento Qdrant-First
+- **[test/](test/)** - Arquivos de teste e validação
 
-## Directions you can take to enhance this pattern
+---
 
-- Apply this to a use case of your choice.
-- Build an MCP Server that enables reuse of the infinite agentic loop.
-- Get the `.claude/commands/infinite.md` into your `~/.claude/commands/` directory for global use.
-- Update `.claude/commands/infinite.md` to generate sets of files instead of a single file.
+## 🚀 Roadmap Futuro
 
-**Desenvolvido com foco em dados reais e economia de tokens para máxima eficiência.**
+- [ ] Interface de busca semântica avançada
+- [ ] Integração com N8N workflows
+- [ ] Export direto para Obsidian
+- [ ] API REST pública
+- [ ] Mobile app com React Native
+- [ ] Integração com Langchain
+- [ ] Multi-language support
+
+---
+
+## 📞 Contato e Suporte
+
+- **GitHub Issues**: [Reportar problemas](https://github.com/chakssp/vcia_dhl/issues)
+- **Documentação**: [Wiki do projeto](https://github.com/chakssp/vcia_dhl/wiki)
+- **Email**: suporte@vcia.com.br
+
+---
+
+## 👏 Agradecimentos
+
+- **Claude Code Assistant** - Arquitetura e implementação
+- **Qdrant Team** - Vector database excepcional
+- **Ollama** - Embeddings locais eficientes
+- **Obsidian Community** - Inspiração e feedback
+
+---
+
+**Knowledge Consolidator v2.0** - Transformando conhecimento disperso em insights acionáveis 🚀
+
+*Desenvolvido com foco em dados reais e economia de tokens para máxima eficiência.*

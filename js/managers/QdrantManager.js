@@ -179,6 +179,27 @@ class QdrantManager {
      */
     async checkDuplicate(file) {
         try {
+            // CORREÇÃO: Garantir que fileName sempre tenha um valor
+            // Se não tem fileName, extrair do name (removendo 🔁) ou do path
+            if (!file.fileName) {
+                const name = file.name || '';
+                file.fileName = name.replace('🔁 ', '').trim();
+                
+                // Se ainda não tem, tentar extrair do path
+                if (!file.fileName && (file.filePath || file.path)) {
+                    const path = file.filePath || file.path;
+                    file.fileName = path.split('/').pop() || path.split('\\').pop() || '';
+                }
+            }
+            
+            // DEBUG: Ver o que está chegando
+            console.log('🔍 checkDuplicate recebeu:', {
+                name: file.name,
+                fileName: file.fileName,
+                filePath: file.filePath || file.path,
+                chunkIndex: file.chunkIndex
+            });
+            
             // LÓGICA CORRIGIDA: Verificar duplicatas considerando chunks
             // 1. Se tem chunkIndex, verificar se ESSE CHUNK específico já existe
             // 2. Se não tem chunkIndex, verificar se o arquivo completo já existe
@@ -286,14 +307,21 @@ class QdrantManager {
             }
             
             // NOVO: Se não encontrou por caminho completo, buscar pelo campo fileName que é onde está salvo
-            const fileName = file.name || file.fileName || filePath.split('/').pop() || filePath.split('\\').pop() || '';
-            if (fileName) {
+            // IMPORTANTE: file.fileName deve ter o nome original, file.name pode ter o símbolo 🔁
+            const fileName = file.fileName || file.name || filePath.split('/').pop() || filePath.split('\\').pop() || '';
+            
+            // Remover o símbolo 🔁 do nome antes de buscar (caso venha de file.name)
+            const cleanFileName = fileName.replace('🔁 ', '').trim();
+            
+            if (cleanFileName) {
+                console.log(`🔍 Buscando por fileName: "${cleanFileName}"`);
+                
                 // Buscar diretamente no campo fileName onde sabemos que está o nome
                 filter = {
                     must: [
                         {
                             key: "fileName",
-                            match: { value: fileName }
+                            match: { value: cleanFileName }
                         }
                     ]
                 };
@@ -304,10 +332,13 @@ class QdrantManager {
                     withPayload: true
                 });
                 
+                console.log(`📊 Resultados da busca por fileName: ${results?.points?.length || 0} pontos encontrados`);
+                
                 if (results && results.points && results.points.length > 0) {
                     // Para arquivos encontrados por nome, assumir que é o mesmo arquivo
                     // O hash pode ser diferente entre chunks e arquivo completo
                     const point = results.points[0]; // Pegar o primeiro match
+                    console.log(`✅ Duplicata encontrada: ${cleanFileName} (ID: ${point.id})`);
                     this.stats.duplicatesFound++;
                     return {
                         isDuplicate: true,
@@ -321,6 +352,8 @@ class QdrantManager {
                             analysisType: point.payload?.analysisType
                         }
                     };
+                } else {
+                    console.log(`❌ Nenhuma duplicata encontrada para: ${cleanFileName}`);
                 }
             }
             
