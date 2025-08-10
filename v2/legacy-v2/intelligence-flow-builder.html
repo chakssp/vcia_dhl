@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Flow Builder - Knowledge Consolidator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.6/dist/vis-network.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            color: #F1F5F9;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Painel de Inteligência */
+        .intelligence-panel {
+            width: 380px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-bottom: 2px solid rgba(59, 130, 246, 0.5);
+        }
+        
+        .panel-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-header h2 i {
+            color: #3B82F6;
+        }
+        
+        .panel-header p {
+            font-size: 0.85rem;
+            color: #94A3B8;
+            line-height: 1.4;
+        }
+        
+        /* Tabs de Dados */
+        .data-tabs {
+            display: flex;
+            background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-bottom-color: #3B82F6;
+            color: #3B82F6;
+        }
+        
+        /* Container de Dados */
+        .data-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        /* Cards de Inteligência */
+        .intelligence-card {
+            background: rgba(51, 65, 85, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .intelligence-card:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3B82F6;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .intelligence-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 8px;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #F1F5F9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3B82F6;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .card-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: #94A3B8;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .meta-item i {
+            font-size: 0.7rem;
+            color: #64748B;
+        }
+        
+        .card-insights {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10B981;
+            padding: 8px;
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+        
+        .insight-label {
+            font-size: 0.7rem;
+            color: #10B981;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .insight-text {
+            font-size: 0.85rem;
+            color: #F1F5F9;
+            line-height: 1.3;
+        }
+        
+        .card-connections {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .connection-tag {
+            background: rgba(139, 92, 246, 0.2);
+            color: #A78BFA;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        /* Área Principal - Flow Builder */
+        .flow-builder {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Toolbar de Ações */
+        .action-toolbar {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .toolbar-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(51, 65, 85, 0.8);
+            color: #CBD5E1;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3B82F6;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+            border: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            border: none;
+        }
+        
+        /* Canvas do Flow - CORREÇÃO CRÍTICA */
+        #flow-canvas {
+            flex: 1;
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05), transparent);
+            position: relative;
+            height: calc(100vh - 120px);
+            max-height: calc(100vh - 120px);
+            overflow: hidden;
+        }
+        
+        /* Correções para vis-network no flow-builder */
+        #flow-canvas .vis-network {
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+        }
+        
+        #flow-canvas .vis-network canvas {
+            max-height: 100% !important;
+            width: 100% !important;
+        }
+        
+        #flow-canvas.drag-over {
+            background: radial-gradient(circle at center, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.05));
+            box-shadow: inset 0 0 100px rgba(59, 130, 246, 0.2);
+        }
+        
+        /* Painel de Análise */
+        .analysis-panel {
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .analysis-header {
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .analysis-header h3 {
+            font-size: 1.1rem;
+            color: #F1F5F9;
+            margin-bottom: 5px;
+        }
+        
+        .analysis-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        /* Métricas de Inteligência */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-card {
+            background: rgba(51, 65, 85, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3B82F6;
+            margin-bottom: 4px;
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            color: #94A3B8;
+            text-transform: uppercase;
+        }
+        
+        /* Padrões Detectados */
+        .patterns-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 0.9rem;
+            color: #3B82F6;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pattern-item {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10B981;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+        
+        .pattern-name {
+            font-weight: 600;
+            color: #10B981;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+        
+        .pattern-description {
+            font-size: 0.8rem;
+            color: #CBD5E1;
+            line-height: 1.3;
+        }
+        
+        /* Recomendações */
+        .recommendations {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .recommendation-item {
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .recommendation-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .recommendation-icon {
+            color: #A78BFA;
+            margin-top: 2px;
+        }
+        
+        .recommendation-text {
+            flex: 1;
+            font-size: 0.85rem;
+            color: #E9D5FF;
+            line-height: 1.3;
+        }
+        
+        /* Info Overlay */
+        .info-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            max-width: 300px;
+            z-index: 100;
+        }
+        
+        .info-overlay h4 {
+            color: #3B82F6;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+        
+        .info-overlay p {
+            color: #94A3B8;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.5);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: linear-gradient(135deg, #10B981, #059669);
+        }
+        
+        .toast.warning {
+            background: linear-gradient(135deg, #F59E0B, #D97706);
+        }
+    </style>
+</head>
+<body>
+    <!-- Painel de Inteligência de Dados -->
+    <div class="intelligence-panel">
+        <div class="panel-header">
+            <h2><i class="fas fa-brain"></i> Intelligence Flow Builder</h2>
+            <p>Construa fluxos de inteligência conectando dados, insights e padrões descobertos pelo sistema</p>
+        </div>
+        
+        <!-- Tabs de Tipos de Dados -->
+        <div class="data-tabs">
+            <div class="tab active" onclick="switchTab('insights')">
+                <i class="fas fa-lightbulb"></i> Insights
+            </div>
+            <div class="tab" onclick="switchTab('patterns')">
+                <i class="fas fa-project-diagram"></i> Padrões
+            </div>
+            <div class="tab" onclick="switchTab('entities')">
+                <i class="fas fa-network-wired"></i> Entidades
+            </div>
+            <div class="tab" onclick="switchTab('flows')">
+                <i class="fas fa-stream"></i> Fluxos
+            </div>
+        </div>
+        
+        <!-- Container de Dados -->
+        <div class="data-container" id="data-container">
+            <!-- Cards de Insights -->
+            <div class="intelligence-card" draggable="true" 
+                 data-type="insight" 
+                 data-id="insight-1"
+                 data-name="Padrão de Alta Conversão">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line" style="color: #10B981;"></i>
+                        Padrão de Alta Conversão
+                    </div>
+                    <span class="card-badge">92% confiança</span>
+                </div>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-clock"></i> Descoberto há 2h
+                    </span>
+                    <span class="meta-item">
+                        <i class="fas fa-database"></i> 156 arquivos
+                    </span>
+                </div>
+                <div class="card-insights">
+                    <div class="insight-label">Insight Principal</div>
+                    <div class="insight-text">
+                        Taxa de conversão 3x maior quando combinado com automação WhatsApp
+                    </div>
+                </div>
+                <div class="card-connections">
+                    <span class="connection-tag">DedetClean</span>
+                    <span class="connection-tag">Vendas Q1</span>
+                    <span class="connection-tag">WhatsApp API</span>
+                </div>
+            </div>
+            
+            <div class="intelligence-card" draggable="true" 
+                 data-type="insight" 
+                 data-id="insight-2"
+                 data-name="Correlação Cliente-Produto">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-link" style="color: #8B5CF6;"></i>
+                        Correlação Cliente-Produto
+                    </div>
+                    <span class="card-badge">87% confiança</span>
+                </div>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-clock"></i> Hoje
+                    </span>
+                    <span class="meta-item">
+                        <i class="fas fa-database"></i> 89 arquivos
+                    </span>
+                </div>
+                <div class="card-insights">
+                    <div class="insight-label">Descoberta</div>
+                    <div class="insight-text">
+                        Clientes do setor saúde têm 78% mais chance de contratar módulo IA
+                    </div>
+                </div>
+                <div class="card-connections">
+                    <span class="connection-tag">Hospital Central</span>
+                    <span class="connection-tag">Módulo IA</span>
+                    <span class="connection-tag">Saúde</span>
+                </div>
+            </div>
+            
+            <div class="intelligence-card" draggable="true" 
+                 data-type="insight" 
+                 data-id="insight-3"
+                 data-name="Tendência Temporal">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-trending-up" style="color: #F59E0B;"></i>
+                        Tendência Temporal
+                    </div>
+                    <span class="card-badge">95% confiança</span>
+                </div>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-clock"></i> Esta semana
+                    </span>
+                    <span class="meta-item">
+                        <i class="fas fa-database"></i> 234 arquivos
+                    </span>
+                </div>
+                <div class="card-insights">
+                    <div class="insight-label">Previsão</div>
+                    <div class="insight-text">
+                        Pico de demanda previsto para próxima terça (14h-16h)
+                    </div>
+                </div>
+                <div class="card-connections">
+                    <span class="connection-tag">Análise Temporal</span>
+                    <span class="connection-tag">Previsão ML</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Área Principal - Flow Builder -->
+    <div class="flow-builder">
+        <div class="action-toolbar">
+            <div class="toolbar-group">
+                <button class="btn btn-primary" onclick="analyzeFlow()">
+                    <i class="fas fa-brain"></i> Analisar Flow
+                </button>
+                <button class="btn" onclick="suggestConnections()">
+                    <i class="fas fa-magic"></i> Sugerir Conexões
+                </button>
+                <button class="btn" onclick="detectPatterns()">
+                    <i class="fas fa-search"></i> Detectar Padrões
+                </button>
+            </div>
+            
+            <div class="toolbar-group">
+                <button class="btn" onclick="saveFlow()">
+                    <i class="fas fa-save"></i> Salvar Flow
+                </button>
+                <button class="btn btn-success" onclick="exportIntelligence()">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+                <button class="btn" onclick="clearFlow()">
+                    <i class="fas fa-trash"></i> Limpar
+                </button>
+            </div>
+        </div>
+        
+        <div id="flow-canvas">
+            <div class="info-overlay">
+                <h4><i class="fas fa-info-circle"></i> Como Construir seu Flow</h4>
+                <p>
+                    <strong>1.</strong> Arraste cards de inteligência da esquerda<br>
+                    <strong>2.</strong> Conecte elementos relacionados<br>
+                    <strong>3.</strong> O sistema analisa e sugere padrões<br>
+                    <strong>4.</strong> Exporte o flow para automação
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Painel de Análise -->
+    <div class="analysis-panel">
+        <div class="analysis-header">
+            <h3><i class="fas fa-analytics"></i> Análise em Tempo Real</h3>
+        </div>
+        
+        <div class="analysis-content">
+            <!-- Métricas -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="metric-nodes">0</div>
+                    <div class="metric-label">Elementos</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metric-connections">0</div>
+                    <div class="metric-label">Conexões</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metric-patterns">0</div>
+                    <div class="metric-label">Padrões</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="metric-confidence">0%</div>
+                    <div class="metric-label">Confiança</div>
+                </div>
+            </div>
+            
+            <!-- Padrões Detectados -->
+            <div class="patterns-section">
+                <h4 class="section-title">
+                    <i class="fas fa-project-diagram"></i> Padrões Detectados
+                </h4>
+                <div id="patterns-list">
+                    <div class="pattern-item">
+                        <div class="pattern-name">Aguardando dados...</div>
+                        <div class="pattern-description">
+                            Arraste elementos para começar a detectar padrões
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recomendações -->
+            <div class="recommendations">
+                <h4 class="section-title">
+                    <i class="fas fa-lightbulb"></i> Recomendações IA
+                </h4>
+                <div id="recommendations-list">
+                    <div class="recommendation-item">
+                        <i class="fas fa-arrow-right recommendation-icon"></i>
+                        <div class="recommendation-text">
+                            Adicione elementos para receber sugestões inteligentes
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        // Variáveis Globais
+        let network = null;
+        let nodes = new vis.DataSet();
+        let edges = new vis.DataSet();
+        let currentTab = 'insights';
+        let nodeIdCounter = 0;
+        let intelligenceData = {
+            insights: [],
+            patterns: [],
+            entities: [],
+            flows: []
+        };
+        
+        // Inicialização
+        window.addEventListener('load', () => {
+            initializeNetwork();
+            setupDragAndDrop();
+            loadIntelligenceData();
+            initializeWithCenterNode();
+        });
+        
+        // Inicializar Network
+        function initializeNetwork() {
+            const container = document.getElementById('flow-canvas');
+            const data = { nodes: nodes, edges: edges };
+            
+            const options = {
+                nodes: {
+                    borderWidth: 2,
+                    shadow: true,
+                    font: {
+                        size: 14,
+                        color: '#FFFFFF',
+                        bold: true
+                    }
+                },
+                edges: {
+                    width: 2,
+                    smooth: {
+                        type: 'continuous',
+                        roundness: 0.5
+                    },
+                    arrows: {
+                        to: {
+                            enabled: true,
+                            scaleFactor: 0.8
+                        }
+                    },
+                    color: {
+                        color: '#64748B',
+                        highlight: '#3B82F6',
+                        hover: '#3B82F6'
+                    }
+                },
+                physics: {
+                    enabled: true,
+                    barnesHut: {
+                        gravitationalConstant: -3000,
+                        centralGravity: 0.3,
+                        springLength: 150,
+                        springConstant: 0.05,
+                        damping: 0.95
+                    },
+                    stabilization: {
+                        enabled: true,
+                        iterations: 150,
+                        updateInterval: 50
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 200,
+                    zoomView: true,
+                    dragView: true,
+                    dragNodes: true
+                }
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Eventos
+            network.on("click", function(params) {
+                if (params.nodes.length > 0) {
+                    showNodeAnalysis(params.nodes[0]);
+                }
+            });
+            
+            network.on("doubleClick", function(params) {
+                if (params.nodes.length === 0) {
+                    // Criar novo nó onde clicou
+                    const pos = params.pointer.canvas;
+                    createCustomNode(pos.x, pos.y);
+                }
+            });
+            
+            // Detectar mudanças
+            nodes.on('*', updateMetrics);
+            edges.on('*', updateMetrics);
+        }
+        
+        // Inicializar com nó central
+        function initializeWithCenterNode() {
+            nodes.add({
+                id: 'intelligence-center',
+                label: 'Centro de Inteligência',
+                shape: 'star',
+                size: 35,
+                color: {
+                    background: '#6366F1',
+                    border: '#4338CA'
+                },
+                x: 0,
+                y: 0,
+                fixed: { x: true, y: true },
+                title: 'Centro de Inteligência\nTodos os flows convergem aqui'
+            });
+            
+            updateMetrics();
+        }
+        
+        // Setup Drag and Drop
+        function setupDragAndDrop() {
+            const cards = document.querySelectorAll('.intelligence-card');
+            const canvas = document.getElementById('flow-canvas');
+            
+            cards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'copy';
+                    e.dataTransfer.setData('text/plain', JSON.stringify({
+                        type: card.dataset.type,
+                        id: card.dataset.id,
+                        name: card.dataset.name,
+                        html: card.innerHTML
+                    }));
+                    card.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('dragging');
+                });
+            });
+            
+            canvas.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                canvas.classList.add('drag-over');
+            });
+            
+            canvas.addEventListener('dragleave', () => {
+                canvas.classList.remove('drag-over');
+            });
+            
+            canvas.addEventListener('drop', (e) => {
+                e.preventDefault();
+                canvas.classList.remove('drag-over');
+                
+                try {
+                    const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                    const pos = network.DOMtoCanvas({
+                        x: e.clientX,
+                        y: e.clientY
+                    });
+                    
+                    addIntelligenceNode(data, pos);
+                } catch (error) {
+                    console.error('Erro ao processar drop:', error);
+                }
+            });
+        }
+        
+        // Adicionar Nó de Inteligência
+        function addIntelligenceNode(data, position) {
+            const nodeId = `${data.type}-${++nodeIdCounter}`;
+            
+            // Definir aparência baseada no tipo
+            let nodeColor = '#3B82F6';
+            let nodeShape = 'box';
+            let nodeIcon = '📊';
+            
+            switch(data.type) {
+                case 'insight':
+                    nodeColor = '#10B981';
+                    nodeShape = 'ellipse';
+                    nodeIcon = '💡';
+                    break;
+                case 'pattern':
+                    nodeColor = '#8B5CF6';
+                    nodeShape = 'diamond';
+                    nodeIcon = '🔍';
+                    break;
+                case 'entity':
+                    nodeColor = '#F59E0B';
+                    nodeShape = 'box';
+                    nodeIcon = '🏢';
+                    break;
+                case 'flow':
+                    nodeColor = '#EF4444';
+                    nodeShape = 'hexagon';
+                    nodeIcon = '🔄';
+                    break;
+            }
+            
+            // Adicionar nó
+            nodes.add({
+                id: nodeId,
+                label: `${nodeIcon} ${data.name}`,
+                x: position.x,
+                y: position.y,
+                color: {
+                    background: nodeColor,
+                    border: nodeColor,
+                    highlight: {
+                        background: nodeColor,
+                        border: '#FFFFFF'
+                    }
+                },
+                shape: nodeShape,
+                size: 30,
+                font: {
+                    size: 12,
+                    color: '#FFFFFF'
+                },
+                title: `${data.type}: ${data.name}\nClique para analisar`,
+                data: data
+            });
+            
+            // Auto-conectar ao centro ou nó mais próximo
+            autoConnect(nodeId, position);
+            
+            // Analisar padrões
+            setTimeout(() => {
+                detectPatternsInFlow();
+                suggestNextActions();
+            }, 500);
+            
+            showToast(`${data.name} adicionado ao flow!`, 'success');
+        }
+        
+        // Auto-conectar nós
+        function autoConnect(newNodeId, position) {
+            const allNodes = nodes.get();
+            let closestNode = null;
+            let minDistance = Infinity;
+            
+            allNodes.forEach(node => {
+                if (node.id !== newNodeId) {
+                    const dist = Math.sqrt(
+                        Math.pow(node.x - position.x, 2) + 
+                        Math.pow(node.y - position.y, 2)
+                    );
+                    if (dist < minDistance) {
+                        minDistance = dist;
+                        closestNode = node;
+                    }
+                }
+            });
+            
+            // Conectar se estiver próximo
+            if (closestNode && minDistance < 200) {
+                const edgeId = `edge-${newNodeId}-${closestNode.id}`;
+                edges.add({
+                    id: edgeId,
+                    from: newNodeId,
+                    to: closestNode.id,
+                    color: {
+                        color: '#64748B',
+                        opacity: 0.6,
+                        highlight: '#3B82F6'
+                    },
+                    width: 2,
+                    smooth: {
+                        type: 'curvedCW',
+                        roundness: 0.2
+                    },
+                    title: 'Conexão automática\nClique direito para remover'
+                });
+            }
+        }
+        
+        // Detectar Padrões no Flow
+        function detectPatternsInFlow() {
+            const nodesList = nodes.get();
+            const edgesList = edges.get();
+            
+            const patterns = [];
+            
+            // Padrão 1: Convergência
+            const convergenceNodes = nodesList.filter(node => {
+                const incoming = edgesList.filter(e => e.to === node.id).length;
+                return incoming >= 3;
+            });
+            
+            if (convergenceNodes.length > 0) {
+                patterns.push({
+                    name: 'Ponto de Convergência',
+                    description: `${convergenceNodes.length} nós centralizando informações`,
+                    confidence: 85
+                });
+            }
+            
+            // Padrão 2: Sequência Linear
+            const sequences = findSequences(nodesList, edgesList);
+            if (sequences.length > 0) {
+                patterns.push({
+                    name: 'Fluxo Sequencial',
+                    description: `${sequences.length} cadeias de processo identificadas`,
+                    confidence: 92
+                });
+            }
+            
+            // Padrão 3: Clusters
+            const clusters = identifyClusters(nodesList);
+            if (clusters.length > 1) {
+                patterns.push({
+                    name: 'Agrupamentos Temáticos',
+                    description: `${clusters.length} grupos de conhecimento relacionado`,
+                    confidence: 78
+                });
+            }
+            
+            // Atualizar UI
+            updatePatternsPanel(patterns);
+            
+            // Atualizar métricas
+            document.getElementById('metric-patterns').textContent = patterns.length;
+        }
+        
+        // Encontrar sequências
+        function findSequences(nodesList, edgesList) {
+            const sequences = [];
+            const visited = new Set();
+            
+            nodesList.forEach(node => {
+                if (!visited.has(node.id)) {
+                    const sequence = [];
+                    let current = node;
+                    
+                    while (current) {
+                        sequence.push(current);
+                        visited.add(current.id);
+                        
+                        const outgoing = edgesList.find(e => e.from === current.id);
+                        if (outgoing && !visited.has(outgoing.to)) {
+                            current = nodesList.find(n => n.id === outgoing.to);
+                        } else {
+                            current = null;
+                        }
+                    }
+                    
+                    if (sequence.length >= 3) {
+                        sequences.push(sequence);
+                    }
+                }
+            });
+            
+            return sequences;
+        }
+        
+        // Identificar clusters
+        function identifyClusters(nodesList) {
+            // Simplificado: agrupa por proximidade
+            const clusters = [];
+            const threshold = 300;
+            
+            nodesList.forEach(node => {
+                let addedToCluster = false;
+                
+                clusters.forEach(cluster => {
+                    const centerX = cluster.reduce((sum, n) => sum + n.x, 0) / cluster.length;
+                    const centerY = cluster.reduce((sum, n) => sum + n.y, 0) / cluster.length;
+                    
+                    const dist = Math.sqrt(
+                        Math.pow(node.x - centerX, 2) + 
+                        Math.pow(node.y - centerY, 2)
+                    );
+                    
+                    if (dist < threshold) {
+                        cluster.push(node);
+                        addedToCluster = true;
+                    }
+                });
+                
+                if (!addedToCluster) {
+                    clusters.push([node]);
+                }
+            });
+            
+            return clusters.filter(c => c.length > 1);
+        }
+        
+        // Atualizar painel de padrões
+        function updatePatternsPanel(patterns) {
+            const patternsList = document.getElementById('patterns-list');
+            
+            if (patterns.length === 0) {
+                patternsList.innerHTML = `
+                    <div class="pattern-item">
+                        <div class="pattern-name">Nenhum padrão detectado</div>
+                        <div class="pattern-description">
+                            Adicione mais elementos para identificar padrões
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            patternsList.innerHTML = patterns.map(pattern => `
+                <div class="pattern-item">
+                    <div class="pattern-name">${pattern.name} (${pattern.confidence}%)</div>
+                    <div class="pattern-description">${pattern.description}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Sugerir próximas ações
+        function suggestNextActions() {
+            const nodesList = nodes.get();
+            const recommendations = [];
+            
+            if (nodesList.length < 3) {
+                recommendations.push({
+                    text: 'Adicione mais elementos para criar um flow completo'
+                });
+            }
+            
+            if (nodesList.length >= 3 && edges.length < 2) {
+                recommendations.push({
+                    text: 'Conecte elementos relacionados para formar o flow'
+                });
+            }
+            
+            const isolatedNodes = nodesList.filter(node => {
+                const connections = edges.get().filter(e => 
+                    e.from === node.id || e.to === node.id
+                ).length;
+                return connections === 0 && node.id !== 'intelligence-center';
+            });
+            
+            if (isolatedNodes.length > 0) {
+                recommendations.push({
+                    text: `${isolatedNodes.length} elementos isolados - considere conectá-los`
+                });
+            }
+            
+            // Recomendações baseadas em IA
+            if (nodesList.length >= 5) {
+                recommendations.push({
+                    text: 'Flow complexo detectado - considere criar sub-flows'
+                });
+            }
+            
+            updateRecommendationsPanel(recommendations);
+        }
+        
+        // Atualizar painel de recomendações
+        function updateRecommendationsPanel(recommendations) {
+            const recList = document.getElementById('recommendations-list');
+            
+            if (recommendations.length === 0) {
+                recList.innerHTML = `
+                    <div class="recommendation-item">
+                        <i class="fas fa-arrow-right recommendation-icon"></i>
+                        <div class="recommendation-text">
+                            Sistema analisando seu flow...
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            recList.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item">
+                    <i class="fas fa-arrow-right recommendation-icon"></i>
+                    <div class="recommendation-text">${rec.text}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Atualizar métricas
+        function updateMetrics() {
+            document.getElementById('metric-nodes').textContent = nodes.length;
+            document.getElementById('metric-connections').textContent = edges.length;
+            
+            // Calcular confiança média
+            const avgConfidence = nodes.length > 0 ? 
+                Math.min(95, 60 + (nodes.length * 5) + (edges.length * 3)) : 0;
+            document.getElementById('metric-confidence').textContent = avgConfidence + '%';
+        }
+        
+        // Analisar Flow
+        function analyzeFlow() {
+            showToast('Analisando flow de inteligência...', 'info');
+            
+            setTimeout(() => {
+                detectPatternsInFlow();
+                suggestNextActions();
+                
+                const confidence = document.getElementById('metric-confidence').textContent;
+                showToast(`Análise completa! Confiança: ${confidence}`, 'success');
+            }, 1500);
+        }
+        
+        // Sugerir Conexões
+        function suggestConnections() {
+            const nodesList = nodes.get();
+            
+            if (nodesList.length < 2) {
+                showToast('Adicione mais elementos para sugerir conexões', 'warning');
+                return;
+            }
+            
+            // Encontrar nós sem conexão
+            const unconnected = nodesList.filter(node => {
+                if (node.id === 'intelligence-center') return false;
+                const connections = edges.get().filter(e => 
+                    e.from === node.id || e.to === node.id
+                ).length;
+                return connections === 0;
+            });
+            
+            // Conectar ao centro se não houver conexões
+            unconnected.forEach(node => {
+                edges.add({
+                    from: node.id,
+                    to: 'intelligence-center',
+                    color: { color: '#10B981', opacity: 0.4 },
+                    dashes: true,
+                    title: 'Conexão sugerida'
+                });
+            });
+            
+            if (unconnected.length > 0) {
+                showToast(`${unconnected.length} conexões sugeridas adicionadas`, 'success');
+            } else {
+                showToast('Todos os elementos já estão conectados', 'info');
+            }
+        }
+        
+        // Detectar Padrões (botão)
+        function detectPatterns() {
+            detectPatternsInFlow();
+            showToast('Padrões analisados e atualizados', 'success');
+        }
+        
+        // Salvar Flow
+        function saveFlow() {
+            const flowData = {
+                nodes: nodes.get(),
+                edges: edges.get(),
+                metadata: {
+                    created: new Date().toISOString(),
+                    name: 'Intelligence Flow',
+                    confidence: document.getElementById('metric-confidence').textContent
+                }
+            };
+            
+            localStorage.setItem('intelligenceFlow', JSON.stringify(flowData));
+            showToast('Flow salvo com sucesso!', 'success');
+        }
+        
+        // Exportar Inteligência
+        function exportIntelligence() {
+            const flowData = {
+                nodes: nodes.get(),
+                edges: edges.get(),
+                patterns: [],
+                recommendations: [],
+                metadata: {
+                    exported: new Date().toISOString(),
+                    confidence: document.getElementById('metric-confidence').textContent,
+                    elements: nodes.length,
+                    connections: edges.length
+                }
+            };
+            
+            const dataStr = JSON.stringify(flowData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `intelligence-flow-${Date.now()}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showToast('Flow exportado com sucesso!', 'success');
+        }
+        
+        // Limpar Flow
+        function clearFlow() {
+            if (confirm('Limpar todo o flow de inteligência?')) {
+                nodes.clear();
+                edges.clear();
+                initializeWithCenterNode();
+                showToast('Flow limpo', 'info');
+            }
+        }
+        
+        // Criar nó customizado
+        function createCustomNode(x, y) {
+            const name = prompt('Nome do elemento:');
+            if (name) {
+                const nodeId = `custom-${++nodeIdCounter}`;
+                nodes.add({
+                    id: nodeId,
+                    label: name,
+                    x: x,
+                    y: y,
+                    color: '#64748B',
+                    shape: 'box',
+                    size: 25
+                });
+                showToast('Elemento criado', 'success');
+            }
+        }
+        
+        // Mostrar análise do nó
+        function showNodeAnalysis(nodeId) {
+            const node = nodes.get(nodeId);
+            if (node && node.data) {
+                // Aqui você pode mostrar detalhes específicos do nó
+                console.log('Análise do nó:', node);
+            }
+        }
+        
+        // Switch de tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Aqui você carregaria dados diferentes para cada tab
+            loadTabData(tab);
+        }
+        
+        // Carregar dados da tab
+        function loadTabData(tab) {
+            // Implementar carregamento de dados específicos
+            showToast(`Carregando ${tab}...`, 'info');
+        }
+        
+        // Carregar dados de inteligência
+        function loadIntelligenceData() {
+            // Aqui você carregaria dados reais do sistema
+            // Por enquanto usando dados de exemplo
+        }
+        
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            if (type) toast.classList.add(type);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

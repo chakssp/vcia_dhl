@@ -1,0 +1,987 @@
+{
+  "metadata": {
+    "exportDate": "2025-08-10T03:25:24.710Z",
+    "viewMode": "clusters",
+    "nodeCount": 43,
+    "edgeCount": 39,
+    "entityCount": 0,
+    "densityStats": {
+      "overall": {
+        "nodes": 43,
+        "edges": 39,
+        "density": 0.04318936877076412
+      },
+      "byType": {
+        "file": {
+          "nodes": 39,
+          "edges": 39,
+          "avgConnections": 1
+        },
+        "category": {
+          "nodes": 0,
+          "edges": 0,
+          "avgConnections": 0
+        },
+        "entity": {
+          "nodes": 0,
+          "edges": 0,
+          "avgConnections": 0
+        }
+      },
+      "byAnalysisType": {
+        "Breakthrough Técnico": {
+          "nodes": 0,
+          "percentage": "0.0"
+        },
+        "Evolução Conceitual": {
+          "nodes": 0,
+          "percentage": "0.0"
+        },
+        "Momento Decisivo": {
+          "nodes": 0,
+          "percentage": "0.0"
+        },
+        "Insight Estratégico": {
+          "nodes": 0,
+          "percentage": "0.0"
+        },
+        "Aprendizado Geral": {
+          "nodes": 0,
+          "percentage": "0.0"
+        }
+      },
+      "crossConnections": 0
+    }
+  },
+  "nodes": [
+    {
+      "id": "cluster-Breakthrough-Técnico",
+      "label": "Breakthrough Técnico",
+      "type": "cluster",
+      "x": 400,
+      "y": 0,
+      "fixed": true,
+      "color": "#ef4444",
+      "size": 40,
+      "shape": "hexagon",
+      "font": {
+        "size": 18,
+        "face": "arial",
+        "bold": true
+      },
+      "title": "Cluster: Breakthrough Técnico\n17 arquivos"
+    },
+    {
+      "id": "file-file_1754795427356_gnfsm3vyq",
+      "label": "linkedin-Backlog.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 550,
+      "y": 0,
+      "color": "#ef4444",
+      "size": 20.7,
+      "title": "JULHO/linkedin-Backlog.md\nRelevância: 57%",
+      "relevance": 57
+    },
+    {
+      "id": "file-file_1754795427406_x0pt78s3e",
+      "label": "vps-JS ou VUE.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 539.8708344106534,
+      "y": 54.18624992807294,
+      "color": "#ef4444",
+      "size": 20.7,
+      "title": "JULHO/vps-JS ou VUE.md\nRelevância: 57%",
+      "relevance": 57
+    },
+    {
+      "id": "file-file_1754795427334_lex8w4za6",
+      "label": "LGPD FASE 1 - plan 1.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 510.8513375830989,
+      "y": 101.05434654698358,
+      "color": "#ef4444",
+      "size": 18.9,
+      "title": "JULHO/LGPD FASE 1 - plan 1.md\nRelevância: 39%",
+      "relevance": 39
+    },
+    {
+      "id": "file-file_1754795427380_uj7hvo3gs",
+      "label": "vcia-FUNIL Filtros.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 466.86075336648076,
+      "y": 134.27449370325934,
+      "color": "#ef4444",
+      "size": 18.2,
+      "title": "JULHO/vcia-FUNIL Filtros.md\nRelevância: 32%",
+      "relevance": 32
+    },
+    {
+      "id": "file-file_1754795427344_rbcltt3zn",
+      "label": "Resumo do Sistema 25072025.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 413.8402539194953,
+      "y": 149.36012644425517,
+      "color": "#ef4444",
+      "size": 17.7,
+      "title": "JULHO/Resumo do Sistema 25072025.md\nRelevância: 27%",
+      "relevance": 27
+    },
+    {
+      "id": "file-file_1754795427400_ce7jw808k",
+      "label": "vcia-analisediag.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 358.95055148918755,
+      "y": 144.27384647592285,
+      "color": "#ef4444",
+      "size": 20,
+      "title": "JULHO/vcia-analisediag.md\nRelevância: 50%",
+      "relevance": 50
+    },
+    {
+      "id": "file-file_1754795427367_sgg3xf0ft",
+      "label": "vcia-1 Prompt RAGATanga.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 309.6048045431115,
+      "y": 119.70258409203593,
+      "color": "#ef4444",
+      "size": 23.3,
+      "title": "JULHO/vcia-1 Prompt RAGATanga.md\nRelevância: 83%",
+      "relevance": 83
+    },
+    {
+      "id": "file-file_1754795427312_a2ve1mx10",
+      "label": "PRD Completo Knowledge Consolidator (Versão Expandida).md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 272.4674296405579,
+      "y": 78.9648244316034,
+      "color": "#ef4444",
+      "size": 16.6,
+      "title": "JULHO/Clippings/PRD Completo Knowledge Consolidator (Versão Expandida).md\nRelevância: 16%",
+      "relevance": 16
+    },
+    {
+      "id": "file-file_1754795427331_b8nemsveo",
+      "label": "LGPD-N8N 1 de 6 fases (Index).md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 252.55403504741474,
+      "y": 27.562427672485555,
+      "color": "#ef4444",
+      "size": 16.9,
+      "title": "JULHO/LGPD-N8N 1 de 6 fases (Index).md\nRelevância: 19%",
+      "relevance": 19
+    },
+    {
+      "id": "file-file_1754795427411_9qbquwrys",
+      "label": "linkedin-AVD - Android Virtual Device.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 252.55403504741474,
+      "y": -27.56242767248552,
+      "color": "#ef4444",
+      "size": 16.8,
+      "title": "JULHO/linkedin-AVD - Android Virtual Device.md\nRelevância: 18%",
+      "relevance": 18
+    },
+    {
+      "id": "file-file_1754795427417_ymskkxe5x",
+      "label": "vps-fluxo vps.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 272.4674296405579,
+      "y": -78.96482443160338,
+      "color": "#ef4444",
+      "size": 16.9,
+      "title": "JULHO/vps-fluxo vps.md\nRelevância: 19%",
+      "relevance": 19
+    },
+    {
+      "id": "file-file_1754795427364_z5und8pmz",
+      "label": "VCIA - Arquitetura Technica.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 309.6048045431114,
+      "y": -119.70258409203583,
+      "color": "#ef4444",
+      "size": 17.7,
+      "title": "JULHO/VCIA - Arquitetura Technica.md\nRelevância: 27%",
+      "relevance": 27
+    },
+    {
+      "id": "file-file_1754795427403_o48ss0nzn",
+      "label": "snippet-clicar e arrastar.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 358.95055148918755,
+      "y": -144.27384647592285,
+      "color": "#ef4444",
+      "size": 16.3,
+      "title": "JULHO/snippet-clicar e arrastar.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427393_a11yto2cx",
+      "label": "VCIA-Zettelkasttten.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 413.84025391949535,
+      "y": -149.36012644425517,
+      "color": "#ef4444",
+      "size": 15.7,
+      "title": "JULHO/VCIA-Zettelkasttten.md\nRelevância: 7%",
+      "relevance": 7
+    },
+    {
+      "id": "file-file_1754795427394_u3mhjhk2i",
+      "label": "vcia-ARCH-WAVES.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 466.86075336648065,
+      "y": -134.2744937032594,
+      "color": "#ef4444",
+      "size": 15.7,
+      "title": "JULHO/vcia-ARCH-WAVES.md\nRelevância: 7%",
+      "relevance": 7
+    },
+    {
+      "id": "file-file_1754795427369_ygl62q0x1",
+      "label": "VCIA Onboarding - ETAPA 2.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 510.85133758309877,
+      "y": -101.05434654698367,
+      "color": "#ef4444",
+      "size": 16.1,
+      "title": "JULHO/VCIA Onboarding - ETAPA 2.md\nRelevância: 11%",
+      "relevance": 11
+    },
+    {
+      "id": "file-file_1754795427382_9gb7pxdop",
+      "label": "vcia-Mitigate - Passo 2.md",
+      "type": "file",
+      "cluster": "Breakthrough Técnico",
+      "x": 539.8708344106534,
+      "y": -54.186249928072954,
+      "color": "#ef4444",
+      "size": 20,
+      "title": "JULHO/vcia-Mitigate - Passo 2.md\nRelevância: 50%",
+      "relevance": 50
+    },
+    {
+      "id": "cluster-Insight-Estratégico",
+      "label": "Insight Estratégico",
+      "type": "cluster",
+      "x": 2.4492935982947064e-14,
+      "y": 400,
+      "fixed": true,
+      "color": "#10b981",
+      "size": 40,
+      "shape": "hexagon",
+      "font": {
+        "size": 18,
+        "face": "arial",
+        "bold": true
+      },
+      "title": "Cluster: Insight Estratégico\n6 arquivos"
+    },
+    {
+      "id": "file-file_1754795427360_my4ea2qhv",
+      "label": "O que define VCIA & enever.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": 150.00000000000003,
+      "y": 400,
+      "color": "#10b981",
+      "size": 17.2,
+      "title": "JULHO/O que define VCIA & enever.md\nRelevância: 22%",
+      "relevance": 22
+    },
+    {
+      "id": "file-file_1754795427325_6iaeg90gj",
+      "label": "LinkedIn.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": 75.00000000000004,
+      "y": 529.9038105676658,
+      "color": "#10b981",
+      "size": 16.6,
+      "title": "JULHO/VCIA-Linkedin/LinkedIn.md\nRelevância: 16%",
+      "relevance": 16
+    },
+    {
+      "id": "file-file_1754795427328_ui39lm0u2",
+      "label": "VCIA - Do Achismo ao Exemplo Prático... A jornada estratégica para validar propostas de valor.  LinkedIn.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": -74.99999999999994,
+      "y": 529.9038105676658,
+      "color": "#10b981",
+      "size": 16.7,
+      "title": "JULHO/VCIA-Linkedin/VCIA - Do Achismo ao Exemplo Prático... A jornada estratégica para validar propostas de valor.  LinkedIn.md\nRelevância: 17%",
+      "relevance": 17
+    },
+    {
+      "id": "file-file_1754795427377_yzgvh8izt",
+      "label": "vcia-FLUXO-DADOS-ETAPAS.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": -149.99999999999997,
+      "y": 400,
+      "color": "#10b981",
+      "size": 17,
+      "title": "JULHO/vcia-FLUXO-DADOS-ETAPAS.md\nRelevância: 20%",
+      "relevance": 20
+    },
+    {
+      "id": "file-file_1754795427420_jvblnp278",
+      "label": "vcia-ONBOARD VCIA+.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": -75.00000000000004,
+      "y": 270.09618943233426,
+      "color": "#10b981",
+      "size": 16.1,
+      "title": "JULHO/vcia-ONBOARD VCIA+.md\nRelevância: 11%",
+      "relevance": 11
+    },
+    {
+      "id": "file-file_1754795427422_9zx3cn24e",
+      "label": "LGPD v1 Fluxos.md",
+      "type": "file",
+      "cluster": "Insight Estratégico",
+      "x": 75.00000000000004,
+      "y": 270.0961894323342,
+      "color": "#10b981",
+      "size": 15.5,
+      "title": "JULHO/LGPD v1 Fluxos.md\nRelevância: 5%",
+      "relevance": 5
+    },
+    {
+      "id": "cluster-Aprendizado-Geral",
+      "label": "Aprendizado Geral",
+      "type": "cluster",
+      "x": -400,
+      "y": 4.898587196589413e-14,
+      "fixed": true,
+      "color": "#6366f1",
+      "size": 40,
+      "shape": "hexagon",
+      "font": {
+        "size": 18,
+        "face": "arial",
+        "bold": true
+      },
+      "title": "Cluster: Aprendizado Geral\n15 arquivos"
+    },
+    {
+      "id": "file-file_1754795427375_jpyguncko",
+      "label": "LGPD FASE 2 - plan 1.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -250,
+      "y": 4.898587196589413e-14,
+      "color": "#6366f1",
+      "size": 17.5,
+      "title": "JULHO/LGPD FASE 2 - plan 1.md\nRelevância: 25%",
+      "relevance": 25
+    },
+    {
+      "id": "file-file_1754795427347_kh1j3gns1",
+      "label": "snippet-hero.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -262.9681813536099,
+      "y": 61.010496461370074,
+      "color": "#6366f1",
+      "size": 16.9,
+      "title": "JULHO/snippet-hero.md\nRelevância: 19%",
+      "relevance": 19
+    },
+    {
+      "id": "file-file_1754795427397_s25h8htj1",
+      "label": "snippet-Template codebase.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -299.6304090461713,
+      "y": 111.47172382160917,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-Template codebase.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427391_ftwyldthj",
+      "label": "snippet-menu dock.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -353.6474508437579,
+      "y": 142.65847744427307,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-menu dock.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427409_axoduxhyv",
+      "label": "snippet-hero parallax.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -415.679269490148,
+      "y": 149.17828430524108,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-hero parallax.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427349_t0w7obpe8",
+      "label": "snippet-rumo ao horizonte.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -475,
+      "y": 129.90381056766586,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-rumo ao horizonte.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427371_3bp1lek0b",
+      "label": "snippet-scan 3d laser.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -521.352549156242,
+      "y": 88.16778784387103,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-scan 3d laser.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427388_hac9ew4pp",
+      "label": "snippet-fundo bandeira.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -546.7221401100709,
+      "y": 31.186753622663947,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-fundo bandeira.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427339_1vukheinm",
+      "label": "snippet-acende a lampada no header.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -546.7221401100709,
+      "y": -31.18675362266381,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-acende a lampada no header.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427354_9o9ghiv87",
+      "label": "snippet-preenche dna.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -521.3525491562422,
+      "y": -88.16778784387091,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-preenche dna.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427365_dspzbgqz0",
+      "label": "snippet-card 3d.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -475.00000000000006,
+      "y": -129.9038105676657,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-card 3d.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427342_vm4dt9iv1",
+      "label": "snippet-desenho asc.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -415.67926949014816,
+      "y": -149.17828430524094,
+      "color": "#6366f1",
+      "size": 16.3,
+      "title": "JULHO/snippet-desenho asc.md\nRelevância: 13%",
+      "relevance": 13
+    },
+    {
+      "id": "file-file_1754795427415_898tj3um4",
+      "label": "vciaFLUXO-FEITO.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -353.6474508437579,
+      "y": -142.658477444273,
+      "color": "#6366f1",
+      "size": 15.7,
+      "title": "JULHO/vciaFLUXO-FEITO.md\nRelevância: 7%",
+      "relevance": 7
+    },
+    {
+      "id": "file-file_1754795427386_myjntwqge",
+      "label": "vcia-vps Analise perp VCIA INFRA INTERNA.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -299.6304090461712,
+      "y": -111.47172382160906,
+      "color": "#6366f1",
+      "size": 15.8,
+      "title": "JULHO/vcia-vps Analise perp VCIA INFRA INTERNA.md\nRelevância: 8%",
+      "relevance": 8
+    },
+    {
+      "id": "file-file_1754795427338_437t5du7x",
+      "label": "Sem título.md",
+      "type": "file",
+      "cluster": "Aprendizado Geral",
+      "x": -262.96818135360985,
+      "y": -61.010496461369975,
+      "color": "#6366f1",
+      "size": 20,
+      "title": "JULHO/Sem título.md\nRelevância: 50%",
+      "relevance": 50
+    },
+    {
+      "id": "cluster-Evolução-Conceitual",
+      "label": "Evolução Conceitual",
+      "type": "cluster",
+      "x": -7.347880794884119e-14,
+      "y": -400,
+      "fixed": true,
+      "color": "#8b5cf6",
+      "size": 40,
+      "shape": "hexagon",
+      "font": {
+        "size": 18,
+        "face": "arial",
+        "bold": true
+      },
+      "title": "Cluster: Evolução Conceitual\n1 arquivos"
+    },
+    {
+      "id": "file-file_1754795427320_it063ixmj",
+      "label": "VAlliances vcia.com.br Bem vindo ao jogo.md",
+      "type": "file",
+      "cluster": "Evolução Conceitual",
+      "x": 149.99999999999991,
+      "y": -400,
+      "color": "#8b5cf6",
+      "size": 17.3,
+      "title": "JULHO/Clippings/VAlliances vcia.com.br Bem vindo ao jogo.md\nRelevância: 23%",
+      "relevance": 23
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-cluster-file_1754795427356_gnfsm3vyq",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427406_x0pt78s3e",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427334_lex8w4za6",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427380_uj7hvo3gs",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427380_uj7hvo3gs",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427344_rbcltt3zn",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427344_rbcltt3zn",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427400_ce7jw808k",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427367_sgg3xf0ft",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427312_a2ve1mx10",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427331_b8nemsveo",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427331_b8nemsveo",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427411_9qbquwrys",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427411_9qbquwrys",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427417_ymskkxe5x",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427417_ymskkxe5x",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427364_z5und8pmz",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427403_o48ss0nzn",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427403_o48ss0nzn",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427393_a11yto2cx",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427393_a11yto2cx",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427394_u3mhjhk2i",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427394_u3mhjhk2i",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427369_ygl62q0x1",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427382_9gb7pxdop",
+      "from": "cluster-Breakthrough-Técnico",
+      "to": "file-file_1754795427382_9gb7pxdop",
+      "color": {
+        "color": "#ef4444",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427360_my4ea2qhv",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427325_6iaeg90gj",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427328_ui39lm0u2",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427377_yzgvh8izt",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427377_yzgvh8izt",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427420_jvblnp278",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427420_jvblnp278",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427422_9zx3cn24e",
+      "from": "cluster-Insight-Estratégico",
+      "to": "file-file_1754795427422_9zx3cn24e",
+      "color": {
+        "color": "#10b981",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427375_jpyguncko",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427375_jpyguncko",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427347_kh1j3gns1",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427347_kh1j3gns1",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427397_s25h8htj1",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427397_s25h8htj1",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427391_ftwyldthj",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427391_ftwyldthj",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427409_axoduxhyv",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427409_axoduxhyv",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427349_t0w7obpe8",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427349_t0w7obpe8",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427371_3bp1lek0b",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427371_3bp1lek0b",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427388_hac9ew4pp",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427388_hac9ew4pp",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427339_1vukheinm",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427339_1vukheinm",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427354_9o9ghiv87",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427354_9o9ghiv87",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427365_dspzbgqz0",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427365_dspzbgqz0",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427342_vm4dt9iv1",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427342_vm4dt9iv1",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427415_898tj3um4",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427415_898tj3um4",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427386_myjntwqge",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427386_myjntwqge",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427338_437t5du7x",
+      "from": "cluster-Aprendizado-Geral",
+      "to": "file-file_1754795427338_437t5du7x",
+      "color": {
+        "color": "#6366f1",
+        "opacity": 0.3
+      },
+      "width": 1
+    },
+    {
+      "id": "edge-cluster-file_1754795427320_it063ixmj",
+      "from": "cluster-Evolução-Conceitual",
+      "to": "file-file_1754795427320_it063ixmj",
+      "color": {
+        "color": "#8b5cf6",
+        "opacity": 0.3
+      },
+      "width": 1
+    }
+  ],
+  "entities": []
+}

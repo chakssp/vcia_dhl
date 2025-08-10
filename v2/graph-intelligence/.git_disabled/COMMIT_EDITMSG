@@ -1,0 +1,11 @@
+docs: Atualizar cronograma detalhado com política ZERO FALLBACK reforçada
+
+- Adicionar seção 15 com cronograma sequencial completo
+- Reforçar política ZERO FALLBACK com regra do stakeholder
+- Incluir processo de aprovação obrigatório para novas features
+- Atualizar status das features já implementadas
+- Adicionar detalhamento de todas as sprints (1-4)
+- Definir entregas específicas por dia
+- Corrigir handles do React Flow para eliminar warnings
+
+IMPORTANTE: Nenhuma feature será implementada sem aprovação prévia do stakeholder Brito

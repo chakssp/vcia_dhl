@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convergence Navigator - Navegação por Convergência Semântica</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/convergence.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="nav-header">
+        <div class="header-container">
+            <div class="brand">
+                <span class="brand-icon">🧭</span>
+                <h1>Convergence Navigator</h1>
+                <span class="brand-tagline">Navegação Intencional por Convergência</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Arquivos:</span>
+                    <span class="stat-value" id="total-files">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Convergências:</span>
+                    <span class="stat-value" id="total-convergences">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Redução:</span>
+                    <span class="stat-value" id="reduction-rate">0%</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        
+        <!-- Intention Input Section -->
+        <section class="intention-section">
+            <div class="section-container">
+                <div class="intention-header">
+                    <h2>O que você busca descobrir?</h2>
+                    <p class="intention-hint">Expresse sua intenção, não faça uma busca. Descreva o que você quer entender ou descobrir.</p>
+                </div>
+                
+                <div class="intention-input-container">
+                    <textarea 
+                        id="intention-input" 
+                        class="intention-textarea"
+                        placeholder="Ex: Entender meus avanços em IA dos últimos 3 meses&#10;Ex: Descobrir padrões nas minhas decisões técnicas&#10;Ex: Identificar evolução do meu conhecimento em 2024"
+                        rows="4"></textarea>
+                    
+                    <div class="intention-actions">
+                        <button id="navigate-btn" class="btn-primary">
+                            <span class="btn-icon">🎯</span>
+                            Navegar Convergências
+                        </button>
+                        <button id="clear-btn" class="btn-secondary">
+                            <span class="btn-icon">🔄</span>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Examples -->
+                <div class="examples-container">
+                    <span class="examples-label">Exemplos rápidos:</span>
+                    <div class="example-chips">
+                        <button class="example-chip" data-intention="descobertas sobre IA dos últimos 6 meses">
+                            Descobertas em IA (6 meses)
+                        </button>
+                        <button class="example-chip" data-intention="evolução do meu conhecimento técnico em 2024">
+                            Evolução técnica 2024
+                        </button>
+                        <button class="example-chip" data-intention="insights estratégicos sobre arquitetura">
+                            Insights de arquitetura
+                        </button>
+                        <button class="example-chip" data-intention="breakthroughs recentes em machine learning">
+                            ML breakthroughs
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dimensional Decomposition Section -->
+        <section class="dimensions-section" id="dimensions-section" style="display: none;">
+            <div class="section-container">
+                <h3 class="section-title">Decomposição Dimensional da Intenção</h3>
+                
+                <div class="dimensions-grid">
+                    <!-- Temporal Dimension -->
+                    <div class="dimension-card temporal">
+                        <div class="dimension-header">
+                            <span class="dimension-icon">⏰</span>
+                            <h4>Temporal</h4>
+                        </div>
+                        <div class="dimension-content" id="temporal-content">
+                            <span class="dimension-empty">Aguardando análise...</span>
+                        </div>
+                    </div>
+
+                    <!-- Semantic Dimension -->
+                    <div class="dimension-card semantic">
+                        <div class="dimension-header">
+                            <span class="dimension-icon">💭</span>
+                            <h4>Semântica</h4>
+                        </div>
+                        <div class="dimension-content" id="semantic-content">
+                            <span class="dimension-empty">Aguardando análise...</span>
+                        </div>
+                    </div>
+
+                    <!-- Categorical Dimension -->
+                    <div class="dimension-card categorical">
+                        <div class="dimension-header">
+                            <span class="dimension-icon">📁</span>
+                            <h4>Categorial</h4>
+                        </div>
+                        <div class="dimension-content" id="categorical-content">
+                            <span class="dimension-empty">Aguardando análise...</span>
+                        </div>
+                    </div>
+
+                    <!-- Analytical Dimension -->
+                    <div class="dimension-card analytical">
+                        <div class="dimension-header">
+                            <span class="dimension-icon">📊</span>
+                            <h4>Analítica</h4>
+                        </div>
+                        <div class="dimension-content" id="analytical-content">
+                            <span class="dimension-empty">Aguardando análise...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Convergence Visualization Section -->
+        <section class="convergence-section" id="convergence-section" style="display: none;">
+            <div class="section-container">
+                <h3 class="section-title">Navegação por Convergência</h3>
+                
+                <!-- Convergence Canvas -->
+                <div class="convergence-container">
+                    <div class="convergence-view">
+                        <canvas id="convergence-canvas"></canvas>
+                        
+                        <!-- Convergence Controls -->
+                        <div class="convergence-controls">
+                            <button class="control-btn" id="zoom-in" title="Zoom In">
+                                <span>🔍+</span>
+                            </button>
+                            <button class="control-btn" id="zoom-out" title="Zoom Out">
+                                <span>🔍-</span>
+                            </button>
+                            <button class="control-btn" id="reset-view" title="Reset View">
+                                <span>🎯</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Convergence Info Panel -->
+                    <div class="convergence-info">
+                        <div class="info-header">
+                            <h4>Convergência Principal</h4>
+                            <div class="density-meter">
+                                <label>Densidade:</label>
+                                <div class="density-bar">
+                                    <div class="density-fill" id="density-fill" style="width: 0%"></div>
+                                </div>
+                                <span class="density-value" id="density-value">0%</span>
+                            </div>
+                        </div>
+
+                        <div class="path-description" id="path-description">
+                            <p>Navegue sua intenção para descobrir convergências...</p>
+                        </div>
+
+                        <div class="evidence-summary">
+                            <h5>Pool de Evidências</h5>
+                            <div class="evidence-count">
+                                <span class="evidence-label">Arquivos convergentes:</span>
+                                <span class="evidence-value" id="evidence-count">0</span>
+                            </div>
+                            <div class="evidence-list" id="evidence-list">
+                                <!-- Evidence items will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Alternative Paths -->
+                        <div class="alternative-paths">
+                            <h5>Caminhos Alternativos</h5>
+                            <div class="paths-list" id="alternative-paths">
+                                <!-- Alternative paths will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights Section -->
+        <section class="insights-section" id="insights-section" style="display: none;">
+            <div class="section-container">
+                <h3 class="section-title">Insights Descobertos</h3>
+                
+                <div class="insights-container" id="insights-container">
+                    <!-- Insights will be dynamically inserted here -->
+                </div>
+
+                <div class="insights-actions">
+                    <button id="export-insights" class="btn-secondary">
+                        <span class="btn-icon">💾</span>
+                        Exportar Insights
+                    </button>
+                    <button id="new-navigation" class="btn-primary">
+                        <span class="btn-icon">🧭</span>
+                        Nova Navegação
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Navegando convergências...</p>
+            <p class="loading-detail" id="loading-detail">Decomposição dimensional em progresso</p>
+        </div>
+    </div>
+
+    <!-- Status Messages -->
+    <div class="status-container" id="status-container"></div>
+
+    <!-- Scripts -->
+    <!-- Core -->
+    <script src="js/core/ConvergenceEngine.js"></script>
+    <script src="js/core/DimensionDecomposer.js"></script>
+    <script src="js/core/IntersectionCalculator.js"></script>
+    <script src="js/core/NavigationPath.js"></script>
+    
+    <!-- Dimensions -->
+    <script src="js/dimensions/TemporalDimension.js"></script>
+    <script src="js/dimensions/SemanticDimension.js"></script>
+    <script src="js/dimensions/CategoricalDimension.js"></script>
+    <script src="js/dimensions/AnalyticalDimension.js"></script>
+    
+    <!-- Integration -->
+    <script src="js/integration/QdrantConnector.js"></script>
+    <script src="js/integration/KCBridge.js"></script>
+    <script src="js/integration/DataAdapter.js"></script>
+    
+    <!-- Visualization -->
+    <script src="js/visualization/ConvergenceView.js"></script>
+    <script src="js/visualization/PathRenderer.js"></script>
+    <script src="js/visualization/DensityMap.js"></script>
+    
+    <!-- Interface -->
+    <script src="js/interface/IntentionInput.js"></script>
+    <script src="js/interface/NavigationControls.js"></script>
+    <script src="js/interface/InsightDisplay.js"></script>
+    
+    <!-- Main App -->
+    <script src="js/app.js"></script>
+</body>
+</html>

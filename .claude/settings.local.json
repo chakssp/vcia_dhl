@@ -1,11 +1,17 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "statusLine": {
+    "type": "command",
+    "command": "input=$(cat); dir='🧠KC'; model=$(echo \"$input\" | jq -r '.model.display_name' | sed 's/claude-//' | sed 's/-20.*//'); branch=$(cd \"F:\\\\vcia-1307\\\\vcia_dhl\" 2>/dev/null && git branch --show-current 2>/dev/null || echo 'main'); files_md=$(find F:\\\\vcia-1307\\\\vcia_dhl -name '*.md' 2>/dev/null | wc -l || echo '0'); qdrant_status=$(curl -s --connect-timeout 1 http://qdr.vcia.com.br:6333/health 2>/dev/null | grep -q '\"status\":\"ok\"' && echo '✅' || echo '❌'); ollama_status=$(curl -s --connect-timeout 1 http://localhost:11434/api/tags 2>/dev/null | grep -q 'models' && echo '🟢' || echo '🔴'); chunks_count=$(curl -s --connect-timeout 1 http://qdr.vcia.com.br:6333/collections/knowledge-consolidator 2>/dev/null | jq -r '.result.points_count' 2>/dev/null || echo '0'); convergence=$(if [ -f F:\\\\vcia-1307\\\\vcia_dhl\\\\CONVERGENCE-BREAKTHROUGH.md ]; then echo '🎯'; else echo ''; fi); changes=$(cd \"F:\\\\vcia-1307\\\\vcia_dhl\" 2>/dev/null && git status --porcelain 2>/dev/null | wc -l || echo '0'); change_color=$(if [ \"$changes\" -gt \"10\" ]; then echo '\\033[31m'; elif [ \"$changes\" -gt \"5\" ]; then echo '\\033[33m'; else echo '\\033[32m'; fi); tailscale_status=$(tailscale status 2>/dev/null | grep -q 'vcia' && echo '🔗' || echo ''); time=$(date '+%H:%M'); printf \"\\033[36m%s\\033[0m \\033[35m[%s]\\033[0m \\033[32m🌿%s\\033[0m ${change_color}✏️%s\\033[0m \\033[34m📄%s\\033[0m Qdr:%s Oll:%s \\033[33m🔮%s\\033[0m %s%s \\033[90m%s\\033[0m\" \"$dir\" \"$model\" \"$branch\" \"$changes\" \"$files_md\" \"$qdrant_status\" \"$ollama_status\" \"$chunks_count\" \"$convergence\" \"$tailscale_status\" \"$time\""
+  },
   "permissions": {
     "allow": [
       "Write",
       "MultiEdit",
       "Edit",
       "Bash",
+      "python",
+      "grep",
       "Bash(grep:mnt/f/vcia-1307/vcia_dhl/*)",
       "Bash(ls:mnt/f/vcia-1307/vcia_dhl/*)",
       "Bash(cd:mnt/f/vcia-1307/vcia_dhl/*)",
@@ -35,10 +41,7 @@
       "Bash(dir:mnt/f/vcia-1307/vcia_dhl/*)",
       "mcp__sequencial-think__sequentialthinking",
       "mcp__memory-serve__create_entities",
-      "mcp__puppeteer__puppeteer_evaluate",
       "mcp__memory-serve__create_relations",
-      "mcp__puppeteer__puppeteer_navigate",
-      "mcp__puppeteer__puppeteer_screenshot",
       "mcp__memory-serve__add_observations",
       "mcp__memory-serve__search_nodes",
       "mcp__time__get_current_time",
@@ -64,7 +67,8 @@
       "mcp__n8n-mcp__search_nodes",
       "mcp__mcp-server-time__get_current_time",
       "mcp__playwright__browser_navigate",
-      "mcp__memory__add_observations"
+      "mcp__memory__add_observations",
+      "mcp__playwright__browser_click"
     ],
     "deny": []
   },

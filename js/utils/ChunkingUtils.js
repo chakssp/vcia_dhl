@@ -527,12 +527,21 @@
         }
 
         /**
-         * Extrai keywords do conteúdo
+         * Extrai keywords do conteúdo usando KeywordExtractor inteligente
          * @private
          */
         _extractKeywords(content) {
+            // Usar o novo KeywordExtractor se disponível
+            if (KC.KeywordExtractor) {
+                const extractor = new KC.KeywordExtractor();
+                const result = extractor.extract(content);
+                return result.keywords || [];
+            }
+            
+            // Fallback para o método antigo (melhorado)
             const words = content.toLowerCase()
-                .replace(/[^\w\s]/g, ' ')
+                .normalize("NFD") // Preservar estrutura dos acentos
+                .replace(/[^\wàáâãèéêìíîòóôõùúûç\s]/g, ' ')
                 .split(/\s+/)
                 .filter(word => word.length > 4);
 

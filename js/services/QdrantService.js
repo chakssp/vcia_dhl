@@ -48,9 +48,12 @@ class QdrantService {
             errors: 0
         };
 
-        // Cache de buscas recentes
+        // Cache de buscas recentes - OTIMIZADO TECNICAMENTE
         this.searchCache = new Map();
-        this.cacheTimeout = 5 * 60 * 1000; // 5 minutos
+        this.cacheTimeout = 10 * 60 * 1000; // 10 minutos (balanceado)
+        // Tamanho baseado em análise: 2KB/entry × 1024 = 2MB total
+        // Mantém localidade temporal e minimiza GC pressure
+        this.maxCacheSize = 1024; // 2^10 para hash optimization
     }
 
     /**
@@ -712,6 +715,174 @@ class QdrantService {
             collection: 'knowledge_triples'
         };
     }
+
+    // ====================================================================
+    // 🚀 MCP-INSPIRED ENHANCEMENTS (Adicionados em 10/08/2025)
+    // Funcionalidades simplificadas inspiradas no MCP Server Qdrant
+    // Mantendo todas funcionalidades avançadas existentes
+    // ====================================================================
+
+    /**
+     * Armazena conhecimento de forma simples (inspirado no MCP qdrant-store)
+     * @param {string} text - Texto do conhecimento
+     * @param {Object} metadata - Metadados opcionais
+     * @returns {Promise<Object>}
+     */
+    async storeKnowledge(text, metadata = {}) {
+        if (!text || typeof text !== 'string') {
+            throw new Error('Texto é obrigatório para armazenar conhecimento');
+        }
+
+        try {
+            // Gerar embedding do texto
+            const embedding = await KC.EmbeddingService.generateEmbedding(text);
+            
+            // Criar ponto estruturado
+            const point = {
+                id: `knowledge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                vector: embedding,
+                payload: {
+                    text: text,
+                    stored_at: new Date().toISOString(),
+                    source: 'storeKnowledge',
+                    type: 'simple_knowledge',
+                    ...metadata
+                }
+            };
+
+            const result = await this.insertPoint(point);
+            
+            console.log(`✅ Conhecimento armazenado: ${point.id}`);
+            return {
+                success: true,
+                id: point.id,
+                text: text,
+                stored_at: point.payload.stored_at
+            };
+
+        } catch (error) {
+            console.error('❌ Erro ao armazenar conhecimento:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Busca conhecimento de forma simples (inspirado no MCP qdrant-find)
+     * @param {string} query - Consulta de busca
+     * @param {Object} options - Opções da busca
+     * @returns {Promise<Array>}
+     */
+    async findKnowledge(query, options = {}) {
+        if (!query || typeof query !== 'string') {
+            throw new Error('Query é obrigatória para buscar conhecimento');
+        }
+
+        try {
+            const results = await this.searchByText(query, {
+                limit: options.limit || 5,
+                scoreThreshold: options.threshold || 0.6,
+                withPayload: true,
+                withVector: false
+            });
+
+            // Formatar resultados de forma simples
+            return results.map(point => ({
+                id: point.id,
+                text: point.payload.text || point.payload.content || 'No text available',
+                score: Math.round(point.score * 100) / 100, // Arredondar para 2 casas
+                metadata: {
+                    stored_at: point.payload.stored_at,
+                    source: point.payload.source || 'unknown',
+                    fileName: point.payload.fileName,
+                    categories: point.payload.metadata?.categories
+                }
+            })).filter(item => item.text !== 'No text available'); // Filtrar itens sem texto
+
+        } catch (error) {
+            console.error('❌ Erro ao buscar conhecimento:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Interface de saúde do sistema (inspirado no MCP)
+     * @returns {Promise<Object>}
+     */
+    async healthCheck() {
+        try {
+            const [connected, stats] = await Promise.all([
+                this.checkConnection(),
+                this.getCollectionStats()
+            ]);
+
+            return {
+                status: connected ? 'healthy' : 'unhealthy',
+                connection: connected,
+                collections: {
+                    [this.config.collectionName]: {
+                        points: stats.pointsCount,
+                        status: stats.status,
+                        indexed_vectors: stats.indexedVectorsCount
+                    }
+                },
+                service_stats: this.getStats(),
+                timestamp: new Date().toISOString()
+            };
+
+        } catch (error) {
+            return {
+                status: 'error',
+                error: error.message,
+                timestamp: new Date().toISOString()
+            };
+        }
+    }
+
+    /**
+     * Análise de convergência semântica (funcionalidade única nossa)
+     * @param {string} query - Consulta para análise
+     * @param {Object} options - Opções da análise
+     * @returns {Promise<Object>}
+     */
+    async analyzeConvergence(query, options = {}) {
+        try {
+            const results = await this.findKnowledge(query, {
+                limit: options.limit || 20,
+                threshold: options.threshold || 0.5
+            });
+
+            // Analisar convergência entre resultados
+            const convergenceAnalysis = {
+                query: query,
+                total_results: results.length,
+                high_relevance: results.filter(r => r.score > 0.8).length,
+                medium_relevance: results.filter(r => r.score > 0.6 && r.score <= 0.8).length,
+                categories: {},
+                sources: {},
+                convergence_chains: []
+            };
+
+            // Agrupar por categorias e sources
+            results.forEach(result => {
+                if (result.metadata.categories) {
+                    result.metadata.categories.forEach(cat => {
+                        convergenceAnalysis.categories[cat] = (convergenceAnalysis.categories[cat] || 0) + 1;
+                    });
+                }
+                
+                if (result.metadata.source) {
+                    convergenceAnalysis.sources[result.metadata.source] = 
+                        (convergenceAnalysis.sources[result.metadata.source] || 0) + 1;
+                }
+            });
+
+            return convergenceAnalysis;
+
+        } catch (error) {
+            console.error('❌ Erro na análise de convergência:', error);
+            throw error;
+        }
+    }
 }
 
 // Registrar no namespace KC
@@ -723,4 +894,46 @@ if (typeof window !== 'undefined') {
     KC.QdrantService = new QdrantService();
     
     console.log('QdrantService registrado em KC.QdrantService');
+
+    // ====================================================================
+    // 🛠️ DEBUG TOOLS para Development (inspirado no MCP)
+    // Facilita desenvolvimento e debug via console do navegador
+    // ====================================================================
+    window.qdrant = {
+        // Aliases simples para operações comuns
+        store: (text, meta) => KC.QdrantService.storeKnowledge(text, meta),
+        find: (query, opts) => KC.QdrantService.findKnowledge(query, opts),
+        analyze: (query, opts) => KC.QdrantService.analyzeConvergence(query, opts),
+        
+        // Ferramentas de diagnóstico
+        health: () => KC.QdrantService.healthCheck(),
+        stats: () => KC.QdrantService.getStats(),
+        connection: () => KC.QdrantService.checkConnection(),
+        
+        // Funcionalidades avançadas (nossa vantagem competitiva)
+        scroll: (opts) => KC.QdrantService.scrollPoints(opts),
+        search: (vector, opts) => KC.QdrantService.search(vector, opts),
+        searchText: (text, opts) => KC.QdrantService.searchByText(text, opts),
+        
+        // Helpers úteis
+        help: () => {
+            console.group('🔍 Qdrant Debug Tools');
+            console.log('📝 Armazenar: qdrant.store("texto", {meta: "dados"})');
+            console.log('🔎 Buscar: qdrant.find("query", {limit: 5})');
+            console.log('📊 Análise: qdrant.analyze("query")');
+            console.log('🏥 Saúde: qdrant.health()');
+            console.log('📈 Stats: qdrant.stats()');
+            console.log('🔗 Conexão: qdrant.connection()');
+            console.log('📋 Scroll: qdrant.scroll({limit: 10})');
+            console.log('🎯 Busca Avançada: qdrant.searchText("query")');
+            console.groupEnd();
+        }
+    };
+
+    // Mensagem informativa no console
+    console.group('🚀 QdrantService Enhanced');
+    console.log('✅ Funcionalidades MCP integradas');
+    console.log('🔧 Debug tools disponíveis em window.qdrant');
+    console.log('📚 Digite qdrant.help() para ver comandos');
+    console.groupEnd();
 }

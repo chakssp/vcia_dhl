@@ -1,12 +1,11 @@
-
-
+<CENTER><H1>EVR PROTOCOL - (EVER / NEVER PROTOCOL) - PROTOCOLO EVER NEVER</center></h1>
 <center><h4>_Official Implementation Guide for Context Engineering Systems_</center></h4>
 <center><h3>www.enevr.com</h3></center>
 
 ---
 
 > [!NOTE]
-> *ENEVR say NEVR EVR*
+> *ENEVR says NEVR EVR*
 
 ---
 

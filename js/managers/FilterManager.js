@@ -562,7 +562,7 @@
                     case 'media':
                         return relevance >= 50 && relevance < 70;
                     case 'baixa':
-                        return relevance < 30;
+                        return relevance < 50; // CORRIGIDO: Inclui TODOS abaixo de 50%
                     default:
                         return true;
                 }
@@ -701,7 +701,7 @@
                 return;
             }
 
-            // Atualiza contadores de relevância
+            // Atualiza contadores de relevância - INCLUINDO < 30%
             this.filters.relevance.all.count = files.length;
             this.filters.relevance.alta.count = files.filter(f => this.calculateRelevance(f) >= 70).length;
             this.filters.relevance.media.count = files.filter(f => {
@@ -710,7 +710,7 @@
             }).length;
             this.filters.relevance.baixa.count = files.filter(f => {
                 const rel = this.calculateRelevance(f);
-                return rel >= 30 && rel < 50;
+                return rel < 50; // CORRIGIDO: Inclui TODOS abaixo de 50%, inclusive < 30%
             }).length;
 
             // Atualiza contadores de status

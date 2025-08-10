@@ -1,4 +1,4 @@
-# Plano de Integração Discovery + Qdrant - V2
+# Plano de Integração Discovery + Qdrant - V2`
 ## Arquitetura Qdrant-First com Fonte Única de Verdade
 
 **Data**: 06/01/2025  

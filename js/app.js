@@ -468,10 +468,9 @@
             // UNIFIED CONFIDENCE SYSTEM: Initialize confidence system integration
             console.log('🧠 Inicializando UnifiedConfidenceSystem...');
             
-            // 1. Initialize FeatureFlagManager first (required for other components)
-            if (KC.FeatureFlagManager && !KC.FeatureFlagManagerInstance) {
-                KC.FeatureFlagManagerInstance = new KC.FeatureFlagManager();
-                console.log('✅ FeatureFlagManager inicializado');
+            // 1. FeatureFlagManager já está inicializado no próprio arquivo
+            if (KC.FeatureFlagManager) {
+                console.log('✅ FeatureFlagManager já inicializado');
             }
             
             // 2. Initialize UnifiedConfidenceController (main orchestrator)

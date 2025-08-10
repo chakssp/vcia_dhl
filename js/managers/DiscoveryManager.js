@@ -1025,12 +1025,72 @@
                             }
                             
                         } catch (error) {
-                            // Fallback para cálculo básico se tudo falhar
-                            const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
-                            metadata.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(smartPreview, keywords);
-                            metadata.confidenceSource = 'fallback_preview';
+                            // Usar o novo ContentAnalysisOrchestrator para análise multi-dimensional
+                            if (KC.ContentAnalysisOrchestrator) {
+                                try {
+                                    const fileData = {
+                                        id: metadata.id,
+                                        name: file.name,
+                                        path: metadata.path || file.name,
+                                        size: file.size,
+                                        lastModified: file.lastModified,
+                                        type: file.type,
+                                        content: fileContent,
+                                        handle: file
+                                    };
+                                    
+                                    const analysis = await KC.ContentAnalysisOrchestrator.analyzeFile(fileData);
+                                    
+                                    // Aplicar TODOS os scores multi-dimensionais
+                                    metadata.relevanceScore = analysis.scores.composite;
+                                    metadata.contentScore = analysis.scores.content;
+                                    metadata.metadataScore = analysis.scores.metadata;
+                                    metadata.contextScore = analysis.scores.context;
+                                    metadata.temporalScore = analysis.scores.temporal;
+                                    metadata.potentialScore = analysis.scores.potential;
+                                    
+                                    // Adicionar informações de processamento
+                                    metadata.extractionSupported = analysis.extraction.supported;
+                                    metadata.processingStatus = analysis.processingStatus.status;
+                                    metadata.processingMessage = analysis.processingStatus.message;
+                                    metadata.convergencePotential = analysis.convergencePotential?.overall || 0;
+                                    metadata.confidenceSource = 'multi_dimensional_analysis';
+                                    
+                                    // Se arquivo tem alto potencial mas não pode ser extraído, adicionar à fila
+                                    if (!analysis.extraction.supported && metadata.potentialScore > 60) {
+                                        if (KC.EvolutionQueue) {
+                                            KC.EvolutionQueue.enqueue(fileData, {
+                                                source: 'discovery',
+                                                reason: 'high_potential_no_extractor',
+                                                priority: metadata.potentialScore > 80 ? 'high' : 'medium'
+                                            });
+                                            
+                                            console.log(`📋 Adicionado à fila evolutiva: ${file.name} (Potencial: ${metadata.potentialScore}%)`);
+                                        }
+                                    }
+                                    
+                                    console.log(`🎯 Análise multi-dimensional: ${file.name}`, {
+                                        composite: metadata.relevanceScore,
+                                        content: metadata.contentScore,
+                                        potential: metadata.potentialScore,
+                                        canExtract: analysis.extraction.supported
+                                    });
+                                    
+                                } catch (orchError) {
+                                    console.warn('Erro no Orchestrator, usando fallback:', orchError);
+                                    // Fallback final
+                                    const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
+                                    metadata.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(smartPreview, keywords);
+                                    metadata.confidenceSource = 'fallback_preview';
+                                }
+                            } else {
+                                // Fallback para cálculo básico se Orchestrator não existir
+                                const keywords = ['decisão', 'insight', 'transformação', 'aprendizado', 'breakthrough'];
+                                metadata.relevanceScore = KC.PreviewUtils.calculatePreviewRelevance(smartPreview, keywords);
+                                metadata.confidenceSource = 'fallback_preview';
+                            }
                             
-                            console.warn(`⚠️ Fallback para preview relevance: ${file.name}`, error.message);
+                            console.warn(`⚠️ Usando análise alternativa para: ${file.name}`, error.message);
                         }
                         
                         console.log(`Preview extraído para ${file.name}:`, {

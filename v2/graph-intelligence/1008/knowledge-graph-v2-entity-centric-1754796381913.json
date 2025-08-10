@@ -1,0 +1,3086 @@
+{
+  "metadata": {
+    "exportDate": "2025-08-10T03:26:21.911Z",
+    "viewMode": "entity-centric",
+    "nodeCount": 63,
+    "edgeCount": 182,
+    "entityCount": 0,
+    "densityStats": {
+      "overall": {
+        "nodes": 63,
+        "edges": 182,
+        "density": 0.0931899641577061
+      },
+      "byType": {
+        "file": {
+          "nodes": 39,
+          "edges": 182,
+          "avgConnections": 4.666666666666667
+        },
+        "category": {
+          "nodes": 24,
+          "edges": 172,
+          "avgConnections": 7.166666666666667
+        },
+        "entity": {
+          "nodes": 0,
+          "edges": 0,
+          "avgConnections": 0
+        }
+      },
+      "byAnalysisType": {
+        "Breakthrough Técnico": {
+          "nodes": 17,
+          "percentage": "27.0"
+        },
+        "Evolução Conceitual": {
+          "nodes": 1,
+          "percentage": "1.6"
+        },
+        "Momento Decisivo": {
+          "nodes": 0,
+          "percentage": "0.0"
+        },
+        "Insight Estratégico": {
+          "nodes": 6,
+          "percentage": "9.5"
+        },
+        "Aprendizado Geral": {
+          "nodes": 15,
+          "percentage": "23.8"
+        }
+      },
+      "crossConnections": 0
+    }
+  },
+  "nodes": [
+    {
+      "id": "file-file_1754795427356_gnfsm3vyq",
+      "label": "linkedin-Backlog.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/linkedin-Backlog.md\nRelevância: 57%\nTipo: Breakthrough Técnico",
+      "relevance": 57,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 500,
+      "y": 0
+    },
+    {
+      "id": "file-file_1754795427406_x0pt78s3e",
+      "label": "vps-JS ou VUE.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vps-JS ou VUE.md\nRelevância: 57%\nTipo: Breakthrough Técnico",
+      "relevance": 57,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 493.5251313189564,
+      "y": 80.20564042888012
+    },
+    {
+      "id": "file-file_1754795427360_my4ea2qhv",
+      "label": "O que define VCIA & enever.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/O que define VCIA & enever.md\nRelevância: 22%\nTipo: Insight Estratégico",
+      "relevance": 22,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": 474.26822097357274,
+      "y": 158.33399690073625
+    },
+    {
+      "id": "file-file_1754795427334_lex8w4za6",
+      "label": "LGPD FASE 1 - plan 1.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/LGPD FASE 1 - plan 1.md\nRelevância: 39%\nTipo: Breakthrough Técnico",
+      "relevance": 39,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 442.728012826605,
+      "y": 232.36158602188425
+    },
+    {
+      "id": "file-file_1754795427380_uj7hvo3gs",
+      "label": "vcia-FUNIL Filtros.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-FUNIL Filtros.md\nRelevância: 32%\nTipo: Breakthrough Técnico",
+      "relevance": 32,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 399.7213817017506,
+      "y": 300.3711321189894
+    },
+    {
+      "id": "file-file_1754795427344_rbcltt3zn",
+      "label": "Resumo do Sistema 25072025.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/Resumo do Sistema 25072025.md\nRelevância: 27%\nTipo: Breakthrough Técnico",
+      "relevance": 27,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 346.3621767547997,
+      "y": 360.6012236719073
+    },
+    {
+      "id": "file-file_1754795427400_ce7jw808k",
+      "label": "vcia-analisediag.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-analisediag.md\nRelevância: 50%\nTipo: Breakthrough Técnico",
+      "relevance": 50,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 284.03237336557794,
+      "y": 411.4919329468282
+    },
+    {
+      "id": "file-file_1754795427367_sgg3xf0ft",
+      "label": "vcia-1 Prompt RAGATanga.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-1 Prompt RAGATanga.md\nRelevância: 83%\nTipo: Breakthrough Técnico",
+      "relevance": 83,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 214.34628070152712,
+      "y": 451.7252173051911
+    },
+    {
+      "id": "file-file_1754795427375_jpyguncko",
+      "label": "LGPD FASE 2 - plan 1.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/LGPD FASE 2 - plan 1.md\nRelevância: 25%\nTipo: Aprendizado Geral",
+      "relevance": 25,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": 139.10873195822637,
+      "y": 480.2590558156861
+    },
+    {
+      "id": "file-file_1754795427325_6iaeg90gj",
+      "label": "LinkedIn.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/VCIA-Linkedin/LinkedIn.md\nRelevância: 16%\nTipo: Insight Estratégico",
+      "relevance": 16,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": 60.2683401276615,
+      "y": 496.354437049027
+    },
+    {
+      "id": "file-file_1754795427328_ui39lm0u2",
+      "label": "VCIA - Do Achismo ao Exemplo Prático... A jornada estratégica para validar propostas de valor.  LinkedIn.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/VCIA-Linkedin/VCIA - Do Achismo ao Exemplo Prático... A jornada estratégica para validar propostas de valor.  LinkedIn.md\nRelevância: 17%\nTipo: Insight Estratégico",
+      "relevance": 17,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": -20.132970054707563,
+      "y": 499.5944990857848
+    },
+    {
+      "id": "file-file_1754795427312_a2ve1mx10",
+      "label": "PRD Completo Knowledge Consolidator (Versão Expandida).md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/Clippings/PRD Completo Knowledge Consolidator (Versão Expandida).md\nRelevância: 16%\nTipo: Breakthrough Técnico",
+      "relevance": 16,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -100.01284688802207,
+      "y": 489.8953260211339
+    },
+    {
+      "id": "file-file_1754795427331_b8nemsveo",
+      "label": "LGPD-N8N 1 de 6 fases (Index).md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/LGPD-N8N 1 de 6 fases (Index).md\nRelevância: 19%\nTipo: Breakthrough Técnico",
+      "relevance": 19,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -177.30244352126772,
+      "y": 467.5081213427074
+    },
+    {
+      "id": "file-file_1754795427377_yzgvh8izt",
+      "label": "vcia-FLUXO-DADOS-ETAPAS.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-FLUXO-DADOS-ETAPAS.md\nRelevância: 20%\nTipo: Insight Estratégico",
+      "relevance": 20,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": -250.0000000000001,
+      "y": 433.01270189221924
+    },
+    {
+      "id": "file-file_1754795427411_9qbquwrys",
+      "label": "linkedin-AVD - Android Virtual Device.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/linkedin-AVD - Android Virtual Device.md\nRelevância: 18%\nTipo: Breakthrough Técnico",
+      "relevance": 18,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -316.2226877976886,
+      "y": 387.3024809138273
+    },
+    {
+      "id": "file-file_1754795427347_kh1j3gns1",
+      "label": "snippet-hero.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-hero.md\nRelevância: 19%\nTipo: Aprendizado Geral",
+      "relevance": 19,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -374.25537408555044,
+      "y": 331.5613291203978
+    },
+    {
+      "id": "file-file_1754795427417_ymskkxe5x",
+      "label": "vps-fluxo vps.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vps-fluxo vps.md\nRelevância: 19%\nTipo: Breakthrough Técnico",
+      "relevance": 19,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -422.5950427718973,
+      "y": 267.23291306390064
+    },
+    {
+      "id": "file-file_1754795427364_z5und8pmz",
+      "label": "VCIA - Arquitetura Technica.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/VCIA - Arquitetura Technica.md\nRelevância: 27%\nTipo: Breakthrough Técnico",
+      "relevance": 27,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -459.98972182941213,
+      "y": 195.98330493003758
+    },
+    {
+      "id": "file-file_1754795427320_it063ixmj",
+      "label": "VAlliances vcia.com.br Bem vindo ao jogo.md",
+      "type": "file",
+      "level": 2,
+      "color": "#8b5cf6",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/Clippings/VAlliances vcia.com.br Bem vindo ao jogo.md\nRelevância: 23%\nTipo: Evolução Conceitual",
+      "relevance": 23,
+      "analysisType": "Evolução Conceitual",
+      "font": {
+        "size": 8
+      },
+      "x": -485.470908713026,
+      "y": 119.65783214377885
+    },
+    {
+      "id": "file-file_1754795427397_s25h8htj1",
+      "label": "snippet-Template codebase.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-Template codebase.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -498.37865406710495,
+      "y": 40.23328435836304
+    },
+    {
+      "id": "file-file_1754795427391_ftwyldthj",
+      "label": "snippet-menu dock.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-menu dock.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -498.378654067105,
+      "y": -40.233284358362916
+    },
+    {
+      "id": "file-file_1754795427409_axoduxhyv",
+      "label": "snippet-hero parallax.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-hero parallax.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -485.470908713026,
+      "y": -119.65783214377893
+    },
+    {
+      "id": "file-file_1754795427349_t0w7obpe8",
+      "label": "snippet-rumo ao horizonte.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-rumo ao horizonte.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -459.98972182941225,
+      "y": -195.98330493003724
+    },
+    {
+      "id": "file-file_1754795427371_3bp1lek0b",
+      "label": "snippet-scan 3d laser.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-scan 3d laser.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -422.5950427718975,
+      "y": -267.23291306390036
+    },
+    {
+      "id": "file-file_1754795427388_hac9ew4pp",
+      "label": "snippet-fundo bandeira.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-fundo bandeira.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -374.25537408555067,
+      "y": -331.5613291203975
+    },
+    {
+      "id": "file-file_1754795427403_o48ss0nzn",
+      "label": "snippet-clicar e arrastar.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-clicar e arrastar.md\nRelevância: 13%\nTipo: Breakthrough Técnico",
+      "relevance": 13,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": -316.22268779768854,
+      "y": -387.30248091382737
+    },
+    {
+      "id": "file-file_1754795427339_1vukheinm",
+      "label": "snippet-acende a lampada no header.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-acende a lampada no header.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -249.9999999999998,
+      "y": -433.0127018922194
+    },
+    {
+      "id": "file-file_1754795427354_9o9ghiv87",
+      "label": "snippet-preenche dna.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-preenche dna.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -177.30244352126795,
+      "y": -467.50812134270734
+    },
+    {
+      "id": "file-file_1754795427365_dspzbgqz0",
+      "label": "snippet-card 3d.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-card 3d.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -100.01284688802228,
+      "y": -489.8953260211338
+    },
+    {
+      "id": "file-file_1754795427342_vm4dt9iv1",
+      "label": "snippet-desenho asc.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/snippet-desenho asc.md\nRelevância: 13%\nTipo: Aprendizado Geral",
+      "relevance": 13,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": -20.13297005470757,
+      "y": -499.5944990857848
+    },
+    {
+      "id": "file-file_1754795427420_jvblnp278",
+      "label": "vcia-ONBOARD VCIA+.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-ONBOARD VCIA+.md\nRelevância: 11%\nTipo: Insight Estratégico",
+      "relevance": 11,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": 60.26834012766116,
+      "y": -496.35443704902707
+    },
+    {
+      "id": "file-file_1754795427415_898tj3um4",
+      "label": "vciaFLUXO-FEITO.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vciaFLUXO-FEITO.md\nRelevância: 7%\nTipo: Aprendizado Geral",
+      "relevance": 7,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": 139.10873195822603,
+      "y": -480.2590558156862
+    },
+    {
+      "id": "file-file_1754795427393_a11yto2cx",
+      "label": "VCIA-Zettelkasttten.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/VCIA-Zettelkasttten.md\nRelevância: 7%\nTipo: Breakthrough Técnico",
+      "relevance": 7,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 214.3462807015269,
+      "y": -451.7252173051912
+    },
+    {
+      "id": "file-file_1754795427394_u3mhjhk2i",
+      "label": "vcia-ARCH-WAVES.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-ARCH-WAVES.md\nRelevância: 7%\nTipo: Breakthrough Técnico",
+      "relevance": 7,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 284.03237336557777,
+      "y": -411.4919329468283
+    },
+    {
+      "id": "file-file_1754795427369_ygl62q0x1",
+      "label": "VCIA Onboarding - ETAPA 2.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/VCIA Onboarding - ETAPA 2.md\nRelevância: 11%\nTipo: Breakthrough Técnico",
+      "relevance": 11,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 346.36217675479963,
+      "y": -360.60122367190735
+    },
+    {
+      "id": "file-file_1754795427386_myjntwqge",
+      "label": "vcia-vps Analise perp VCIA INFRA INTERNA.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-vps Analise perp VCIA INFRA INTERNA.md\nRelevância: 8%\nTipo: Aprendizado Geral",
+      "relevance": 8,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": 399.7213817017506,
+      "y": -300.37113211898946
+    },
+    {
+      "id": "file-file_1754795427422_9zx3cn24e",
+      "label": "LGPD v1 Fluxos.md",
+      "type": "file",
+      "level": 2,
+      "color": "#10b981",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/LGPD v1 Fluxos.md\nRelevância: 5%\nTipo: Insight Estratégico",
+      "relevance": 5,
+      "analysisType": "Insight Estratégico",
+      "font": {
+        "size": 8
+      },
+      "x": 442.72801282660504,
+      "y": -232.3615860218842
+    },
+    {
+      "id": "file-file_1754795427338_437t5du7x",
+      "label": "Sem título.md",
+      "type": "file",
+      "level": 2,
+      "color": "#6366f1",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/Sem título.md\nRelevância: 50%\nTipo: Aprendizado Geral",
+      "relevance": 50,
+      "analysisType": "Aprendizado Geral",
+      "font": {
+        "size": 8
+      },
+      "x": 474.2682209735728,
+      "y": -158.3339969007361
+    },
+    {
+      "id": "file-file_1754795427382_9gb7pxdop",
+      "label": "vcia-Mitigate - Passo 2.md",
+      "type": "file",
+      "level": 2,
+      "color": "#ef4444",
+      "size": 10,
+      "shape": "dot",
+      "title": "JULHO/vcia-Mitigate - Passo 2.md\nRelevância: 50%\nTipo: Breakthrough Técnico",
+      "relevance": 50,
+      "analysisType": "Breakthrough Técnico",
+      "font": {
+        "size": 8
+      },
+      "x": 493.5251313189564,
+      "y": -80.20564042888032
+    },
+    {
+      "id": "category-tecnico",
+      "label": "Técnico",
+      "type": "category",
+      "level": 1,
+      "color": "#4f46e5",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Técnico\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 300,
+      "y": 0
+    },
+    {
+      "id": "category-estrategico",
+      "label": "Estratégico",
+      "type": "category",
+      "level": 1,
+      "color": "#059669",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Estratégico\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 289.7777478867205,
+      "y": 77.64571353075623
+    },
+    {
+      "id": "category-conceitual",
+      "label": "Conceitual",
+      "type": "category",
+      "level": 1,
+      "color": "#dc2626",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Conceitual\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 259.8076211353316,
+      "y": 149.99999999999997
+    },
+    {
+      "id": "category-decisivo",
+      "label": "Momento Decisivo",
+      "type": "category",
+      "level": 1,
+      "color": "#d97706",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Momento Decisivo\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 212.13203435596427,
+      "y": 212.13203435596424
+    },
+    {
+      "id": "category-insight",
+      "label": "Insight",
+      "type": "category",
+      "level": 1,
+      "color": "#7c3aed",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Insight\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 150.00000000000003,
+      "y": 259.8076211353316
+    },
+    {
+      "id": "category-aprendizado",
+      "label": "Aprendizado",
+      "type": "category",
+      "level": 1,
+      "color": "#be185d",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: Aprendizado\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 77.64571353075623,
+      "y": 289.7777478867205
+    },
+    {
+      "id": "category-comercial",
+      "label": "comercial",
+      "type": "category",
+      "level": 1,
+      "color": "#7c2d12",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: comercial\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 1.8369701987210297e-14,
+      "y": 300
+    },
+    {
+      "id": "category-modelo",
+      "label": "modelo",
+      "type": "category",
+      "level": 1,
+      "color": "#08728F",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: modelo\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -77.64571353075618,
+      "y": 289.7777478867205
+    },
+    {
+      "id": "category-boas-pratica",
+      "label": "boas pratica",
+      "type": "category",
+      "level": 1,
+      "color": "#7c2d12",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: boas pratica\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -149.99999999999994,
+      "y": 259.8076211353316
+    },
+    {
+      "id": "category-conteudo",
+      "label": "conteudo",
+      "type": "category",
+      "level": 1,
+      "color": "#08728F",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: conteudo\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -212.13203435596424,
+      "y": 212.13203435596427
+    },
+    {
+      "id": "category-ideia",
+      "label": "ideia",
+      "type": "category",
+      "level": 1,
+      "color": "#a21caf",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: ideia\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -259.8076211353316,
+      "y": 149.99999999999997
+    },
+    {
+      "id": "category-pesquisa",
+      "label": "pesquisa",
+      "type": "category",
+      "level": 1,
+      "color": "#1f2937",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: pesquisa\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -289.7777478867205,
+      "y": 77.64571353075631
+    },
+    {
+      "id": "category-analise",
+      "label": "analise",
+      "type": "category",
+      "level": 1,
+      "color": "#4E1963",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: analise\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -300,
+      "y": 3.6739403974420595e-14
+    },
+    {
+      "id": "category-financeiro",
+      "label": "financeiro",
+      "type": "category",
+      "level": 1,
+      "color": "#0f766e",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: financeiro\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -289.7777478867205,
+      "y": -77.64571353075624
+    },
+    {
+      "id": "category-vendas",
+      "label": "vendas",
+      "type": "category",
+      "level": 1,
+      "color": "#1f2937",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: vendas\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -259.80762113533166,
+      "y": -149.99999999999991
+    },
+    {
+      "id": "category-marketing",
+      "label": "marketing",
+      "type": "category",
+      "level": 1,
+      "color": "#4E1963",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: marketing\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -212.13203435596438,
+      "y": -212.13203435596415
+    },
+    {
+      "id": "category-rh",
+      "label": "rh",
+      "type": "category",
+      "level": 1,
+      "color": "#875F2C",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: rh\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -150.00000000000014,
+      "y": -259.8076211353315
+    },
+    {
+      "id": "category-juridico",
+      "label": "juridico",
+      "type": "category",
+      "level": 1,
+      "color": "#1f2937",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: juridico\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -77.64571353075618,
+      "y": -289.7777478867205
+    },
+    {
+      "id": "category-inovacao",
+      "label": "inovacao",
+      "type": "category",
+      "level": 1,
+      "color": "#4E1963",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: inovacao\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": -5.510910596163089e-14,
+      "y": -300
+    },
+    {
+      "id": "category-meta",
+      "label": "meta",
+      "type": "category",
+      "level": 1,
+      "color": "#1f2937",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: meta\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 77.64571353075608,
+      "y": -289.77774788672053
+    },
+    {
+      "id": "category-investimentos",
+      "label": "investimentos",
+      "type": "category",
+      "level": 1,
+      "color": "#0c4a6e",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: investimentos\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 150.00000000000003,
+      "y": -259.8076211353316
+    },
+    {
+      "id": "category-lgpd",
+      "label": "lgpd",
+      "type": "category",
+      "level": 1,
+      "color": "#be185d",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: lgpd\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 212.1320343559642,
+      "y": -212.1320343559643
+    },
+    {
+      "id": "category-vcia",
+      "label": "vcia",
+      "type": "category",
+      "level": 1,
+      "color": "#dc2626",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: vcia\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 259.8076211353315,
+      "y": -150.00000000000014
+    },
+    {
+      "id": "category-cdigo-prompt",
+      "label": "código-prompt",
+      "type": "category",
+      "level": 1,
+      "color": "#7c3aed",
+      "size": 15,
+      "shape": "square",
+      "title": "Categoria: código-prompt\n0 entidades",
+      "font": {
+        "size": 12
+      },
+      "x": 289.7777478867204,
+      "y": -77.64571353075647
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427356_gnfsm3vyq",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conceitual-file_1754795427356_gnfsm3vyq",
+      "from": "category-conceitual",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-aprendizado-file_1754795427356_gnfsm3vyq",
+      "from": "category-aprendizado",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427356_gnfsm3vyq",
+      "from": "category-analise",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427356_gnfsm3vyq",
+      "from": "category-vcia",
+      "to": "file-file_1754795427356_gnfsm3vyq",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427406_x0pt78s3e",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-aprendizado-file_1754795427406_x0pt78s3e",
+      "from": "category-aprendizado",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427406_x0pt78s3e",
+      "from": "category-modelo",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427406_x0pt78s3e",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-lgpd-file_1754795427406_x0pt78s3e",
+      "from": "category-lgpd",
+      "to": "file-file_1754795427406_x0pt78s3e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Estratégico-file_1754795427360_my4ea2qhv",
+      "from": "category-Estratégico",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Conceitual-file_1754795427360_my4ea2qhv",
+      "from": "category-Conceitual",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427360_my4ea2qhv",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-marketing-file_1754795427360_my4ea2qhv",
+      "from": "category-marketing",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427360_my4ea2qhv",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427360_my4ea2qhv",
+      "from": "category-vcia",
+      "to": "file-file_1754795427360_my4ea2qhv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427334_lex8w4za6",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-aprendizado-file_1754795427334_lex8w4za6",
+      "from": "category-aprendizado",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427334_lex8w4za6",
+      "from": "category-modelo",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427334_lex8w4za6",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-lgpd-file_1754795427334_lex8w4za6",
+      "from": "category-lgpd",
+      "to": "file-file_1754795427334_lex8w4za6",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427380_uj7hvo3gs",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427380_uj7hvo3gs",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427380_uj7hvo3gs",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427380_uj7hvo3gs",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427380_uj7hvo3gs",
+      "from": "category-analise",
+      "to": "file-file_1754795427380_uj7hvo3gs",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427380_uj7hvo3gs",
+      "from": "category-vcia",
+      "to": "file-file_1754795427380_uj7hvo3gs",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427344_rbcltt3zn",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427344_rbcltt3zn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427344_rbcltt3zn",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427344_rbcltt3zn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427344_rbcltt3zn",
+      "from": "category-analise",
+      "to": "file-file_1754795427344_rbcltt3zn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427344_rbcltt3zn",
+      "from": "category-vcia",
+      "to": "file-file_1754795427344_rbcltt3zn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427400_ce7jw808k",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conceitual-file_1754795427400_ce7jw808k",
+      "from": "category-conceitual",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-aprendizado-file_1754795427400_ce7jw808k",
+      "from": "category-aprendizado",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427400_ce7jw808k",
+      "from": "category-analise",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427400_ce7jw808k",
+      "from": "category-vcia",
+      "to": "file-file_1754795427400_ce7jw808k",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427367_sgg3xf0ft",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427367_sgg3xf0ft",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conceitual-file_1754795427367_sgg3xf0ft",
+      "from": "category-conceitual",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-decisivo-file_1754795427367_sgg3xf0ft",
+      "from": "category-decisivo",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-aprendizado-file_1754795427367_sgg3xf0ft",
+      "from": "category-aprendizado",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427367_sgg3xf0ft",
+      "from": "category-analise",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427367_sgg3xf0ft",
+      "from": "category-vcia",
+      "to": "file-file_1754795427367_sgg3xf0ft",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427375_jpyguncko",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427375_jpyguncko",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427375_jpyguncko",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427375_jpyguncko",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-lgpd-file_1754795427375_jpyguncko",
+      "from": "category-lgpd",
+      "to": "file-file_1754795427375_jpyguncko",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427375_jpyguncko",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427375_jpyguncko",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Estratégico-file_1754795427325_6iaeg90gj",
+      "from": "category-Estratégico",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Insight-file_1754795427325_6iaeg90gj",
+      "from": "category-Insight",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-comercial-file_1754795427325_6iaeg90gj",
+      "from": "category-comercial",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427325_6iaeg90gj",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427325_6iaeg90gj",
+      "from": "category-vcia",
+      "to": "file-file_1754795427325_6iaeg90gj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Estratégico-file_1754795427328_ui39lm0u2",
+      "from": "category-Estratégico",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Conceitual-file_1754795427328_ui39lm0u2",
+      "from": "category-Conceitual",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-comercial-file_1754795427328_ui39lm0u2",
+      "from": "category-comercial",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427328_ui39lm0u2",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-marketing-file_1754795427328_ui39lm0u2",
+      "from": "category-marketing",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427328_ui39lm0u2",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427328_ui39lm0u2",
+      "from": "category-vcia",
+      "to": "file-file_1754795427328_ui39lm0u2",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Técnico-file_1754795427312_a2ve1mx10",
+      "from": "category-Técnico",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Estratégico-file_1754795427312_a2ve1mx10",
+      "from": "category-Estratégico",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Momento Decisivo-file_1754795427312_a2ve1mx10",
+      "from": "category-Momento Decisivo",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-meta-file_1754795427312_a2ve1mx10",
+      "from": "category-meta",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427312_a2ve1mx10",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427312_a2ve1mx10",
+      "from": "category-vcia",
+      "to": "file-file_1754795427312_a2ve1mx10",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427331_b8nemsveo",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427331_b8nemsveo",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427331_b8nemsveo",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427331_b8nemsveo",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-lgpd-file_1754795427331_b8nemsveo",
+      "from": "category-lgpd",
+      "to": "file-file_1754795427331_b8nemsveo",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427377_yzgvh8izt",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427377_yzgvh8izt",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427377_yzgvh8izt",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427377_yzgvh8izt",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427377_yzgvh8izt",
+      "from": "category-analise",
+      "to": "file-file_1754795427377_yzgvh8izt",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427377_yzgvh8izt",
+      "from": "category-vcia",
+      "to": "file-file_1754795427377_yzgvh8izt",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427411_9qbquwrys",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427411_9qbquwrys",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-pesquisa-file_1754795427411_9qbquwrys",
+      "from": "category-pesquisa",
+      "to": "file-file_1754795427411_9qbquwrys",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427411_9qbquwrys",
+      "from": "category-analise",
+      "to": "file-file_1754795427411_9qbquwrys",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427347_kh1j3gns1",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427347_kh1j3gns1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427347_kh1j3gns1",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427347_kh1j3gns1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427347_kh1j3gns1",
+      "from": "category-vcia",
+      "to": "file-file_1754795427347_kh1j3gns1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427347_kh1j3gns1",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427347_kh1j3gns1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427417_ymskkxe5x",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427417_ymskkxe5x",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427417_ymskkxe5x",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427417_ymskkxe5x",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427417_ymskkxe5x",
+      "from": "category-vcia",
+      "to": "file-file_1754795427417_ymskkxe5x",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427417_ymskkxe5x",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427417_ymskkxe5x",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427364_z5und8pmz",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427364_z5und8pmz",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-decisivo-file_1754795427364_z5und8pmz",
+      "from": "category-decisivo",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427364_z5und8pmz",
+      "from": "category-modelo",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427364_z5und8pmz",
+      "from": "category-vcia",
+      "to": "file-file_1754795427364_z5und8pmz",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427320_it063ixmj",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-decisivo-file_1754795427320_it063ixmj",
+      "from": "category-decisivo",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427320_it063ixmj",
+      "from": "category-modelo",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427320_it063ixmj",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427320_it063ixmj",
+      "from": "category-analise",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-marketing-file_1754795427320_it063ixmj",
+      "from": "category-marketing",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427320_it063ixmj",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427320_it063ixmj",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427320_it063ixmj",
+      "from": "category-vcia",
+      "to": "file-file_1754795427320_it063ixmj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427397_s25h8htj1",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427397_s25h8htj1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427397_s25h8htj1",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427397_s25h8htj1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427397_s25h8htj1",
+      "from": "category-vcia",
+      "to": "file-file_1754795427397_s25h8htj1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427397_s25h8htj1",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427397_s25h8htj1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427391_ftwyldthj",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427391_ftwyldthj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427391_ftwyldthj",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427391_ftwyldthj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427391_ftwyldthj",
+      "from": "category-vcia",
+      "to": "file-file_1754795427391_ftwyldthj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427391_ftwyldthj",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427391_ftwyldthj",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427409_axoduxhyv",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427409_axoduxhyv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427409_axoduxhyv",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427409_axoduxhyv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427409_axoduxhyv",
+      "from": "category-vcia",
+      "to": "file-file_1754795427409_axoduxhyv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427409_axoduxhyv",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427409_axoduxhyv",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427349_t0w7obpe8",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427349_t0w7obpe8",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427349_t0w7obpe8",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427349_t0w7obpe8",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427349_t0w7obpe8",
+      "from": "category-vcia",
+      "to": "file-file_1754795427349_t0w7obpe8",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427349_t0w7obpe8",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427349_t0w7obpe8",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427371_3bp1lek0b",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427371_3bp1lek0b",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427371_3bp1lek0b",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427371_3bp1lek0b",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427371_3bp1lek0b",
+      "from": "category-vcia",
+      "to": "file-file_1754795427371_3bp1lek0b",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427371_3bp1lek0b",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427371_3bp1lek0b",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427388_hac9ew4pp",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427388_hac9ew4pp",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427388_hac9ew4pp",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427388_hac9ew4pp",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427388_hac9ew4pp",
+      "from": "category-vcia",
+      "to": "file-file_1754795427388_hac9ew4pp",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427388_hac9ew4pp",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427388_hac9ew4pp",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427403_o48ss0nzn",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427403_o48ss0nzn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427403_o48ss0nzn",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427403_o48ss0nzn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427403_o48ss0nzn",
+      "from": "category-vcia",
+      "to": "file-file_1754795427403_o48ss0nzn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427403_o48ss0nzn",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427403_o48ss0nzn",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427339_1vukheinm",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427339_1vukheinm",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427339_1vukheinm",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427339_1vukheinm",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427339_1vukheinm",
+      "from": "category-vcia",
+      "to": "file-file_1754795427339_1vukheinm",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427339_1vukheinm",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427339_1vukheinm",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427354_9o9ghiv87",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427354_9o9ghiv87",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427354_9o9ghiv87",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427354_9o9ghiv87",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427354_9o9ghiv87",
+      "from": "category-vcia",
+      "to": "file-file_1754795427354_9o9ghiv87",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427354_9o9ghiv87",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427354_9o9ghiv87",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427365_dspzbgqz0",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427365_dspzbgqz0",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427365_dspzbgqz0",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427365_dspzbgqz0",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427365_dspzbgqz0",
+      "from": "category-vcia",
+      "to": "file-file_1754795427365_dspzbgqz0",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427365_dspzbgqz0",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427365_dspzbgqz0",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427342_vm4dt9iv1",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427342_vm4dt9iv1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427342_vm4dt9iv1",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427342_vm4dt9iv1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427342_vm4dt9iv1",
+      "from": "category-vcia",
+      "to": "file-file_1754795427342_vm4dt9iv1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-cdigo-prompt-file_1754795427342_vm4dt9iv1",
+      "from": "category-cdigo-prompt",
+      "to": "file-file_1754795427342_vm4dt9iv1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427420_jvblnp278",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-decisivo-file_1754795427420_jvblnp278",
+      "from": "category-decisivo",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427420_jvblnp278",
+      "from": "category-modelo",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427420_jvblnp278",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427420_jvblnp278",
+      "from": "category-analise",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-marketing-file_1754795427420_jvblnp278",
+      "from": "category-marketing",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427420_jvblnp278",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427420_jvblnp278",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427420_jvblnp278",
+      "from": "category-vcia",
+      "to": "file-file_1754795427420_jvblnp278",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427415_898tj3um4",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427415_898tj3um4",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427415_898tj3um4",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427415_898tj3um4",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427415_898tj3um4",
+      "from": "category-analise",
+      "to": "file-file_1754795427415_898tj3um4",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427415_898tj3um4",
+      "from": "category-vcia",
+      "to": "file-file_1754795427415_898tj3um4",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427393_a11yto2cx",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427393_a11yto2cx",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427393_a11yto2cx",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427393_a11yto2cx",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427393_a11yto2cx",
+      "from": "category-analise",
+      "to": "file-file_1754795427393_a11yto2cx",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427393_a11yto2cx",
+      "from": "category-vcia",
+      "to": "file-file_1754795427393_a11yto2cx",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427394_u3mhjhk2i",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427394_u3mhjhk2i",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427394_u3mhjhk2i",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427394_u3mhjhk2i",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427394_u3mhjhk2i",
+      "from": "category-analise",
+      "to": "file-file_1754795427394_u3mhjhk2i",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427394_u3mhjhk2i",
+      "from": "category-vcia",
+      "to": "file-file_1754795427394_u3mhjhk2i",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427369_ygl62q0x1",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-decisivo-file_1754795427369_ygl62q0x1",
+      "from": "category-decisivo",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427369_ygl62q0x1",
+      "from": "category-modelo",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-conteudo-file_1754795427369_ygl62q0x1",
+      "from": "category-conteudo",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427369_ygl62q0x1",
+      "from": "category-analise",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-marketing-file_1754795427369_ygl62q0x1",
+      "from": "category-marketing",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427369_ygl62q0x1",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427369_ygl62q0x1",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427369_ygl62q0x1",
+      "from": "category-vcia",
+      "to": "file-file_1754795427369_ygl62q0x1",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427386_myjntwqge",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427386_myjntwqge",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-pesquisa-file_1754795427386_myjntwqge",
+      "from": "category-pesquisa",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-inovacao-file_1754795427386_myjntwqge",
+      "from": "category-inovacao",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-investimentos-file_1754795427386_myjntwqge",
+      "from": "category-investimentos",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427386_myjntwqge",
+      "from": "category-vcia",
+      "to": "file-file_1754795427386_myjntwqge",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-Conceitual-file_1754795427422_9zx3cn24e",
+      "from": "category-Conceitual",
+      "to": "file-file_1754795427422_9zx3cn24e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-modelo-file_1754795427422_9zx3cn24e",
+      "from": "category-modelo",
+      "to": "file-file_1754795427422_9zx3cn24e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-analise-file_1754795427422_9zx3cn24e",
+      "from": "category-analise",
+      "to": "file-file_1754795427422_9zx3cn24e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-lgpd-file_1754795427422_9zx3cn24e",
+      "from": "category-lgpd",
+      "to": "file-file_1754795427422_9zx3cn24e",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-tecnico-file_1754795427382_9gb7pxdop",
+      "from": "category-tecnico",
+      "to": "file-file_1754795427382_9gb7pxdop",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-estrategico-file_1754795427382_9gb7pxdop",
+      "from": "category-estrategico",
+      "to": "file-file_1754795427382_9gb7pxdop",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    },
+    {
+      "id": "edge-cat-file-vcia-file_1754795427382_9gb7pxdop",
+      "from": "category-vcia",
+      "to": "file-file_1754795427382_9gb7pxdop",
+      "label": "contém",
+      "color": {
+        "color": "#ccc"
+      },
+      "width": 1,
+      "dashes": true
+    }
+  ],
+  "entities": []
+}

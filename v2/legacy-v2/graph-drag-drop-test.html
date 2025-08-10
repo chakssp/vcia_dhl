@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Drag and Drop Graph</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+        
+        .sidebar h3 {
+            margin-top: 0;
+        }
+        
+        .draggable {
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            margin: 10px 0;
+            cursor: move;
+            border-radius: 5px;
+        }
+        
+        .draggable:hover {
+            background: #2980b9;
+        }
+        
+        #mynetwork {
+            flex: 1;
+            background: #ecf0f1;
+        }
+        
+        #mynetwork.dragover {
+            background: #d5dbdb;
+        }
+        
+        .info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h3>Arraste para o Grafo</h3>
+        
+        <div class="draggable" draggable="true" data-label="Categoria A">
+            📁 Categoria A
+        </div>
+        
+        <div class="draggable" draggable="true" data-label="Arquivo B">
+            📄 Arquivo B
+        </div>
+        
+        <div class="draggable" draggable="true" data-label="Pessoa C">
+            👤 Pessoa C
+        </div>
+        
+        <div class="draggable" draggable="true" data-label="Projeto D">
+            📊 Projeto D
+        </div>
+    </div>
+    
+    <div id="mynetwork">
+        <div class="info">
+            <strong>Status:</strong> <span id="status">Pronto</span><br>
+            <strong>Nós:</strong> <span id="nodeCount">1</span><br>
+            <strong>Conexões:</strong> <span id="edgeCount">0</span>
+        </div>
+    </div>
+
+    <script>
+        // Criar DataSets do vis.js
+        var nodes = new vis.DataSet();
+        var edges = new vis.DataSet();
+        
+        // Adicionar nó inicial (central)
+        nodes.add({
+            id: 'center',
+            label: 'Centro',
+            x: 0,
+            y: 0,
+            color: '#e74c3c',
+            shape: 'star',
+            size: 30
+        });
+        
+        // Configurar network
+        var container = document.getElementById('mynetwork');
+        var data = { nodes: nodes, edges: edges };
+        var options = {
+            physics: {
+                enabled: true,
+                stabilization: false
+            },
+            interaction: {
+                hover: true
+            }
+        };
+        
+        var network = new vis.Network(container, data, options);
+        
+        // Contador para IDs únicos
+        var nodeIdCounter = 1;
+        
+        // Setup drag and drop
+        var draggables = document.querySelectorAll('.draggable');
+        var networkDiv = document.getElementById('mynetwork');
+        
+        // Configurar elementos arrastáveis
+        draggables.forEach(function(elem) {
+            elem.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text', e.target.getAttribute('data-label'));
+                document.getElementById('status').textContent = 'Arrastando...';
+            });
+        });
+        
+        // Configurar área de drop
+        networkDiv.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            networkDiv.classList.add('dragover');
+        });
+        
+        networkDiv.addEventListener('dragleave', function(e) {
+            networkDiv.classList.remove('dragover');
+        });
+        
+        networkDiv.addEventListener('drop', function(e) {
+            e.preventDefault();
+            networkDiv.classList.remove('dragover');
+            
+            var label = e.dataTransfer.getData('text');
+            
+            // Converter posição do mouse para coordenadas do canvas
+            var rect = container.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            
+            var canvasPosition = network.DOMtoCanvas({x: x, y: y});
+            
+            // Criar novo nó
+            var newNodeId = 'node' + nodeIdCounter++;
+            nodes.add({
+                id: newNodeId,
+                label: label,
+                x: canvasPosition.x,
+                y: canvasPosition.y,
+                color: '#3498db',
+                shape: 'box'
+            });
+            
+            // Conectar ao centro automaticamente
+            edges.add({
+                from: 'center',
+                to: newNodeId
+            });
+            
+            // Atualizar status
+            document.getElementById('status').textContent = label + ' adicionado!';
+            document.getElementById('nodeCount').textContent = nodes.length;
+            document.getElementById('edgeCount').textContent = edges.length;
+            
+            console.log('Nó adicionado:', newNodeId, 'em', canvasPosition);
+        });
+        
+        // Evento de clique para debug
+        network.on("click", function (params) {
+            if (params.nodes.length > 0) {
+                var nodeId = params.nodes[0];
+                var node = nodes.get(nodeId);
+                console.log('Clicou no nó:', node);
+                document.getElementById('status').textContent = 'Clicou: ' + node.label;
+            }
+        });
+        
+        // Log inicial
+        console.log('Grafo iniciado com', nodes.length, 'nós');
+    </script>
+</body>
+</html>

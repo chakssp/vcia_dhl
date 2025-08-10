@@ -1,0 +1,264 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "lastUpdate": "2025-08-07",
+    "description": "Modelo de dados flexível para visualização de grafos do Knowledge Consolidator"
+  },
+  "views": {
+    "verticalClusters": {
+      "name": "Verticalização por Tipo",
+      "description": "Organização hierárquica por tipos de análise",
+      "layout": {
+        "type": "radial",
+        "centerRadius": 0,
+        "levelSpacing": 120,
+        "nodeSpacing": 60
+      },
+      "nodes": {
+        "types": [
+          {
+            "id": "breakthrough",
+            "label": "Breakthrough Técnico",
+            "color": "#ef4444",
+            "icon": "⚡",
+            "categories": [
+              {
+                "id": "automation",
+                "label": "Automação WhatsApp",
+                "entities": ["DedetClean", "Clínica São Lucas", "Lab Express"],
+                "files": ["config_whatsapp.json", "api_integration.log", "ai_model.py"]
+              },
+              {
+                "id": "integration",
+                "label": "Integração API",
+                "entities": ["Hospital Central", "Prefeitura SP", "SAMU Regional"],
+                "files": ["api_docs.md", "integration_test.js", "endpoints.yaml"]
+              }
+            ]
+          },
+          {
+            "id": "evolution",
+            "label": "Evolução Conceitual",
+            "color": "#8b5cf6",
+            "icon": "🚀",
+            "categories": [
+              {
+                "id": "business-model",
+                "label": "Modelo de Negócio",
+                "entities": ["Investidor A", "Partner B2B", "Franquia X"],
+                "files": ["business_model.pdf", "strategy_2025.docx", "innovation_report.md"]
+              },
+              {
+                "id": "digital-strategy",
+                "label": "Estratégia Digital",
+                "entities": ["E-commerce Y", "Marketplace Z", "SaaS Platform"],
+                "files": ["digital_roadmap.pptx", "tech_stack.md", "architecture.svg"]
+              }
+            ]
+          },
+          {
+            "id": "decisive",
+            "label": "Momento Decisivo",
+            "color": "#f59e0b",
+            "icon": "🎯",
+            "categories": [
+              {
+                "id": "sales-closing",
+                "label": "Fechamento Venda",
+                "entities": ["Cliente Fechado A", "Deal Confirmado B", "Contrato C"],
+                "files": ["proposta_comercial.pdf", "contrato_assinado.doc", "meeting_notes.md"]
+              }
+            ]
+          },
+          {
+            "id": "insights",
+            "label": "Insights Acionáveis",
+            "color": "#10b981",
+            "icon": "💡",
+            "categories": [
+              {
+                "id": "cross-sell",
+                "label": "Oportunidade Cross-sell",
+                "entities": ["Cliente Base A", "Account Premium", "VIP Customer"],
+                "files": ["analise_mercado.xlsx", "oportunidades_q1.ppt", "expansion_plan.md"]
+              }
+            ]
+          },
+          {
+            "id": "contextual",
+            "label": "Intenção Contextualizada",
+            "color": "#6366f1",
+            "icon": "🧠",
+            "categories": [
+              {
+                "id": "training",
+                "label": "Treinamento",
+                "entities": ["Equipe Vendas", "Time Suporte", "Partners"],
+                "files": ["manual_usuario.pdf", "training_video.mp4", "best_practices.md"]
+              }
+            ]
+          }
+        ]
+      },
+      "edges": {
+        "rules": [
+          {
+            "from": "type",
+            "to": "category",
+            "style": {
+              "width": 4,
+              "color": "inherit",
+              "smooth": "curvedCW"
+            }
+          },
+          {
+            "from": "category",
+            "to": "entity",
+            "style": {
+              "width": 2,
+              "color": "#10b981",
+              "smooth": "continuous"
+            }
+          },
+          {
+            "from": "entity",
+            "to": "file",
+            "style": {
+              "width": 1,
+              "color": "#64748b",
+              "dashed": true
+            }
+          }
+        ]
+      }
+    },
+    "entityCentric": {
+      "name": "Entidade-Cêntrica",
+      "description": "Visualização focada nas entidades principais",
+      "layout": {
+        "type": "force",
+        "gravity": -50,
+        "springLength": 150
+      },
+      "nodes": {
+        "entities": [
+          {
+            "id": "dedetclean",
+            "label": "DedetClean",
+            "type": "cliente-ativo",
+            "revenue": 280,
+            "lastContact": "2025-08-05",
+            "status": "active",
+            "connections": ["automation", "cross-sell", "training"]
+          },
+          {
+            "id": "hospital-central",
+            "label": "Hospital Central",
+            "type": "prospect",
+            "revenue": 450,
+            "lastContact": "2025-08-03",
+            "status": "negotiation",
+            "connections": ["integration", "digital-strategy"]
+          }
+        ]
+      }
+    },
+    "temporal": {
+      "name": "Evolução Temporal",
+      "description": "Análise cronológica dos eventos",
+      "layout": {
+        "type": "timeline",
+        "direction": "horizontal",
+        "spacing": 200
+      },
+      "nodes": {
+        "timeline": [
+          {
+            "id": "2025-01",
+            "label": "Janeiro 2025",
+            "metrics": {
+              "sales": 45,
+              "insights": 12,
+              "categories": 8
+            },
+            "events": [
+              {
+                "type": "campaign",
+                "label": "Campanha WhatsApp",
+                "impact": "high"
+              }
+            ]
+          },
+          {
+            "id": "2025-02",
+            "label": "Fevereiro 2025",
+            "metrics": {
+              "sales": 73,
+              "insights": 18,
+              "categories": 10
+            },
+            "events": [
+              {
+                "type": "automation",
+                "label": "Automação Implementada",
+                "impact": "critical"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "customization": {
+    "themes": {
+      "dark": {
+        "background": "#0F172A",
+        "nodeColors": {
+          "default": "#3b82f6",
+          "highRelevance": "#ef4444",
+          "category": "#10b981",
+          "entity": "#fbbf24"
+        }
+      },
+      "light": {
+        "background": "#ffffff",
+        "nodeColors": {
+          "default": "#1e40af",
+          "highRelevance": "#dc2626",
+          "category": "#059669",
+          "entity": "#d97706"
+        }
+      }
+    },
+    "animations": {
+      "enabled": true,
+      "insightDiscovery": {
+        "duration": 1000,
+        "effect": "pulse"
+      },
+      "pathHighlight": {
+        "duration": 3000,
+        "effect": "glow"
+      }
+    },
+    "physics": {
+      "enabled": true,
+      "solver": "forceAtlas2Based",
+      "parameters": {
+        "gravitationalConstant": -50,
+        "centralGravity": 0.01,
+        "springLength": 150,
+        "springConstant": 0.08,
+        "damping": 0.4
+      }
+    }
+  },
+  "export": {
+    "formats": ["json", "csv", "graphml", "gexf", "cytoscape"],
+    "options": {
+      "includeMetadata": true,
+      "includePositions": true,
+      "includeStyles": true
+    }
+  }
+}

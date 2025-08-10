@@ -263,7 +263,7 @@
                             isCategoryOnly: true,
                             categories: file.categories,
                             keywords: file.categories,
-                            relevanceInheritance: file.relevanceScore || 50 // Mínimo 50% para categorizados
+                            relevanceInheritance: file.relevanceScore || 0 // Preservar 0% - pode ser arquivo não processável ainda
                         }
                     });
                 }
@@ -821,7 +821,7 @@
                                     chunkText: chunk.content, // Adicionar também como chunkText para compatibilidade
                                     // CORRIGIDO: Adicionar size e relevanceScore no nível raiz
                                     size: chunk.content ? chunk.content.length : 0,
-                                    relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || doc.relevanceInheritance || 50,
+                                    relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || doc.relevanceInheritance || 0, // Preservar 0% - informação válida
                                     // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
                                     // DEBUG: Log para rastrear onde o analysisType está sendo encontrado
                                     analysisType: (() => {

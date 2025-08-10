@@ -352,8 +352,8 @@
             };
 
             files.forEach(file => {
-                // Conta arquivos prontos (relevância >= 50)
-                if (file.relevanceScore >= 50) {
+                // Conta arquivos prontos - TODOS com score são considerados prontos
+                if (file.relevanceScore !== undefined && file.relevanceScore !== null) {
                     stats.ready++;
                 }
                 
@@ -367,8 +367,8 @@
                     stats.highRelevance++;
                 }
                 
-                // Relevância média
-                if (file.relevanceScore >= 50) {
+                // Relevância média - CORRIGIDO para contar apenas 50-70%
+                if (file.relevanceScore >= 50 && file.relevanceScore < 70) {
                     stats.mediumRelevance++;
                 }
                 

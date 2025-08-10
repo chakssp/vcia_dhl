@@ -1,0 +1,132 @@
+/* ChunkNode Styles - Representa dados reais do Qdrant */
+
+.chunk-node {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  border: 2px solid #2b6cb0;
+  border-radius: 12px;
+  padding: 0;
+  min-width: 250px;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+  transition: all 0.3s ease;
+  color: white;
+  overflow: hidden;
+}
+
+.chunk-node:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+}
+
+.chunk-node.selected {
+  border: 3px solid #fbbf24;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.2);
+}
+
+.chunk-header {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chunk-icon {
+  font-size: 16px;
+}
+
+.chunk-title {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chunk-content {
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 60px;
+  max-height: 80px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.chunk-keywords {
+  padding: 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.keyword-chip {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.keyword-more {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-style: italic;
+}
+
+.chunk-categories {
+  padding: 0 12px 8px;
+  display: flex;
+  gap: 6px;
+}
+
+.category-badge {
+  background: rgba(34, 197, 94, 0.3);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.chunk-footer {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+
+.chunk-type {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.chunk-score {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.chunk-handle {
+  width: 10px;
+  height: 10px;
+  background: white;
+  border: 2px solid #2b6cb0;
+}
+
+.chunk-handle:hover {
+  background: #fbbf24;
+  transform: scale(1.2);
+}

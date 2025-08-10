@@ -1,0 +1,233 @@
+/* AnalysisNode Styles - Representa análises e agregações */
+
+.analysis-node {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  border: 2px dashed #2f855a;
+  border-radius: 16px;
+  padding: 0;
+  min-width: 260px;
+  max-width: 320px;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+  transition: all 0.3s ease;
+  color: white;
+  overflow: hidden;
+}
+
+.analysis-node:hover {
+  transform: translateY(-2px) rotate(0.5deg);
+  box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
+}
+
+.analysis-node.selected {
+  border: 3px dashed #f59e0b;
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+}
+
+.analysis-header {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.analysis-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.analysis-title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.analysis-content {
+  padding: 15px;
+  min-height: 80px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Keyword Cloud Analysis */
+.analysis-keywords {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.keyword-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.keyword-text {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.keyword-count {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Category Summary Analysis */
+.analysis-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.category-name {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.category-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.category-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Convergence Analysis */
+.analysis-convergence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.convergence-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.score-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.score-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.convergence-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chain-item {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Default Analysis */
+.analysis-default {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.source-info {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.analysis-footer {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  border-top: 2px dashed rgba(255, 255, 255, 0.3);
+}
+
+.analysis-type {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.source-count {
+  color: #fbbf24;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.analysis-handle {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border: 2px dashed #2f855a;
+  border-radius: 50%;
+}
+
+.analysis-handle:hover {
+  background: #f59e0b;
+  transform: scale(1.3);
+  border-style: solid;
+}
+
+/* Scrollbar customizada */
+.analysis-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.analysis-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.analysis-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.analysis-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}

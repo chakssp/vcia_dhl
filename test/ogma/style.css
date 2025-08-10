@@ -1,0 +1,321 @@
+:root {
+    --font: 'IBM Plex Sans', sans-serif;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;
+  }
+  
+  #graph-container {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute;
+    margin: 0;
+    overflow: hidden;
+  }
+  
+  .toolbar {
+    display: block;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+    border-radius: 4px;
+    background: #ffffff;
+    color: #222222;
+    font-weight: 300;
+  }
+  
+  .toolbar .section {
+    position: relative;
+    display: block;
+  }
+  
+  .toolbar .section h3 {
+    display: block;
+    font-weight: 300;
+    border-bottom: 1px solid #ddd;
+    color: #606060;
+    font-size: 1rem;
+  }
+  
+  .toolbar .section .clearable-input {
+    border-radius: 4px;
+    padding: 5px;
+    border: 1px solid #dddddd;
+  }
+  
+  .toolbar .section .line-color,
+  .ogma-tooltip .line-color {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.25rem;
+    border-radius: 50%;
+    color: #ffffff;
+    text-align: center;
+    font-size: 0.65rem;
+    line-height: 1rem;
+    font-weight: bold;
+    vertical-align: text-top;
+  }
+  
+  .toolbar .section p {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  
+  .toolbar .section p label {
+    width: 4rem;
+    display: inline-block;
+  }
+  
+  .toolbar .mode {
+    text-align: center;
+  }
+  
+  .toolbar .disabled {
+    display: none;
+  }
+  
+  .ogma-tooltip-header .title {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  /* --- Tooltip */
+  .ogma-tooltip {
+    max-width: 240px;
+    max-height: 280px;
+    background-color: #fff;
+    border: 1px solid #999;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    cursor: auto;
+    font-size: 12px;
+    pointer-events: none;
+  }
+  
+  .ogma-tooltip-header {
+    font-variant: small-caps;
+    font-size: 120%;
+    color: #000;
+    border-bottom: 1px solid #999;
+    padding: 10px;
+  }
+  
+  .ogma-tooltip-body {
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-width: inherit;
+    max-height: 180px;
+  }
+  
+  .ogma-tooltip-body th {
+    color: #999;
+    text-align: left;
+  }
+  
+  .ogma-tooltip-footer {
+    padding: 10px;
+    border-top: 1px solid #999;
+  }
+  
+  .ogma-tooltip > .arrow {
+    border-width: 10px;
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-color: transparent;
+    border-style: solid;
+  }
+  
+  .ogma-tooltip.top {
+    margin-top: -12px;
+  }
+  
+  .ogma-tooltip.top > .arrow {
+    left: 50%;
+    bottom: -10px;
+    margin-left: -10px;
+    border-top-color: #999;
+    border-bottom-width: 0;
+  }
+  
+  .ogma-tooltip.bottom {
+    margin-top: 12px;
+  }
+  
+  .ogma-tooltip.bottom > .arrow {
+    left: 50%;
+    top: -10px;
+    margin-left: -10px;
+    border-bottom-color: #999;
+    border-top-width: 0;
+  }
+  
+  .ogma-tooltip.left {
+    margin-left: -12px;
+  }
+  
+  .ogma-tooltip.left > .arrow {
+    top: 50%;
+    right: -10px;
+    margin-top: -10px;
+    border-left-color: #999;
+    border-right-width: 0;
+  }
+  
+  .ogma-tooltip.right {
+    margin-left: 12px;
+  }
+  
+  .ogma-tooltip.right > .arrow {
+    top: 50%;
+    left: -10px;
+    margin-top: -10px;
+    border-right-color: #999;
+    border-left-width: 0;
+  }
+  
+  /* -- CSS flip switch */
+  .switch {
+    width: 100%;
+    position: relative;
+  }
+  
+  .switch input {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .switch input:checked {
+    z-index: 1;
+  }
+  .switch input:checked + label {
+    opacity: 1;
+    cursor: default;
+  }
+  .switch input:not(:checked) + label:hover {
+    opacity: 0.5;
+  }
+  .switch label {
+    color: #222222;
+    opacity: 0.33;
+    transition: opacity 0.25s ease;
+    cursor: pointer;
+  }
+  .switch .toggle-outside {
+    height: 100%;
+    border-radius: 2rem;
+    padding: 0.25rem;
+    overflow: hidden;
+    transition: 0.25s ease all;
+  }
+  .switch .toggle-inside {
+    border-radius: 2.5rem;
+    background: #4a4a4a;
+    position: absolute;
+    transition: 0.25s ease all;
+  }
+  .switch--horizontal {
+    width: 15rem;
+    height: 2rem;
+    margin: 0 auto;
+    font-size: 0;
+    margin-bottom: 1rem;
+  }
+  .switch--horizontal input {
+    height: 2rem;
+    width: 5rem;
+    left: 5rem;
+    margin: 0;
+  }
+  .switch--horizontal label {
+    font-size: 1rem;
+    line-height: 2rem;
+    display: inline-block;
+    width: 5rem;
+    height: 100%;
+    margin: 0;
+    text-align: center;
+  }
+  .switch--horizontal label:last-of-type {
+    margin-left: 5rem;
+  }
+  .switch--horizontal .toggle-outside {
+    background: #dddddd;
+    position: absolute;
+    width: 5rem;
+    left: 5rem;
+  }
+  .switch--horizontal .toggle-inside {
+    height: 1.5rem;
+    width: 1.5rem;
+  }
+  .switch--horizontal input:checked ~ .toggle-outside .toggle-inside {
+    left: 0.25rem;
+  }
+  .switch--horizontal input ~ input:checked ~ .toggle-outside .toggle-inside {
+    left: 3.25rem;
+  }
+  .switch--horizontal input:disabled ~ .toggle-outside .toggle-inside {
+    background: #9a9a9a;
+  }
+  .switch--horizontal input:disabled ~ label {
+    color: #9a9a9a;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  .controls {
+    text-align: center;
+    margin-top: 5px;
+  }
+  
+  .control-bar {
+    font-family: Helvetica, Arial, sans-serif;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+    border-radius: 4px;
+  }
+  
+  .btn {
+    padding: 6px 8px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+  }
+  
+  .btn:hover {
+    color: #333;
+    background-color: #e6e6e6;
+  }
+  
+  .menu {
+    border: 1px solid #ddd;
+    width: 80%;
+    font-size: 14px;
+    margin-top: 10px;
+  }

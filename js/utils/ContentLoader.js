@@ -66,12 +66,12 @@
                 
                 // Se não tem relevanceScore, calcula baseado no preview
                 if (!normalized.relevanceScore && normalized.preview) {
-                    normalized.relevanceScore = KC.PreviewUtils?.calculatePreviewRelevance(normalized.preview) || 50;
+                    normalized.relevanceScore = KC.PreviewUtils?.calculatePreviewRelevance(normalized.preview) || 0; // 0% = aguardando processamento
                 }
                 
-                // Default para 50% se ainda não tiver
-                if (!normalized.relevanceScore) {
-                    normalized.relevanceScore = 50;
+                // Preservar 0% - é informação válida (arquivo não processado)
+                if (normalized.relevanceScore === undefined) {
+                    normalized.relevanceScore = 0;
                 }
                 
                 return normalized;

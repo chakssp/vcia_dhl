@@ -1,0 +1,15 @@
+Backup Information 
+================== 
+Date: 07/08/2025  9:52:36,44 
+Source: F:\vcia-1307\vcia_dhl 
+ 
+Git Status: 
+?? v2/graph-data-model.json
+?? v2/graph-drag-drop-test.html
+?? v2/graph-editor-simple.html
+?? v2/graph-editor.html
+?? v2/intelligence-flow-builder.html
+?? v2/js/GraphDataManager.js
+ 
+Last Commit: 
+4958d17 chore: Organizar arquivos de teste na pasta test/

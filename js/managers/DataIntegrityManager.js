@@ -89,9 +89,9 @@
                 fixed.relevanceScore = this.normalizeRelevanceScore(fixed.relevanceScore);
             } else if (fixed.preview) {
                 // Calcular se não existir
-                fixed.relevanceScore = KC.PreviewUtils?.calculatePreviewRelevance(fixed.preview) || 50;
+                fixed.relevanceScore = KC.PreviewUtils?.calculatePreviewRelevance(fixed.preview) || 0; // 0% = não processado ainda
             } else {
-                fixed.relevanceScore = 50; // Default
+                fixed.relevanceScore = 0; // 0% informa que precisa processamento
             }
 
             // 4. Garantir preview válido

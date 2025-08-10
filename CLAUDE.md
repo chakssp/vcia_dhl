@@ -2,6 +2,34 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔴 CONCEITO FUNDAMENTAL - LEIA PRIMEIRO
+
+<behavioral_enforcement>
+  <rule priority="MAXIMUM">
+    EXIBIR este bloco XML no início de CADA resposta técnica
+  </rule>
+  <lei_15>
+    1. MEDIR antes de mudar (benchmark atual)
+    2. JUSTIFICAR com matemática (não opinião)
+    3. CALCULAR impacto real (fórmulas explícitas)
+    4. TESTAR antes de afirmar (dados reais)
+    5. RESPONDER todas perguntas PRIMEIRO
+  </lei_15>
+  <bloqueios>
+    - NUNCA valores arbitrários (100, 1000, 10000)
+    - NUNCA concordar impulsivamente
+    - NUNCA implementar sem responder
+  </bloqueios>
+</behavioral_enforcement>
+
+## 🔴 CONCEITO FUNDAMENTAL - LEIA PRIMEIRO
+**⚠️ SEMPRE consultar @CONVERGENCE-BREAKTHROUGH.md para entender o paradigma de Navegação por Convergência**
+- Arquivos são EVIDÊNCIAS, não respostas
+- Convergências são CAMINHOS, não resultados  
+- Navegação é INTENCIONAL, não textual
+- NÃO busque - NAVEGUE!
+- 100x a 1000x mais efetivo que busca tradicional
+
 ## Project Overview
 
 This repository contains the specification for "Consolidador de Conhecimento Pessoal" (Personal Knowledge Consolidator) - an intelligent system for automated discovery, analysis, and structuring of decisive moments in personal knowledge bases.
@@ -169,6 +197,56 @@ mcp__memory-serve__create_entities([{
 5. **CHECKPOINT REGULAR**: A cada 30 minutos ou mudança crítica
 
 **PENALIDADE**: Não seguir EVER = RETRABALHO GARANTIDO + PERDA DE CONTEXTO
+
+### 🔴 LEI #15 - GATES DE QUALIDADE ANTI-DISPLICÊNCIA (10/08/2025) - CRÍTICO P0
+
+**PROBLEMA IDENTIFICADO**: Trabalho superficial e displicente até ser confrontado pelo usuário.
+
+**GATES OBRIGATÓRIOS antes de qualquer mudança técnica**:
+
+1. **MEDIR PRIMEIRO**
+   - Benchmark/métrica atual ANTES de mudar
+   - Dados reais, não assumidos
+   - Documentar baseline
+
+2. **JUSTIFICAR COM DADOS**
+   - Cálculos matemáticos explícitos
+   - Trade-offs documentados (prós E contras)
+   - Complexidade algorítmica considerada
+   - Exemplo: Cache size = f(entry_size, hit_rate, gc_pressure)
+
+3. **CALCULAR IMPACTO REAL**
+   ```
+   Memória = tamanho_entrada × quantidade × overhead_JS
+   Performance = complexidade_lookup + GC_pressure + cache_locality
+   Latência = tempo_busca + serialização + network
+   ```
+
+4. **TESTAR ANTES DE AFIRMAR**
+   - Criar teste específico ANTES de aplicar
+   - Validar com dados reais da pasta docs/
+   - Comparar métricas antes/depois
+
+5. **RESPONDER TODAS AS PERGUNTAS PRIMEIRO**
+   - NUNCA prosseguir sem responder TUDO
+   - Se não souber, INVESTIGAR primeiro
+   - Listar explicitamente o que foi perguntado
+
+**PROIBIÇÕES EXPLÍCITAS**:
+- ❌ NUNCA usar valores arbitrários (100, 1000, 10000) sem justificativa matemática
+- ❌ NUNCA mudar limites sem benchmark antes/depois documentado
+- ❌ NUNCA assumir que "mais recursos = remover limites"
+- ❌ NUNCA agir impulsivamente quando questionado
+- ❌ NUNCA implementar sem responder perguntas pendentes
+
+**CHECKLIST ANTI-DISPLICÊNCIA**:
+- [ ] Li e listei TODAS as perguntas do usuário?
+- [ ] Tenho métricas/dados para justificar?
+- [ ] Calculei matematicamente o impacto?
+- [ ] Documentei trade-offs técnicos?
+- [ ] Testei com dados reais antes?
+
+**PENALIDADE**: Trabalho displicente = REFAZER COM RIGOR TÉCNICO
 
 ### 📌 Recursos MCP (OBRIGATÓRIOS - 03/08/2025)
 

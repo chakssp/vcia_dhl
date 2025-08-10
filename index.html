@@ -227,6 +227,7 @@
     <script src="js/utils/ObsidianPluginUtils.js"></script>
     <script src="js/utils/ExclusionPatternsHandler.js"></script>
     <script src="js/utils/ContentAccessUtils.js"></script>
+    <script src="js/utils/KeywordExtractor.js"></script>
     <script src="js/utils/ChunkingUtils.js"></script>
     <script src="js/managers/IntentManager.js"></script>
     <script src="js/managers/InsightExtractor.js"></script>
@@ -273,6 +274,28 @@
     <script src="js/services/TripleStoreService.js"></script>
     <script src="js/services/ConvergenceAnalysisService.js"></script>
     <script src="js/services/IntelligenceEnrichmentPipeline.js"></script>
+    
+    <!-- Performance Optimization Fixes -->
+    <script src="js/core/MemoryLeakFixes.js"></script>
+    <script src="js/patches/PerformancePatches.js"></script>
+    
+    <!-- NOVO: Sistema de Análise Multi-dimensional e Fila Evolutiva -->
+    <script src="js/services/ContentAnalysisOrchestrator.js"></script>
+    <script src="js/services/EvolutionQueue.js"></script>
+    
+    <!-- NOVO: Sistema de Convergência Semântica e Extractors -->
+    <script src="js/services/DocumentExtractors.js"></script>
+    <script src="js/services/SemanticConvergenceService.js"></script>
+    
+    <!-- NOVO: Componentes de Suporte -->
+    <script src="js/services/FeatureFlagManager.js"></script>
+    <script src="js/services/ScoreNormalizer.js"></script>
+    <script src="js/services/QdrantScoreBridge.js"></script>
+    <script src="js/services/DataValidationManager.js"></script>
+    
+    <!-- NOVO: Dashboards e Visualizações -->
+    <script src="js/components/QueueProgressVisualization.js"></script>
+    <script src="js/components/ConvergenceDashboard.js"></script>
     
     <!-- Patches temporários para problemas de cache -->
     <script src="js/patches/convergence-patch.js"></script>
@@ -331,6 +354,10 @@
     
     <!-- Script Principal -->
     <script src="js/app.js"></script>
+    
+    <!-- Performance Patches -->
+    <script src="js/core/MemoryLeakFixes.js"></script>
+    <script src="js/patches/PerformancePatches.js"></script>
     
     <!-- Debug Temporário -->
     <script src="js/debug-export.js"></script>

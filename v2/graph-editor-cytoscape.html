@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Intelligence Editor - Cytoscape.js</title>
+    
+    <!-- Cytoscape Core -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.28.1/cytoscape.min.js"></script>
+    
+    <!-- Layouts -->
+    <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="https://unpkg.com/cytoscape-cola/cytoscape-cola.js"></script>
+    <script src="https://unpkg.com/cytoscape-dagre/cytoscape-dagre.js"></script>
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.js"></script>
+    <script src="https://unpkg.com/cytoscape-euler/cytoscape-euler.js"></script>
+    
+    <!-- Context Menu -->
+    <script src="https://unpkg.com/cytoscape-cxtmenu/cytoscape-cxtmenu.js"></script>
+    
+    <!-- Compound Drag and Drop -->
+    <script src="https://unpkg.com/cytoscape-compound-drag-and-drop/cytoscape-compound-drag-and-drop.js"></script>
+    
+    <!-- Popper for tooltips -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/cytoscape-popper/cytoscape-popper.js"></script>
+    
+    <!-- Edgehandles for creating edges -->
+    <script src="https://unpkg.com/cytoscape-edgehandles/cytoscape-edgehandles.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Campo Selector Panel */
+        .field-selector {
+            width: 320px;
+            background: rgba(26, 31, 58, 0.95);
+            border-right: 1px solid rgba(64, 224, 208, 0.3);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+        
+        .field-selector.collapsed {
+            transform: translateX(-280px);
+        }
+        
+        .selector-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-bottom: 2px solid rgba(64, 224, 208, 0.5);
+        }
+        
+        .selector-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle-selector {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 60px;
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-left: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .selector-search {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .field-categories {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .field-category {
+            margin-bottom: 20px;
+        }
+        
+        .category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #40e0d0;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: rgba(64, 224, 208, 0.1);
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .category-title:hover {
+            background: rgba(64, 224, 208, 0.2);
+        }
+        
+        .field-list {
+            display: none;
+            padding-left: 10px;
+        }
+        
+        .field-category.expanded .field-list {
+            display: block;
+        }
+        
+        .field-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(64, 224, 208, 0.2);
+            border-radius: 5px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .field-item:hover {
+            background: rgba(64, 224, 208, 0.2);
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(64, 224, 208, 0.3);
+        }
+        
+        .field-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .field-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        /* Graph Container */
+        .graph-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        #cy {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(64, 224, 208, 0.02) 0%, transparent 70%);
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .toolbar-btn {
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .toolbar-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .toolbar-separator {
+            width: 1px;
+            background: rgba(64, 224, 208, 0.3);
+            margin: 0 5px;
+        }
+        
+        /* Layout Selector */
+        .layout-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+        }
+        
+        .layout-selector select {
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 20px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            z-index: 1000;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #40e0d0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Details Panel */
+        .details-panel {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 350px;
+            max-height: 80vh;
+            background: rgba(26, 31, 58, 0.95);
+            border: 1px solid rgba(64, 224, 208, 0.3);
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        
+        .details-panel.active {
+            display: flex;
+        }
+        
+        .details-header {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .detail-row {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #40e0d0;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 14px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            word-break: break-word;
+        }
+        
+        /* Edge Creation Helper */
+        .eh-handle {
+            background: #40e0d0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 2px solid white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .eh-preview, .eh-ghost-edge {
+            stroke: #40e0d0;
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+        }
+        
+        /* Loading Overlay */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 14, 39, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(64, 224, 208, 0.3);
+            border-top-color: #40e0d0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Context Menu Styles */
+        .cy-context-menus-cxt-menu {
+            background: rgba(26, 31, 58, 0.95) !important;
+            border: 1px solid rgba(64, 224, 208, 0.3) !important;
+        }
+        
+        .cy-context-menus-cxt-menuitem {
+            color: white !important;
+        }
+        
+        .cy-context-menus-cxt-menuitem:hover {
+            background: rgba(64, 224, 208, 0.2) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Campo Selector Panel -->
+        <div class="field-selector" id="fieldSelector">
+            <div class="toggle-selector" onclick="toggleFieldSelector()">
+                <span id="toggleIcon">◀</span>
+            </div>
+            
+            <div class="selector-header">
+                <div class="selector-title">
+                    🔍 Campos do Qdrant
+                </div>
+                <input type="text" class="selector-search" id="fieldSearch" placeholder="Buscar campos...">
+            </div>
+            
+            <div class="field-categories" id="fieldCategories">
+                <!-- Categories will be populated dynamically -->
+            </div>
+        </div>
+        
+        <!-- Graph Container -->
+        <div class="graph-container">
+            <div id="cy"></div>
+            
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="toolbar-btn" onclick="connectToQdrant()">🔌 Conectar Qdrant</button>
+                <button class="toolbar-btn" onclick="loadQdrantData()">📥 Carregar Dados</button>
+                <div class="toolbar-separator"></div>
+                <button class="toolbar-btn" onclick="fitGraph()">🔍 Ajustar</button>
+                <button class="toolbar-btn" onclick="clearGraph()">🗑️ Limpar</button>
+                <div class="toolbar-separator"></div>
+                <div class="layout-selector">
+                    <label style="font-size: 14px;">Layout:</label>
+                    <select id="layoutSelect" onchange="changeLayout()">
+                        <option value="fcose">FCOSE (Constraints)</option>
+                        <option value="cola">Cola (Force)</option>
+                        <option value="dagre">Dagre (Hierarchy)</option>
+                        <option value="concentric">Concentric</option>
+                        <option value="grid">Grid</option>
+                        <option value="breadthfirst">Breadth First</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="status-item">
+                    <div class="status-indicator"></div>
+                    <span id="statusText">Desconectado</span>
+                </div>
+                <div class="status-item">
+                    <span>Nós: <strong id="nodeCount">0</strong></span>
+                </div>
+                <div class="status-item">
+                    <span>Arestas: <strong id="edgeCount">0</strong></span>
+                </div>
+            </div>
+            
+            <!-- Details Panel -->
+            <div class="details-panel" id="detailsPanel">
+                <div class="details-header">
+                    <span style="font-weight: 600;">Detalhes do Elemento</span>
+                    <button onclick="closeDetails()" style="background: none; border: none; color: white; cursor: pointer;">✕</button>
+                </div>
+                <div class="details-content" id="detailsContent">
+                    <!-- Details will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Loading Overlay -->
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="loader"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global Variables
+        let cy = null;
+        let qdrantData = null;
+        let edgehandles = null;
+        let currentLayout = null;
+        
+        // Qdrant Configuration
+        const QDRANT_CONFIG = {
+            url: 'http://qdr.vcia.com.br:6333',
+            collection: 'knowledge_consolidator',
+            apiKey: null
+        };
+        
+        // Field Categories Definition
+        const FIELD_CATEGORIES = {
+            'Identificação': ['id', 'fileName', 'filePath', 'chunkIndex', 'totalChunks'],
+            'Conteúdo': ['content', 'preview', 'summary', 'processedContent'],
+            'Metadata': ['fileSize', 'createdDate', 'modifiedDate', 'fileType', 'encoding'],
+            'Análise': ['categories', 'tags', 'entities', 'topics', 'keywords'],
+            'Scores': ['relevanceScore', 'confidenceScore', 'convergenceScore', 'intelligenceScore'],
+            'Convergência': ['convergenceChains', 'convergenceType', 'participants', 'strength'],
+            'Vetores': ['vector', 'embedding', 'dimension'],
+            'Timestamp': ['timestamp', 'processedAt', 'analyzedAt']
+        };
+        
+        // Initialize Cytoscape
+        function initCytoscape() {
+            cy = cytoscape({
+                container: document.getElementById('cy'),
+                
+                style: [
+                    // Node Styles
+                    {
+                        selector: 'node',
+                        style: {
+                            'label': 'data(label)',
+                            'text-valign': 'center',
+                            'text-halign': 'center',
+                            'background-color': 'data(color)',
+                            'width': 'mapData(weight, 0, 100, 30, 80)',
+                            'height': 'mapData(weight, 0, 100, 30, 80)',
+                            'font-size': '12px',
+                            'color': '#fff',
+                            'text-outline-width': 2,
+                            'text-outline-color': '#0a0e27',
+                            'border-width': 2,
+                            'border-color': '#40e0d0',
+                            'transition-property': 'background-color, width, height',
+                            'transition-duration': '0.3s'
+                        }
+                    },
+                    {
+                        selector: 'node:selected',
+                        style: {
+                            'background-color': '#40e0d0',
+                            'border-width': 3,
+                            'border-color': '#fff',
+                            'width': 80,
+                            'height': 80
+                        }
+                    },
+                    {
+                        selector: 'node.field',
+                        style: {
+                            'shape': 'round-rectangle',
+                            'background-gradient-direction': 'to-bottom',
+                            'background-gradient-stop-colors': 'data(gradientColors)',
+                            'width': 120,
+                            'height': 40,
+                            'text-wrap': 'wrap',
+                            'text-max-width': 100
+                        }
+                    },
+                    {
+                        selector: 'node.category',
+                        style: {
+                            'shape': 'round-rectangle',
+                            'background-color': 'data(color)',
+                            'padding': 20,
+                            'text-valign': 'top',
+                            'text-halign': 'center',
+                            'compound-sizing-wrt-labels': 'include'
+                        }
+                    },
+                    {
+                        selector: 'node.file',
+                        style: {
+                            'shape': 'barrel',
+                            'background-gradient-stop-colors': 'data(gradientColors)',
+                            'background-gradient-direction': 'to-right'
+                        }
+                    },
+                    {
+                        selector: 'node:parent',
+                        style: {
+                            'background-opacity': 0.1,
+                            'border-width': 2,
+                            'border-style': 'dashed'
+                        }
+                    },
+                    
+                    // Edge Styles
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2,
+                            'line-color': '#40e0d0',
+                            'target-arrow-color': '#40e0d0',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'opacity': 0.7,
+                            'transition-property': 'opacity, width',
+                            'transition-duration': '0.3s'
+                        }
+                    },
+                    {
+                        selector: 'edge:selected',
+                        style: {
+                            'width': 4,
+                            'line-color': '#fff',
+                            'target-arrow-color': '#fff',
+                            'opacity': 1
+                        }
+                    },
+                    {
+                        selector: 'edge.convergence',
+                        style: {
+                            'curve-style': 'unbundled-bezier',
+                            'control-point-distances': [20, -20],
+                            'line-gradient-stop-colors': ['#ff6b6b', '#40e0d0'],
+                            'width': 'mapData(strength, 0, 100, 2, 8)'
+                        }
+                    },
+                    {
+                        selector: '.eh-handle',
+                        style: {
+                            'background-color': '#40e0d0',
+                            'width': 15,
+                            'height': 15,
+                            'shape': 'ellipse',
+                            'overlay-opacity': 0,
+                            'border-width': 2,
+                            'border-color': '#fff'
+                        }
+                    },
+                    {
+                        selector: '.eh-hover',
+                        style: {
+                            'background-color': '#40e0d0'
+                        }
+                    },
+                    {
+                        selector: '.eh-source',
+                        style: {
+                            'border-width': 3,
+                            'border-color': '#40e0d0'
+                        }
+                    },
+                    {
+                        selector: '.eh-target',
+                        style: {
+                            'border-width': 3,
+                            'border-color': '#40e0d0'
+                        }
+                    },
+                    {
+                        selector: '.eh-preview, .eh-ghost-edge',
+                        style: {
+                            'background-color': '#40e0d0',
+                            'line-color': '#40e0d0',
+                            'target-arrow-color': '#40e0d0',
+                            'source-arrow-color': '#40e0d0',
+                            'line-style': 'dashed'
+                        }
+                    }
+                ],
+                
+                layout: {
+                    name: 'fcose',
+                    animate: true,
+                    randomize: false,
+                    fit: true,
+                    padding: 50,
+                    nodeRepulsion: 8000,
+                    idealEdgeLength: 100,
+                    edgeElasticity: 0.45,
+                    nestingFactor: 0.1,
+                    gravity: 0.25,
+                    numIter: 2500,
+                    tile: true
+                },
+                
+                wheelSensitivity: 0.2,
+                minZoom: 0.1,
+                maxZoom: 10
+            });
+            
+            // Initialize Edge Handles for creating connections
+            initEdgeHandles();
+            
+            // Initialize Context Menu
+            initContextMenu();
+            
+            // Setup Event Handlers
+            setupEventHandlers();
+            
+            // Initialize Field Selector
+            initFieldSelector();
+        }
+        
+        // Initialize Edge Handles
+        function initEdgeHandles() {
+            edgehandles = cy.edgehandles({
+                preview: true,
+                hoverDelay: 150,
+                handleNodes: 'node',
+                snap: false,
+                snapThreshold: 50,
+                snapFrequency: 15,
+                noEdgeEventsInDraw: false,
+                disableBrowserGestures: true,
+                handlePosition: function(node) {
+                    return 'middle top';
+                },
+                handleInDrawMode: false,
+                edgeType: function(sourceNode, targetNode) {
+                    return 'flat';
+                },
+                loopAllowed: function(node) {
+                    return false;
+                },
+                nodeLoopOffset: -50,
+                edgeParams: function(sourceNode, targetNode, i) {
+                    return {
+                        data: {
+                            source: sourceNode.id(),
+                            target: targetNode.id(),
+                            type: 'user-created',
+                            strength: 50
+                        }
+                    };
+                },
+                complete: function(sourceNode, targetNode, addedEles) {
+                    console.log('Edge criada:', sourceNode.id(), '->', targetNode.id());
+                    updateStatus();
+                }
+            });
+            
+            // Enable on right click
+            cy.on('cxttap', 'node', function(evt) {
+                edgehandles.start(evt.target);
+            });
+        }
+        
+        // Initialize Context Menu
+        function initContextMenu() {
+            cy.cxtmenu({
+                selector: 'node',
+                commands: [
+                    {
+                        content: '<span style="font-size: 20px;">🔗</span>',
+                        select: function(ele) {
+                            edgehandles.start(ele);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">📋</span>',
+                        select: function(ele) {
+                            showDetails(ele);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">📌</span>',
+                        select: function(ele) {
+                            ele.lock();
+                            ele.style('border-style', 'solid');
+                            ele.style('border-width', 3);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">🔓</span>',
+                        select: function(ele) {
+                            ele.unlock();
+                            ele.style('border-style', 'solid');
+                            ele.style('border-width', 2);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">🎨</span>',
+                        select: function(ele) {
+                            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#43e97b'];
+                            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                            ele.style('background-color', randomColor);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">🗑️</span>',
+                        select: function(ele) {
+                            cy.remove(ele);
+                            updateStatus();
+                        }
+                    }
+                ],
+                fillColor: 'rgba(26, 31, 58, 0.95)',
+                activeFillColor: 'rgba(64, 224, 208, 0.2)',
+                activePadding: 10,
+                indicatorSize: 24,
+                separatorWidth: 3,
+                spotlightPadding: 4,
+                minSpotlightRadius: 24,
+                maxSpotlightRadius: 38,
+                openMenuEvents: 'cxttap',
+                itemColor: 'white',
+                itemTextShadowColor: 'transparent',
+                zIndex: 9999
+            });
+            
+            // Context menu for edges
+            cy.cxtmenu({
+                selector: 'edge',
+                commands: [
+                    {
+                        content: '<span style="font-size: 20px;">📋</span>',
+                        select: function(ele) {
+                            showEdgeDetails(ele);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">🎨</span>',
+                        select: function(ele) {
+                            const colors = ['#40e0d0', '#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3'];
+                            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                            ele.style('line-color', randomColor);
+                            ele.style('target-arrow-color', randomColor);
+                        }
+                    },
+                    {
+                        content: '<span style="font-size: 20px;">🗑️</span>',
+                        select: function(ele) {
+                            cy.remove(ele);
+                            updateStatus();
+                        }
+                    }
+                ],
+                fillColor: 'rgba(26, 31, 58, 0.95)',
+                activeFillColor: 'rgba(64, 224, 208, 0.2)',
+                activePadding: 10,
+                indicatorSize: 24,
+                separatorWidth: 3,
+                spotlightPadding: 4,
+                minSpotlightRadius: 24,
+                maxSpotlightRadius: 38,
+                openMenuEvents: 'cxttap',
+                itemColor: 'white',
+                itemTextShadowColor: 'transparent',
+                zIndex: 9999
+            });
+        }
+        
+        // Setup Event Handlers
+        function setupEventHandlers() {
+            // Node click
+            cy.on('tap', 'node', function(evt) {
+                const node = evt.target;
+                showDetails(node);
+            });
+            
+            // Background click
+            cy.on('tap', function(evt) {
+                if (evt.target === cy) {
+                    closeDetails();
+                }
+            });
+            
+            // Node drag
+            cy.on('drag', 'node', function(evt) {
+                updateStatus();
+            });
+            
+            // Double click to expand/collapse compound nodes
+            cy.on('dbltap', 'node:parent', function(evt) {
+                const node = evt.target;
+                const children = node.children();
+                if (children.style('display') === 'none') {
+                    children.style('display', 'element');
+                } else {
+                    children.style('display', 'none');
+                }
+            });
+        }
+        
+        // Initialize Field Selector
+        function initFieldSelector() {
+            const container = document.getElementById('fieldCategories');
+            container.innerHTML = '';
+            
+            for (const [category, fields] of Object.entries(FIELD_CATEGORIES)) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'field-category';
+                categoryDiv.innerHTML = `
+                    <div class="category-title" onclick="toggleCategory(this)">
+                        <span>${category}</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="field-list">
+                        ${fields.map(field => `
+                            <div class="field-item" draggable="true" data-field="${field}" data-category="${category}">
+                                <div class="field-icon">${field.charAt(0).toUpperCase()}</div>
+                                <span>${field}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(categoryDiv);
+            }
+            
+            // Setup drag and drop
+            setupDragAndDrop();
+            
+            // Setup search
+            document.getElementById('fieldSearch').addEventListener('input', function(e) {
+                const search = e.target.value.toLowerCase();
+                document.querySelectorAll('.field-item').forEach(item => {
+                    const field = item.dataset.field.toLowerCase();
+                    item.style.display = field.includes(search) ? 'flex' : 'none';
+                });
+            });
+        }
+        
+        // Setup Drag and Drop
+        function setupDragAndDrop() {
+            // Make field items draggable
+            document.querySelectorAll('.field-item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+            
+            // Make graph accept drops
+            const cyContainer = document.getElementById('cy');
+            cyContainer.addEventListener('dragover', handleDragOver);
+            cyContainer.addEventListener('drop', handleDrop);
+        }
+        
+        let draggedField = null;
+        
+        function handleDragStart(e) {
+            draggedField = {
+                field: e.target.dataset.field,
+                category: e.target.dataset.category
+            };
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'copy';
+        }
+        
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (!draggedField) return;
+            
+            const rect = e.target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Convert to graph coordinates
+            const pan = cy.pan();
+            const zoom = cy.zoom();
+            const graphX = (x - pan.x) / zoom;
+            const graphY = (y - pan.y) / zoom;
+            
+            // Create a field node
+            createFieldNode(draggedField.field, draggedField.category, graphX, graphY);
+            
+            draggedField = null;
+        }
+        
+        // Create Field Node
+        function createFieldNode(field, category, x, y) {
+            const nodeId = `field_${field}_${Date.now()}`;
+            const colors = {
+                'Identificação': '#667eea',
+                'Conteúdo': '#764ba2',
+                'Metadata': '#f093fb',
+                'Análise': '#f5576c',
+                'Scores': '#4facfe',
+                'Convergência': '#43e97b',
+                'Vetores': '#feca57',
+                'Timestamp': '#ff6b6b'
+            };
+            
+            cy.add({
+                group: 'nodes',
+                data: {
+                    id: nodeId,
+                    label: field,
+                    type: 'field',
+                    category: category,
+                    field: field,
+                    color: colors[category] || '#667eea',
+                    gradientColors: [colors[category] || '#667eea', '#40e0d0'],
+                    weight: 50
+                },
+                position: { x: x, y: y },
+                classes: 'field'
+            });
+            
+            updateStatus();
+        }
+        
+        // Connect to Qdrant
+        async function connectToQdrant() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${QDRANT_CONFIG.url}/collections/${QDRANT_CONFIG.collection}`, {
+                    headers: QDRANT_CONFIG.apiKey ? { 'api-key': QDRANT_CONFIG.apiKey } : {}
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Conectado ao Qdrant:', data);
+                    document.getElementById('statusText').textContent = 'Conectado';
+                    alert('Conectado ao Qdrant com sucesso!');
+                } else {
+                    throw new Error('Erro ao conectar');
+                }
+            } catch (error) {
+                console.error('Erro ao conectar:', error);
+                alert('Erro ao conectar ao Qdrant: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Load Qdrant Data
+        async function loadQdrantData() {
+            showLoading(true);
+            try {
+                // Fetch data using scroll API
+                const response = await fetch(`${QDRANT_CONFIG.url}/collections/${QDRANT_CONFIG.collection}/points/scroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(QDRANT_CONFIG.apiKey ? { 'api-key': QDRANT_CONFIG.apiKey } : {})
+                    },
+                    body: JSON.stringify({
+                        limit: 100,
+                        with_payload: true,
+                        with_vector: false
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao buscar dados');
+                
+                const data = await response.json();
+                qdrantData = data.result?.points || [];
+                
+                console.log(`Dados carregados: ${qdrantData.length} pontos`);
+                
+                // Process and visualize data
+                processQdrantData();
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                alert('Erro ao carregar dados do Qdrant: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Process Qdrant Data
+        function processQdrantData() {
+            if (!qdrantData || qdrantData.length === 0) return;
+            
+            // Clear existing graph
+            cy.elements().remove();
+            
+            // Create nodes for unique files
+            const files = new Map();
+            const categories = new Map();
+            
+            qdrantData.forEach(point => {
+                const payload = point.payload || {};
+                
+                // Group by fileName
+                const fileName = payload.fileName || 'unknown';
+                if (!files.has(fileName)) {
+                    files.set(fileName, {
+                        id: `file_${fileName}`,
+                        fileName: fileName,
+                        categories: new Set(),
+                        scores: [],
+                        chunks: []
+                    });
+                }
+                
+                const file = files.get(fileName);
+                file.chunks.push(point);
+                
+                // Collect categories
+                if (payload.categories) {
+                    payload.categories.forEach(cat => {
+                        file.categories.add(cat);
+                        categories.set(cat, (categories.get(cat) || 0) + 1);
+                    });
+                }
+                
+                // Collect scores
+                if (payload.relevanceScore) {
+                    file.scores.push(payload.relevanceScore);
+                }
+            });
+            
+            // Create category nodes
+            const categoryColors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
+            let colorIndex = 0;
+            
+            categories.forEach((count, category) => {
+                cy.add({
+                    group: 'nodes',
+                    data: {
+                        id: `category_${category}`,
+                        label: `${category} (${count})`,
+                        type: 'category',
+                        color: categoryColors[colorIndex % categoryColors.length],
+                        weight: Math.min(100, count * 10)
+                    },
+                    classes: 'category'
+                });
+                colorIndex++;
+            });
+            
+            // Create file nodes
+            files.forEach((file, fileName) => {
+                const avgScore = file.scores.length > 0 
+                    ? file.scores.reduce((a, b) => a + b, 0) / file.scores.length 
+                    : 50;
+                
+                cy.add({
+                    group: 'nodes',
+                    data: {
+                        id: file.id,
+                        label: fileName,
+                        type: 'file',
+                        chunks: file.chunks.length,
+                        categories: Array.from(file.categories),
+                        relevance: avgScore,
+                        color: '#40e0d0',
+                        gradientColors: ['#40e0d0', '#667eea'],
+                        weight: Math.min(100, avgScore)
+                    },
+                    classes: 'file'
+                });
+                
+                // Create edges to categories
+                file.categories.forEach(category => {
+                    cy.add({
+                        group: 'edges',
+                        data: {
+                            id: `edge_${file.id}_${category}`,
+                            source: file.id,
+                            target: `category_${category}`,
+                            type: 'belongs-to'
+                        }
+                    });
+                });
+            });
+            
+            // Apply layout
+            applyLayout('fcose');
+            updateStatus();
+        }
+        
+        // Show Details
+        function showDetails(node) {
+            const panel = document.getElementById('detailsPanel');
+            const content = document.getElementById('detailsContent');
+            
+            const data = node.data();
+            let html = '';
+            
+            for (const [key, value] of Object.entries(data)) {
+                if (key === 'id' || key === 'gradientColors') continue;
+                
+                html += `
+                    <div class="detail-row">
+                        <div class="detail-label">${key}</div>
+                        <div class="detail-value">${
+                            Array.isArray(value) ? value.join(', ') : 
+                            typeof value === 'object' ? JSON.stringify(value, null, 2) : 
+                            value
+                        }</div>
+                    </div>
+                `;
+            }
+            
+            content.innerHTML = html;
+            panel.classList.add('active');
+        }
+        
+        // Show Edge Details
+        function showEdgeDetails(edge) {
+            const panel = document.getElementById('detailsPanel');
+            const content = document.getElementById('detailsContent');
+            
+            const data = edge.data();
+            const source = cy.getElementById(data.source);
+            const target = cy.getElementById(data.target);
+            
+            content.innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Tipo</div>
+                    <div class="detail-value">${data.type || 'connection'}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Origem</div>
+                    <div class="detail-value">${source.data('label')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Destino</div>
+                    <div class="detail-value">${target.data('label')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Força</div>
+                    <div class="detail-value">${data.strength || 50}%</div>
+                </div>
+            `;
+            
+            panel.classList.add('active');
+        }
+        
+        // Close Details
+        function closeDetails() {
+            document.getElementById('detailsPanel').classList.remove('active');
+        }
+        
+        // Toggle Field Selector
+        function toggleFieldSelector() {
+            const selector = document.getElementById('fieldSelector');
+            const icon = document.getElementById('toggleIcon');
+            
+            selector.classList.toggle('collapsed');
+            icon.textContent = selector.classList.contains('collapsed') ? '▶' : '◀';
+        }
+        
+        // Toggle Category
+        function toggleCategory(element) {
+            const category = element.parentElement;
+            category.classList.toggle('expanded');
+            const arrow = element.querySelector('span:last-child');
+            arrow.textContent = category.classList.contains('expanded') ? '▲' : '▼';
+        }
+        
+        // Change Layout
+        function changeLayout() {
+            const layoutName = document.getElementById('layoutSelect').value;
+            applyLayout(layoutName);
+        }
+        
+        // Apply Layout
+        function applyLayout(layoutName) {
+            const layouts = {
+                fcose: {
+                    name: 'fcose',
+                    quality: 'proof',
+                    randomize: false,
+                    animate: true,
+                    fit: true,
+                    padding: 50,
+                    nodeRepulsion: 8000,
+                    idealEdgeLength: 100,
+                    edgeElasticity: 0.45,
+                    nestingFactor: 0.1,
+                    gravity: 0.25,
+                    numIter: 2500,
+                    tile: true,
+                    tilingPaddingVertical: 10,
+                    tilingPaddingHorizontal: 10,
+                    gravityRangeCompound: 1.5,
+                    gravityCompound: 1.0
+                },
+                cola: {
+                    name: 'cola',
+                    animate: true,
+                    randomize: false,
+                    fit: true,
+                    padding: 50,
+                    nodeSpacing: 50,
+                    edgeLength: 150,
+                    maxSimulationTime: 4000
+                },
+                dagre: {
+                    name: 'dagre',
+                    rankDir: 'TB',
+                    animate: true,
+                    fit: true,
+                    padding: 50,
+                    spacingFactor: 1.5,
+                    nodeSep: 100,
+                    rankSep: 150
+                },
+                concentric: {
+                    name: 'concentric',
+                    fit: true,
+                    padding: 50,
+                    animate: true,
+                    startAngle: 3/2 * Math.PI,
+                    sweep: 2 * Math.PI,
+                    clockwise: true,
+                    equidistant: false,
+                    minNodeSpacing: 50
+                },
+                grid: {
+                    name: 'grid',
+                    fit: true,
+                    padding: 50,
+                    animate: true,
+                    rows: undefined,
+                    cols: undefined,
+                    position: function(node) { return { row: node.data('row'), col: node.data('col') }; }
+                },
+                breadthfirst: {
+                    name: 'breadthfirst',
+                    fit: true,
+                    directed: true,
+                    padding: 50,
+                    circle: false,
+                    spacingFactor: 1.25,
+                    animate: true
+                }
+            };
+            
+            currentLayout = cy.layout(layouts[layoutName] || layouts.fcose);
+            currentLayout.run();
+        }
+        
+        // Fit Graph
+        function fitGraph() {
+            cy.fit(50);
+        }
+        
+        // Clear Graph
+        function clearGraph() {
+            if (confirm('Limpar todo o grafo?')) {
+                cy.elements().remove();
+                updateStatus();
+            }
+        }
+        
+        // Update Status
+        function updateStatus() {
+            document.getElementById('nodeCount').textContent = cy.nodes().length;
+            document.getElementById('edgeCount').textContent = cy.edges().length;
+        }
+        
+        // Show Loading
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('active', show);
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCytoscape();
+            
+            // Expand first category by default
+            const firstCategory = document.querySelector('.field-category');
+            if (firstCategory) {
+                firstCategory.classList.add('expanded');
+                firstCategory.querySelector('.category-title span:last-child').textContent = '▲';
+            }
+            
+            console.log('Graph Intelligence Editor inicializado com Cytoscape.js');
+            console.log('Recursos disponíveis:');
+            console.log('- Drag & Drop de campos do Qdrant');
+            console.log('- Menu contextual circular com botão direito');
+            console.log('- Criar conexões arrastando entre nós');
+            console.log('- Múltiplos layouts com constraints');
+            console.log('- Total autonomia para montar sua cadeia de raciocínio');
+        });
+    </script>
+</body>
+</html>

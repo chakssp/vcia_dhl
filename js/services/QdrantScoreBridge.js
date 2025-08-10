@@ -1,413 +1,387 @@
 /**
- * QdrantScoreBridge - Connects Qdrant semantic scores to UI file confidence
- * Implements UnifiedConfidenceSystem specification for score integration
+ * QdrantScoreBridge.js - Ponte entre Qdrant e Sistema de Scores
  * 
- * Strategic Context: 351 Qdrant points with intelligence scores (~21.5) 
- * need to be mapped to AppState files showing 0% relevance
+ * Integra scores do Qdrant com o sistema multi-dimensional de análise
  */
 
-class QdrantScoreBridge {
-    constructor() {
-        this.scoreCache = new Map();
-        this.mappingCache = new Map();
-        this.initialized = false;
-        this.logger = window.KC?.Logger || console;
-        
-        // Score normalization constants based on Qdrant data analysis
-        this.QDRANT_SCORE_RANGE = {
-            min: 0.1,    // Observed minimum in 351 points
-            max: 45.0,   // Observed maximum
-            median: 21.5 // Strategic baseline
-        };
-    }
+(function(window) {
+    'use strict';
 
-    /**
-     * Initialize bridge by loading Qdrant scores and establishing file mappings
-     */
-    async initialize() {
-        try {
-            this.logger.info('QdrantScoreBridge: Initializing...');
-            
-            // Load Qdrant points with scores
-            const qdrantPoints = await this._loadQdrantPoints();
-            
-            // Create file ID mappings
-            await this._buildFileMappings(qdrantPoints);
-            
-            // Cache scores for quick lookup
-            this._cacheScores(qdrantPoints);
-            
-            this.initialized = true;
-            this.logger.info(`QdrantScoreBridge: Initialized with ${qdrantPoints.length} points`);
-            
-            return {
-                success: true,
-                pointsLoaded: qdrantPoints.length,
-                mappingsCreated: this.mappingCache.size
+    const KC = window.KnowledgeConsolidator;
+    const Logger = KC.Logger;
+
+    class QdrantScoreBridge {
+        constructor() {
+            // Configurações
+            this.config = {
+                // Mapeamento de scores Qdrant para dimensões
+                dimensionMapping: {
+                    similarity: 'content',      // Similaridade vetorial → Conteúdo
+                    metadata: 'metadata',        // Metadados Qdrant → Metadata
+                    payload: 'context',          // Payload adicional → Contexto
+                    timestamp: 'temporal',       // Timestamp → Temporal
+                    distance: 'potential'        // Distância inversa → Potencial
+                },
+                
+                // Thresholds para categorização
+                thresholds: {
+                    excellent: 0.9,  // > 90% similaridade
+                    good: 0.7,       // > 70% similaridade
+                    moderate: 0.5,   // > 50% similaridade
+                    low: 0.3         // > 30% similaridade
+                },
+                
+                // Cache de conversões
+                cacheSize: 100,
+                cacheTTL: 300000 // 5 minutos
             };
             
-        } catch (error) {
-            this.logger.error('QdrantScoreBridge: Initialization failed', error);
-            return { success: false, error: error.message };
-        }
-    }
-
-    /**
-     * Get confidence score for a file ID
-     * @param {string} fileId - File ID from AppState
-     * @returns {Object} Confidence score with metadata
-     */
-    getFileConfidence(fileId) {
-        if (!this.initialized) {
-            this.logger.warn('QdrantScoreBridge: Not initialized, returning default score');
-            return this._getDefaultScore();
+            // Cache de conversões
+            this.cache = new Map();
+            this.cacheTimestamps = new Map();
+            
+            // Normalizer
+            this.normalizer = KC.ScoreNormalizer || null;
         }
 
-        // Check direct mapping first
-        const qdrantId = this.mappingCache.get(fileId);
-        if (qdrantId && this.scoreCache.has(qdrantId)) {
-            const rawScore = this.scoreCache.get(qdrantId);
-            return this._normalizeScore(rawScore, fileId);
+        /**
+         * Inicializa o bridge
+         */
+        async initialize() {
+            Logger.info('QdrantScoreBridge', 'Inicializando ponte Qdrant-Scores');
+            
+            // Verifica dependências
+            if (!KC.QdrantService) {
+                Logger.warn('QdrantScoreBridge', 'QdrantService não disponível');
+                return false;
+            }
+            
+            if (!KC.ScoreNormalizer) {
+                Logger.warn('QdrantScoreBridge', 'ScoreNormalizer não disponível');
+                this.normalizer = null;
+            } else {
+                this.normalizer = KC.ScoreNormalizer;
+            }
+            
+            // Limpa cache periodicamente
+            setInterval(() => this.cleanCache(), 60000); // A cada minuto
+            
+            return true;
         }
 
-        // Try fuzzy matching by filename
-        const fuzzyMatch = this._findFuzzyMatch(fileId);
-        if (fuzzyMatch) {
-            return this._normalizeScore(fuzzyMatch.score, fileId, 'fuzzy');
+        /**
+         * Converte resultado Qdrant para scores multi-dimensionais
+         */
+        convertQdrantToMultiDimensional(qdrantResult) {
+            if (!qdrantResult) return this.getDefaultScores();
+            
+            // Verifica cache
+            const cacheKey = this.getCacheKey(qdrantResult);
+            if (this.cache.has(cacheKey)) {
+                const cached = this.cache.get(cacheKey);
+                if (this.isCacheValid(cacheKey)) {
+                    return cached;
+                }
+            }
+            
+            // Extrai informações do resultado Qdrant
+            const score = qdrantResult.score || 0;
+            const payload = qdrantResult.payload || {};
+            
+            // Converte para scores multi-dimensionais
+            const multiDimensional = {
+                // Score de conteúdo baseado na similaridade
+                content: this.normalizeScore(score) * 100,
+                
+                // Score de metadata baseado na completude
+                metadata: this.calculateMetadataScore(payload),
+                
+                // Score de contexto baseado em categorias e tags
+                context: this.calculateContextScore(payload),
+                
+                // Score temporal baseado em timestamps
+                temporal: this.calculateTemporalScore(payload),
+                
+                // Score de potencial baseado na distância inversa
+                potential: this.calculatePotentialScore(score, payload),
+                
+                // Score composto
+                composite: 0
+            };
+            
+            // Calcula score composto
+            multiDimensional.composite = this.calculateCompositeScore(multiDimensional);
+            
+            // Salva no cache
+            this.cache.set(cacheKey, multiDimensional);
+            this.cacheTimestamps.set(cacheKey, Date.now());
+            
+            return multiDimensional;
         }
 
-        // Return default if no match found
-        return this._getDefaultScore(fileId);
-    }
-
-    /**
-     * Get batch confidence scores for multiple files
-     * @param {Array<string>} fileIds - Array of file IDs
-     * @returns {Map} Map of fileId -> confidence score
-     */
-    getBatchConfidence(fileIds) {
-        const results = new Map();
-        
-        fileIds.forEach(fileId => {
-            results.set(fileId, this.getFileConfidence(fileId));
-        });
-
-        return results;
-    }
-
-    /**
-     * Update confidence scores for AppState files
-     * @param {Array} files - Files from AppState
-     * @returns {Array} Updated files with confidence scores
-     */
-    enhanceFilesWithConfidence(files) {
-        if (!Array.isArray(files)) return files;
-
-        return files.map(file => {
-            const confidence = this.getFileConfidence(file.id);
+        /**
+         * Converte scores multi-dimensionais para formato Qdrant
+         */
+        convertMultiDimensionalToQdrant(multiDimensional) {
+            if (!multiDimensional) return null;
+            
+            // Converte score composto para range Qdrant (0-1)
+            const qdrantScore = this.normalizer ? 
+                this.normalizer.denormalizeToQdrant(multiDimensional.composite) :
+                multiDimensional.composite / 100;
+            
+            // Monta payload com informações multi-dimensionais
+            const payload = {
+                scores: {
+                    content: multiDimensional.content,
+                    metadata: multiDimensional.metadata,
+                    context: multiDimensional.context,
+                    temporal: multiDimensional.temporal,
+                    potential: multiDimensional.potential,
+                    composite: multiDimensional.composite
+                },
+                timestamp: Date.now(),
+                source: 'multi-dimensional-analysis'
+            };
             
             return {
-                ...file,
-                confidence: confidence.score,
-                confidenceSource: confidence.source,
-                confidenceMetadata: {
-                    qdrantScore: confidence.rawScore,
-                    normalizationMethod: confidence.method,
-                    lastUpdated: new Date().toISOString()
-                }
+                score: qdrantScore,
+                payload: payload
             };
-        });
-    }
-
-    /**
-     * Get bridge statistics for monitoring
-     */
-    getStats() {
-        return {
-            initialized: this.initialized,
-            cachedScores: this.scoreCache.size,
-            fileMappings: this.mappingCache.size,
-            scoreRange: this.QDRANT_SCORE_RANGE,
-            lastUpdate: this.lastUpdate || null
-        };
-    }
-
-    // Private Methods
-
-    async _loadQdrantPoints() {
-        try {
-            // Use existing QdrantService if available
-            if (window.KC?.QdrantService) {
-                // Use scroll method to get all points without search text
-                const scrollResult = await window.KC.QdrantService.scrollPoints({
-                    limit: 1000, // Get all points
-                    with_payload: true,
-                    with_vector: false
-                });
-                
-                return scrollResult.points || [];
-            }
-
-            // Fallback: direct API call
-            const response = await fetch('http://qdr.vcia.com.br:6333/collections/knowledge_base/points/scroll', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    limit: 1000,
-                    with_payload: true,
-                    with_vector: false
-                })
-            });
-
-            const data = await response.json();
-            return data.result?.points || [];
-
-        } catch (error) {
-            this.logger.error('Failed to load Qdrant points', error);
-            throw error;
         }
-    }
 
-    async _buildFileMappings(qdrantPoints) {
-        // Clear existing mappings
-        this.mappingCache.clear();
-
-        qdrantPoints.forEach(point => {
-            const payload = point.payload || {};
+        /**
+         * Enriquece resultado de busca Qdrant com scores multi-dimensionais
+         */
+        enrichQdrantSearchResults(results) {
+            if (!Array.isArray(results)) return results;
             
-            // Try different mapping strategies - ENHANCED for better AppState compatibility
-            const mappingCandidates = [
-                payload.file_id,           // Direct file ID
-                payload.fileId,            // camelCase variant
-                payload.filename,          // Filename
-                payload.fileName,          // camelCase variant
-                payload.path,             // File path
-                payload.filePath,         // camelCase variant
-                payload.title,            // Document title
-                payload.name,             // Alternative name field
-                payload.file_name,        // Alternative filename field
-                payload.document_id,      // Document ID
-                payload.documentId,       // camelCase variant
-                payload.source_file,      // Source file reference
-                payload.sourceFile,       // camelCase variant
-                // Additional fields that might contain file identifiers
-                payload.id,               // Generic ID
-                payload.key,              // Generic key
-                payload.reference,        // Reference field
-                payload.source,           // Source field
-            ].filter(Boolean);
+            return results.map(result => {
+                const multiDimensional = this.convertQdrantToMultiDimensional(result);
+                
+                return {
+                    ...result,
+                    multiDimensionalScores: multiDimensional,
+                    enriched: true,
+                    enrichmentTimestamp: Date.now()
+                };
+            });
+        }
 
-            // Create mappings for all candidates
-            mappingCandidates.forEach(candidate => {
-                // Original mapping
-                this.mappingCache.set(candidate, point.id);
-                
-                // Normalized lowercase mapping for case-insensitive matching
-                const normalized = candidate.toString().toLowerCase();
-                this.mappingCache.set(normalized, point.id);
-                
-                // Also create mapping for just the filename without path
-                if (candidate.includes('/') || candidate.includes('\\')) {
-                    const filename = candidate.split(/[/\\]/).pop();
-                    if (filename) {
-                        this.mappingCache.set(filename, point.id);
-                        this.mappingCache.set(filename.toLowerCase(), point.id);
-                    }
-                }
-                
-                // Create mapping for filename without extension
-                if (candidate.includes('.')) {
-                    const nameWithoutExt = candidate.replace(/\.[^/.]+$/, '');
-                    this.mappingCache.set(nameWithoutExt, point.id);
-                    this.mappingCache.set(nameWithoutExt.toLowerCase(), point.id);
-                }
-                
-                // Extract documentId from various formats
-                if (payload.documentId || payload.document_id) {
-                    const docId = payload.documentId || payload.document_id;
-                    this.mappingCache.set(docId, point.id);
-                    this.mappingCache.set(docId.toLowerCase(), point.id);
+        /**
+         * Calcula score de metadata
+         */
+        calculateMetadataScore(payload) {
+            let score = 0;
+            let fields = 0;
+            
+            // Campos importantes
+            const importantFields = [
+                'title', 'description', 'categories', 
+                'tags', 'author', 'date', 'source'
+            ];
+            
+            importantFields.forEach(field => {
+                if (payload[field]) {
+                    score += 100 / importantFields.length;
+                    fields++;
                 }
             });
-        });
-
-        this.logger.info(`Enhanced mapping: Created ${this.mappingCache.size} file mappings from ${qdrantPoints.length} points`);
-    }
-
-    _cacheScores(qdrantPoints) {
-        this.scoreCache.clear();
-
-        qdrantPoints.forEach(point => {
-            const payload = point.payload || {};
             
-            // Extract score from various possible locations
-            const score = payload.score || 
-                         payload.relevance_score || 
-                         payload.confidence_score ||
-                         payload.intelligence_score ||
-                         0;
-
-            this.scoreCache.set(point.id, score);
-        });
-
-        this.logger.info(`Cached ${this.scoreCache.size} scores`);
-    }
-
-    _normalizeScore(rawScore, fileId, method = 'standard') {
-        const { min, max, median } = this.QDRANT_SCORE_RANGE;
-        
-        // Normalize to 0-100 scale using statistical normalization
-        let normalizedScore;
-        
-        if (method === 'percentile') {
-            // Use median as 50% baseline
-            normalizedScore = rawScore <= median ? 
-                (rawScore / median) * 50 : 
-                50 + ((rawScore - median) / (max - median)) * 50;
-        } else {
-            // Linear normalization
-            normalizedScore = ((rawScore - min) / (max - min)) * 100;
+            // Bonus para metadados ricos
+            if (fields >= 5) score = Math.min(100, score + 10);
+            
+            return Math.round(score);
         }
 
-        // Ensure bounds
-        normalizedScore = Math.max(0, Math.min(100, normalizedScore));
+        /**
+         * Calcula score de contexto
+         */
+        calculateContextScore(payload) {
+            let score = 50; // Base score
+            
+            // Categorias
+            if (payload.categories && payload.categories.length > 0) {
+                score += Math.min(25, payload.categories.length * 5);
+            }
+            
+            // Tags
+            if (payload.tags && payload.tags.length > 0) {
+                score += Math.min(15, payload.tags.length * 3);
+            }
+            
+            // Relações
+            if (payload.relations && payload.relations.length > 0) {
+                score += 10;
+            }
+            
+            return Math.min(100, score);
+        }
 
-        return {
-            score: Math.round(normalizedScore),
-            rawScore: rawScore,
-            source: 'qdrant',
-            method: method,
-            fileId: fileId,
-            timestamp: new Date().toISOString()
-        };
-    }
+        /**
+         * Calcula score temporal
+         */
+        calculateTemporalScore(payload) {
+            if (!payload.timestamp && !payload.date) return 30; // Score base
+            
+            const timestamp = payload.timestamp || new Date(payload.date).getTime();
+            const now = Date.now();
+            const ageInDays = (now - timestamp) / (1000 * 60 * 60 * 24);
+            
+            // Mais recente = score maior
+            if (ageInDays < 7) return 100;        // Última semana
+            if (ageInDays < 30) return 85;        // Último mês
+            if (ageInDays < 90) return 70;        // Últimos 3 meses
+            if (ageInDays < 180) return 55;       // Últimos 6 meses
+            if (ageInDays < 365) return 40;       // Último ano
+            if (ageInDays < 730) return 25;       // Últimos 2 anos
+            return 10;                            // Mais antigo
+        }
 
-    _findFuzzyMatch(fileId) {
-        // Enhanced fuzzy matching with multiple strategies
-        const fileName = fileId.split(/[/\\]/).pop() || fileId;
-        const fileNameLower = fileName.toLowerCase();
-        const fileNameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
-        
-        let bestMatch = null;
-        let bestSimilarity = 0.6; // Minimum threshold
-        
-        for (const [mappedId, qdrantId] of this.mappingCache.entries()) {
-            const mappedFileName = mappedId.split(/[/\\]/).pop() || mappedId;
-            const mappedFileNameLower = mappedFileName.toLowerCase();
-            const mappedFileNameWithoutExt = mappedFileName.replace(/\.[^/.]+$/, '');
+        /**
+         * Calcula score de potencial
+         */
+        calculatePotentialScore(qdrantScore, payload) {
+            let potential = 50; // Base
             
-            // Strategy 1: Exact filename match (case insensitive)
-            if (fileNameLower === mappedFileNameLower) {
-                const score = this.scoreCache.get(qdrantId);
-                if (score !== undefined) {
-                    return { score, qdrantId, similarity: 1.0, method: 'exact_filename' };
-                }
+            // Score alto no Qdrant indica alto potencial
+            if (qdrantScore > 0.9) {
+                potential = 95;
+            } else if (qdrantScore > 0.7) {
+                potential = 80;
+            } else if (qdrantScore > 0.5) {
+                potential = 65;
             }
             
-            // Strategy 2: Filename without extension match
-            if (fileNameWithoutExt.toLowerCase() === mappedFileNameWithoutExt.toLowerCase()) {
-                const score = this.scoreCache.get(qdrantId);
-                if (score !== undefined && 0.95 > bestSimilarity) {
-                    bestMatch = { score, qdrantId, similarity: 0.95, method: 'filename_no_ext' };
-                    bestSimilarity = 0.95;
-                }
-            }
+            // Ajusta baseado em indicadores de potencial
+            if (payload.hasUnprocessedContent) potential += 15;
+            if (payload.requiresExtraction) potential += 10;
+            if (payload.markedForReview) potential += 5;
             
-            // Strategy 3: Jaccard similarity
-            const jaccardSimilarity = this._calculateSimilarity(fileNameLower, mappedFileNameLower);
-            if (jaccardSimilarity > bestSimilarity) {
-                const score = this.scoreCache.get(qdrantId);
-                if (score !== undefined) {
-                    bestMatch = { score, qdrantId, similarity: jaccardSimilarity, method: 'jaccard' };
-                    bestSimilarity = jaccardSimilarity;
-                }
-            }
+            return Math.min(100, potential);
+        }
+
+        /**
+         * Calcula score composto
+         */
+        calculateCompositeScore(scores) {
+            // Pesos para cada dimensão
+            const weights = {
+                content: 0.35,
+                metadata: 0.15,
+                context: 0.20,
+                temporal: 0.10,
+                potential: 0.20
+            };
             
-            // Strategy 4: Levenshtein-based similarity for close matches
-            if (fileName.length > 3 && mappedFileName.length > 3) {
-                const levenshteinSimilarity = this._calculateLevenshteinSimilarity(fileNameLower, mappedFileNameLower);
-                if (levenshteinSimilarity > bestSimilarity) {
-                    const score = this.scoreCache.get(qdrantId);
-                    if (score !== undefined) {
-                        bestMatch = { score, qdrantId, similarity: levenshteinSimilarity, method: 'levenshtein' };
-                        bestSimilarity = levenshteinSimilarity;
-                    }
+            let weightedSum = 0;
+            Object.entries(weights).forEach(([dimension, weight]) => {
+                weightedSum += (scores[dimension] || 0) * weight;
+            });
+            
+            return Math.round(weightedSum);
+        }
+
+        /**
+         * Normaliza score Qdrant (0-1) para percentual
+         */
+        normalizeScore(score) {
+            if (this.normalizer) {
+                return this.normalizer.normalizeQdrantScore(score) / 100;
+            }
+            return Math.max(0, Math.min(1, score));
+        }
+
+        /**
+         * Retorna scores padrão
+         */
+        getDefaultScores() {
+            return {
+                content: 0,
+                metadata: 0,
+                context: 0,
+                temporal: 0,
+                potential: 50, // Potencial médio por padrão
+                composite: 10
+            };
+        }
+
+        /**
+         * Gera chave de cache
+         */
+        getCacheKey(qdrantResult) {
+            const id = qdrantResult.id || '';
+            const score = qdrantResult.score || 0;
+            return `${id}_${score}`;
+        }
+
+        /**
+         * Verifica se cache é válido
+         */
+        isCacheValid(key) {
+            const timestamp = this.cacheTimestamps.get(key);
+            if (!timestamp) return false;
+            
+            return (Date.now() - timestamp) < this.config.cacheTTL;
+        }
+
+        /**
+         * Limpa cache expirado
+         */
+        cleanCache() {
+            const now = Date.now();
+            const keysToDelete = [];
+            
+            this.cacheTimestamps.forEach((timestamp, key) => {
+                if ((now - timestamp) > this.config.cacheTTL) {
+                    keysToDelete.push(key);
+                }
+            });
+            
+            keysToDelete.forEach(key => {
+                this.cache.delete(key);
+                this.cacheTimestamps.delete(key);
+            });
+            
+            // Limita tamanho do cache
+            if (this.cache.size > this.config.cacheSize) {
+                const overflow = this.cache.size - this.config.cacheSize;
+                const iterator = this.cache.keys();
+                
+                for (let i = 0; i < overflow; i++) {
+                    const key = iterator.next().value;
+                    this.cache.delete(key);
+                    this.cacheTimestamps.delete(key);
                 }
             }
         }
-        
-        return bestMatch;
-    }
 
-    _calculateSimilarity(str1, str2) {
-        // Simple Jaccard similarity for filename matching
-        const set1 = new Set(str1.toLowerCase().split(''));
-        const set2 = new Set(str2.toLowerCase().split(''));
-        
-        const intersection = new Set([...set1].filter(x => set2.has(x)));
-        const union = new Set([...set1, ...set2]);
-        
-        return intersection.size / union.size;
-    }
-
-    _calculateLevenshteinSimilarity(str1, str2) {
-        // Calculate Levenshtein distance and convert to similarity score
-        const distance = this._levenshteinDistance(str1, str2);
-        const maxLength = Math.max(str1.length, str2.length);
-        
-        if (maxLength === 0) return 1.0;
-        
-        return 1 - (distance / maxLength);
-    }
-
-    _levenshteinDistance(str1, str2) {
-        // Dynamic programming implementation of Levenshtein distance
-        const matrix = [];
-        
-        for (let i = 0; i <= str2.length; i++) {
-            matrix[i] = [i];
+        /**
+         * Obtém estatísticas do bridge
+         */
+        getStats() {
+            return {
+                cacheSize: this.cache.size,
+                cacheHits: this.cacheHits || 0,
+                cacheMisses: this.cacheMisses || 0,
+                conversions: this.totalConversions || 0
+            };
         }
-        
-        for (let j = 0; j <= str1.length; j++) {
-            matrix[0][j] = j;
+
+        /**
+         * Reseta cache
+         */
+        resetCache() {
+            this.cache.clear();
+            this.cacheTimestamps.clear();
+            Logger.info('QdrantScoreBridge', 'Cache resetado');
         }
-        
-        for (let i = 1; i <= str2.length; i++) {
-            for (let j = 1; j <= str1.length; j++) {
-                if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                    matrix[i][j] = matrix[i - 1][j - 1];
-                } else {
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j - 1] + 1, // substitution
-                        matrix[i][j - 1] + 1,     // insertion
-                        matrix[i - 1][j] + 1      // deletion
-                    );
-                }
-            }
-        }
-        
-        return matrix[str2.length][str1.length];
     }
 
-    _getDefaultScore(fileId = null) {
-        return {
-            score: 0,
-            rawScore: 0,
-            source: 'default',
-            method: 'fallback',
-            fileId: fileId,
-            timestamp: new Date().toISOString()
-        };
-    }
-}
+    // Exporta para o namespace KC
+    KC.QdrantScoreBridge = new QdrantScoreBridge();
+    KC.QdrantScoreBridge.initialize();
 
-// Export for use
-window.KC = window.KC || {};
-window.KC.QdrantScoreBridge = QdrantScoreBridge;
+    console.log('✅ QdrantScoreBridge inicializado');
 
-// Auto-initialize if QdrantService is available
-if (window.KC?.QdrantService) {
-    window.KC.QdrantScoreBridgeInstance = new QdrantScoreBridge();
-}
-
-export default QdrantScoreBridge;
+})(window);

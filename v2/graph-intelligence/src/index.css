@@ -1,0 +1,104 @@
+/* Reset e configuração base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* Previne scroll no body */
+}
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: #e0e0e0;
+  background-color: #1a1a1a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: #1a1a1a;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+a {
+  font-weight: 500;
+  color: #4299e1;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: #63a9f1;
+}
+
+h1 {
+  font-size: 1.25rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+button {
+  border-radius: 6px;
+  border: 1px solid #4a4a4a;
+  padding: 0.5em 1em;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #3a3a3a;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+button:hover {
+  background-color: #4a4a4a;
+  border-color: #5a5a5a;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}
+
+/* Fix para prevenir overflow durante drag & drop */
+.react-flow {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.react-flow__viewport {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Prevenir overflow durante drag */
+body.dragging {
+  overflow: hidden !important;
+}
+
+/* Container do React Flow não deve criar scrollbar */
+.react-flow__renderer {
+  overflow: visible !important;
+}

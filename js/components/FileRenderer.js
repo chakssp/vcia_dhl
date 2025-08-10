@@ -586,7 +586,14 @@
                     <div class="file-preview">${this.escapeHtml(preview)}</div>
                 </div>
                 <div class="file-meta">
-                    <div class="relevance-badge">Relevância: ${relevance}%</div>
+                    <div class="relevance-badge">
+                        Relevância: ${relevance}%
+                        ${file.potentialScore > 0 && file.contentScore === 0 ? 
+                            `<span style="color: #f59e0b; font-size: 0.85em; margin-left: 10px;">
+                                (Potencial: ${Math.round(file.potentialScore)}%)
+                            </span>` : ''}
+                    </div>
+                    ${this.renderMultiDimensionalScores(file)}
                     <div class="file-date">${this.formatDate(file.lastModified)}</div>
                     <div class="file-size">${this.formatFileSize(file.size)}</div>
                 </div>
@@ -1547,6 +1554,200 @@
             if (bytes < 1024) return bytes + 'B';
             if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + 'KB';
             return Math.round(bytes / (1024 * 1024)) + 'MB';
+        }
+
+        /**
+         * Renderiza scores multi-dimensionais
+         */
+        renderMultiDimensionalScores(file) {
+            // Se não temos scores multi-dimensionais, retorna vazio
+            if (!file.multiDimensionalScores) {
+                return '';
+            }
+
+            const scores = file.multiDimensionalScores;
+            const getScoreColor = (score) => {
+                if (score >= 70) return '#4ade80';
+                if (score >= 40) return '#fbbf24';
+                if (score >= 20) return '#fb923c';
+                return '#f87171';
+            };
+
+            // Destaque especial para arquivos com 0% conteúdo mas alto potencial
+            const hasHighPotential = scores.content === 0 && scores.potential > 70;
+            
+            return `
+                <div class="multi-dimensional-scores" style="
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: rgba(0,0,0,0.1);
+                    border-radius: 8px;
+                    ${hasHighPotential ? 'border: 2px solid #f59e0b;' : ''}
+                ">
+                    ${hasHighPotential ? `
+                        <div style="
+                            color: #f59e0b;
+                            font-weight: bold;
+                            margin-bottom: 8px;
+                            font-size: 0.9em;
+                        ">
+                            ⚡ Território Inexplorado - Alto Potencial!
+                        </div>
+                    ` : ''}
+                    
+                    <div style="
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                        gap: 8px;
+                    ">
+                        <div class="score-dimension">
+                            <div style="font-size: 0.75em; opacity: 0.7;">Conteúdo</div>
+                            <div style="
+                                font-size: 1.1em;
+                                font-weight: bold;
+                                color: ${getScoreColor(scores.content)};
+                            ">${scores.content}%</div>
+                            <div style="
+                                height: 3px;
+                                background: rgba(255,255,255,0.1);
+                                border-radius: 2px;
+                                overflow: hidden;
+                                margin-top: 3px;
+                            ">
+                                <div style="
+                                    height: 100%;
+                                    width: ${scores.content}%;
+                                    background: ${getScoreColor(scores.content)};
+                                "></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-dimension">
+                            <div style="font-size: 0.75em; opacity: 0.7;">Metadata</div>
+                            <div style="
+                                font-size: 1.1em;
+                                font-weight: bold;
+                                color: ${getScoreColor(scores.metadata)};
+                            ">${scores.metadata}%</div>
+                            <div style="
+                                height: 3px;
+                                background: rgba(255,255,255,0.1);
+                                border-radius: 2px;
+                                overflow: hidden;
+                                margin-top: 3px;
+                            ">
+                                <div style="
+                                    height: 100%;
+                                    width: ${scores.metadata}%;
+                                    background: ${getScoreColor(scores.metadata)};
+                                "></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-dimension">
+                            <div style="font-size: 0.75em; opacity: 0.7;">Contexto</div>
+                            <div style="
+                                font-size: 1.1em;
+                                font-weight: bold;
+                                color: ${getScoreColor(scores.context)};
+                            ">${scores.context}%</div>
+                            <div style="
+                                height: 3px;
+                                background: rgba(255,255,255,0.1);
+                                border-radius: 2px;
+                                overflow: hidden;
+                                margin-top: 3px;
+                            ">
+                                <div style="
+                                    height: 100%;
+                                    width: ${scores.context}%;
+                                    background: ${getScoreColor(scores.context)};
+                                "></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-dimension">
+                            <div style="font-size: 0.75em; opacity: 0.7;">Temporal</div>
+                            <div style="
+                                font-size: 1.1em;
+                                font-weight: bold;
+                                color: ${getScoreColor(scores.temporal)};
+                            ">${scores.temporal}%</div>
+                            <div style="
+                                height: 3px;
+                                background: rgba(255,255,255,0.1);
+                                border-radius: 2px;
+                                overflow: hidden;
+                                margin-top: 3px;
+                            ">
+                                <div style="
+                                    height: 100%;
+                                    width: ${scores.temporal}%;
+                                    background: ${getScoreColor(scores.temporal)};
+                                "></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-dimension">
+                            <div style="font-size: 0.75em; opacity: 0.7;">Potencial</div>
+                            <div style="
+                                font-size: 1.1em;
+                                font-weight: bold;
+                                color: ${getScoreColor(scores.potential)};
+                            ">${scores.potential}%</div>
+                            <div style="
+                                height: 3px;
+                                background: rgba(255,255,255,0.1);
+                                border-radius: 2px;
+                                overflow: hidden;
+                                margin-top: 3px;
+                            ">
+                                <div style="
+                                    height: 100%;
+                                    width: ${scores.potential}%;
+                                    background: ${getScoreColor(scores.potential)};
+                                "></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        border-top: 1px solid rgba(255,255,255,0.1);
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                    ">
+                        <span style="font-size: 0.85em; opacity: 0.7;">Score Composto:</span>
+                        <span style="
+                            font-size: 1.3em;
+                            font-weight: bold;
+                            color: ${getScoreColor(scores.composite)};
+                        ">${scores.composite}%</span>
+                    </div>
+                    
+                    ${file.processingStatus ? `
+                        <div style="
+                            margin-top: 8px;
+                            padding: 6px 12px;
+                            background: ${file.processingStatus.canProcess ? 
+                                'rgba(34, 197, 94, 0.1)' : 
+                                'rgba(249, 115, 22, 0.1)'};
+                            border-radius: 6px;
+                            font-size: 0.85em;
+                            color: ${file.processingStatus.canProcess ? 
+                                '#4ade80' : 
+                                '#fb923c'};
+                        ">
+                            ${file.processingStatus.message || 
+                                (file.processingStatus.canProcess ? 
+                                    '✅ Pronto para processar' : 
+                                    '⏳ Aguardando extractor')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
         }
 
         /**
