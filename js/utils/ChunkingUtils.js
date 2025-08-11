@@ -541,7 +541,7 @@
             // Fallback para o método antigo (melhorado)
             const words = content.toLowerCase()
                 .normalize("NFD") // Preservar estrutura dos acentos
-                .replace(/[^\wàáâãèéêìíîòóôõùúûç\s]/g, ' ')
+                .replace(/[^\p{L}\p{N}\s]/gu, ' ')  // Preserva TODOS os caracteres UTF-8 com acentos
                 .split(/\s+/)
                 .filter(word => word.length > 4);
 

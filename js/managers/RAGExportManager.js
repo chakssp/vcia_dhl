@@ -1200,7 +1200,7 @@
             }
             
             const words = textStr.toLowerCase()
-                .replace(/[^\w\s]/g, ' ')
+                .replace(/[^\p{L}\p{N}\s]/gu, ' ')  // Preserva caracteres UTF-8 com acentos
                 .split(/\s+/)
                 .filter(word => word.length > 3);
             
