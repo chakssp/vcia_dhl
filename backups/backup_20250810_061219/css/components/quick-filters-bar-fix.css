@@ -1,0 +1,205 @@
+/* ========================================
+   QUICK FILTERS BAR - CORREÇÃO COMPLETA
+   ======================================== */
+
+/* Reset e correções para garantir layout horizontal */
+.quick-filters-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2px 20px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    height: auto;
+    max-height: 36px;
+}
+
+.quick-filters-bar.show {
+    transform: translateY(0);
+}
+
+/* Container principal - forçar linha única */
+.quick-filters-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    height: 32px !important;
+}
+
+/* Reset para todos os botões */
+.quick-filters-bar button {
+    all: unset;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    height: 28px;
+    line-height: 1;
+}
+
+/* Grupos de filtros */
+.quick-filters-bar .filter-group {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Itens de filtro */
+.quick-filter-item {
+    border-radius: 4px;
+}
+
+.quick-filter-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.quick-filter-item.active {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* Labels e contadores */
+.quick-filters-bar .filter-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1;
+}
+
+.quick-filters-bar .filter-count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+/* Cores específicas dos contadores */
+.quick-filters-bar .filter-count.pending {
+    color: #f59e0b;
+}
+
+.quick-filters-bar .filter-count.approved {
+    color: #10b981;
+}
+
+.quick-filters-bar .filter-count.high {
+    color: #ef4444;
+}
+
+.quick-filters-bar .filter-count.medium {
+    color: #3b82f6;
+}
+
+.quick-filters-bar .filter-count.low {
+    color: #6b7280;
+}
+
+/* Separadores */
+.quick-filters-bar .separator,
+.quick-filters-bar .separator-double {
+    display: inline-block !important;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.9rem;
+    margin: 0 4px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+/* Botões de navegação */
+.nav-button {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 16px !important;
+    padding: 6px 14px !important;
+    font-weight: 500;
+}
+
+.nav-button:hover {
+    background: rgba(59, 130, 246, 0.3) !important;
+}
+
+.nav-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Botão de ação */
+.action-button.export {
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    color: white !important;
+    border-radius: 16px !important;
+    padding: 6px 14px !important;
+    font-weight: 500;
+}
+
+.action-button.export:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Responsividade melhorada */
+@media (max-width: 768px) {
+    .quick-filters-bar {
+        padding: 6px 10px;
+    }
+    
+    .quick-filters-container {
+        gap: 6px !important;
+        justify-content: flex-start !important;
+        padding: 0 10px;
+    }
+    
+    .quick-filters-bar button {
+        font-size: 0.75rem;
+        padding: 3px 6px;
+    }
+    
+    .nav-button,
+    .action-button.export {
+        padding: 4px 10px !important;
+    }
+}
+
+/* Garantir visibilidade no modo claro */
+@media (prefers-color-scheme: light) {
+    .quick-filters-bar {
+        background: rgba(255, 255, 255, 0.95);
+        border-top-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    .quick-filters-bar button {
+        color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .quick-filters-bar .filter-label {
+        color: rgba(0, 0, 0, 0.6);
+    }
+    
+    .quick-filters-bar .separator,
+    .quick-filters-bar .separator-double {
+        color: rgba(0, 0, 0, 0.3);
+    }
+    
+    .nav-button {
+        background: rgba(0, 0, 0, 0.05) !important;
+    }
+    
+    .nav-button:hover {
+        background: rgba(59, 130, 246, 0.2) !important;
+    }
+}

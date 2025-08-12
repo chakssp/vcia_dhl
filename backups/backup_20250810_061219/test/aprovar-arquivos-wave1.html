@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprovar Arquivos - Wave 1</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0a;
+            color: #e0e0e0;
+        }
+        .container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { color: #4ade80; }
+        h2 { color: #60a5fa; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2563eb; }
+        .success { color: #4ade80; }
+        .error { color: #ef4444; }
+        .info { color: #60a5fa; }
+        .warning { color: #f59e0b; }
+        pre {
+            background: #262626;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .file-item {
+            background: #262626;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .file-approved {
+            border-color: #4ade80;
+        }
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .file-name {
+            font-weight: bold;
+            color: #60a5fa;
+        }
+        .relevance {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .high-relevance { background: #166534; color: #4ade80; }
+        .medium-relevance { background: #713f12; color: #fbbf24; }
+        .low-relevance { background: #7c2d12; color: #f87171; }
+        .preview {
+            color: #9ca3af;
+            font-size: 0.9em;
+            margin: 10px 0;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            background: #262626;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ade80;
+        }
+        .stat-label {
+            color: #9ca3af;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>✅ Aprovar Arquivos para Wave 1</h1>
+    
+    <div class="container">
+        <h2>📊 Status dos Arquivos</h2>
+        <div class="stats-grid" id="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="totalFiles">0</div>
+                <div class="stat-label">Total de Arquivos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="approvedFiles">0</div>
+                <div class="stat-label">Aprovados</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgRelevance">0%</div>
+                <div class="stat-label">Relevância Média</div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <button onclick="loadFiles()">🔄 Carregar Arquivos</button>
+            <button onclick="approveAll()">✅ Aprovar Todos</button>
+            <button onclick="approveHighRelevance()">🎯 Aprovar Alta Relevância (>70%)</button>
+            <button onclick="clearApprovals()">❌ Limpar Aprovações</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>📁 Lista de Arquivos</h2>
+        <div id="filesList"></div>
+    </div>
+
+    <div class="container">
+        <h2>🚀 Executar Pipeline</h2>
+        <p class="warning">⚠️ Certifique-se de ter pelo menos alguns arquivos aprovados antes de executar.</p>
+        <button onclick="runPipeline()">🌊 Executar Wave 1 Pipeline</button>
+        <div id="pipelineResult"></div>
+    </div>
+
+    <script>
+        let files = [];
+
+        function loadFiles() {
+            files = KC.AppState.get('files') || [];
+            updateStats();
+            renderFiles();
+        }
+
+        function updateStats() {
+            const approved = files.filter(f => f.approved);
+            const avgRel = files.length > 0 
+                ? Math.round(files.reduce((sum, f) => sum + (f.relevanceScore || 0), 0) / files.length)
+                : 0;
+            
+            document.getElementById('totalFiles').textContent = files.length;
+            document.getElementById('approvedFiles').textContent = approved.length;
+            document.getElementById('avgRelevance').textContent = avgRel + '%';
+        }
+
+        function renderFiles() {
+            const container = document.getElementById('filesList');
+            
+            if (files.length === 0) {
+                container.innerHTML = '<p class="warning">Nenhum arquivo encontrado. Execute a descoberta primeiro.</p>';
+                return;
+            }
+
+            container.innerHTML = files.map(file => {
+                const relevanceClass = file.relevanceScore > 70 ? 'high-relevance' : 
+                                     file.relevanceScore > 40 ? 'medium-relevance' : 'low-relevance';
+                
+                return `
+                    <div class="file-item ${file.approved ? 'file-approved' : ''}" id="file-${file.id}">
+                        <div class="file-header">
+                            <span class="file-name">${file.name}</span>
+                            <span class="relevance ${relevanceClass}">${file.relevanceScore || 0}% relevância</span>
+                        </div>
+                        <div class="preview">${file.preview || 'Sem preview disponível'}</div>
+                        <div class="actions">
+                            <button onclick="toggleApproval('${file.id}')">${file.approved ? '❌ Desaprovar' : '✅ Aprovar'}</button>
+                            <button onclick="analyzeFile('${file.id}')">🤖 Analisar com IA</button>
+                        </div>
+                        ${file.analysisType ? `<div class="info">Tipo: ${file.analysisType}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleApproval(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (file) {
+                file.approved = !file.approved;
+                KC.AppState.set('files', files);
+                KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: files });
+                updateStats();
+                renderFiles();
+            }
+        }
+
+        function approveAll() {
+            files.forEach(file => file.approved = true);
+            KC.AppState.set('files', files);
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: files });
+            updateStats();
+            renderFiles();
+            console.log(`✅ Todos os ${files.length} arquivos foram aprovados!`);
+        }
+
+        function approveHighRelevance() {
+            let count = 0;
+            files.forEach(file => {
+                if (file.relevanceScore > 70) {
+                    file.approved = true;
+                    count++;
+                }
+            });
+            KC.AppState.set('files', files);
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: files });
+            updateStats();
+            renderFiles();
+            console.log(`✅ ${count} arquivos de alta relevância foram aprovados!`);
+        }
+
+        function clearApprovals() {
+            files.forEach(file => file.approved = false);
+            KC.AppState.set('files', files);
+            KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: files });
+            updateStats();
+            renderFiles();
+            console.log('❌ Todas as aprovações foram removidas.');
+        }
+
+        async function analyzeFile(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+
+            try {
+                console.log(`Analisando ${file.name}...`);
+                const result = await KC.AnalysisManager.analyzeFile(file);
+                file.analysisType = result.analysisType;
+                KC.AppState.set('files', files);
+                KC.EventBus.emit(KC.Events.STATE_CHANGED, { key: 'files', newValue: files });
+                renderFiles();
+                console.log(`✅ Análise concluída: ${result.analysisType}`);
+            } catch (error) {
+                console.error('Erro na análise:', error);
+            }
+        }
+
+        async function runPipeline() {
+            const approved = files.filter(f => f.approved);
+            if (approved.length === 0) {
+                document.getElementById('pipelineResult').innerHTML = 
+                    '<p class="error">❌ Nenhum arquivo aprovado! Aprove alguns arquivos primeiro.</p>';
+                return;
+            }
+
+            try {
+                document.getElementById('pipelineResult').innerHTML = '<p class="info">⏳ Processando...</p>';
+                
+                const result = await KC.RAGExportManager.processApprovedFiles();
+                
+                document.getElementById('pipelineResult').innerHTML = `
+                    <div class="success">
+                        <h3>✅ Wave 1 Concluída!</h3>
+                        <ul>
+                            <li>Arquivos processados: ${approved.length}</li>
+                            <li>Chunks gerados: ${result.totalChunks || 0}</li>
+                            <li>Embeddings criados: ${result.embeddingsGenerated || 0}</li>
+                            <li>Pontos no Qdrant: ${result.pointsInserted || 0}</li>
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('pipelineResult').innerHTML = 
+                    `<p class="error">❌ Erro: ${error.message}</p>`;
+            }
+        }
+
+        // Carregar automaticamente ao abrir
+        window.addEventListener('load', () => {
+            setTimeout(loadFiles, 500);
+        });
+    </script>
+</body>
+</html>

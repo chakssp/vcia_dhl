@@ -1,0 +1,272 @@
+{
+    "nodes": [
+      {
+        "id": "owner-1",
+        "attributes": {
+          "radius": 10,
+          "text": "Stakeholder #1"
+        },
+        "data": {
+          "group": "purple",
+          "type": "person"
+        }
+      },
+      {
+        "id": "company-1",
+        "attributes": {
+          "radius": 10,
+          "text": "Company #1"
+        },
+        "data": {
+          "group": "purple",
+          "type": "company"
+        }
+      },
+      {
+        "id": "company-2",
+        "attributes": {
+          "radius": 8,
+          "text": "Company #2"
+        },
+        "data": {
+          "group": "purple",
+          "type": "company"
+        }
+      },
+      {
+        "id": "owner-2",
+        "attributes": {
+          "radius": 10,
+          "text": "Stakeholder #2"
+        },
+        "data": {
+          "group": "green",
+          "type": "person"
+        }
+      },
+      {
+        "id": "company-3",
+        "attributes": {
+          "radius": 10,
+          "text": "Company #3"
+        },
+        "data": {
+          "group": "green",
+          "type": "company"
+        }
+      },
+      {
+        "id": "company-4",
+        "attributes": {
+          "radius": 8,
+          "text": "Company #4"
+        },
+        "data": {
+          "group": "green",
+          "type": "company"
+        }
+      },
+      {
+        "id": "owner-3",
+        "attributes": {
+          "radius": 10,
+          "text": "Stakeholder #3"
+        },
+        "data": {
+          "group": "orange",
+          "type": "person"
+        }
+      },
+      {
+        "id": "company-5",
+        "attributes": {
+          "radius": 10,
+          "text": "Company #5"
+        },
+        "data": {
+          "group": "orange",
+          "type": "company"
+        }
+      },
+      {
+        "id": "company-6",
+        "attributes": {
+          "radius": 8,
+          "text": "Company #6"
+        },
+        "data": {
+          "group": "orange",
+          "type": "company"
+        }
+      },
+      {
+        "id": "company-7",
+        "attributes": {
+          "radius": 8,
+          "text": "Company #7"
+        },
+        "data": {
+          "group": "orange",
+          "type": "company"
+        }
+      },
+      {
+        "id": "company-8",
+        "attributes": {
+          "radius": 8,
+          "text": "Company #8"
+        },
+        "data": {
+          "group": "orange",
+          "type": "company"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "is-shareholder-0",
+        "source": "owner-1",
+        "target": "company-1",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-1",
+        "source": "company-1",
+        "target": "company-2",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-2",
+        "source": "owner-2",
+        "target": "company-4",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-3",
+        "source": "owner-2",
+        "target": "company-3",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-4",
+        "source": "company-4",
+        "target": "company-3",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-5",
+        "source": "owner-3",
+        "target": "company-5",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-6",
+        "source": "owner-3",
+        "target": "company-6",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-7",
+        "source": "company-6",
+        "target": "company-8",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-8",
+        "source": "company-5",
+        "target": "company-7",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "is-shareholder-9",
+        "source": "company-7",
+        "target": "company-8",
+        "attributes": {
+          "text": "IS-SHAREHOLDER"
+        },
+        "data": {
+          "type": "IS-SHAREHOLDER"
+        }
+      },
+      {
+        "id": "transaction-1",
+        "source": "company-5",
+        "target": "company-4",
+        "attributes": {
+          "text": "IS-TRANSACTION"
+        },
+        "data": {
+          "type": "IS-TRANSACTION"
+        }
+      },
+      {
+        "id": "transaction-2",
+        "source": "company-7",
+        "target": "company-4",
+        "attributes": {
+          "text": "IS-TRANSACTION"
+        },
+        "data": {
+          "type": "IS-TRANSACTION"
+        }
+      },
+      {
+        "id": "transaction-3",
+        "source": "company-8",
+        "target": "company-3",
+        "attributes": {
+          "text": "IS-TRANSACTION"
+        },
+        "data": {
+          "type": "IS-TRANSACTION"
+        }
+      },
+      {
+        "id": "transaction-4"
+  
+  ...

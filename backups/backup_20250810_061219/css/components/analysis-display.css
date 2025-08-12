@@ -1,0 +1,680 @@
+/**
+ * analysis-display.css
+ * Estilos para displays ricos de análise no FileRenderer
+ * Supports Task #FE-002: Rich analysis results display
+ */
+
+/* ============================================================================
+   ANALYSIS DISPLAY CONTAINER
+   ============================================================================ */
+
+.analysis-display-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 12px;
+    transition: all var(--animation-normal) ease;
+}
+
+.analysis-display-container:hover {
+    border-color: var(--primary-color-alpha);
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* ============================================================================
+   ANALYSIS HEADER
+   ============================================================================ */
+
+.analysis-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.confidence-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.confidence-icon {
+    font-size: 16px;
+    min-width: 20px;
+}
+
+.confidence-text {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    flex: 1;
+}
+
+.expand-analysis-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--animation-fast) ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.expand-analysis-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--primary-color);
+}
+
+.expand-analysis-btn i {
+    transition: transform var(--animation-normal) ease;
+}
+
+/* ============================================================================
+   ANALYSIS DETAILS
+   ============================================================================ */
+
+.analysis-details {
+    padding: 20px;
+    background: var(--bg-primary);
+    animation: slideDown var(--animation-normal) ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.analysis-details h5 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.analysis-details h5:before {
+    content: '';
+    width: 3px;
+    height: 16px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* ============================================================================
+   CONFIDENCE BREAKDOWN
+   ============================================================================ */
+
+.confidence-breakdown {
+    margin-bottom: 24px;
+}
+
+.confidence-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.factor-bar {
+    display: grid;
+    grid-template-columns: 100px 1fr 50px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+
+.factor-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: right;
+}
+
+.factor-progress {
+    position: relative;
+    height: 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.factor-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width var(--animation-slow) ease;
+    position: relative;
+}
+
+.factor-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.factor-score {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+/* ============================================================================
+   TYPE DISTRIBUTION
+   ============================================================================ */
+
+.type-distribution {
+    margin-bottom: 24px;
+}
+
+.type-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.type-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    transition: all var(--animation-fast) ease;
+}
+
+.type-item:hover {
+    background: var(--bg-hover);
+    transform: translateX(4px);
+}
+
+.type-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.type-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.type-confidence {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ============================================================================
+   KEYWORDS SECTION
+   ============================================================================ */
+
+.keywords-section {
+    margin-bottom: 24px;
+}
+
+.keywords-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.keyword-tag {
+    background: var(--primary-color-alpha);
+    color: var(--primary-color);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all var(--animation-fast) ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.keyword-tag:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* ============================================================================
+   RELATED FILES
+   ============================================================================ */
+
+.related-files {
+    margin-bottom: 24px;
+}
+
+.related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.related-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: all var(--animation-fast) ease;
+    cursor: pointer;
+}
+
+.related-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.related-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+    flex: 1;
+    margin-right: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.similarity-score {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--success-color-alpha);
+    color: var(--success-color);
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* ============================================================================
+   ANALYSIS TIMELINE
+   ============================================================================ */
+
+.analysis-timeline {
+    margin-bottom: 24px;
+}
+
+.timeline-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+}
+
+.timeline-items::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--primary-color-alpha));
+    border-radius: 1px;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    position: relative;
+}
+
+.timeline-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--bg-primary);
+    border: 2px solid var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+.timeline-event {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* ============================================================================
+   EXPORT ACTIONS
+   ============================================================================ */
+
+.export-actions {
+    border-top: 1px solid var(--border-color);
+    padding-top: 16px;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.export-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--animation-fast) ease;
+    flex: 1;
+    min-width: 60px;
+    text-align: center;
+}
+
+.export-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.export-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* ============================================================================
+   ENHANCED FILE ENTRY INTEGRATION
+   ============================================================================ */
+
+.file-entry .analysis-display-container {
+    margin-top: 16px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.file-entry:hover .analysis-display-container {
+    border-left-color: var(--primary-color);
+    background: var(--bg-card);
+}
+
+/* Confidence score in file meta */
+.confidence-score-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.confidence-score-inline.very-high {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.confidence-score-inline.high {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.confidence-score-inline.medium {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.confidence-score-inline.low {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.confidence-score-inline.very-low {
+    background: rgba(107, 114, 128, 0.1);
+    color: #6b7280;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 767px) {
+    .analysis-details {
+        padding: 16px;
+    }
+    
+    .factor-bar {
+        grid-template-columns: 80px 1fr 40px;
+        gap: 8px;
+    }
+    
+    .factor-name {
+        font-size: 11px;
+    }
+    
+    .keywords-cloud {
+        gap: 6px;
+    }
+    
+    .keyword-tag {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+    
+    .export-buttons {
+        flex-direction: column;
+    }
+    
+    .export-btn {
+        flex: none;
+    }
+    
+    .timeline-items::before {
+        left: 12px;
+    }
+    
+    .timeline-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .timeline-event {
+        font-size: 12px;
+    }
+    
+    .timeline-date {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .confidence-indicator {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .expand-analysis-btn {
+        align-self: center;
+    }
+    
+    .factor-bar {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        text-align: center;
+    }
+    
+    .factor-name {
+        text-align: center;
+        margin-bottom: 4px;
+    }
+    
+    .type-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .related-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .related-name {
+        text-align: center;
+        margin-right: 0;
+    }
+    
+    .similarity-score {
+        align-self: center;
+    }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+    .analysis-display-container {
+        border: 1px solid #000;
+        break-inside: avoid;
+        margin-bottom: 16px;
+    }
+    
+    .expand-analysis-btn {
+        display: none;
+    }
+    
+    .analysis-details {
+        display: block !important;
+    }
+    
+    .export-actions {
+        display: none;
+    }
+    
+    .keyword-tag:hover,
+    .related-item:hover,
+    .type-item:hover {
+        transform: none;
+        background: var(--bg-secondary);
+    }
+}
+
+/* ============================================================================
+   DARK MODE ADJUSTMENTS
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+    .factor-fill::after {
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    }
+    
+    .timeline-items::before {
+        background: linear-gradient(to bottom, var(--primary-color), rgba(var(--primary-color-rgb), 0.3));
+    }
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE
+   ============================================================================ */
+
+@media (prefers-contrast: high) {
+    .analysis-display-container {
+        border-width: 2px;
+    }
+    
+    .factor-progress {
+        border: 1px solid var(--text-primary);
+    }
+    
+    .keyword-tag,
+    .type-indicator,
+    .timeline-icon {
+        border: 1px solid var(--text-primary);
+    }
+    
+    .export-btn {
+        border-width: 2px;
+    }
+}
+
+/* ============================================================================
+   ANIMATION PERFORMANCE
+   ============================================================================ */
+
+.analysis-display-container,
+.factor-fill,
+.keyword-tag,
+.related-item,
+.type-item,
+.export-btn {
+    will-change: transform;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .analysis-display-container,
+    .factor-fill,
+    .keyword-tag,
+    .related-item,
+    .type-item,
+    .export-btn,
+    .expand-analysis-btn i {
+        transition: none;
+        animation: none;
+    }
+    
+    .factor-fill::after {
+        animation: none;
+    }
+}

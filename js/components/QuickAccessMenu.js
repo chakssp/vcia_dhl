@@ -108,6 +108,14 @@
         createMenuItems() {
             const items = [
                 {
+                    icon: '🧭',
+                    title: 'Convergence Navigator',
+                    subtitle: 'Navegação multi-dimensional',
+                    color: '#f0f',
+                    background: 'linear-gradient(135deg, #550055 0%, #330033 100%)',
+                    action: 'openConvergenceNavigator'
+                },
+                {
                     icon: '🔍',
                     title: 'Qdrant Explorer',
                     subtitle: 'Direct vector database access',
@@ -221,6 +229,24 @@
         }
 
         // === Ações do Menu ===
+
+        /**
+         * Abre o Convergence Navigator
+         */
+        openConvergenceNavigator() {
+            this.close();
+            
+            // Abrir em nova aba ou iframe
+            const navigatorUrl = '/convergence-navigator/index.html';
+            
+            // Opção 1: Abrir em nova aba
+            window.open(navigatorUrl, '_blank');
+            
+            // Opção 2 (futuro): Abrir em modal com iframe
+            // KC.ConvergenceIntegrationService?.openNavigator();
+            
+            Logger?.info('QuickAccessMenu', 'Abrindo Convergence Navigator');
+        }
 
         /**
          * Abre o Qdrant Explorer
@@ -475,6 +501,7 @@
     }
 
     // Expor métodos globalmente para os botões funcionarem
+    window.openConvergenceNavigator = () => quickAccessMenu.openConvergenceNavigator();
     window.openQdrantExplorer = () => quickAccessMenu.openQdrantExplorer();
     window.openPrefixManager = () => quickAccessMenu.openPrefixManager();
     window.runDiagnostics = () => quickAccessMenu.runDiagnostics();

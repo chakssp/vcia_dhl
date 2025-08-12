@@ -1,0 +1,149 @@
+{
+  "timestamp": "2025-08-11T01:13:46.700Z",
+  "sessionId": "CLAUDE-REPORT-1754874732676",
+  "totalErrors": 5,
+  "totalLogs": 357,
+  "errors": [
+    {
+      "timestamp": 1754874814778,
+      "message": "Erro ao verificar Ollama: QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at EmbeddingService.checkOllamaAvailability (http://127.0.0.1:5500/js/services/EmbeddingService.js:447:21)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:546:34)"
+    },
+    {
+      "timestamp": 1754874819167,
+      "message": "Erro global: QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at http://127.0.0.1:5500/js/core/AppController.js:283:25"
+    },
+    {
+      "timestamp": 1754874819168,
+      "message": "Erro no sistema: [object Object]",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at Object.callback (http://127.0.0.1:5500/js/app.js:114:21)\n    at EventBus.emit (http://127.0.0.1:5500/js/core/EventBus.js:125:67)\n    at http://127.0.0.1:5500/js/core/AppController.js:284:26"
+    },
+    {
+      "timestamp": 1754874823818,
+      "message": "Erro global: QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at http://127.0.0.1:5500/js/core/AppController.js:283:25"
+    },
+    {
+      "timestamp": 1754874823819,
+      "message": "Erro no sistema: [object Object]",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at Object.callback (http://127.0.0.1:5500/js/app.js:114:21)\n    at EventBus.emit (http://127.0.0.1:5500/js/core/EventBus.js:125:67)\n    at http://127.0.0.1:5500/js/core/AppController.js:284:26"
+    }
+  ],
+  "errorLogs": [
+    {
+      "timestamp": 1754874814778,
+      "relativeTime": 82102,
+      "type": "error",
+      "message": "Erro ao verificar Ollama: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874819167,
+      "relativeTime": 86491,
+      "type": "error",
+      "message": "Erro global: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874819168,
+      "relativeTime": 86492,
+      "type": "error",
+      "message": "Erro no sistema: {\n  \"type\": \"global\",\n  \"error\": \"Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.\"\n}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874819168,
+      "relativeTime": 86492,
+      "type": "error",
+      "message": "❌ Global Error: Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+      "data": {
+        "message": "Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+        "filename": "http://127.0.0.1:5500/js/services/ClaudeReporter.js",
+        "lineno": 566,
+        "colno": 22,
+        "stack": "QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.\n    at ClaudeReporter.saveToFile (http://127.0.0.1:5500/js/services/ClaudeReporter.js:566:22)\n    at ClaudeReporter.saveReport (http://127.0.0.1:5500/js/services/ClaudeReporter.js:531:14)\n    at ClaudeReporter.downloadReport (http://127.0.0.1:5500/js/services/ClaudeReporter.js:650:14)\n    at addToggleButton.downloadBtn.onclick (http://127.0.0.1:5500/js/services/ClaudeReporter.js:167:42)"
+      }
+    },
+    {
+      "timestamp": 1754874823818,
+      "relativeTime": 91142,
+      "type": "error",
+      "message": "Erro global: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874823819,
+      "relativeTime": 91143,
+      "type": "error",
+      "message": "Erro no sistema: {\n  \"type\": \"global\",\n  \"error\": \"Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.\"\n}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874823819,
+      "relativeTime": 91143,
+      "type": "error",
+      "message": "❌ Global Error: Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+      "data": {
+        "message": "Uncaught QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.",
+        "filename": "http://127.0.0.1:5500/js/services/ClaudeReporter.js",
+        "lineno": 566,
+        "colno": 22,
+        "stack": "QuotaExceededError: Failed to execute 'setItem' on 'Storage': Setting the value of 'CLAUDE_LIVE_REPORT' exceeded the quota.\n    at ClaudeReporter.saveToFile (http://127.0.0.1:5500/js/services/ClaudeReporter.js:566:22)\n    at ClaudeReporter.saveReport (http://127.0.0.1:5500/js/services/ClaudeReporter.js:531:14)\n    at ClaudeReporter.downloadReport (http://127.0.0.1:5500/js/services/ClaudeReporter.js:650:14)\n    at addToggleButton.downloadBtn.onclick (http://127.0.0.1:5500/js/services/ClaudeReporter.js:167:42)"
+      }
+    }
+  ],
+  "warningLogs": [],
+  "lastAPICalls": [
+    {
+      "id": "API-1754874751694",
+      "timestamp": 1754874751694,
+      "url": "http://qdr.vcia.com.br:6333/",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": null,
+      "duration": 31,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874751726",
+      "timestamp": 1754874751726,
+      "url": "http://localhost:11434/api/tags",
+      "method": "GET",
+      "body": null,
+      "duration": 127,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874814603",
+      "timestamp": 1754874814603,
+      "url": "http://qdr.vcia.com.br:6333/",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": null,
+      "duration": 37,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874814641",
+      "timestamp": 1754874814641,
+      "url": "http://localhost:11434/api/tags",
+      "method": "GET",
+      "body": null,
+      "duration": 107,
+      "status": 200,
+      "error": null
+    }
+  ],
+  "systemState": {
+    "kcLoaded": true,
+    "filesLoaded": 11
+  }
+}

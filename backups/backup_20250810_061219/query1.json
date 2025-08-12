@@ -1,0 +1,13 @@
+{
+  "filter": {
+    "must": [
+      {
+        "key": "payload.analysisType",
+        "match": { "value": "Breakthrough Técnico" }
+      }
+    ]
+  },
+  "limit": 20,
+  "with_payload": ["fileName", "analysisType", "convergenceScore"],
+  "with_vector": false
+}

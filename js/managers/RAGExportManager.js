@@ -821,7 +821,10 @@
                                     chunkText: chunk.content, // Adicionar também como chunkText para compatibilidade
                                     // CORRIGIDO: Adicionar size e relevanceScore no nível raiz
                                     size: chunk.content ? chunk.content.length : 0,
-                                    relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || doc.relevanceInheritance || 0, // Preservar 0% - informação válida
+                                    // FIX: Preservar valores de relevância mesmo quando são 0
+                                    relevanceScore: doc.relevanceScore !== undefined ? doc.relevanceScore : 
+                                                   (doc.analysis?.relevanceScore !== undefined ? doc.analysis.relevanceScore : 
+                                                   (doc.relevance !== undefined ? doc.relevance : 0))
                                     // CRÍTICO: Adicionar analysisType como campo de primeira classe para convergência semântica
                                     // DEBUG: Log para rastrear onde o analysisType está sendo encontrado
                                     analysisType: (() => {
@@ -838,7 +841,10 @@
                                                 'RAGExportManager._processBatch'
                                             )
                                         ),
-                                        relevanceScore: doc.relevanceScore || doc.analysis?.relevanceScore || 0,
+                                        // FIX: Preservar valores de relevância mesmo quando são 0
+                                        relevanceScore: doc.relevanceScore !== undefined ? doc.relevanceScore : 
+                                                       (doc.analysis?.relevanceScore !== undefined ? doc.analysis.relevanceScore : 
+                                                       (doc.relevance !== undefined ? doc.relevance : 0)),
                                         lastModified: doc.lastModified || doc.source?.lastModified || new Date().toISOString(),
                                         processedAt: new Date().toISOString()
                                     }

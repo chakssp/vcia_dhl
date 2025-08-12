@@ -1,0 +1,270 @@
+/* ========================================
+   RESPONSIVE - Media Queries e Adaptações
+   ======================================== */
+
+/* === MOBILE FIRST APPROACH === */
+
+/* === SMALL DEVICES (< 640px) === */
+@media (max-width: 639px) {
+    /* Layout */
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+    
+    /* Header */
+    .main-header .container {
+        flex-direction: column;
+        height: auto;
+        padding: var(--spacing-md) var(--spacing-sm);
+        gap: var(--spacing-sm);
+    }
+    
+    .logo {
+        font-size: var(--font-size-lg);
+    }
+    
+    /* Workflow */
+    .workflow-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .step-card {
+        padding: var(--spacing-md);
+    }
+    
+    .step-icon {
+        font-size: var(--font-size-3xl);
+    }
+    
+    /* Panels */
+    .panel-container {
+        padding: var(--spacing-md);
+    }
+    
+    .panel-actions {
+        flex-direction: column;
+    }
+    
+    .panel-actions .btn {
+        width: 100%;
+    }
+    
+    /* Forms */
+    .input-group {
+        flex-direction: column;
+    }
+    
+    .threshold-labels {
+        font-size: 10px;
+    }
+    
+    /* Stats */
+    .stats-section {
+        display: none; /* Esconde em mobile */
+    }
+    
+    /* Typography */
+    h1 { font-size: var(--font-size-3xl); }
+    h2 { font-size: var(--font-size-2xl); }
+    h3 { font-size: var(--font-size-xl); }
+    
+    /* Utilities */
+    .hidden-mobile {
+        display: none !important;
+    }
+}
+
+/* === MEDIUM DEVICES (640px - 1023px) === */
+@media (min-width: 640px) and (max-width: 1023px) {
+    /* Layout */
+    .container {
+        max-width: var(--container-md);
+    }
+    
+    /* Workflow */
+    .workflow-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    /* Stats */
+    .stats-section {
+        position: static;
+        width: 100%;
+        margin-top: var(--spacing-xl);
+    }
+    
+    /* Utilities */
+    .hidden-tablet {
+        display: none !important;
+    }
+}
+
+/* === LARGE DEVICES (1024px - 1279px) === */
+@media (min-width: 1024px) {
+    /* Layout */
+    .container {
+        max-width: var(--container-lg);
+    }
+    
+    /* Content Layout */
+    .content-with-sidebar {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: var(--spacing-xl);
+    }
+    
+    /* Utilities */
+    .hidden-desktop {
+        display: none !important;
+    }
+}
+
+/* === EXTRA LARGE DEVICES (>= 1280px) === */
+@media (min-width: 1280px) {
+    /* Layout */
+    .container {
+        max-width: var(--container-xl);
+    }
+    
+    /* Workflow */
+    .workflow-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* === HOVER STATES (non-touch devices) === */
+@media (hover: hover) and (pointer: fine) {
+    /* Enable hover effects only on devices that support it properly */
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .step-card:hover:not(.disabled) {
+        transform: translateY(-4px);
+    }
+}
+
+/* === PRINT STYLES === */
+@media print {
+    /* Hide unnecessary elements */
+    .main-header,
+    .main-footer,
+    .panel-actions,
+    .btn,
+    .stats-section,
+    .notification-container,
+    .modal-container {
+        display: none !important;
+    }
+    
+    /* Optimize for print */
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+        color: black;
+        background: white;
+    }
+    
+    .container {
+        max-width: 100%;
+        padding: 0;
+    }
+    
+    .step-card,
+    .panel-container {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    /* Show URLs for links */
+    a[href^="http"]:after {
+        content: " (" attr(href) ")";
+    }
+}
+
+/* === DARK MODE SUPPORT === */
+@media (prefers-color-scheme: dark) {
+    /* TODO: Implementar tema escuro no futuro */
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* === HIGH CONTRAST === */
+@media (prefers-contrast: high) {
+    .step-card {
+        border-width: 3px;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control:focus {
+        outline: 3px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+}
+
+/* === ORIENTATION === */
+@media (orientation: landscape) and (max-height: 500px) {
+    /* Optimize for small height in landscape */
+    .main-header {
+        position: static;
+    }
+    
+    .workflow-section {
+        padding: var(--spacing-md) 0;
+    }
+    
+    .step-card {
+        padding: var(--spacing-sm);
+    }
+    
+    .step-icon {
+        display: none;
+    }
+}
+
+/* === RESPONSIVE UTILITIES === */
+.show-mobile { display: none; }
+.show-tablet { display: none; }
+.show-desktop { display: none; }
+
+@media (max-width: 639px) {
+    .show-mobile { display: block; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .show-tablet { display: block; }
+}
+
+@media (min-width: 1024px) {
+    .show-desktop { display: block; }
+}
+
+/* === RESPONSIVE TEXT === */
+.text-responsive {
+    font-size: clamp(
+        var(--font-size-sm),
+        2vw,
+        var(--font-size-base)
+    );
+}
+
+.heading-responsive {
+    font-size: clamp(
+        var(--font-size-xl),
+        4vw,
+        var(--font-size-3xl)
+    );
+}

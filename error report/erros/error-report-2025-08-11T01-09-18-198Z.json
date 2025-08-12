@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-08-11T01:09:18.198Z",
+  "sessionId": "CLAUDE-REPORT-1754874557190",
+  "totalErrors": 0,
+  "totalLogs": 2,
+  "errors": [],
+  "errorLogs": [],
+  "warningLogs": [],
+  "lastAPICalls": [],
+  "systemState": {
+    "kcLoaded": true,
+    "filesLoaded": 11
+  }
+}

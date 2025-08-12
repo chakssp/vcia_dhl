@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Limpar Cache de Embeddings</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        button { background: #0f0; color: #000; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .log { background: #000; border: 1px solid #0f0; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🗑️ Limpar Cache Corrompido</h1>
+    <button onclick="clearAll()">Limpar TUDO</button>
+    <button onclick="clearIndexedDB()">Limpar IndexedDB</button>
+    <button onclick="clearLocalStorage()">Limpar LocalStorage</button>
+    <div id="log" class="log"></div>
+    
+    <script>
+        function log(msg) {
+            document.getElementById('log').innerHTML += msg + '<br>';
+            console.log(msg);
+        }
+        
+        async function clearIndexedDB() {
+            try {
+                await indexedDB.deleteDatabase('EmbeddingCache');
+                log('✅ IndexedDB EmbeddingCache apagado');
+            } catch (e) {
+                log('❌ Erro: ' + e.message);
+            }
+        }
+        
+        function clearLocalStorage() {
+            const keys = Object.keys(localStorage);
+            let count = 0;
+            keys.forEach(key => {
+                if (key.includes('embedding') || key.includes('cache') || key.includes('vector')) {
+                    localStorage.removeItem(key);
+                    count++;
+                }
+            });
+            log(`✅ ${count} itens removidos do localStorage`);
+        }
+        
+        async function clearAll() {
+            await clearIndexedDB();
+            clearLocalStorage();
+            log('🎯 Cache completamente limpo! Recarregue a página principal.');
+        }
+    </script>
+</body>
+</html>

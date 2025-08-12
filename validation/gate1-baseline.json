@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-08-10T21:24:36.078Z",
+  "cliente_zero": {
+    "total_files": 2245,
+    "sample_size": 8
+  },
+  "classificacao_atual": {
+    "FRAMEWORK": 2,
+    "DOCUMENTAÇÃO": 2,
+    "TESTES": 1,
+    "SPRINTS": 0,
+    "CONFIGURAÇÃO": 0,
+    "NÃO_CLASSIFICADO": 3
+  },
+  "metricas": {
+    "taxa_classificacao": "62.5",
+    "nao_classificados": 3
+  },
+  "problema": "Classificação insuficiente e sem scores de relevância"
+}

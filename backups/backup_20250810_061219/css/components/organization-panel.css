@@ -1,0 +1,522 @@
+/**
+ * organization-panel.css - Estilos para o painel de organização e exportação
+ */
+
+.organization-panel {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.panel-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.panel-header h2 {
+    color: var(--color-primary);
+    margin-bottom: 10px;
+}
+
+.panel-header p {
+    color: var(--color-text-secondary);
+    font-size: 16px;
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Container do ProcessingLogsPanel */
+.processing-logs-wrapper {
+    margin-top: 20px;
+    width: 100%;
+}
+
+/* Cards */
+.card {
+    background: var(--color-background-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+    margin-bottom: 15px;
+    color: var(--color-text-primary);
+    font-size: 18px;
+}
+
+/* Estatísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: var(--color-background-tertiary);
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.stat-item:hover {
+    transform: translateY(-2px);
+}
+
+.stat-item.warning .stat-value {
+    color: var(--color-warning);
+}
+
+.stat-value {
+    display: block;
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--color-primary);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    display: block;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+/* Alertas */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.alert-warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+    border: 1px solid var(--color-warning);
+}
+
+.alert-info {
+    background: var(--color-info-light);
+    color: var(--color-info-dark);
+    border: 1px solid var(--color-info);
+}
+
+/* Formulários */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+}
+
+/* Checkboxes melhorados */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    background: var(--color-background-tertiary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-item:hover {
+    background: var(--color-background-primary);
+    transform: translateX(5px);
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin-right: 10px;
+    margin-top: 2px;
+    cursor: pointer;
+}
+
+.checkbox-item span {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 3px;
+}
+
+.checkbox-item small {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+}
+
+.checkbox-item input[type="checkbox"]:checked + span {
+    color: var(--color-primary);
+}
+
+/* Distribuição de categorias */
+.category-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.category-bar {
+    margin-bottom: 10px;
+}
+
+.bar-label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.bar-label .count {
+    margin-left: auto;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+}
+
+.bar-container {
+    height: 20px;
+    background: var(--color-background-tertiary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+/* Ações */
+.panel-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.panel-actions .btn {
+    min-width: 150px;
+}
+
+.btn-info {
+    background-color: var(--color-info);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: var(--color-info-dark);
+}
+
+/* Mensagens de ajuda */
+.help-messages {
+    margin-top: 20px;
+}
+
+.help-tip,
+.help-warning {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.help-tip {
+    background: var(--color-info-light);
+    color: var(--color-info-dark);
+}
+
+.help-warning {
+    background: var(--color-warning-light);
+    color: var(--color-warning-dark);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .panel-actions {
+        flex-direction: column;
+    }
+    
+    .panel-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Animações */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.organization-panel .card {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.organization-panel .card:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.organization-panel .card:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.organization-panel .card:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* Pipeline de Processamento - Novos Estilos */
+.pipeline-details {
+    margin-top: 15px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+.processing-stages {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex: 1;
+    transition: all 0.3s ease;
+}
+
+.stage-icon {
+    font-size: 24px;
+    transition: transform 0.3s ease;
+}
+
+.stage-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.stage-status {
+    font-size: 18px;
+}
+
+/* Estados dos estágios */
+.stage-processing .stage-icon {
+    animation: pulse 1s infinite;
+}
+
+.stage-processing .stage-name {
+    color: var(--color-primary);
+}
+
+.stage-completed .stage-name {
+    color: var(--color-success);
+}
+
+.stage-error .stage-name {
+    color: var(--color-error);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Informações de arquivo atual */
+.current-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.current-file .label {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.current-file .filename {
+    color: var(--color-primary);
+    font-family: monospace;
+    word-break: break-all;
+}
+
+/* Informações de chunks */
+.chunks-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.chunks-info .label {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.chunks-info .count {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--color-success);
+}
+
+/* Localização dos dados */
+.data-location {
+    background: var(--color-info-light, #e3f2fd);
+    border: 1px solid var(--color-info, #2196f3);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+}
+
+.data-location h4 {
+    margin: 0 0 10px 0;
+    color: var(--color-info-dark, #1565c0);
+    font-size: 16px;
+}
+
+.data-location ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.data-location li {
+    margin: 5px 0;
+    color: var(--color-text-primary);
+}
+
+.data-location code {
+    background: var(--color-background-secondary);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 13px;
+}
+
+/* Barra de progresso melhorada */
+.pipeline-status {
+    margin-top: 15px;
+}
+
+.progress-bar-container {
+    background: var(--color-background-tertiary);
+    border-radius: 8px;
+    padding: 3px;
+    margin: 10px 0;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    position: relative;
+    height: 24px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 30px 30px;
+    animation: progress-animation 1s linear infinite;
+}
+
+@keyframes progress-animation {
+    0% { background-position: 0 0; }
+    100% { background-position: 30px 30px; }
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    font-size: 12px;
+}

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-08-10T21:31:19.359Z",
+  "cliente_zero": "2.245 arquivos .md",
+  "comparison": {
+    "keywords": {
+      "method": "exact match",
+      "recovery_rate": "40%",
+      "limitations": "sem contexto semântico"
+    },
+    "embeddings": {
+      "method": "vector similarity (768d)",
+      "recovery_rate": "20%",
+      "advantages": "captura similaridade semântica"
+    },
+    "convergence": {
+      "method": "multi-dimensional navigation",
+      "recovery_rate": "100%",
+      "advantages": "contexto completo preservado"
+    }
+  },
+  "conclusion": "Convergência multi-dimensional com embeddings supera busca tradicional"
+}

@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-08-11T10:11:53.608Z",
+  "files": 11,
+  "avgConvergence": 25,
+  "patterns": 2,
+  "totalTokens": 9813,
+  "recommendations": {
+    "threshold": 17,
+    "chunkSize": 407,
+    "batchSize": 6
+  }
+}

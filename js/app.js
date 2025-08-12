@@ -112,7 +112,11 @@
             // 'BoostCalculator', // Comentado - componente ausente
             // 'PrefixEnhancer', // Comentado - componente ausente
             // 'ConfidenceAggregator', // Comentado - componente ausente
-            // 'ZeroRelevanceResolver' // Comentado - componente ausente
+            // 'ZeroRelevanceResolver', // Comentado - componente ausente
+            // Framework EU-VOCÊ - Calibração e Monitoramento
+            'OptimizedConfig',
+            'ConvergencePatternService',
+            'MetricsMonitor'
         ];
 
         components.forEach(name => {

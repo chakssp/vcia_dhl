@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - ProcessingLogsPanel</title>
+    <style>
+        body { 
+            padding: 20px; 
+            background: #0a0a0a; 
+            color: #e5e5e5;
+            font-family: Arial, sans-serif;
+        }
+        .debug-info {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status { margin: 5px 0; }
+        .ok { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug ProcessingLogsPanel</h1>
+    
+    <div class="debug-info" id="debug-output"></div>
+    
+    <script>
+        window.addEventListener('load', () => {
+            const output = document.getElementById('debug-output');
+            let html = '<h2>Verificação de Componentes:</h2>';
+            
+            // Verificar KC
+            if (window.KnowledgeConsolidator) {
+                html += '<div class="status ok">✅ KnowledgeConsolidator está disponível</div>';
+                
+                // Verificar ProcessingLogs
+                if (window.KnowledgeConsolidator.ProcessingLogs) {
+                    html += '<div class="status ok">✅ ProcessingLogs está disponível</div>';
+                    html += `<div class="status">  - initialized: ${window.KnowledgeConsolidator.ProcessingLogs.initialized}</div>`;
+                    html += `<div class="status">  - buffer length: ${window.KnowledgeConsolidator.ProcessingLogs.buffer.length}</div>`;
+                    
+                    // Verificar métodos
+                    const methods = ['log', 'show', 'hide', 'clear', 'getElement'];
+                    methods.forEach(method => {
+                        if (typeof window.KnowledgeConsolidator.ProcessingLogs[method] === 'function') {
+                            html += `<div class="status ok">  ✅ Método ${method}() está disponível</div>`;
+                        } else {
+                            html += `<div class="status error">  ❌ Método ${method}() NÃO está disponível</div>`;
+                        }
+                    });
+                } else {
+                    html += '<div class="status error">❌ ProcessingLogs NÃO está disponível</div>';
+                }
+                
+                // Verificar QdrantProcessorWithFilters
+                if (window.KnowledgeConsolidator.QdrantProcessorWithFilters) {
+                    html += '<div class="status ok">✅ QdrantProcessorWithFilters está disponível</div>';
+                } else {
+                    html += '<div class="status error">❌ QdrantProcessorWithFilters NÃO está disponível</div>';
+                }
+                
+                // Verificar OrganizationPanel
+                if (window.KnowledgeConsolidator.OrganizationPanel) {
+                    html += '<div class="status ok">✅ OrganizationPanel está disponível</div>';
+                } else {
+                    html += '<div class="status error">❌ OrganizationPanel NÃO está disponível</div>';
+                }
+                
+            } else {
+                html += '<div class="status error">❌ KnowledgeConsolidator NÃO está disponível</div>';
+            }
+            
+            output.innerHTML = html;
+            
+            // Testar log direto
+            if (window.KnowledgeConsolidator && window.KnowledgeConsolidator.ProcessingLogs) {
+                window.KnowledgeConsolidator.ProcessingLogs.log('🧪 Teste de log direto');
+                console.log('Log de teste enviado para ProcessingLogs');
+            }
+        });
+        
+        // Comando de teste no console
+        console.log('Execute no console:');
+        console.log('KC.ProcessingLogs.log("teste")');
+        console.log('KC.ProcessingLogs.show()');
+        console.log('KC.ProcessingLogs.getStats()');
+    </script>
+</body>
+</html>

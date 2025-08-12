@@ -1,0 +1,53 @@
+{
+  "sessionId": "CLAUDE-REPORT-1754874962570",
+  "timestamp": "2025-08-11T01:16:04.681Z",
+  "duration": 2111,
+  "logs": [
+    {
+      "timestamp": 1754874962570,
+      "relativeTime": 0,
+      "type": "system",
+      "message": "🟢 Claude Reporter iniciado",
+      "data": {
+        "sessionId": "CLAUDE-REPORT-1754874962570",
+        "timestamp": "2025-08-11T01:16:02.570Z",
+        "url": "http://127.0.0.1:5500/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "timestamp": 1754874962580,
+      "relativeTime": 10,
+      "type": "system",
+      "message": "📊 Estado inicial capturado",
+      "data": {
+        "timestamp": 1754874962570,
+        "kc": {
+          "filesLoaded": 0,
+          "currentStep": 0,
+          "services": {
+            "qdrant": true,
+            "embedding": true,
+            "rag": true
+          }
+        },
+        "localStorage": {
+          "size": 2686235,
+          "keys": 18
+        },
+        "memory": {
+          "usedJSHeapSize": "37.30 MB",
+          "totalJSHeapSize": "42.18 MB",
+          "limit": "4095.75 MB"
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "apiCalls": [],
+  "performance": {
+    "embeddings": [],
+    "qdrant": [],
+    "discoveries": []
+  }
+}

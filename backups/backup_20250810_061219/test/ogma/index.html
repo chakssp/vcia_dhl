@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <link type="text/css" rel="stylesheet" href="style.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/lucide-static@0.483.0/font/lucide.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div id="graph-container"></div>
+    <div class="toolbar" id="ui">
+      <form>
+        <div class="section mode">
+          <h3>Company analysis</h3>
+          <div class="switch switch--horizontal">
+            <input
+              type="radio"
+              name="node-group"
+              value="detail"
+              checked="checked"
+            />
+            <label for="detail">All Nodes</label>
+            <input type="radio" name="node-group" value="group" />
+            <label for="group">Group</label>
+            <span class="toggle-outside">
+              <span class="toggle-inside"></span>
+            </span>
+          </div>
+          <div class="switch switch--horizontal">
+            <input
+              type="radio"
+              name="edge-group"
+              value="detail"
+              checked="checked"
+            />
+            <label for="detail">All Edges</label>
+            <input type="radio" name="edge-group" value="group" />
+            <label for="group">Backbone</label>
+            <span class="toggle-outside">
+              <span class="toggle-inside"></span>
+            </span>
+          </div>
+        </div>
+        <div class="controls">
+          <button id="layout" class="btn menu">Layout</button>
+        </div>
+      </form>
+      <div class="section mode" id="details"></div>
+    </div>
+    <script src="index.ts"></script>
+  </body>
+</html>

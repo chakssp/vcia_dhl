@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-08-10T21:21:29.567Z",
+  "cliente_zero": {
+    "nome": "Knowledge Consolidator Project",
+    "total_arquivos": 2245,
+    "formato": ".md",
+    "localizacao": {
+      "raiz": 11,
+      "docs": 91,
+      "v2": "múltiplos",
+      "intelligence_lab": "vários",
+      "orchestrator": 5
+    }
+  },
+  "objetivo": {
+    "acao": "ENRIQUECIMENTO + RECLASSIFICAÇÃO",
+    "meta_reducao": "97.8%",
+    "files_alvo": 50,
+    "tema_convergencia": "gates de validação e framework de trabalho",
+    "operacoes": [
+      "CADASTRO",
+      "ATUALIZAÇÃO",
+      "ENRIQUECIMENTO",
+      "RECLASSIFICAÇÃO",
+      "RELEVÂNCIA"
+    ]
+  },
+  "resultado": {
+    "convergencias_identificadas": 5,
+    "score_medio": 0.85,
+    "reducao_alcancada": "99.8"
+  },
+  "gates_passed": {
+    "gate1_medicao": true,
+    "gate2_teste_real": true,
+    "gate3_producao": false
+  }
+}

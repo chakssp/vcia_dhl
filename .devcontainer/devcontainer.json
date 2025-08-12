@@ -16,7 +16,8 @@
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
         "eamodio.gitlens",
-        "Anthropic.claude-code"
+        "Anthropic.claude-code",
+        "alefragnani.project-manager"
       ],
       "settings": {
         "editor.formatOnSave": true,

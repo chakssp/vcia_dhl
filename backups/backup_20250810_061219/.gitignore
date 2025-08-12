@@ -1,0 +1,107 @@
+# Dependencies
+node_modules/
+package-lock.json
+CLAUDE.*
+GEMINI.*
+RESUME-STATUS.md
+INICIO-SESSAI.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Build/Dist
+dist/
+build/
+imagens/
+claude/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.temp
+
+# Debug and Fix files
+fix-*.js
+debug-*.js
+test-*.html
+verificar-*.js
+diagnosticar-*.js
+aprovar-*.js
+reprocessar-*.js
+corrigir-*.js
+melhorar-*.js
+limpar-*.js
+ensure-*.js
+monitor-*.js
+apply-*.js
+validate-*.js
+verify-*.js
+
+# POC files
+poc-*.html
+poc-*.js
+qdrant-*.html
+
+# Local config
+config/local.json
+config/credentials.json
+ai_*
+
+
+# Test coverage
+coverage/
+.nyc_output/
+tests/
+status/
+
+# Cache
+.cache/
+.parcel-cache/
+.vscode/
+.claude/
+analise-prd.md
+
+# Documentation (PRIVATE - Contains strategic information)
+docs/
+!docs/lessons-learned/
+# Permitir apenas a pasta lessons-learned ser commitada
+# Toda documentação estratégica fica privada
+
+.space/
+.devcontainer/
+
+# Guardian Mode Files
+.claude-decisions.log
+.claude-metrics.json
+.claude-backups/
+
+.claude-cache/
+.claude-tmp/
+claude-output/
+
+.claude-cache/
+.claude-tmp/
+claude-output/
+landing-enevr/n8n-workflows/DEDETIZACAO-POS-VENDA-README.md
+landing-enevr/n8n-workflows/dedetizacao-pos-venda-workflow.json
+landing-enevr/n8n-workflows/FLUXO-ORCAMENTO-README.md
+landing-enevr/n8n-workflows/orcamento-enevr-workflow.json
+landing-enevr/n8n-workflows/whatsapp-atendimento-completo.json
+landing-enevr/n8n-workflows/WHATSAPP-WORKFLOW-README.md
+landing-enevr/assets/logo/enevr-logo.png

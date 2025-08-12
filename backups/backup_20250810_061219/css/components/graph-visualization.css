@@ -1,0 +1,273 @@
+/* ========================================
+   GRAPH VISUALIZATION - Estilos do Grafo
+   ======================================== */
+
+/* Container principal */
+.graph-visualization-panel {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-primary);
+}
+
+/* Header do grafo */
+.graph-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.graph-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.graph-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.graph-controls button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.graph-controls button:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--color-primary);
+}
+
+.graph-controls .icon {
+    font-size: 1.25rem;
+}
+
+/* Estatísticas do grafo */
+.graph-stats {
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Container do grafo */
+.graph-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+#graph-network {
+    width: 100%;
+    height: 100%;
+}
+
+/* Loading do grafo */
+.graph-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Sidebar de detalhes */
+.graph-sidebar {
+    position: absolute;
+    right: -400px;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background: var(--bg-primary);
+    border-left: 1px solid var(--border-color);
+    transition: right 0.3s ease;
+    z-index: 20;
+    overflow-y: auto;
+}
+
+.graph-sidebar.active {
+    right: 0;
+}
+
+.sidebar-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--text-primary);
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-sm);
+    transition: all 0.2s ease;
+}
+
+.btn-close:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+}
+
+/* Filtros do grafo */
+.graph-filters {
+    position: absolute;
+    left: 1rem;
+    bottom: 1rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    z-index: 15;
+}
+
+.graph-filters h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.filter-group input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Estilos do grafo (vis.js) */
+.vis-network {
+    background: var(--bg-primary) !important;
+}
+
+.vis-tooltip {
+    background: var(--bg-tertiary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-family) !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem !important;
+    border-radius: var(--border-radius-sm) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .graph-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .graph-controls {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .graph-controls button {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .graph-stats {
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .graph-sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .graph-filters {
+        display: none;
+    }
+}
+
+/* Dark mode */
+body.dark-mode .graph-visualization-panel {
+    background: var(--bg-primary);
+}
+
+body.dark-mode .vis-network {
+    background: var(--bg-primary) !important;
+}
+
+body.dark-mode .vis-tooltip {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+}

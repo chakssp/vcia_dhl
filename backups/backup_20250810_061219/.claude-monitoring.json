@@ -1,0 +1,122 @@
+{
+  "guardianMode": {
+    "enabled": true,
+    "version": "1.0.0",
+    "strictLevel": "HIGH"
+  },
+  
+  "tracking": {
+    "enabled": true,
+    "logFile": ".claude-decisions.log",
+    "metricsFile": ".claude-metrics.json",
+    "sessionTracking": true
+  },
+  
+  "limits": {
+    "maxFilesPerChange": 3,
+    "maxLinesPerFile": 50,
+    "maxDeletionsRatio": 0.3,
+    "maxComplexityIncrease": 1.2
+  },
+  
+  "alerts": {
+    "onRegression": {
+      "action": "STOP_AND_ROLLBACK",
+      "notifyUser": true,
+      "createBackup": true
+    },
+    "onMultipleFiles": {
+      "threshold": 3,
+      "action": "REQUEST_CONFIRMATION",
+      "requireJustification": true
+    },
+    "onRefactoring": {
+      "action": "EXPLAIN_FIRST",
+      "requireApproval": true,
+      "detailedImpactAnalysis": true
+    },
+    "onConfigChange": {
+      "action": "CRITICAL_CONFIRMATION",
+      "doubleCheck": true
+    }
+  },
+  
+  "validations": {
+    "preChange": {
+      "checkWorkingFeatures": true,
+      "documentCurrentState": true,
+      "estimateImpact": true
+    },
+    "postChange": {
+      "runRegressionCheck": true,
+      "validateFeatures": true,
+      "compareMetrics": true
+    }
+  },
+  
+  "logging": {
+    "format": {
+      "timestamp": "ISO8601",
+      "includeContext": true,
+      "trackDecisions": true
+    },
+    "fields": [
+      "timestamp",
+      "sessionId",
+      "changeType",
+      "filesAffected",
+      "linesChanged",
+      "impact",
+      "preserved",
+      "risks",
+      "outcome"
+    ]
+  },
+  
+  "rollback": {
+    "automatic": true,
+    "onTestFailure": true,
+    "createRestorePoint": true,
+    "maxRollbackDepth": 5
+  },
+  
+  "communication": {
+    "language": "pt-BR",
+    "technicalTerms": "en-US",
+    "confirmationRequired": [
+      "DELETE",
+      "REFACTOR",
+      "ARCHITECTURE_CHANGE",
+      "CONFIG_MODIFICATION"
+    ],
+    "templates": {
+      "impactWarning": "⚠️ ATENÇÃO: Esta mudança afetará {count} arquivos e pode impactar {features}",
+      "confirmationRequest": "❓ Confirma a execução? Digite 'sim' para continuar ou 'não' para cancelar",
+      "rollbackNotice": "↩️ Rollback executado. Estado anterior restaurado."
+    }
+  },
+  
+  "features": {
+    "incrementalChanges": true,
+    "preserveWorkingCode": true,
+    "explainBeforeExecute": true,
+    "pairProgrammingMode": true,
+    "autoSnapshot": true,
+    "smartDiff": true
+  },
+  
+  "criticalPaths": [
+    "src/core/*",
+    "config/*",
+    ".env*",
+    "package.json",
+    "database/*"
+  ],
+  
+  "sessionManagement": {
+    "maxSessionDuration": "4h",
+    "breakReminder": "1h",
+    "autoSaveProgress": true,
+    "reviewRequired": "2h"
+  }
+}

@@ -1,0 +1,259 @@
+/**
+ * Posicionamento Responsivo com Porcentagens
+ * 
+ * Este arquivo define todos os posicionamentos usando % para melhor responsividade
+ */
+
+/* ===== BARRA DE FILTROS INFERIOR ===== */
+.quick-filters-bar {
+    /* Sempre visível (full time) */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: translateY(0) !important; /* Sempre visível */
+    
+    /* Altura responsiva */
+    height: 8vh !important; /* 8% da altura da viewport */
+    min-height: 60px !important;
+    max-height: 80px !important;
+    
+    /* Padding responsivo */
+    padding: 1vh 2vw !important;
+    
+    /* Remove animações de show/hide */
+    transition: none !important;
+}
+
+/* Força barra sempre visível */
+.quick-filters-bar,
+.quick-filters-bar.show {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Container interno responsivo */
+.quick-filters-container {
+    height: 100% !important;
+    max-width: 100% !important;
+    padding: 0 2vw !important;
+    align-items: center !important;
+}
+
+/* ===== BOTÕES FLUTUANTES ===== */
+.floating-actions {
+    position: fixed !important;
+    
+    /* Posicionamento em % */
+    right: 2vw !important; /* 2% da largura */
+    bottom: 12vh !important; /* 12% da altura (acima da barra) */
+    
+    /* Espaçamento responsivo */
+    gap: 1.5vh !important;
+    
+    /* Remove transições desnecessárias */
+    transition: none !important;
+}
+
+/* ===== BOTÃO GO TO TOP ===== */
+.go-to-top {
+    position: fixed !important;
+    right: 2vw !important;
+    bottom: 20vh !important; /* Acima dos outros botões flutuantes */
+    z-index: 9500 !important; /* Abaixo do menu lateral mas acima do resto */
+}
+
+/* Tamanho responsivo dos botões */
+.floating-actions .action-btn {
+    /* Tamanho baseado em viewport */
+    width: 4vw !important;
+    height: 4vw !important;
+    min-width: 45px !important;
+    min-height: 45px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    
+    /* Fonte responsiva */
+    font-size: 2vw !important;
+}
+
+/* ===== MENU LATERAL QDRANT ===== */
+#kc-side-menu {
+    position: fixed !important;
+    
+    /* Posicionamento em % */
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    
+    /* Largura responsiva */
+    width: 20vw !important;
+    min-width: 250px !important;
+    max-width: 350px !important;
+    
+    /* Posição lateral */
+    right: -20vw !important; /* Escondido por padrão */
+    
+    /* Z-index alto para ficar acima de outros elementos */
+    z-index: 10000 !important;
+}
+
+#kc-side-menu.open {
+    right: 0 !important; /* Visível quando aberto */
+}
+
+/* Aba do menu responsiva */
+.quick-access-tab {
+    /* Posicionamento relativo ao menu */
+    left: -3vw !important;
+    min-width: 40px !important;
+    
+    /* Tamanho de fonte responsivo */
+    font-size: 1.2vw !important;
+    min-font-size: 14px !important;
+}
+
+/* ===== AJUSTES PARA O CONTEÚDO PRINCIPAL ===== */
+body {
+    /* Adiciona padding inferior para a barra fixa */
+    padding-bottom: 10vh !important;
+}
+
+.main-container,
+.content-section {
+    /* Garante que o conteúdo não fique sob a barra */
+    margin-bottom: 10vh !important;
+}
+
+/* ===== BULK ACTIONS BAR ===== */
+.bulk-actions-bar {
+    position: fixed !important;
+    bottom: 10vh !important; /* Acima da barra de filtros */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 999 !important;
+    background: var(--bg-secondary) !important;
+    padding: 1vh 2vw !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ===== MODAL OVERLAY ===== */
+.modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9990 !important;
+}
+
+.modal-overlay .modal-content {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+}
+
+/* ===== MEDIA QUERIES PARA AJUSTES FINOS =====
+@media (max-width: 768px) {
+    /* Mobile - ajusta proporções */
+    .floating-actions {
+        right: 3vw !important;
+        bottom: 15vh !important;
+    }
+    
+    .floating-actions .action-btn {
+        width: 12vw !important;
+        height: 12vw !important;
+        font-size: 6vw !important;
+    }
+    
+    #kc-side-menu {
+        width: 80vw !important;
+        right: -80vw !important;
+    }
+    
+    .quick-filters-bar {
+        height: 10vh !important;
+    }
+}
+
+@media (min-width: 1920px) {
+    /* Telas grandes - limita tamanhos máximos */
+    .floating-actions .action-btn {
+        width: 60px !important;
+        height: 60px !important;
+        font-size: 24px !important;
+    }
+}
+
+/* ===== CATEGORY QUICK SELECTOR ===== */
+.category-quick-backdrop {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 9998 !important;
+}
+
+.category-quick-backdrop {
+    /* Backdrop com posição fixa */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9998 !important;
+}
+
+.category-quick-popup {
+    /* Posição fixa relativa à viewport */
+    position: fixed !important;
+    
+    /* Centralizado na viewport visível */
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    
+    /* Tamanho responsivo mas controlado */
+    width: min(90%, 500px) !important;
+    max-width: 500px !important;
+    
+    /* Altura controlada */
+    max-height: min(80vh, 600px) !important;
+    
+    /* Padding menor */
+    padding: 20px !important;
+    
+    /* Z-index alto para ficar acima de tudo */
+    z-index: 9999 !important;
+    
+    /* Scroll interno se necessário */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    
+    /* Garantir visibilidade */
+    margin: auto !important;
+}
+
+/* Ajusta elementos internos do popup */
+.category-quick-popup .cqs-tags-container {
+    max-height: 30vh !important;
+    overflow-y: auto !important;
+}
+
+.category-quick-popup .cqs-tag {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+}
+
+/* Previne scroll do body quando popup está aberto */
+body.category-popup-open {
+    overflow: hidden !important;
+}

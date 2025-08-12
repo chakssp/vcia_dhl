@@ -1,0 +1,54 @@
+Backup Information 
+================== 
+Date: 10/08/2025  6:12:20,53 
+Source: F:\vcia-1307\vcia_dhl 
+ 
+Git Status: 
+ M .claude/settings.local.json
+ M CLAUDE.md
+ M index.html
+ M js/components/FileRenderer.js
+ M js/components/OrganizationPanel.js
+ M js/managers/DataIntegrityManager.js
+ M js/managers/DiscoveryManager.js
+ M js/managers/FilterManager.js
+ M js/managers/RAGExportManager.js
+ M js/utils/ChunkingUtils.js
+ M js/utils/ContentLoader.js
+ M qdrant-fase/v2-plano-integracao-discovery-qdrant.md
+ D v2/ANALISE-ERROS-CRITICOS-V2.md
+ D v2/CORRECAO-EVENTBUS-CONSTRUCTOR.md
+ D v2/CORRECAO_ADICIONAL_STATUSBAR.md
+ D v2/CORRECOES_APLICADAS.md
+ D v2/CORRECOES_FINAIS_V2.md
+ D v2/CORRECOES_V2_APLICADAS.md
+ D v2/IMPLEMENTATION_SUMMARY_V2.md
+ D v2/KC_V2_READY.md
+ D v2/MIGRATION_SUCCESS_SUMMARY.md
+ D v2/MODO_OFFLINE_V2.md
+ D "v2/Multi-Agent Orchestration Template for KC V2 Migration.md"
+ D v2/RELATORIO-CORRECOES-V2-03082025.md
+ D v2/STATUS-MIGRACAO-V2-03082025.md
+ D v2/V2-INTERFACE-ANALYSIS.md
+ D v2/V2-MIGRATION-PLAN.md
+?? .fileaudit.json
+?? BACKUP_INFO.txt
+?? CHECKPOINT-CONVERGENCE-KEYWORDS.md
+?? CONVERGENCE-BREAKTHROUGH.md
+?? FIX-BALIZADOR-50.md
+?? convergence-navigator/
+?? js/services/ContentAnalysisOrchestrator.js
+?? js/services/EvolutionQueue.js
+?? js/utils/KeywordExtractor.js
+?? meta_test.json
+?? qdrant_sample.json
+?? query.json
+?? query1.json
+?? test/ogma/
+?? test_result.json
+?? v2/graph-editor-cytoscape.html
+?? v2/graph-intelligence/
+?? v2/legacy-v2/
+ 
+Last Commit: 
+4958d17 chore: Organizar arquivos de teste na pasta test/

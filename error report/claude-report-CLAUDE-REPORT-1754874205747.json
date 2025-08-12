@@ -1,0 +1,778 @@
+{
+  "sessionId": "CLAUDE-REPORT-1754874205747",
+  "timestamp": "2025-08-11T01:07:28.061Z",
+  "duration": 242314,
+  "logs": [
+    {
+      "timestamp": 1754874205748,
+      "relativeTime": 1,
+      "type": "system",
+      "message": "🟢 Claude Reporter iniciado",
+      "data": {
+        "sessionId": "CLAUDE-REPORT-1754874205747",
+        "timestamp": "2025-08-11T01:03:25.747Z",
+        "url": "http://127.0.0.1:5500/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36"
+      }
+    },
+    {
+      "timestamp": 1754874205748,
+      "relativeTime": 1,
+      "type": "system",
+      "message": "📊 Estado inicial capturado",
+      "data": {
+        "timestamp": 1754874205748,
+        "kc": {
+          "filesLoaded": 11,
+          "currentStep": 0,
+          "services": {
+            "qdrant": true,
+            "embedding": true,
+            "rag": true
+          }
+        },
+        "localStorage": {
+          "size": 237042,
+          "keys": 12
+        },
+        "memory": {
+          "usedJSHeapSize": "31.40 MB",
+          "totalJSHeapSize": "34.09 MB",
+          "limit": "4095.75 MB"
+        }
+      }
+    },
+    {
+      "timestamp": 1754874205749,
+      "relativeTime": 2,
+      "type": "log",
+      "message": "🤝 Claude Reporter iniciado automaticamente",
+      "data": null
+    },
+    {
+      "timestamp": 1754874205815,
+      "relativeTime": 68,
+      "type": "log",
+      "message": "MutationObserver for progress-text protection is active",
+      "data": null
+    },
+    {
+      "timestamp": 1754874205993,
+      "relativeTime": 246,
+      "type": "log",
+      "message": "%c[DEBUG] Estado salvo: 14KB color: #8b5cf6; font-weight: bold; {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874441356,
+      "relativeTime": 235609,
+      "type": "api",
+      "message": "🔄 API Call: GET http://qdr.vcia.com.br:6333/",
+      "data": {
+        "callId": "API-1754874441356",
+        "method": "GET",
+        "url": "http://qdr.vcia.com.br:6333/"
+      }
+    },
+    {
+      "timestamp": 1754874441396,
+      "relativeTime": 235649,
+      "type": "api",
+      "message": "✅ API Response: 200",
+      "data": {
+        "callId": "API-1754874441356",
+        "status": 200,
+        "duration": 39
+      }
+    },
+    {
+      "timestamp": 1754874441396,
+      "relativeTime": 235649,
+      "type": "log",
+      "message": "✅ Qdrant conectado: {\n  \"title\": \"qdrant - vector search engine\",\n  \"version\": \"1.14.1\",\n  \"commit\": \"530430fac2a3ca872504f276d2c91a5c91f43fa0\"\n}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874441396,
+      "relativeTime": 235649,
+      "type": "api",
+      "message": "🔄 API Call: GET http://localhost:11434/api/tags",
+      "data": {
+        "callId": "API-1754874441396",
+        "method": "GET",
+        "url": "http://localhost:11434/api/tags"
+      }
+    },
+    {
+      "timestamp": 1754874441508,
+      "relativeTime": 235761,
+      "type": "api",
+      "message": "✅ API Response: 200",
+      "data": {
+        "callId": "API-1754874441396",
+        "status": 200,
+        "duration": 112
+      }
+    },
+    {
+      "timestamp": 1754874441508,
+      "relativeTime": 235761,
+      "type": "log",
+      "message": "✅ Ollama disponível com modelo nomic-embed-text",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442765,
+      "relativeTime": 237018,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442766,
+      "relativeTime": 237019,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442766,
+      "relativeTime": 237019,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442766,
+      "relativeTime": 237019,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442766,
+      "relativeTime": 237019,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442773,
+      "relativeTime": 237026,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442773,
+      "relativeTime": 237026,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442773,
+      "relativeTime": 237026,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442774,
+      "relativeTime": 237027,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442775,
+      "relativeTime": 237028,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442775,
+      "relativeTime": 237028,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442775,
+      "relativeTime": 237028,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442775,
+      "relativeTime": 237028,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442776,
+      "relativeTime": 237029,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442776,
+      "relativeTime": 237029,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442776,
+      "relativeTime": 237029,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442776,
+      "relativeTime": 237029,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442777,
+      "relativeTime": 237030,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442777,
+      "relativeTime": 237030,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874442777,
+      "relativeTime": 237030,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443277,
+      "relativeTime": 237530,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443277,
+      "relativeTime": 237530,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443278,
+      "relativeTime": 237531,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443278,
+      "relativeTime": 237531,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443278,
+      "relativeTime": 237531,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443278,
+      "relativeTime": 237531,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443278,
+      "relativeTime": 237531,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443279,
+      "relativeTime": 237532,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443280,
+      "relativeTime": 237533,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443280,
+      "relativeTime": 237533,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443280,
+      "relativeTime": 237533,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443281,
+      "relativeTime": 237534,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443281,
+      "relativeTime": 237534,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443282,
+      "relativeTime": 237535,
+      "type": "log",
+      "message": "📁 Report atualizado (50 logs, 18 erros)",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443282,
+      "relativeTime": 237535,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443792,
+      "relativeTime": 238045,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443794,
+      "relativeTime": 238047,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443794,
+      "relativeTime": 238047,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443794,
+      "relativeTime": 238047,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874443795,
+      "relativeTime": 238048,
+      "type": "api",
+      "message": "🔄 API Call: GET http://qdr.vcia.com.br:6333/collections/knowledge_consolidator",
+      "data": {
+        "callId": "API-1754874443795",
+        "method": "GET",
+        "url": "http://qdr.vcia.com.br:6333/collections/knowledge_consolidator"
+      }
+    },
+    {
+      "timestamp": 1754874443817,
+      "relativeTime": 238070,
+      "type": "api",
+      "message": "✅ API Response: 200",
+      "data": {
+        "callId": "API-1754874443795",
+        "status": 200,
+        "duration": 22
+      }
+    },
+    {
+      "timestamp": 1754874443818,
+      "relativeTime": 238071,
+      "type": "log",
+      "message": "📊 Estatísticas do Qdrant: {\n  \"pointsCount\": 923,\n  \"indexedVectorsCount\": 0,\n  \"segmentsCount\": 10,\n  \"status\": \"green\",\n  \"config\": {\n    \"params\": {\n      \"vectors\": {\n        \"size\": 768,\n        \"distance\": \"Cosine\"\n      },\n      \"shard_number\": 5,\n      \"replication_factor\": 1,\n      \"write_consistency_factor\": 1,\n      \"on_disk_payload\": true\n    },\n    \"hnsw_config\": {\n      \"m\": 16,\n      \"ef_construct\": 100,\n      \"full_scan_threshold\": 10000,\n      \"max_indexing_threads\": 0,\n      \"on_disk\": false\n    },\n    \"optimizer_config\": {\n      \"deleted_threshold\": 0.2,\n      \"vacuum_min_vector_number\": 1000,\n      \"default_segment_number\": 2,\n      \"max_segment_size\": null,\n      \"memmap_threshold\": null,\n      \"indexing_threshold\": 20000,\n      \"flush_interval_sec\": 5,\n      \"max_optimization_threads\": null\n    },\n    \"wal_config\": {\n      \"wal_capacity_mb\": 32,\n      \"wal_segments_ahead\": 0\n    },\n    \"quantization_config\": null,\n    \"strict_mode_config\": {\n      \"enabled\": false\n    }\n  }\n}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445228,
+      "relativeTime": 239481,
+      "type": "api",
+      "message": "🔄 API Call: GET http://qdr.vcia.com.br:6333/",
+      "data": {
+        "callId": "API-1754874445228",
+        "method": "GET",
+        "url": "http://qdr.vcia.com.br:6333/"
+      }
+    },
+    {
+      "timestamp": 1754874445242,
+      "relativeTime": 239495,
+      "type": "api",
+      "message": "✅ API Response: 200",
+      "data": {
+        "callId": "API-1754874445228",
+        "status": 200,
+        "duration": 14
+      }
+    },
+    {
+      "timestamp": 1754874445243,
+      "relativeTime": 239496,
+      "type": "log",
+      "message": "✅ Qdrant conectado: {\n  \"title\": \"qdrant - vector search engine\",\n  \"version\": \"1.14.1\",\n  \"commit\": \"530430fac2a3ca872504f276d2c91a5c91f43fa0\"\n}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445243,
+      "relativeTime": 239496,
+      "type": "api",
+      "message": "🔄 API Call: GET http://localhost:11434/api/tags",
+      "data": {
+        "callId": "API-1754874445243",
+        "method": "GET",
+        "url": "http://localhost:11434/api/tags"
+      }
+    },
+    {
+      "timestamp": 1754874445356,
+      "relativeTime": 239609,
+      "type": "api",
+      "message": "✅ API Response: 200",
+      "data": {
+        "callId": "API-1754874445243",
+        "status": 200,
+        "duration": 113
+      }
+    },
+    {
+      "timestamp": 1754874445356,
+      "relativeTime": 239609,
+      "type": "log",
+      "message": "✅ Ollama disponível com modelo nomic-embed-text",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445356,
+      "relativeTime": 239609,
+      "type": "log",
+      "message": "🧪 Testando com arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445356,
+      "relativeTime": 239609,
+      "type": "log",
+      "message": "🔄 Enriquecendo arquivo: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445356,
+      "relativeTime": 239609,
+      "type": "log",
+      "message": "✅ Arquivo enriquecido: undefined",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445357,
+      "relativeTime": 239610,
+      "type": "error",
+      "message": "Erro ao enriquecer arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445357,
+      "relativeTime": 239610,
+      "type": "error",
+      "message": "Erro ao processar arquivo undefined: {}",
+      "data": null
+    },
+    {
+      "timestamp": 1754874445357,
+      "relativeTime": 239610,
+      "type": "error",
+      "message": "Erro no teste: {}",
+      "data": null
+    }
+  ],
+  "errors": [
+    {
+      "timestamp": 1754874442773,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442773,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442775,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 1)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442775,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 1)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442775,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 2)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442776,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 2)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442776,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 3)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442776,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 3)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442777,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 4)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874442777,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 4)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443278,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443279,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443279,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 1)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443279,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 1)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443279,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 2)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443279,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 2)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443280,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 3)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443280,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 3)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443282,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 4)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443282,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 4)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443794,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874443794,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async Promise.all (index 0)\n    at async OrganizationPanel.startEmbeddingsEnrichment (http://127.0.0.1:5500/js/components/OrganizationPanel.js:599:21)"
+    },
+    {
+      "timestamp": 1754874445357,
+      "message": "Erro ao enriquecer arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.enrichWithEmbeddings (http://127.0.0.1:5500/js/services/QdrantService.js:333:21)\n    at async QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:487:33)\n    at async OrganizationPanel.testEmbeddingsWithOneFile (http://127.0.0.1:5500/js/components/OrganizationPanel.js:516:32)"
+    },
+    {
+      "timestamp": 1754874445357,
+      "message": "Erro ao processar arquivo undefined: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at QdrantService.processAndInsertFile (http://127.0.0.1:5500/js/services/QdrantService.js:501:21)\n    at async OrganizationPanel.testEmbeddingsWithOneFile (http://127.0.0.1:5500/js/components/OrganizationPanel.js:516:32)"
+    },
+    {
+      "timestamp": 1754874445357,
+      "message": "Erro no teste: TypeError: Cannot read properties of undefined (reading 'length')",
+      "stack": "Error\n    at console.error (http://127.0.0.1:5500/js/services/ClaudeReporter.js:289:36)\n    at OrganizationPanel.testEmbeddingsWithOneFile (http://127.0.0.1:5500/js/components/OrganizationPanel.js:527:25)"
+    }
+  ],
+  "apiCalls": [
+    {
+      "id": "API-1754874441356",
+      "timestamp": 1754874441356,
+      "url": "http://qdr.vcia.com.br:6333/",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": null,
+      "duration": 39,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874441396",
+      "timestamp": 1754874441396,
+      "url": "http://localhost:11434/api/tags",
+      "method": "GET",
+      "body": null,
+      "duration": 112,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874443795",
+      "timestamp": 1754874443795,
+      "url": "http://qdr.vcia.com.br:6333/collections/knowledge_consolidator",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": null,
+      "duration": 22,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874445228",
+      "timestamp": 1754874445228,
+      "url": "http://qdr.vcia.com.br:6333/",
+      "method": "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": null,
+      "duration": 14,
+      "status": 200,
+      "error": null
+    },
+    {
+      "id": "API-1754874445243",
+      "timestamp": 1754874445243,
+      "url": "http://localhost:11434/api/tags",
+      "method": "GET",
+      "body": null,
+      "duration": 113,
+      "status": 200,
+      "error": null
+    }
+  ],
+  "performance": {
+    "embeddings": [],
+    "qdrant": [
+      {
+        "timestamp": 1754874441356,
+        "duration": 39,
+        "operation": "GET"
+      },
+      {
+        "timestamp": 1754874443795,
+        "duration": 22,
+        "operation": "GET"
+      },
+      {
+        "timestamp": 1754874445228,
+        "duration": 14,
+        "operation": "GET"
+      }
+    ],
+    "discoveries": []
+  }
+}

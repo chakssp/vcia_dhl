@@ -1,0 +1,1106 @@
+{
+  "summary": {
+    "totalErrors": 3,
+    "totalWarnings": 85,
+    "missingFiles": 0,
+    "anchorComments": {
+      "totalNotes": 56,
+      "totalTodos": 4,
+      "totalQuestions": 1,
+      "totalInvalid": 0
+    },
+    "timestamp": "2025-07-21T20:07:50.536Z"
+  },
+  "details": {
+    "errors": [
+      {
+        "type": "file_read_error",
+        "file": "js/components/GraphVisualization.js",
+        "message": "lineNumber is not defined"
+      },
+      {
+        "type": "file_read_error",
+        "file": "js/managers/TripleStoreManager.js",
+        "message": "lineNumber is not defined"
+      },
+      {
+        "type": "script_error",
+        "file": "js/utils/BrowserCompatibility.js",
+        "message": "navigator is not defined",
+        "line": null
+      }
+    ],
+    "warnings": [
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/core/EventBus.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/core/AppController.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/config/AnalysisTypes.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/config/APIConfig.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/Logger.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/HandleManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/BrowserCompatibility.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/FileUtils.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/DateUtils.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/PreviewUtils.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/ChunkingUtils.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/IntentManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/InsightExtractor.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/ValidationUtils.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/ProgressManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/WordCloudGenerator.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/DuplicateDetector.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/utils/ThemeManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/DataIntegrityManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/AnalysisManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/AIAPIManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/PromptManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/AnalysisAdapter.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/CategoryManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/StatsManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/StatsCoordinator.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/RAGExportManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/schemas/QdrantSchema.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/schemas/TripleSchema.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/extractors/RelationshipExtractor.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/managers/TripleStoreManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/services/EmbeddingService.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/services/QdrantService.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/services/SimilaritySearchService.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/services/TripleStoreService.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/ModalManager.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/FilterBar.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/StatsPanel.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/DashboardRenderer.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/ExportUI.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/components/OrganizationPanel.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/app.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/debug-export.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "js/debug-organization.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/test-triple-extraction.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/test-triple-store-service.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/test-manual-triple-extraction.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/exemplo-teste-2litros.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/debug-triple-extraction.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/teste-simples-triplas.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/debug-content-extraction.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/teste-final-2litros.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/run-diagnostic.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/fix-load-content.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_aidev_comments",
+        "file": "test/debug-handle-type.js",
+        "message": "Arquivo sem AIDEV comments para orientação"
+      },
+      {
+        "type": "missing_managers",
+        "message": "Managers faltando: ConfigManager, ExportManager",
+        "severity": "high"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/check-appstate.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/debug-analysis-type.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/debug-content-extraction.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/debug-filtros-producao.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/debug-handle-type.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/debug-triple-extraction.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/execute-debug.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/execute-test.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/execute_test.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/exemplo-teste-2litros.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/fix-load-content.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/fix-ragexport-error.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/run-debug-triple.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/run-diagnostic.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/run-kcdiag.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/run-test-script.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/temp-diag.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-console-command.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-full-workflow-playwright.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-inline.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-manual-triple-extraction.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-modal-direct.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-triple-debug.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-triple-diagnostic.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-triple-extraction.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-triple-service.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/test-triple-store-service.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/teste-final-2litros.js",
+        "message": "Teste sem AIDEV comments"
+      },
+      {
+        "type": "test_missing_comments",
+        "file": "test/teste-simples-triplas.js",
+        "message": "Teste sem AIDEV comments"
+      }
+    ],
+    "missingFiles": [],
+    "loadOrder": [
+      "js/core/EventBus.js",
+      "js/core/AppState.js",
+      "js/core/AppController.js",
+      "js/config/AnalysisTypes.js",
+      "js/config/APIConfig.js",
+      "js/utils/Logger.js",
+      "js/utils/HandleManager.js",
+      "js/utils/BrowserCompatibility.js",
+      "js/utils/FileUtils.js",
+      "js/utils/DateUtils.js",
+      "js/utils/PreviewUtils.js",
+      "js/utils/ChunkingUtils.js",
+      "js/managers/IntentManager.js",
+      "js/managers/InsightExtractor.js",
+      "js/utils/ValidationUtils.js",
+      "js/utils/ProgressManager.js",
+      "js/utils/WordCloudGenerator.js",
+      "js/utils/DuplicateDetector.js",
+      "js/utils/SessionCache.js",
+      "js/utils/ThemeManager.js",
+      "js/managers/DataIntegrityManager.js",
+      "js/managers/DiscoveryManager.js",
+      "js/managers/AnalysisManager.js",
+      "js/managers/AIAPIManager.js",
+      "js/managers/PromptManager.js",
+      "js/managers/AnalysisAdapter.js",
+      "js/managers/CategoryManager.js",
+      "js/managers/FilterManager.js",
+      "js/managers/StatsManager.js",
+      "js/managers/StatsCoordinator.js",
+      "js/managers/RAGExportManager.js",
+      "js/schemas/QdrantSchema.js",
+      "js/schemas/TripleSchema.js",
+      "js/extractors/RelationshipExtractor.js",
+      "js/managers/TripleStoreManager.js",
+      "js/services/EmbeddingService.js",
+      "js/services/QdrantService.js",
+      "js/services/SimilaritySearchService.js",
+      "js/services/TripleStoreService.js",
+      "js/components/FileRenderer.js",
+      "js/components/FilterPanel.js",
+      "js/components/ModalManager.js",
+      "js/components/WorkflowPanel.js",
+      "js/components/FilterBar.js",
+      "js/components/StatsPanel.js",
+      "js/components/DashboardRenderer.js",
+      "js/components/ExportUI.js",
+      "js/components/OrganizationPanel.js",
+      "js/app.js",
+      "js/debug-export.js",
+      "js/debug-organization.js",
+      "test/test-triple-extraction.js",
+      "test/test-triple-store-service.js",
+      "test/test-manual-triple-extraction.js",
+      "test/exemplo-teste-2litros.js",
+      "test/debug-triple-extraction.js",
+      "test/teste-simples-triplas.js",
+      "test/debug-content-extraction.js",
+      "test/teste-final-2litros.js",
+      "test/run-diagnostic.js",
+      "test/fix-load-content.js",
+      "test/debug-handle-type.js"
+    ],
+    "testResults": {
+      "check-appstate.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "debug-analysis-type.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "debug-content-extraction.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "debug-filtros-producao.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "debug-handle-type.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "debug-triple-extraction.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "execute-debug.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "execute-test.js": {
+        "success": false,
+        "error": "Invalid regular expression flags",
+        "line": 450
+      },
+      "execute_test.js": {
+        "success": false,
+        "error": "Invalid regular expression flags",
+        "line": 450
+      },
+      "exemplo-teste-2litros.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "fix-load-content.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "fix-ragexport-error.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "run-debug-triple.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "run-diagnostic.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "run-kcdiag.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "run-test-script.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "temp-diag.js": {
+        "success": false,
+        "error": "Unexpected end of input",
+        "line": 450
+      },
+      "test-console-command.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-full-workflow-playwright.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-inline.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-manual-triple-extraction.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-modal-direct.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-triple-debug.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-triple-diagnostic.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-triple-extraction.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-triple-service.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "test-triple-store-service.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "teste-final-2litros.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      },
+      "teste-simples-triplas.js": {
+        "success": true,
+        "message": "Sintaxe válida"
+      }
+    },
+    "namespaceCheck": {
+      "total": 54,
+      "expected": 13,
+      "existing": [
+        "AppController",
+        "EventBus",
+        "Logger",
+        "DiscoveryManager",
+        "AnalysisManager",
+        "FilterManager",
+        "CategoryManager",
+        "StatsManager",
+        "TripleStoreManager",
+        "DataIntegrityManager",
+        "PromptManager"
+      ],
+      "missing": [
+        "ConfigManager",
+        "ExportManager"
+      ]
+    },
+    "anchorComments": {
+      "valid": [
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 294,
+          "type": "AIDEV-NOTE",
+          "comment": "filter-transparency; show filter info to user"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 513,
+          "type": "AIDEV-NOTE",
+          "comment": "separate-analyzed-approved; analyzed != approved"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 555,
+          "type": "AIDEV-NOTE",
+          "comment": "update-counters-after-analysis; sync filter counters"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 561,
+          "type": "AIDEV-NOTE",
+          "comment": "emit-events-for-sync; ensure all components update"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 815,
+          "type": "AIDEV-NOTE",
+          "comment": "force-filter-update; ensure counters update"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 981,
+          "type": "AIDEV-NOTE",
+          "comment": "filter-info-display; transparency about active filters"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 2051,
+          "type": "AIDEV-NOTE",
+          "comment": "sync-after-categorize; force counter updates and emit event"
+        },
+        {
+          "file": "js/components/FileRenderer.js",
+          "line": 2067,
+          "type": "AIDEV-NOTE",
+          "comment": "fix-method-name; correct method is showFilesSection"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 198,
+          "type": "AIDEV-NOTE",
+          "comment": "listen-files-updated; sync counters on file changes"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 538,
+          "type": "AIDEV-NOTE",
+          "comment": "update-counters-after-exclusion; ensure all counters reflect exclusion changes"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 681,
+          "type": "AIDEV-NOTE",
+          "comment": "use-approved-field; pending means not approved, not \"not analyzed\""
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 849,
+          "type": "AIDEV-NOTE",
+          "comment": "accept-files-param; allow external calls with specific files"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 957,
+          "type": "AIDEV-NOTE",
+          "comment": "correct-status-logic; approved is different from analyzed"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 1320,
+          "type": "AIDEV-NOTE",
+          "comment": "check-approved-not-analyzed; approved is the correct field"
+        },
+        {
+          "file": "js/components/FilterPanel.js",
+          "line": 1350,
+          "type": "AIDEV-NOTE",
+          "comment": "use-approved-field; consistent with individual approval"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 62,
+          "type": "AIDEV-NOTE",
+          "comment": "discovery-progress-listener; handle real-time progress updates"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 458,
+          "type": "AIDEV-NOTE",
+          "comment": "observer-init; setup MutationObserver to prevent floating elements"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1206,
+          "type": "AIDEV-NOTE",
+          "comment": "real-time-progress; smooth animated progress updates using requestAnimationFrame"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1210,
+          "type": "AIDEV-NOTE",
+          "comment": "dom-elements; cache refs para progress UI elements"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1216,
+          "type": "AIDEV-NOTE",
+          "comment": "container-validation; prevent floating elements bug"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1219,
+          "type": "AIDEV-NOTE",
+          "comment": "visibility-check; skip updates when container hidden"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1225,
+          "type": "AIDEV-NOTE",
+          "comment": "parent-check; ensure progress-text stays in container"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1228,
+          "type": "AIDEV-NOTE",
+          "comment": "force-reattach; move element back to correct position"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1241,
+          "type": "AIDEV-NOTE",
+          "comment": "raf-cancel; cancel any pending animation frame to prevent queue buildup"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1246,
+          "type": "AIDEV-NOTE",
+          "comment": "raf-update; use requestAnimationFrame for smooth UI updates"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1254,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-text-inline; show percentage inside bar when visible"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1264,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-message; dynamic text based on phase and current file"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1280,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-detail; show calculation details if available"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1292,
+          "type": "AIDEV-NOTE",
+          "comment": "stats-efficient-update; only update if stats container is visible"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1319,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-complete; add visual feedback when done"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1332,
+          "type": "AIDEV-NOTE",
+          "comment": "complete-progress; force 100% on discovery completion"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1347,
+          "type": "AIDEV-NOTE",
+          "comment": "transparent-calculation; show actual discovery results"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1791,
+          "type": "AIDEV-NOTE",
+          "comment": "mutation-observer; prevent progress-text from floating outside container"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1795,
+          "type": "AIDEV-NOTE",
+          "comment": "delayed-setup; wait for DOM to be ready"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1805,
+          "type": "AIDEV-NOTE",
+          "comment": "parent-observer; watch for removal from correct parent"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1813,
+          "type": "AIDEV-NOTE",
+          "comment": "immediate-reattach; put it back immediately"
+        },
+        {
+          "file": "js/components/WorkflowPanel.js",
+          "line": 1826,
+          "type": "AIDEV-NOTE",
+          "comment": "observe-config; watch for child list changes on body"
+        },
+        {
+          "file": "js/core/AppState.js",
+          "line": 406,
+          "type": "AIDEV-NOTE",
+          "comment": "keep-duplicate-detection; maintain fingerprint for cross-session tracking"
+        },
+        {
+          "file": "js/core/AppState.js",
+          "line": 417,
+          "type": "AIDEV-NOTE",
+          "comment": "fingerprint-generation; unique ID for duplicate detection across sessions"
+        },
+        {
+          "file": "js/core/AppState.js",
+          "line": 494,
+          "type": "AIDEV-NOTE",
+          "comment": "smart-cleanup; preserve processed fingerprints for duplicate detection"
+        },
+        {
+          "file": "js/core/AppState.js",
+          "line": 536,
+          "type": "AIDEV-NOTE",
+          "comment": "sync-to-session; also update session cache"
+        },
+        {
+          "file": "js/core/AppState.js",
+          "line": 574,
+          "type": "AIDEV-TODO",
+          "comment": "update-file-flag; mark file.inQdrant = true"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 58,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-throttle; prevent UI blocking with many files (100ms default)"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 256,
+          "type": "AIDEV-NOTE",
+          "comment": "discovery-complete; emit 100% progress when done"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 356,
+          "type": "AIDEV-NOTE",
+          "comment": "emit-progress-update; throttled updates for smooth UI feedback"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 392,
+          "type": "AIDEV-NOTE",
+          "comment": "file-progress; emit progress after each batch of files"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 603,
+          "type": "AIDEV-NOTE",
+          "comment": "file-progress-update; emit progress for each file processed"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1162,
+          "type": "AIDEV-NOTE",
+          "comment": "throttled-progress; emit progress updates without blocking UI (perf-critical)"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1169,
+          "type": "AIDEV-TODO",
+          "comment": "make throttle delay configurable for different file counts"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1188,
+          "type": "AIDEV-NOTE",
+          "comment": "actual-progress-emit; calculates progress percentage and emits event"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1194,
+          "type": "AIDEV-NOTE",
+          "comment": "progress-calc; transparent percentage calculation"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1199,
+          "type": "AIDEV-NOTE",
+          "comment": "real-percentage; show actual % without artificial limits"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1202,
+          "type": "AIDEV-NOTE",
+          "comment": "phase-logic; different progress calc per phase"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1217,
+          "type": "AIDEV-QUESTION",
+          "comment": "why-95-limit; qual o motivo do limite de 95% durante scanning?"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1219,
+          "type": "AIDEV-NOTE",
+          "comment": "directory-based-progress; fallback when file count unknown"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1224,
+          "type": "AIDEV-NOTE",
+          "comment": "current-file-name; extract filename from path for display"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1235,
+          "type": "AIDEV-NOTE",
+          "comment": "detail-info; adiciona explicação do cálculo"
+        },
+        {
+          "file": "js/managers/FilterManager.js",
+          "line": 894,
+          "type": "AIDEV-NOTE",
+          "comment": "load-filters-optional; only load if explicitly saved"
+        },
+        {
+          "file": "js/utils/SessionCache.js",
+          "line": 22,
+          "type": "AIDEV-NOTE",
+          "comment": "session-only-storage; full data available only during current session"
+        },
+        {
+          "file": "js/utils/SessionCache.js",
+          "line": 194,
+          "type": "AIDEV-TODO",
+          "comment": "integrate-with-discovery; hook into discovery process to cache full file data"
+        },
+        {
+          "file": "js/utils/SessionCache.js",
+          "line": 195,
+          "type": "AIDEV-TODO",
+          "comment": "integrate-with-export; use cached data for export operations"
+        }
+      ],
+      "invalid": [],
+      "todos": [
+        {
+          "file": "js/core/AppState.js",
+          "line": 574,
+          "comment": "update-file-flag; mark file.inQdrant = true"
+        },
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1169,
+          "comment": "make throttle delay configurable for different file counts"
+        },
+        {
+          "file": "js/utils/SessionCache.js",
+          "line": 194,
+          "comment": "integrate-with-discovery; hook into discovery process to cache full file data"
+        },
+        {
+          "file": "js/utils/SessionCache.js",
+          "line": 195,
+          "comment": "integrate-with-export; use cached data for export operations"
+        }
+      ],
+      "questions": [
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1217,
+          "comment": "why-95-limit; qual o motivo do limite de 95% durante scanning?"
+        }
+      ],
+      "stats": {
+        "totalNotes": 56,
+        "totalTodos": 4,
+        "totalQuestions": 1,
+        "totalInvalid": 0
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "type": "answer_questions",
+      "severity": "low",
+      "message": "1 AIDEV-QUESTIONs precisam resposta",
+      "questions": [
+        {
+          "file": "js/managers/DiscoveryManager.js",
+          "line": 1217,
+          "comment": "why-95-limit; qual o motivo do limite de 95% durante scanning?"
+        }
+      ],
+      "fix": "Documentar decisões para questões levantadas"
+    },
+    {
+      "type": "script_error",
+      "severity": "high",
+      "message": "Erro em js/utils/BrowserCompatibility.js: navigator is not defined",
+      "line": null,
+      "fix": "Verificar sintaxe e dependências"
+    },
+    {
+      "type": "incomplete_namespace",
+      "severity": "high",
+      "message": "Managers KC não inicializados",
+      "missing": [
+        "ConfigManager",
+        "ExportManager"
+      ],
+      "fix": "Verificar inicialização dos managers no AppController"
+    }
+  ]
+}

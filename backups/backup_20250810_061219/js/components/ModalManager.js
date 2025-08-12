@@ -1,0 +1,186 @@
+/**
+ * ModalManager.js - Gerenciador de Modais
+ * Responsável por exibir e gerenciar modais do sistema
+ */
+
+(function(window) {
+    'use strict';
+
+    const KC = window.KnowledgeConsolidator;
+
+    class ModalManager {
+        constructor() {
+            this.activeModals = new Map();
+        }
+
+        initialize() {
+            console.log('ModalManager inicializado');
+            console.log('ModalManager está em:', window.KnowledgeConsolidator.ModalManager);
+        }
+
+        /**
+         * Exibe um modal com interface mais moderna
+         * @param {Object} config - Configuração do modal
+         */
+        show(config = {}) {
+            const {
+                title = 'Modal',
+                content = '',
+                size = 'medium',
+                buttons = [],
+                onOpen = null,
+                onClose = null
+            } = config;
+            
+            const modalId = 'modal-' + Date.now();
+            
+            // Criar HTML do modal
+            const modalHTML = `
+                <div class="modal-header">
+                    <h3>${title}</h3>
+                    <button class="modal-close" onclick="KC.ModalManager.closeModal('${modalId}')">&times;</button>
+                </div>
+                <div class="modal-body ${size === 'fullscreen' ? 'fullscreen' : ''}">
+                    ${content}
+                </div>
+                ${buttons.length > 0 ? `
+                    <div class="modal-footer">
+                        ${buttons.map(btn => {
+                            if (btn.action === 'close') {
+                                return `<button class="${btn.class || 'btn-primary'}" onclick="KC.ModalManager.closeModal('${modalId}')">${btn.text}</button>`;
+                            } else if (typeof btn.action === 'function') {
+                                // Registrar a função globalmente temporariamente
+                                const fnName = `modalAction_${modalId}_${Date.now()}`;
+                                window[fnName] = btn.action;
+                                return `<button class="${btn.class || 'btn-secondary'}" onclick="${fnName}()">${btn.text}</button>`;
+                            }
+                            return '';
+                        }).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            // Usar showModal existente
+            this.showModal(modalId, modalHTML, { size, onClose, fullscreen: size === 'fullscreen' });
+            
+            // Callback onOpen
+            if (onOpen) {
+                setTimeout(() => onOpen(), 100);
+            }
+            
+            return modalId;
+        }
+
+        /**
+         * Exibe um modal (método legado)
+         * @param {string} id - ID único do modal
+         * @param {string} content - Conteúdo HTML do modal
+         * @param {Object} options - Opções do modal
+         */
+        showModal(id, content, options = {}) {
+            console.log('ModalManager.showModal chamado com ID:', id);
+            console.log('Conteúdo do modal:', content);
+            
+            // Remove modal existente se houver
+            this.closeModal(id);
+
+            // Cria overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay' + (options.fullscreen ? ' fullscreen' : '');
+            overlay.id = `modal-${id}`;
+            
+            // Cria modal
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = content;
+            
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            // Adiciona ao mapa de modais ativos
+            this.activeModals.set(id, overlay);
+            
+            // Adiciona classe 'show' após um pequeno delay para ativar a transição
+            setTimeout(() => {
+                overlay.classList.add('show');
+                console.log('Classe show adicionada ao overlay:', overlay.classList.contains('show'));
+                console.log('Overlay no DOM:', document.body.contains(overlay));
+            }, 10);
+            
+            // Fecha ao clicar no overlay
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    this.closeModal(id);
+                }
+            });
+            
+            // Fecha com ESC
+            const escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.closeModal(id);
+                }
+            };
+            
+            // Armazena o handler para remover depois
+            overlay.escHandler = escHandler;
+            document.addEventListener('keydown', escHandler);
+            
+            return overlay;
+        }
+
+        /**
+         * Fecha um modal específico
+         * @param {string} id - ID do modal a ser fechado
+         */
+        closeModal(id) {
+            if (id && this.activeModals.has(id)) {
+                const overlay = this.activeModals.get(id);
+                
+                // Remove o event listener do ESC se existir
+                if (overlay.escHandler) {
+                    document.removeEventListener('keydown', overlay.escHandler);
+                }
+                
+                overlay.classList.remove('show');
+                // Remove após a transição
+                setTimeout(() => {
+                    overlay.remove();
+                }, 300);
+                this.activeModals.delete(id);
+            } else if (!id) {
+                // Fecha todos os modais
+                this.activeModals.forEach((overlay) => {
+                    // Remove o event listener do ESC se existir
+                    if (overlay.escHandler) {
+                        document.removeEventListener('keydown', overlay.escHandler);
+                    }
+                    
+                    overlay.classList.remove('show');
+                    setTimeout(() => {
+                        overlay.remove();
+                    }, 300);
+                });
+                this.activeModals.clear();
+            }
+        }
+
+        /**
+         * Verifica se um modal está ativo
+         * @param {string} id - ID do modal
+         */
+        isModalActive(id) {
+            return this.activeModals.has(id);
+        }
+
+        /**
+         * Obtém lista de modais ativos
+         */
+        getActiveModals() {
+            return Array.from(this.activeModals.keys());
+        }
+    }
+
+    KC.ModalManager = new ModalManager();
+
+})(window);

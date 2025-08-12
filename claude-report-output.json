@@ -1,0 +1,4 @@
+{
+  "placeholder": "Este arquivo será sobrescrito com os dados do Claude Reporter",
+  "instructions": "Execute no console: copyReportToFile()"
+}

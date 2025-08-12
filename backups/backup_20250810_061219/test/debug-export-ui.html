@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug ExportUI</title>
+</head>
+<body>
+    <h1>Debug ExportUI</h1>
+    <button onclick="checkSystem()">Verificar Sistema</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function checkSystem() {
+            const output = document.getElementById('output');
+            let results = [];
+            
+            // Verifica KC
+            results.push(`KC existe: ${typeof window.KnowledgeConsolidator !== 'undefined'}`);
+            
+            if (window.KnowledgeConsolidator) {
+                const KC = window.KnowledgeConsolidator;
+                
+                // Verifica componentes
+                results.push(`ExportUI: ${typeof KC.ExportUI}`);
+                results.push(`RAGExportManager: ${typeof KC.RAGExportManager}`);
+                results.push(`WorkflowPanel: ${typeof KC.WorkflowPanel}`);
+                results.push(`EventBus: ${typeof KC.EventBus}`);
+                
+                // Verifica eventos
+                if (KC.Events) {
+                    results.push(`EXPORT_REQUEST: ${KC.Events.EXPORT_REQUEST}`);
+                    results.push(`EXPORT_PROGRESS: ${KC.Events.EXPORT_PROGRESS}`);
+                }
+                
+                // Tenta executar kcdiag
+                if (typeof kcdiag === 'function') {
+                    results.push('\n--- KCDIAG ---');
+                    try {
+                        kcdiag();
+                    } catch(e) {
+                        results.push(`Erro no kcdiag: ${e.message}`);
+                    }
+                }
+            }
+            
+            output.textContent = results.join('\n');
+        }
+        
+        // Auto-executa ao carregar
+        setTimeout(checkSystem, 1000);
+    </script>
+</body>
+</html>
